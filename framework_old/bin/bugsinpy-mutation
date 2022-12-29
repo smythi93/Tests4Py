@@ -1,0 +1,181 @@
+#!/bin/bash
+usage="-w work_dir
+             The working directory to run the test. Default will be the current directory.
+       -t target
+             Target module or package to mutate. Default will be run mutation from test case and target that relevant from bugs.
+       -u unit_test
+             Test class, test method, module or package with unit tests. Default will be run mutation from test case and target that relevant from bugs.
+       -r
+             Run mutation from test case and target that relevant from bugs (Default)
+"
+
+
+relevant="0"
+case $1 in
+ -[h?] | --help)
+    cat <<-____HALP
+        Usage: ${0##*/} [ --help ]
+        $usage
+____HALP
+        exit 0;;
+ -r) relevant="1";;
+esac
+
+###Read the flag of checkout
+while getopts t:u:w: flag
+do
+    case "${flag}" in
+        w) work_dir=${OPTARG};;
+        t) target=${OPTARG};;
+        u) unit=${OPTARG};;
+    esac
+done
+
+###Update the work directory
+if [ "$work_dir" == "" ]; then 
+   work_dir=$(pwd)
+fi
+
+if [[ $work_dir == */ ]]; then 
+   temp_work_dir="$work_dir"
+   work_dir=${temp_work_dir::-1}
+fi
+
+if [[ ! -e "$work_dir/bugsinpy_run_test.sh" ]]; then
+   echo "This is not a checkout project folder"
+   exit
+fi
+
+if [[ ! -e "$work_dir/bugsinpy_compile_flag" ]]; then
+   echo "You have not compile this project"
+   exit
+fi
+
+if [[ "$target" == "" && "$unit" == "" ]]; then
+   relevant="1"
+fi  
+
+###Activate environment
+cd "$work_dir"
+if [ -d "env/Scripts" ]; then
+  source env/Scripts/activate
+else
+  source env/bin/activate
+fi
+pip install mutpy
+
+rm -f mut_bugsinpy.py
+
+###Adding mutpy_bugsinpy file
+if [[ $work_dir == /* ]]; then 
+   echo "#!$work_dir/env/bin/python3" >> "$work_dir/mut_bugsinpy.py"
+else 
+   echo "#!/$work_dir/env/bin/python3" >> "$work_dir/mut_bugsinpy.py"
+fi
+
+echo "import sys"  >> "$work_dir/mut_bugsinpy.py"
+echo "from mutpy import commandline" >> "$work_dir/mut_bugsinpy.py"
+
+echo "if __name__ == '__main__':" >> "$work_dir/mut_bugsinpy.py"
+echo "    commandline.main(sys.argv)" >> "$work_dir/mut_bugsinpy.py"
+
+pytest="unittest"
+#read file run_test.sh
+run_command_all=""
+run_command_test=""
+DONE=false
+until $DONE ;do
+read || DONE=true
+if [ "$REPLY" != "" ]; then
+   run_command_all+="$REPLY;"
+   if [[ "$REPLY" == *"pytest"* || "$REPLY" == *"py.test"* ]]; then
+       pytest="pytest"
+   else
+       temp_command="$(cut -d' ' -f 5 <<< $REPLY)"
+       run_command_test+="$temp_command;"
+   fi
+fi
+done < "$work_dir/bugsinpy_run_test.sh"
+IFS=';' read -r -a run_command <<< "$run_command_all"
+IFS=';' read -r -a mutation_command <<< "$run_command_test"
+
+rm -f "$work_dir/bugsinpy_mutation.txt"
+
+if [[ "$relevant" == "0" ]]; then
+   mutation=$(python mut_bugsinpy.py --target $target --unit-test $unit --runner $pytest -m 2>&1)
+   echo "$mutation"
+   echo "python mut_bugsinpy.py --target $target --unit-test $unit --runner $pytest -m" &>>"$work_dir/bugsinpy_mutation.txt"
+   echo "$mutation" &>>"$work_dir/bugsinpy_mutation.txt"
+else
+   ###Read bug.info file
+   DONE=false
+   until $DONE ;do
+   read || DONE=true
+   if [[ "$REPLY" == "test_file"* ]]; then
+      test_file_all="$(cut -d'"' -f 2 <<< $REPLY)"
+      IFS=';' read -r -a test_file <<< "$test_file_all"
+   fi
+   done < "$work_dir/bugsinpy_bug.info"
+
+   ###Read patch file
+   DONE=false
+   until $DONE ;do
+   read || DONE=true
+   if [[ "$REPLY" == *";"* ]]; then
+      IFS=';' read -r -a patch_file <<< "$REPLY"
+   fi
+   done < "$work_dir/bugsinpy_patchfile.info"
+
+   if [[ "$pytest" == "unittest" ]]; then
+   for index in "${!patch_file[@]}"
+   do
+      patch_trail=${patch_file[index]} 
+      patch_temp=$(echo $patch_trail | sed -e 's/\r//g')
+      suffix=".py"
+      patch_py=${patch_temp%"$suffix"}
+      patch_now=$(echo $patch_py | tr '/' '.')
+      for index_test in "${!mutation_command[@]}"
+      do
+         test_trail=${mutation_command[index_test]} 
+         test_temp=$(echo $test_trail | sed -e 's/\r//g')
+         test_py=${test_temp%"$suffix"}
+         test_now=$(echo $test_py | tr '/' '.')
+         echo "$patch_now"
+         echo "$test_now"
+         echo "python mut_bugsinpy.py --target $patch_now --unit-test $test_now --runner $pytest"
+         echo "python mut_bugsinpy.py --target $patch_now --unit-test $test_now --runner $pytest -m" &>>"$work_dir/bugsinpy_mutation.txt"
+python mut_bugsinpy.py --target $patch_now --unit-test $test_now --runner $pytest -m 2>&1 | tee $work_dir/bugsinpy_mutation.txt
+         #mutation=$(python mut_bugsinpy.py --target $patch_now --unit-test $test_now --runner $pytest -m 2>&1)
+         #echo "$mutation"
+         #echo "$mutation" &>>"$work_dir/bugsinpy_mutation.txt"
+      done
+   done
+   
+   else
+
+
+   ###Run mutation using test and target that relevant
+   for index in "${!patch_file[@]}"
+   do
+      patch_trail=${patch_file[index]} 
+      patch_temp=$(echo $patch_trail | sed -e 's/\r//g')
+      suffix=".py"
+      patch_py=${patch_temp%"$suffix"}
+      patch_now=$(echo $patch_py | tr '/' '.')
+      for index_test in "${!test_file[@]}"
+      do
+         test_trail=${test_file[index_test]} 
+         test_temp=$(echo $test_trail | sed -e 's/\r//g')
+         test_py=${test_temp%"$suffix"}
+         test_now=$(echo $test_py | tr '/' '.')
+         echo "$patch_now"
+         echo "$test_now"
+python mut_bugsinpy.py --target $patch_now --unit-test $test_now --runner $pytest -m 2>&1 | tee $work_dir/bugsinpy_mutation.txt
+         #mutation=$(python mut_bugsinpy.py --target $patch_now --unit-test $test_now --runner $pytest -m 2>&1)
+         #echo "$mutation"
+         #echo "python mut_bugsinpy.py --target $patch_now --unit-test $test_now --runner $pytest -m" &>>"$work_dir/bugsinpy_mutation.txt"
+         #echo "$mutation" &>>"$work_dir/bugsinpy_mutation.txt"
+      done
+   done
+   fi
+fi
