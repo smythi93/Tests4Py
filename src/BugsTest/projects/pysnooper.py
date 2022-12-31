@@ -1,9 +1,15 @@
+import ast
+import os
+import subprocess
+import tempfile
+from os import PathLike
 from pathlib import Path
 from typing import List, Optional
 
+from BugsTest.grammars import python
 from BugsTest.projects import Project, Status, TestingFramework, TestStatus
-from BugsTest.tests.generator import UnittestGenerator, SystemtestGenerator
-from BugsTest.tests.utils import API
+from BugsTest.tests.generator import UnitTestGenerator, SystemtestGenerator
+from BugsTest.tests.utils import API, TestResult
 
 
 class PySnooper(Project):
@@ -13,7 +19,7 @@ class PySnooper(Project):
                  darwin_python_version: Optional[str] = None,
                  test_status_fixed: TestStatus = TestStatus.PASSING,
                  test_status_buggy: TestStatus = TestStatus.FAILING,
-                 unittests: Optional[UnittestGenerator] = None,
+                 unittests: Optional[UnitTestGenerator] = None,
                  systemtests: Optional[SystemtestGenerator] = None,
                  api: Optional[API] = None):
         super().__init__(bug_id=bug_id, project_name='pysnooper', github_url='https://github.com/cool-RR/PySnooper',
@@ -21,7 +27,28 @@ class PySnooper(Project):
                          python_version=python_version, python_path=python_path, buggy_commit_id=buggy_commit_id,
                          fixed_commit_id=fixed_commit_id, testing_framework=TestingFramework.PYTEST,
                          test_file=test_file, test_cases=test_cases, darwin_python_version=darwin_python_version,
-                         test_status_fixed=test_status_fixed, test_status_buggy=test_status_buggy)
+                         test_status_fixed=test_status_fixed, test_status_buggy=test_status_buggy,
+                         unittests=unittests, systemtests=systemtests, api=api)
+
+
+class PySnooperApi(API):
+
+    def __init__(self, default_timeout: int = 5):
+        self.translator = python.ToASTVisitor(python.GENERATIVE_GRAMMAR)
+        super().__init__(default_timeout=default_timeout)
+
+    def run(self, system_test_path: PathLike) -> TestResult:
+        try:
+            with open(system_test_path, 'r') as fp:
+                test = fp.read()
+            test = ast.unparse(self.translator.visit_string(test))
+            with tempfile.NamedTemporaryFile('w+', suffix='.py', delete=False) as fp:
+                fp.write(test)
+            process = subprocess.run(['python3.8', fp.name], timeout=self.default_timeout)
+            os.remove(fp.name)
+            return TestResult.FAILING if process.returncode else TestResult.PASSING
+        except (subprocess.TimeoutExpired, SyntaxError):
+            return TestResult.UNKNOWN
 
 
 def register():
@@ -59,4 +86,5 @@ def register():
         test_cases=['tests/test_pysnooper.py::test_file_output'],
         test_status_fixed=TestStatus.ERROR,
         test_status_buggy=TestStatus.ERROR,
+        api=PySnooperApi(),
     )

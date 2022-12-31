@@ -1,11 +1,14 @@
+import ast
+import random
 import string
 from ast import *
-from typing import Optional
+from typing import Optional, Union
 
+from fuzzingbook.GrammarFuzzer import GrammarFuzzer
 from fuzzingbook.Grammars import Grammar, srange, is_valid_grammar
 from isla.derivation_tree import DerivationTree
 
-from BugsTest.grammars.visitor import GrammarVisitor
+from BugsTest.grammars.utils import GrammarVisitor, Generator
 
 
 class PythonVisitor(GrammarVisitor):
@@ -1129,7 +1132,272 @@ class ToGrammarVisitor(NodeVisitor):
                f'"{node.tag}")'
 
 
-grammar: Grammar = {
+class PythonGenerator(Generator):
+    class Scope:
+
+        def __init__(self, parent=None):
+            self.variables = set()
+            self.functions = dict()
+            self.parent = parent
+
+        def enter(self):
+            return PythonGenerator.Scope(self)
+
+        def exit(self):
+            return self.parent if self.parent else self
+
+        def add_variable(self, variable: str):
+            self.variables.add(variable)
+
+        def add_function(self, function: str, args: int):
+            self.functions[function] = args
+
+        def get_variables(self) -> set:
+            return self.variables.union(self.parent.get_variables()) if self.parent else self.variables
+
+        def get_variable(self) -> Optional[str]:
+            variables = self.get_variables()
+            if variables:
+                return random.choice(tuple(variables))
+            else:
+                return None
+
+        def get_functions(self) -> dict:
+            if self.parent:
+                functions = self.parent.get_functions()
+                functions.update(self.functions)
+                return functions
+            else:
+                return dict(self.functions)
+
+        def get_function(self) -> tuple[Optional[str], int]:
+            functions = self.get_functions()
+            if functions:
+                selection = random.choice(tuple(functions.keys()))
+                return selection, functions[selection]
+            else:
+                return None, 0
+
+    def __init__(self, limit_stmt_per_block=10, limit_stmt_depth=4, limit_expr_depth=4, limit_args_per_function=4,
+                 limit_assign_target=1):
+        self.limit_expr_depth = limit_expr_depth
+        self.limit_stmt_depth = limit_stmt_depth
+        self.limit_assign_target = limit_assign_target
+        self.limit_stmt_per_block = limit_stmt_per_block
+        self.limit_args_per_function = limit_args_per_function
+        self.is_in_function = False
+        self.stmt_depth = 0
+        self.expr_depth = 0
+        self.scope = PythonGenerator.Scope()
+        self.identifier_fuzzer = GrammarFuzzer(GENERATIVE_GRAMMAR, start_symbol='<identifier>')
+
+    def reset(self):
+        self.scope = PythonGenerator.Scope()
+        self.is_in_function = False
+        self.stmt_depth = 0
+        self.expr_depth = 0
+
+    def enter_scope(self):
+        self.scope = self.scope.enter()
+
+    def exit_scope(self):
+        self.scope = self.scope.exit()
+
+    def generate(self):
+        return ast.unparse(self.generate_ast())
+
+    def _generate_Module(self) -> Module:
+        return Module(
+            body=self._generate_stmt_list(),
+            type_ignores=[]
+        )
+
+    def _generate_stmt_list(self) -> list[stmt]:
+        stmts = [self._generate_stmt() for _ in range(random.randint(0, self.limit_stmt_per_block))]
+        if len(stmts) > 0:
+            return stmts
+        else:
+            return [self._generate_Pass()]
+
+    def _generate_stmt(self) -> stmt:
+        choices = [
+            self._generate_Assign,
+            self._generate_Expr,
+            self._generate_Pass,
+        ]
+        if self.stmt_depth < self.limit_stmt_depth:
+            choices += [
+                self._generate_FunctionDef,
+                self._generate_If,
+            ]
+        if self.is_in_function:
+            choices.append(self._generate_Return)
+        self.stmt_depth += 1
+        stmt_ = random.choice(choices)()
+        self.stmt_depth -= 1
+        return stmt_
+
+    def _generate_FunctionDef(self) -> FunctionDef:
+        name = self._generate_identifier()
+        self.enter_scope()
+        args = self._generate_arguments()
+        prev = self.is_in_function
+        self.is_in_function = True
+        body = self._generate_stmt_list()
+        self.is_in_function = prev
+        return_ = self._generate_Return()
+        self.exit_scope()
+        self.scope.add_function(name, len(args.args))
+        return FunctionDef(
+            name=name,
+            args=args,
+            body=body + [return_],
+            decorator_list=[],
+            lineno=0,
+        )
+
+    def _generate_If(self) -> If:
+        self.enter_scope()
+        body = self._generate_stmt_list()
+        self.exit_scope()
+        self.enter_scope()
+        orelse = self._generate_stmt_list()
+        self.exit_scope()
+        return If(
+            test=self._generate_expr(),
+            body=body,
+            orelse=orelse,
+        )
+
+    def _generate_Assign(self) -> Assign:
+        targets = self._generate_targets()
+        if len(targets) > 1:
+            value = Tuple(
+                elts=[self._generate_expr() for _ in range(len(targets))]
+            )
+        else:
+            value = self._generate_expr()
+        return Assign(
+            targets=targets,
+            value=value,
+            lineno=0,
+        )
+
+    def _generate_Expr(self) -> Expr:
+        return Expr(
+            value=self._generate_expr()
+        )
+
+    @staticmethod
+    def _generate_Pass() -> Pass:
+        return Pass()
+
+    def _generate_Return(self) -> Return:
+        return Return(
+            value=self._generate_expr()
+        )
+
+    def _generate_identifier(self) -> str:
+        identifier = self.identifier_fuzzer.fuzz()
+        while identifier in ['as', 'def', 'in', 'is', 'not', 'if', 'match', 'case', 'class', 'while', 'for', 'else',
+                             'try', 'finally', 'except', 'or', 'and']:
+            identifier = self.identifier_fuzzer.fuzz()
+        return identifier
+
+    def _generate_arguments(self) -> arguments:
+        return arguments(
+            args=[self._generate_arg() for _ in range(random.randint(0, self.limit_args_per_function))],
+            posonlyargs=[],
+            defaults=[],
+            kwonlyargs=[],
+        )
+
+    def _generate_expr(self) -> expr:
+        choices = [
+            self._generate_Constant,
+            self._generate_Name,
+        ]
+        if self.expr_depth < self.limit_expr_depth:
+            choices += [
+                self._generate_BoolOp,
+                self._generate_BinOp,
+                self._generate_UnaryOp,
+                self._generate_Compare,
+                self._generate_Call,
+            ]
+        self.expr_depth += 1
+        expr_ = random.choice(choices)()
+        self.expr_depth -= 1
+        return expr_
+
+    def _generate_targets(self) -> list[Name]:
+        return [Name(id=self._generate_identifier()) for _ in
+                range(0, 1 + random.randrange(0, self.limit_assign_target))]
+
+    def _generate_arg(self) -> arg:
+        identifier = self._generate_identifier()
+        while identifier in self.scope.variables:
+            identifier = self._generate_identifier()
+        self.scope.add_variable(identifier)
+        return arg(
+            arg=identifier
+        )
+
+    def _generate_BoolOp(self) -> BoolOp:
+        return BoolOp(
+            op=random.choice((And(), Or())),
+            values=[self._generate_expr(), self._generate_expr()]
+        )
+
+    def _generate_BinOp(self) -> BinOp:
+        return BinOp(
+            left=self._generate_expr(),
+            op=random.choice((Add(), Sub(), Mult())),
+            right=self._generate_expr()
+        )
+
+    def _generate_UnaryOp(self) -> UnaryOp:
+        return UnaryOp(
+            op=random.choice((Not(), UAdd(), USub())),
+            operand=self._generate_expr()
+        )
+
+    def _generate_Compare(self) -> Compare:
+        return Compare(
+            left=self._generate_expr(),
+            ops=[random.choice((Eq(), NotEq(), Lt(), LtE(), Gt(), GtE()))],
+            comparators=[self._generate_expr()]
+        )
+
+    def _generate_Call(self) -> Union[Call | expr]:
+        function, num_args = self.scope.get_function()
+        if function:
+            return Call(
+                func=Name(id=function),
+                args=[self._generate_expr() for _ in range(num_args)],
+                keywords=[],
+            )
+        else:
+            return self._generate_expr()
+
+    @staticmethod
+    def _generate_Constant() -> Constant:
+        return Constant(
+            value=random.randint(0, 10)
+        )
+
+    def _generate_Name(self) -> Union[Name | Constant]:
+        variable = self.scope.get_variable()
+        if variable:
+            return Name(id=variable)
+        else:
+            return self._generate_Constant()
+
+    def generate_ast(self) -> AST:
+        return self._generate_Module()
+
+
+GRAMMAR: Grammar = {
     '<start>': ['<mod>'],
     '<mod>': [
         '<Module>',
@@ -1613,116 +1881,158 @@ grammar: Grammar = {
         '',
         '<chars><char>'
     ],
-    '<char>': srange(string.printable)
+    '<char>': srange(string.digits + string.ascii_letters + string.punctuation) +
+              [' ', '\\t', '\\n', '\\r', '\\v', '\\f']
 }
 
-assert is_valid_grammar(grammar)
+assert is_valid_grammar(GRAMMAR)
 
-generative_grammar: Grammar = dict(grammar)
+GENERATIVE_GRAMMAR: Grammar = dict(GRAMMAR)
 
-generative_grammar['<mod>'] = ['<Module>']
-del generative_grammar['<Interactive>']
-del generative_grammar['<Expression>']
-del generative_grammar['<FunctionType>']
-del generative_grammar['<Yield>']
-del generative_grammar['<Match>']
-del generative_grammar['<AugAssign>']
-del generative_grammar['<YieldFrom>']
-del generative_grammar['<GeneratorExp>']
-del generative_grammar['<ListComp>']
-del generative_grammar['<Try>']
-del generative_grammar['<DictComp>']
-del generative_grammar['<AnnAssign>']
-del generative_grammar['<Break>']
-del generative_grammar['<With>']
-del generative_grammar['<Await>']
-del generative_grammar['<Global>']
-del generative_grammar['<Lambda>']
-del generative_grammar['<ClassDef>']
-del generative_grammar['<Assert>']
-del generative_grammar['<AsyncWith>']
-del generative_grammar['<Starred>']
+GENERATIVE_GRAMMAR['<mod>'] = ['<Module>']
+del GENERATIVE_GRAMMAR['<Interactive>']
+del GENERATIVE_GRAMMAR['<Expression>']
+del GENERATIVE_GRAMMAR['<FunctionType>']
+del GENERATIVE_GRAMMAR['<Yield>']
+del GENERATIVE_GRAMMAR['<Match>']
+del GENERATIVE_GRAMMAR['<AugAssign>']
+del GENERATIVE_GRAMMAR['<YieldFrom>']
+del GENERATIVE_GRAMMAR['<GeneratorExp>']
+del GENERATIVE_GRAMMAR['<ListComp>']
+del GENERATIVE_GRAMMAR['<Try>']
+del GENERATIVE_GRAMMAR['<DictComp>']
+del GENERATIVE_GRAMMAR['<AnnAssign>']
+del GENERATIVE_GRAMMAR['<Break>']
+del GENERATIVE_GRAMMAR['<With>']
+del GENERATIVE_GRAMMAR['<Await>']
+del GENERATIVE_GRAMMAR['<Global>']
+del GENERATIVE_GRAMMAR['<Lambda>']
+del GENERATIVE_GRAMMAR['<ClassDef>']
+del GENERATIVE_GRAMMAR['<Assert>']
+del GENERATIVE_GRAMMAR['<AsyncWith>']
+del GENERATIVE_GRAMMAR['<Starred>']
 # del generative_grammar['<TryStar>']
-del generative_grammar['<Raise>']
-del generative_grammar['<JoinedStr>']
-del generative_grammar['<Dict>']
-del generative_grammar['<NamedExpr>']
-del generative_grammar['<Delete>']
-del generative_grammar['<AsyncFor>']
-del generative_grammar['<FormattedValue>']
-del generative_grammar['<excepthandler_list>']
-del generative_grammar['<match_case_list>']
-del generative_grammar['<Set>']
-del generative_grammar['<Continue>']
-del generative_grammar['<Nonlocal>']
-del generative_grammar['<withitem_list>']
-del generative_grammar['<While>']
-del generative_grammar['<AsyncFunctionDef>']
-del generative_grammar['<SetComp>']
-del generative_grammar['<identifier_list>']
-del generative_grammar['<MatchSequence>']
-del generative_grammar['<MatchStar>']
-del generative_grammar['<ExceptHandler>']
-del generative_grammar['<pattern>']
-del generative_grammar['<identifiers>']
-del generative_grammar['<match_cases>']
-del generative_grammar['<MatchSingleton>']
-del generative_grammar['<MatchValue>']
-del generative_grammar['<comprehension_list>']
-del generative_grammar['<match_case>']
-del generative_grammar['<MatchMapping>']
-del generative_grammar['<MatchOr>']
-del generative_grammar['<MatchClass>']
-del generative_grammar['<MatchAs>']
-del generative_grammar['<pattern_list>']
-del generative_grammar['<comprehension>']
-del generative_grammar['<excepthandler>']
-del generative_grammar['<withitem>']
-del generative_grammar['<patterns>']
-del generative_grammar['<withitems>']
-del generative_grammar['<excepthandlers>']
-del generative_grammar['<comprehensions>']
-del generative_grammar['<Attribute>']
-del generative_grammar['<optional_pattern>']
-generative_grammar['<stmt>'] = [
+del GENERATIVE_GRAMMAR['<Raise>']
+del GENERATIVE_GRAMMAR['<JoinedStr>']
+del GENERATIVE_GRAMMAR['<Dict>']
+del GENERATIVE_GRAMMAR['<NamedExpr>']
+del GENERATIVE_GRAMMAR['<Delete>']
+del GENERATIVE_GRAMMAR['<AsyncFor>']
+del GENERATIVE_GRAMMAR['<FormattedValue>']
+del GENERATIVE_GRAMMAR['<excepthandler_list>']
+del GENERATIVE_GRAMMAR['<match_case_list>']
+del GENERATIVE_GRAMMAR['<Set>']
+del GENERATIVE_GRAMMAR['<Continue>']
+del GENERATIVE_GRAMMAR['<Nonlocal>']
+del GENERATIVE_GRAMMAR['<withitem_list>']
+del GENERATIVE_GRAMMAR['<While>']
+del GENERATIVE_GRAMMAR['<AsyncFunctionDef>']
+del GENERATIVE_GRAMMAR['<SetComp>']
+del GENERATIVE_GRAMMAR['<identifier_list>']
+del GENERATIVE_GRAMMAR['<MatchSequence>']
+del GENERATIVE_GRAMMAR['<MatchStar>']
+del GENERATIVE_GRAMMAR['<ExceptHandler>']
+del GENERATIVE_GRAMMAR['<pattern>']
+del GENERATIVE_GRAMMAR['<identifiers>']
+del GENERATIVE_GRAMMAR['<match_cases>']
+del GENERATIVE_GRAMMAR['<MatchSingleton>']
+del GENERATIVE_GRAMMAR['<MatchValue>']
+del GENERATIVE_GRAMMAR['<comprehension_list>']
+del GENERATIVE_GRAMMAR['<match_case>']
+del GENERATIVE_GRAMMAR['<MatchMapping>']
+del GENERATIVE_GRAMMAR['<MatchOr>']
+del GENERATIVE_GRAMMAR['<MatchClass>']
+del GENERATIVE_GRAMMAR['<MatchAs>']
+del GENERATIVE_GRAMMAR['<pattern_list>']
+del GENERATIVE_GRAMMAR['<comprehension>']
+del GENERATIVE_GRAMMAR['<excepthandler>']
+del GENERATIVE_GRAMMAR['<withitem>']
+del GENERATIVE_GRAMMAR['<patterns>']
+del GENERATIVE_GRAMMAR['<withitems>']
+del GENERATIVE_GRAMMAR['<excepthandlers>']
+del GENERATIVE_GRAMMAR['<comprehensions>']
+del GENERATIVE_GRAMMAR['<Attribute>']
+del GENERATIVE_GRAMMAR['<optional_pattern>']
+GENERATIVE_GRAMMAR['<stmt>'] = [
     '<FunctionDef>',
     '<Return>',
     '<Assign>',
-    '<For>',
+    # '<For>',
     '<If>',
-    '<Import>',
-    '<ImportFrom>',
+    # '<Import>',
+    # '<ImportFrom>',
     '<Expr>',
     '<Pass>',
 ]
-generative_grammar['<expr>'] = [
+GENERATIVE_GRAMMAR['<expr>'] = [
     '<BoolOp>',
     '<BinOp>',
     '<UnaryOp>',
-    '<IfExp>',
+    # '<IfExp>',
     '<Compare>',
     '<Call>',
     '<Constant>',
-    '<Subscript>',
+    # '<Subscript>',
     '<Name>',
-    '<List>',
-    '<Tuple>'
+    # '<List>',
+    # '<Tuple>'
 ]
+del GENERATIVE_GRAMMAR['<For>']
+del GENERATIVE_GRAMMAR['<Import>']
+del GENERATIVE_GRAMMAR['<ImportFrom>']
+del GENERATIVE_GRAMMAR['<IfExp>']
+del GENERATIVE_GRAMMAR['<Subscript>']
+del GENERATIVE_GRAMMAR['<List>']
+del GENERATIVE_GRAMMAR['<Tuple>']
+del GENERATIVE_GRAMMAR['<optional_int>']
+del GENERATIVE_GRAMMAR['<alias_list>']
+del GENERATIVE_GRAMMAR['<aliases>']
+del GENERATIVE_GRAMMAR['<alias>']
+del GENERATIVE_GRAMMAR['<Slice>']
 
-assert is_valid_grammar(generative_grammar)
+assert is_valid_grammar(GENERATIVE_GRAMMAR)
 
-constraints = '''
-# variable defined before use
-forall <Name> name:
-    exists <Assign> assign:
-        in(name, assign.<expr_list>) or
-        exists <Name> name_def in assign:
-            name = name_def and 
-            
-            exists <FunctionDef> function:
-                in(name, function) and (
-                    (in(name_def, function) and before(name_def, name))
-                    or
-                    not exists <FunctionDef>
-                )
-'''
+GENERATOR = PythonGenerator()
+
+# CONSTRAINT_VARIABLE_DEF_USE = parse_isla('''
+# # variable defined before use
+# forall <Name> name: (
+#     (
+#         exists <FunctionDef> function: (
+#             inside(name, function) and
+#             exists <arg> arg in function: (
+#                 inside(arg, function.<arguments>) and
+#                 (= arg name)
+#             )
+#         )
+#     ) or
+#     (
+#         exists <Assign> assign: (
+#             inside(name, assign.<expr_list>) or
+#             exists <Name> name_def in assign: (
+#                 inside(name_def, assign.<expr_list>) and
+#                 (= name name_def) and
+#                 before(name_def, name) and
+#                 not exists <FunctionDef> function: (
+#                     inside(name_def, function) and
+#                     not inside(name, function)
+#                 )
+#             )
+#         )
+#     )
+# )
+# ''', grammar=grammar, structural_predicates={isla_predicates.BEFORE_PREDICATE, isla_predicates.IN_TREE_PREDICATE})
+#
+# CONSTRAINT_ASSIGN_ONLY_NAME = parse_isla('''
+# # variable defined by name only
+# forall <Assign> assign: (
+#     forall <expr> expr in assign: (
+#         inside(expr, assign.<expr_list>) implies
+#         exists <Name> name in expr: (
+#             direct_child(name, expr)
+#         )
+#     )
+# )
+# ''',
+# grammar=grammar,
+# structural_predicates={isla_predicates.DIRECT_CHILD_PREDICATE, isla_predicates.IN_TREE_PREDICATE})

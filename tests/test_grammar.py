@@ -7,7 +7,7 @@ from isla.derivation_tree import DerivationTree
 from isla.parser import EarleyParser
 
 from BugsTest.grammars import antlr, python
-from BugsTest.grammars.visitor import GrammarVisitor
+from BugsTest.grammars.utils import GrammarVisitor
 
 
 class ExprVisitor(GrammarVisitor):
@@ -242,17 +242,17 @@ class TestPython(unittest.TestCase):
         tree = ast.parse(program)
         grammar_source = python.ToGrammarVisitor().visit(tree)
         d = None
-        for derivation_tree in EarleyParser(python.grammar).parse(grammar_source):
+        for derivation_tree in EarleyParser(python.GRAMMAR).parse(grammar_source):
             new_tree = python.ToASTVisitor().visit(DerivationTree.from_parse_tree(derivation_tree))
             self.assertEqual(WHITESPACES.sub('', ast.unparse(tree)), WHITESPACES.sub('', ast.unparse(new_tree)))
 
     def test_valid_grammars(self):
-        self.assertTrue(is_valid_grammar(python.grammar))
-        self.assertTrue(is_valid_grammar(python.generative_grammar))
+        self.assertTrue(is_valid_grammar(python.GRAMMAR))
+        self.assertTrue(is_valid_grammar(python.GENERATIVE_GRAMMAR))
 
     def _test_grammar(self, tree: str, start: str = '<start>'):
         successful = False
-        for _ in EarleyParser(python.grammar, start_symbol=start).parse(tree):
+        for _ in EarleyParser(python.GRAMMAR, start_symbol=start).parse(tree):
             successful = True
         self.assertTrue(successful)
 

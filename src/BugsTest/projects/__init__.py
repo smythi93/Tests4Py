@@ -3,7 +3,7 @@ from configparser import ConfigParser
 from pathlib import Path
 from typing import List, Optional
 
-from BugsTest.tests.generator import UnittestGenerator, SystemtestGenerator
+from BugsTest.tests.generator import UnitTestGenerator, SystemtestGenerator
 from BugsTest.tests.utils import API
 
 bugs = dict()
@@ -33,7 +33,7 @@ class Project:
                  test_cases: List[str], darwin_python_version: Optional[str] = None,
                  test_status_fixed: TestStatus = TestStatus.PASSING,
                  test_status_buggy: TestStatus = TestStatus.FAILING,
-                 unittests: Optional[UnittestGenerator] = None,
+                 unittests: Optional[UnitTestGenerator] = None,
                  systemtests: Optional[SystemtestGenerator] = None,
                  api: Optional[API] = None):
         if project_name not in bugs:

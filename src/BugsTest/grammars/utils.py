@@ -1,12 +1,24 @@
 import re
 from typing import Callable, Any
 
+from fuzzingbook.Grammars import Grammar
 from isla.derivation_tree import DerivationTree
+from isla.parser import EarleyParser
 
 ILLEGAL_CHARS = re.compile(r'[^A-Za-z0-9_]')
 
 
 class GrammarVisitor:
+
+    def __init__(self, grammar: Grammar):
+        self.grammar = grammar
+        self.parser = EarleyParser(self.grammar)
+
+    def visit_string(self, string: str):
+        for tree in self.parser.parse(string):
+            return self.visit(tree)
+        else:
+            raise SyntaxError(f'"{string}" is not parsable with the grammar {self.grammar}')
 
     @staticmethod
     def get_name(value: str):
@@ -20,3 +32,12 @@ class GrammarVisitor:
         method = 'visit_' + self.get_name(node.value)
         visitor: Callable[[DerivationTree], None] = getattr(self, method, self.generic_visit)
         return visitor(node)
+
+
+class Generator:
+
+    def generate(self):
+        NotImplemented()
+
+    def reset(self):
+        NotImplemented()
