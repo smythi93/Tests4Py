@@ -31,6 +31,9 @@ logging.basicConfig(
 )
 
 VERSION_PATTERN = re.compile(r'Installed Python-(?P<v>\d+.\d+.\d+)')
+PYTEST_PATTERN = re.compile(rb'= ((((?P<f>\d+) failed)|((?P<p>\d+) passed)|(\d+ warnings?))(, )?)+ in ')
+UNITTEST_TOTAL_PATTERN = re.compile(rb'Ran (?P<t>\d+) tests? in')
+UNITTEST_FAILED_PATTERN = re.compile(rb'FAILED (failures=(?P<f>\d+))')
 
 
 class Report:
@@ -76,6 +79,14 @@ class TestReport(TestingReport):
         super().__init__(TEST)
 
 
+class GenerateReport(TestingReport):
+
+    def __init__(self, command: str, subcommand: str = None):
+        self.varify_passing: Optional[int] = None
+        self.varify_failing: Optional[int] = None
+        super().__init__(command, subcommand=subcommand)
+
+
 def _setup():
     # TODO setup all projects
     LOGGER.info('Loading projects')
@@ -83,7 +94,7 @@ def _setup():
     pysnooper.register()
 
 
-def _env_on(project: Project, verbose=True):
+def __env_on__(project: Project, verbose=True):
     if verbose:
         LOGGER.setLevel(logging.INFO)
     else:
@@ -134,7 +145,7 @@ def _env_on(project: Project, verbose=True):
     subprocess.run(['pip', 'install', '--upgrade', 'pip'])
 
 
-def _source(script):
+def __source__(script):
     output = subprocess.check_output(f'. {script}; env', shell=True).decode('utf-8')
     env = dict()
     for line in output.splitlines():
@@ -143,7 +154,7 @@ def _source(script):
     os.environ.update(env)
 
 
-def _activating_venv(env_dir: Path, verbose=True):
+def __activating_venv__(env_dir: Path, verbose=True):
     if verbose:
         LOGGER.setLevel(logging.INFO)
     else:
@@ -152,23 +163,42 @@ def _activating_venv(env_dir: Path, verbose=True):
     LOGGER.info('Activating virtual env')
 
     if (env_dir / 'Scripts').exists():
-        _source(env_dir / 'Scripts' / 'activate')
+        __source__(env_dir / 'Scripts' / 'activate')
     else:
         try:
             subprocess.check_call(['dos2unix', '--version'])
         except OSError:
             raise ValueError(f'Please install dos2unix (sudo apt-get dos2unix)')
-        _source(env_dir / 'bin' / 'activate')
+        __source__(env_dir / 'bin' / 'activate')
 
 
-def _deactivating_venv(verbose=True):
+def __deactivating_venv__(verbose=True):
     if verbose:
         LOGGER.setLevel(logging.INFO)
     else:
         LOGGER.setLevel(logging.WARNING)
 
     LOGGER.info('Deactivating virtual env')
-    _source('deactivate')
+    __source__('deactivate')
+
+
+def __get_project__(work_dir: Path) -> Project:
+    LOGGER.info(f'Entering dir {work_dir}')
+    os.chdir(work_dir)
+
+    LOGGER.info(f'Checking whether BugsTest project')
+    bugstest_info = work_dir / 'bugstest_info.ini'
+    bugstest_requirements = work_dir / 'bugstest_requirements.txt'
+    bugstest_setup = work_dir / 'bugstest_setup.sh'
+    if not bugstest_info.exists():
+        raise ValueError(f'No BugsTest project found int {work_dir}, no bugstest_info')
+    elif not bugstest_requirements.exists():
+        raise ValueError(f'No BugsTest project found int {work_dir}, no bugstest_requirements')
+    elif not bugstest_setup.exists():
+        raise ValueError(f'No BugsTest project found int {work_dir}, no bugstest_setup')
+
+    _setup()
+    return projects.load_bug_info(bugstest_info)
 
 
 def bugstest_checkout(project_name: str, bug_id: int, version_id: int = 1, work_dir: Path = DEFAULT_WORK_DIR,
@@ -300,31 +330,16 @@ def bugstest_compile(work_dir: Path = None, verbose: bool = True) -> CompileRepo
 
         current_dir = Path.cwd()
         try:
-            LOGGER.info(f'Entering dir {work_dir}')
-            os.chdir(work_dir)
-
-            LOGGER.info(f'Checking whether BugsTest project')
-            bugstest_info = work_dir / 'bugstest_info.ini'
-            bugstest_requirements = work_dir / 'bugstest_requirements.txt'
-            bugstest_setup = work_dir / 'bugstest_setup.sh'
-            if not bugstest_info.exists():
-                raise ValueError(f'No BugsTest project found int {work_dir}, no bugstest_info')
-            elif not bugstest_requirements.exists():
-                raise ValueError(f'No BugsTest project found int {work_dir}, no bugstest_requirements')
-            elif not bugstest_setup.exists():
-                raise ValueError(f'No BugsTest project found int {work_dir}, no bugstest_setup')
-
-            _setup()
-            project = projects.load_bug_info(bugstest_info)
+            project = __get_project__(work_dir)
             report.project = project
-            _env_on(project, verbose=verbose)
+            __env_on__(project, verbose=verbose)
             env_dir = Path('env')
             shutil.rmtree(env_dir, ignore_errors=True)
 
             LOGGER.info('Creating virtual env')
             subprocess.run(['python', '-m', 'venv', env_dir])
 
-            _activating_venv(env_dir)
+            __activating_venv__(env_dir)
             if sys.platform not in ('win32', 'cygwin'):
                 subprocess.run(['dos2unix', bugstest_requirements])
 
@@ -354,7 +369,7 @@ def bugstest_compile(work_dir: Path = None, verbose: bool = True) -> CompileRepo
 
             report.successful = True
         finally:
-            _deactivating_venv()
+            __deactivating_venv__()
             os.chdir(current_dir)
     except BaseException as e:
         report.raised = e
@@ -400,22 +415,7 @@ def bugstest_test(work_dir: Path = None, single_test: str = None, all_tests: boo
 
         current_dir = Path.cwd()
         try:
-            LOGGER.info(f'Entering dir {work_dir}')
-            os.chdir(work_dir)
-
-            LOGGER.info(f'Checking whether BugsTest project')
-            bugstest_info = work_dir / 'bugstest_info.ini'
-            bugstest_requirements = work_dir / 'bugstest_requirements.txt'
-            bugstest_setup = work_dir / 'bugstest_setup.sh'
-            if not bugstest_info.exists():
-                raise ValueError(f'No BugsTest project found int {work_dir}, no bugstest_info')
-            elif not bugstest_requirements.exists():
-                raise ValueError(f'No BugsTest project found int {work_dir}, no bugstest_requirements')
-            elif not bugstest_setup.exists():
-                raise ValueError(f'No BugsTest project found int {work_dir}, no bugstest_setup')
-
-            _setup()
-            project = projects.load_bug_info(bugstest_info)
+            project = __get_project__(work_dir)
             report.project = project
             if not project.compiled:
                 raise ValueError(f'Project {project.project_name} at {work_dir} was not compiled')
@@ -425,8 +425,8 @@ def bugstest_test(work_dir: Path = None, single_test: str = None, all_tests: boo
             elif not project.buggy and project.test_status_fixed == projects.TestStatus.FAILING:
                 LOGGER.warning(f'The tests will fail on this fixed version {project.project_name}_{project.bug_id}')
 
-            _env_on(project, verbose=verbose)
-            _activating_venv(Path('env'))
+            __env_on__(project, verbose=verbose)
+            __activating_venv__(Path('env'))
 
             command = ['python', '-m']
 
@@ -449,12 +449,37 @@ def bugstest_test(work_dir: Path = None, single_test: str = None, all_tests: boo
                 command.append(single_test)
 
             LOGGER.info(f'Run tests with command {command}')
-            # TODO Get number of tests + failing + passing
-            subprocess.run(command)
+            output = subprocess.run(command, stdout=subprocess.PIPE).stdout
 
-            report.successful = True
+            successful = False
+            if project.testing_framework == TestingFramework.PYTEST:
+                match = PYTEST_PATTERN.search(output)
+                if match:
+                    if match.group('f'):
+                        report.failing = int(match.group('f'))
+                    else:
+                        report.failing = 0
+                    if match.group('p'):
+                        report.passing = int(match.group('p'))
+                    else:
+                        report.passing = 0
+                    report.total = report.failing + report.passing
+                    successful = True
+            elif project.testing_framework == TestingFramework.UNITTEST:
+                number_match = UNITTEST_TOTAL_PATTERN.search(output)
+                failed_match = UNITTEST_FAILED_PATTERN.search(output)
+                if number_match:
+                    report.total = int(number_match.group('n'))
+                if failed_match:
+                    report.failing = int(number_match.group('f'))
+                if number_match and failed_match:
+                    report.passing = report.total - report.failing
+                    successful = True
+            else:
+                raise NotImplementedError(f'No command found for {project.testing_framework.value}')
+            report.successful = successful
         finally:
-            _deactivating_venv()
+            __deactivating_venv__(verbose=verbose)
             os.chdir(current_dir)
     except BaseException as e:
         report.raised = e

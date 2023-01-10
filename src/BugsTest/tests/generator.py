@@ -13,24 +13,33 @@ class GenerationFailed(RuntimeWarning):
     pass
 
 
+class GenerationResult:
+
+    def __init__(self, passing: int = 0, failing: int = 0):
+        self.passing = passing
+        self.failing = failing
+
+
 class TestGenerator:
 
     def __init__(self, failing_probability: float = 0.2):
         self.failing_probability = failing_probability
 
-    def generate_only_passing_tests(self, n: int, path: Path, append: bool = False):
+    def generate_only_passing_tests(self, n: int, path: Path, append: bool = False) -> GenerationResult:
         tmp_probability = self.failing_probability
         self.failing_probability = 0
         self.generate_tests(n, path.with_suffix('_passing'), append)
         self.failing_probability = tmp_probability
+        return GenerationResult(passing=n)
 
-    def generate_only_failing_tests(self, n: int, path: Path, append: bool = False):
+    def generate_only_failing_tests(self, n: int, path: Path, append: bool = False) -> GenerationResult:
         tmp_probability = self.failing_probability
         self.failing_probability = 1
         self.generate_tests(n, path.with_suffix('_failing'), append)
         self.failing_probability = tmp_probability
+        return GenerationResult(failing=n)
 
-    def generate_tests(self, n: int, path: Path, append: bool = False):
+    def generate_tests(self, n: int, path: Path, append: bool = False) -> GenerationResult:
         return NotImplemented
 
 
@@ -66,10 +75,11 @@ class UnitTestGenerator(TestGenerator, ast.NodeVisitor):
         else:
             return self.generic_visit(node)
 
-    def generate_tests(self, n: int, path: Path, append: bool = False):
-        body = list(map(lambda f: self.get_name(*f()),
-                        random.choices([self.generate_failing_test, self.generate_passing_test],
-                                       weights=[self.failing_probability, 1], k=n)))
+    def generate_tests(self, n: int, path: Path, append: bool = False) -> GenerationResult:
+        f = int(n * self.failing_probability)
+        p = n - f
+        body = ([self.get_name(*self.generate_failing_test()) for _ in range(p)] +
+                [self.get_name(*self.generate_failing_test()) for _ in range(f)])
         if path.exists() and path.is_dir():
             raise GenerationFailed(f'{path} is a directory')
         if append and path.exists() and path.is_file():
@@ -103,6 +113,7 @@ class UnitTestGenerator(TestGenerator, ast.NodeVisitor):
 
         with open(path, 'w') as fp:
             fp.write(tests)
+        return GenerationResult(passing=p, failing=f)
 
 
 class SystemTestGenerator(TestGenerator):
@@ -120,15 +131,20 @@ class SystemTestGenerator(TestGenerator):
     def generate_passing_test(self) -> Tuple[str, TestResult]:
         return NotImplemented
 
-    def generate_tests(self, n: int, path: Path, append: bool = False):
+    def generate_tests(self, n: int, path: Path, append: bool = False) -> GenerationResult:
         if path.exists() and not path.is_dir():
             raise GenerationFailed(f'{path} is not a dir')
         if path.exists() and not append:
             shutil.rmtree(path, ignore_errors=True)
             os.makedirs(path, exist_ok=True)
-        for _ in range(n):
-            choice = random.choices([self.generate_failing_test, self.generate_passing_test],
-                                    weights=[self.failing_probability, 1])[0]
-            test, result = choice()
+        f = int(n * self.failing_probability)
+        p = n - f
+        for _ in range(p):
+            test, result = self.generate_passing_test()
             with open(self.get_name(test, result, path), 'w') as fp:
                 fp.write(test)
+        for _ in range(f):
+            test, result = self.generate_only_failing_tests()
+            with open(self.get_name(test, result, path), 'w') as fp:
+                fp.write(test)
+        return GenerationResult(passing=p, failing=f)
