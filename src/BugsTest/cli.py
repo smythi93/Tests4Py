@@ -3,15 +3,8 @@ import os
 import sys
 from pathlib import Path
 
-from BugsTest import framework
-
-CHECKOUT = 'checkout'
-COMPILE = 'compile'
-COVERAGE = 'coverage'
-FUZZ = 'fuzz'
-INFO = 'info'
-MUTATION = 'mutation'
-TEST = 'test'
+from BugsTest.framework import CHECKOUT, COMPILE, COVERAGE, FUZZ, INFO, MUTATION, TEST, UNITTEST, SYSTEMTEST, GENERATE
+from BugsTest.framework import DEFAULT_WORK_DIR, bugstest_test, bugstest_compile, bugstest_checkout
 
 
 def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
@@ -32,6 +25,8 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
     info_parser = commands.add_parser(INFO, help='Get information of a project')
     mutation_parser = commands.add_parser(MUTATION, help='Mutate a project')
     test_parser = commands.add_parser(TEST, help='Run tests on a project')
+    unittest_parser = commands.add_parser(UNITTEST, help='The unittest subcommand')
+    systemtest_parser = commands.add_parser(SYSTEMTEST, help='The systemtest subcommand')
 
     # Checkout
     checkout_parser.add_argument('-p', dest='project_name', required=True,
@@ -42,10 +37,10 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
                                       'Run bugstest info to check bug id number')
     checkout_parser.add_argument('-v', dest='version_id', type=int, default=1,
                                  help='The version id that shall be checked out (1 fixed, 0 buggy, default will be 1)')
-    checkout_parser.add_argument('-w', dest='work_dir', default=framework.DEFAULT_WORK_DIR,
+    checkout_parser.add_argument('-w', dest='work_dir', default=DEFAULT_WORK_DIR,
                                  help='The working directory to which the buggy or fixed project version shall be '
                                       'checked out. The working directory has to be either empty or a previously used '
-                                      f'working directory. Default will be ({framework.DEFAULT_WORK_DIR})')
+                                      f'working directory. Default will be ({DEFAULT_WORK_DIR})')
 
     # Compile
     compile_parser.add_argument('-w', dest='work_dir', required=True,
@@ -107,20 +102,32 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
                                   'Default will run the test case that relevant from bugs')
     test_parser.add_argument('-o', dest='output', default=None, help='Output test results to file')
 
+    # unittest
+    unittest_commands = unittest_parser.add_subparsers(help='The subcommand of the unittest to execute',
+                                                       dest='unittest_command', required=True)
+    unittest_generate = unittest_commands.add_parser(GENERATE, help='Generate new unittests')
+    unittest_test = unittest_commands.add_parser(TEST, help='Run the unittests')
+
+    # systemtest
+    systemtest_commands = systemtest_parser.add_subparsers(help='The subcommand of the systemtest to execute',
+                                                           dest='systemtest_command', required=True)
+    systemtest_generate = systemtest_commands.add_parser(GENERATE, help='Generate new systemtests')
+    systemtest_test = systemtest_commands.add_parser(TEST, help='Run the systemtests')
+
     args = arguments.parse_args(args or sys.argv[1:])
 
     if args.command == CHECKOUT:
-        framework.bugstest_checkout(project_name=args.project_name,
-                                    bug_id=args.bug_id,
-                                    version_id=args.version_id,
-                                    work_dir=Path(args.work_dir).absolute())
+        bugstest_checkout(project_name=args.project_name,
+                          bug_id=args.bug_id,
+                          version_id=args.version_id,
+                          work_dir=Path(args.work_dir).absolute())
     elif args.command == COMPILE:
-        framework.bugstest_compile(work_dir=Path(args.work_dir).absolute())
+        bugstest_compile(work_dir=Path(args.work_dir).absolute())
     elif args.command == TEST:
-        framework.bugstest_test(work_dir=Path(args.work_dir).absolute(),
-                                single_test=args.single_test,
-                                all_tests=args.all_tests,
-                                output=Path(args.output) if args.output else None)
+        bugstest_test(work_dir=Path(args.work_dir).absolute(),
+                      single_test=args.single_test,
+                      all_tests=args.all_tests,
+                      output=Path(args.output) if args.output else None)
     else:
         raise NotImplementedError(f'Command {args.command} not implemented')
 

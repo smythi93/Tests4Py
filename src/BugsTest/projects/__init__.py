@@ -3,7 +3,7 @@ from configparser import ConfigParser
 from pathlib import Path
 from typing import List, Optional
 
-from BugsTest.tests.generator import UnitTestGenerator, SystemtestGenerator
+from BugsTest.tests.generator import UnitTestGenerator, SystemTestGenerator
 from BugsTest.tests.utils import API
 
 bugs = dict()
@@ -34,7 +34,7 @@ class Project:
                  test_status_fixed: TestStatus = TestStatus.PASSING,
                  test_status_buggy: TestStatus = TestStatus.FAILING,
                  unittests: Optional[UnitTestGenerator] = None,
-                 systemtests: Optional[SystemtestGenerator] = None,
+                 systemtests: Optional[SystemTestGenerator] = None,
                  api: Optional[API] = None):
         if project_name not in bugs:
             bugs[project_name] = dict()
@@ -95,5 +95,5 @@ def load_bug_info(path: Path) -> Project:
 
 
 __all__ = [
-    'Status', 'TestingFramework', 'Project', 'ansible', 'pysnooper'
+    'Status', 'TestStatus', 'TestingFramework', 'Project', 'ansible', 'pysnooper'
 ]

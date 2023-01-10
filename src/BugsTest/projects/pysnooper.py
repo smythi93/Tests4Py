@@ -8,7 +8,7 @@ from typing import List, Optional
 
 from BugsTest.grammars import python
 from BugsTest.projects import Project, Status, TestingFramework, TestStatus
-from BugsTest.tests.generator import UnitTestGenerator, SystemtestGenerator
+from BugsTest.tests.generator import UnitTestGenerator, SystemTestGenerator
 from BugsTest.tests.utils import API, TestResult
 
 
@@ -20,7 +20,7 @@ class PySnooper(Project):
                  test_status_fixed: TestStatus = TestStatus.PASSING,
                  test_status_buggy: TestStatus = TestStatus.FAILING,
                  unittests: Optional[UnitTestGenerator] = None,
-                 systemtests: Optional[SystemtestGenerator] = None,
+                 systemtests: Optional[SystemTestGenerator] = None,
                  api: Optional[API] = None):
         super().__init__(bug_id=bug_id, project_name='pysnooper', github_url='https://github.com/cool-RR/PySnooper',
                          status=Status.OK, cause='N.A.',
@@ -44,9 +44,15 @@ class PySnooperApi(API):
             test = ast.unparse(self.translator.visit_string(test))
             with tempfile.NamedTemporaryFile('w+', suffix='.py', delete=False) as fp:
                 fp.write(test)
-            process = subprocess.run(['python3.8', fp.name], timeout=self.default_timeout)
+            process = subprocess.run(['python3.8', fp.name], stdout=subprocess.PIPE, timeout=self.default_timeout)
             os.remove(fp.name)
-            return TestResult.FAILING if process.returncode else TestResult.PASSING
+            if process.returncode:
+                if b"NameError: name 'output_path' is not defined" in process.stdout:
+                    return TestResult.FAILING
+                else:
+                    return TestResult.UNKNOWN
+            else:
+                return TestResult.PASSING
         except (subprocess.TimeoutExpired, SyntaxError):
             return TestResult.UNKNOWN
 
@@ -84,7 +90,5 @@ def register():
         fixed_commit_id='15555ed760000b049aff8fecc79d29339c1224c3',
         test_file=[Path('tests', 'test_pysnooper.py')],
         test_cases=['tests/test_pysnooper.py::test_file_output'],
-        test_status_fixed=TestStatus.ERROR,
-        test_status_buggy=TestStatus.ERROR,
         api=PySnooperApi(),
     )
