@@ -3,6 +3,9 @@ import unittest
 from abc import abstractmethod, ABC
 from pathlib import Path
 
+from fuzzingbook.Grammars import Grammar
+from fuzzingbook.Parser import EarleyParser
+
 
 class DiversityTest:
 
@@ -67,14 +70,21 @@ class Systemtests(DiversityTest, ABC):
     def parse(self, test: str) -> str:
         return test
 
-    def write(self, path: Path):
+    # noinspection PyMethodMayBeStatic
+    def verify(self, test: str, grammar: Grammar = None) -> str:
+        if grammar is not None:
+            for _ in EarleyParser(grammar).parse(test):
+                pass
+        return test
+
+    def write(self, path: Path, grammar: Grammar = None):
         if not path.exists():
             os.makedirs(path, exist_ok=True)
         if not path.is_dir():
             raise ValueError(f'Cannot write systemtests {path} is a dir')
         for i, test in enumerate(self.tests):
             with (path / f'{"passing" if self.passing else "failing"}_test_diversity_{i}').open('w') as fp:
-                fp.write(self.parse(test))
+                fp.write(self.verify(self.parse(test), grammar=grammar))
 
 
 class Unittests(unittest.TestCase, DiversityTest):

@@ -701,6 +701,9 @@ class ToASTVisitor(PythonVisitor):
     def visit_int(self, node: DerivationTree) -> int:
         return int(node.to_string())
 
+    def visit_string(self, node: DerivationTree) -> str:
+        return node.children[0].to_string()
+
     def visit_identifier(self, node: DerivationTree) -> str:
         return node.to_string()
 
@@ -929,7 +932,7 @@ class ToGrammarVisitor(NodeVisitor):
         return f'JoinedStr({self.visit_list(node.values)})'
 
     def visit_Constant(self, node: Constant) -> str:
-        return f'Constant({node.value},' \
+        return f'Constant({repr(node.value)},' \
                f'{"" if node.kind is None else node.kind})'
 
     def visit_Attribute(self, node: Attribute) -> str:
@@ -1881,8 +1884,8 @@ GRAMMAR: Grammar = {
         '',
         '<chars><char>'
     ],
-    '<char>': srange(string.digits + string.ascii_letters + string.punctuation) +
-              [' ', '\\t', '\\n', '\\r', '\\v', '\\f']
+    '<char>': (srange(string.digits + string.ascii_letters + string.punctuation) +
+               [' ', '\\t', '\\n', '\\r', '\\v', '\\f'])
 }
 
 assert is_valid_grammar(GRAMMAR)
@@ -1951,7 +1954,6 @@ del GENERATIVE_GRAMMAR['<patterns>']
 del GENERATIVE_GRAMMAR['<withitems>']
 del GENERATIVE_GRAMMAR['<excepthandlers>']
 del GENERATIVE_GRAMMAR['<comprehensions>']
-del GENERATIVE_GRAMMAR['<Attribute>']
 del GENERATIVE_GRAMMAR['<optional_pattern>']
 GENERATIVE_GRAMMAR['<stmt>'] = [
     '<FunctionDef>',
@@ -1959,8 +1961,8 @@ GENERATIVE_GRAMMAR['<stmt>'] = [
     '<Assign>',
     # '<For>',
     '<If>',
-    # '<Import>',
-    # '<ImportFrom>',
+    '<Import>',
+    '<ImportFrom>',
     '<Expr>',
     '<Pass>',
 ]
@@ -1972,22 +1974,17 @@ GENERATIVE_GRAMMAR['<expr>'] = [
     '<Compare>',
     '<Call>',
     '<Constant>',
+    '<Attribute>',
     # '<Subscript>',
     '<Name>',
     # '<List>',
     # '<Tuple>'
 ]
 del GENERATIVE_GRAMMAR['<For>']
-del GENERATIVE_GRAMMAR['<Import>']
-del GENERATIVE_GRAMMAR['<ImportFrom>']
 del GENERATIVE_GRAMMAR['<IfExp>']
 del GENERATIVE_GRAMMAR['<Subscript>']
 del GENERATIVE_GRAMMAR['<List>']
 del GENERATIVE_GRAMMAR['<Tuple>']
-del GENERATIVE_GRAMMAR['<optional_int>']
-del GENERATIVE_GRAMMAR['<alias_list>']
-del GENERATIVE_GRAMMAR['<aliases>']
-del GENERATIVE_GRAMMAR['<alias>']
 del GENERATIVE_GRAMMAR['<Slice>']
 
 assert is_valid_grammar(GENERATIVE_GRAMMAR)

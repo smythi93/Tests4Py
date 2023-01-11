@@ -85,8 +85,8 @@ class TestReport(TestingReport):
 class GenerateReport(TestingReport):
 
     def __init__(self, command: str, subcommand: str = None):
-        self.varify_passing: Optional[int] = None
-        self.varify_failing: Optional[int] = None
+        self.verify_passing: Optional[int] = None
+        self.verify_failing: Optional[int] = None
         super().__init__(command, subcommand=subcommand)
 
 

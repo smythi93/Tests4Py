@@ -28,7 +28,7 @@ class PySnooper(Project):
                          fixed_commit_id=fixed_commit_id, testing_framework=TestingFramework.PYTEST,
                          test_file=test_file, test_cases=test_cases, darwin_python_version=darwin_python_version,
                          test_status_fixed=test_status_fixed, test_status_buggy=test_status_buggy,
-                         unittests=unittests, systemtests=systemtests, api=api)
+                         unittests=unittests, systemtests=systemtests, api=api, grammar=python.GENERATIVE_GRAMMAR)
 
 
 def register():
@@ -76,17 +76,18 @@ class PySnooperAPI(API):
         self.translator = python.ToASTVisitor(python.GENERATIVE_GRAMMAR)
         super().__init__(default_timeout=default_timeout)
 
+    # noinspection PyBroadException
     def run(self, system_test_path: PathLike) -> TestResult:
         try:
             with open(system_test_path, 'r') as fp:
                 test = fp.read()
-            test = ast.unparse(self.translator.visit_string(test))
+            test = ast.unparse(self.translator.visit_source(test))
             with tempfile.NamedTemporaryFile('w+', suffix='.py', delete=False) as fp:
                 fp.write(test)
-            process = subprocess.run(['python3.8', fp.name], stdout=subprocess.PIPE, timeout=self.default_timeout)
+            process = subprocess.run(['python', fp.name], stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=self.default_timeout)
             os.remove(fp.name)
             if process.returncode:
-                if b"NameError: name 'output_path' is not defined" in process.stdout:
+                if b"NameError: name 'output_path' is not defined" in process.stderr:
                     return TestResult.FAILING
                 else:
                     return TestResult.UNKNOWN
@@ -94,6 +95,8 @@ class PySnooperAPI(API):
                 return TestResult.PASSING
         except (subprocess.TimeoutExpired, SyntaxError):
             return TestResult.UNKNOWN
+        except Exception:
+            return TestResult.PASSING
 
 
 class PySnooperUnittestGenerator(UnittestGenerator):

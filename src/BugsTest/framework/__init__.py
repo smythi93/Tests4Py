@@ -128,8 +128,8 @@ def bugstest_checkout(project_name: str, bug_id: int, version_id: int = 1, work_
 
         if project.systemtests:
             module = getattr(getattr(getattr(resources, project.project_name), f'bug_{project.bug_id}'), 'systemtests')
-            module.TestsPassing().write(work_location / DEFAULT_SYSTEMTESTS_DIVERSITY_PATH)
-            module.TestsFailing().write(work_location / DEFAULT_SYSTEMTESTS_DIVERSITY_PATH)
+            module.TestsPassing().write(work_location / DEFAULT_SYSTEMTESTS_DIVERSITY_PATH, grammar=project.grammar)
+            module.TestsFailing().write(work_location / DEFAULT_SYSTEMTESTS_DIVERSITY_PATH, grammar=project.grammar)
 
         report.successful = True
     except BaseException as e:

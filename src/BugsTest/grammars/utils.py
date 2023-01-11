@@ -14,11 +14,11 @@ class GrammarVisitor:
         self.grammar = grammar
         self.parser = EarleyParser(self.grammar)
 
-    def visit_string(self, string: str):
-        for tree in self.parser.parse(string):
-            return self.visit(tree)
+    def visit_source(self, source: str):
+        for tree in self.parser.parse(source):
+            return self.visit(DerivationTree.from_parse_tree(tree))
         else:
-            raise SyntaxError(f'"{string}" is not parsable with the grammar {self.grammar}')
+            raise SyntaxError(f'"{source}" is not parsable with the grammar {self.grammar}')
 
     @staticmethod
     def get_name(value: str):

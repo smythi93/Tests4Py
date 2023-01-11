@@ -241,18 +241,21 @@ class TestPython(unittest.TestCase):
     def _test_translation(self, program: str):
         tree = ast.parse(program)
         grammar_source = python.ToGrammarVisitor().visit(tree)
-        d = None
         for derivation_tree in EarleyParser(python.GRAMMAR).parse(grammar_source):
-            new_tree = python.ToASTVisitor().visit(DerivationTree.from_parse_tree(derivation_tree))
+            new_tree = python.ToASTVisitor(python.GRAMMAR).visit(DerivationTree.from_parse_tree(derivation_tree))
             self.assertEqual(WHITESPACES.sub('', ast.unparse(tree)), WHITESPACES.sub('', ast.unparse(new_tree)))
 
     def test_valid_grammars(self):
         self.assertTrue(is_valid_grammar(python.GRAMMAR))
         self.assertTrue(is_valid_grammar(python.GENERATIVE_GRAMMAR))
 
-    def _test_grammar(self, tree: str, start: str = '<start>'):
+    def _test_grammar(self, tree: str, start: str = '<start>', full=True):
+        if full:
+            grammar = python.GRAMMAR
+        else:
+            grammar = python.GENERATIVE_GRAMMAR
         successful = False
-        for _ in EarleyParser(python.GRAMMAR, start_symbol=start).parse(tree):
+        for _ in EarleyParser(grammar, start_symbol=start).parse(tree):
             successful = True
         self.assertTrue(successful)
 
@@ -271,6 +274,14 @@ class TestPython(unittest.TestCase):
 
     def test_grammar_5(self):
         self._test_grammar('ExceptHandler(,,[Pass()])', '<ExceptHandler>')
+
+    def test_grammar_6(self):
+        self._test_grammar(
+            'Module([Import([alias(pysnooper,)]),FunctionDef(function_8,arguments([],[arg(x,,)],,[],[],,[]),'
+            '[Assign([Name(i)],Constant(0,),),While(Compare(Name(i),[Lt()],[Call(Name(len),[Name(x)],[])]),'
+            '[AugAssign(Name(i),Add(),Constant(1,))],[]),Return(Name(i))],[Call(Attribute(Name(pysnooper),'
+            'snoop),[],[])],,),Assign([Name(result)],Call(Name(function_8),[List([Constant(1,),Constant(2,),'
+            'Constant(3,),Constant(4,)])],[]),)],[])', full=False)
 
     def test_translation_1(self):
         self._test_translation(PYTHON_PROGRAM_1)

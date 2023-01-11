@@ -29,7 +29,7 @@ import pysnooper
 def function_1(foo):
     x = 42
     y = 2
-    return x / y
+    return x + y
     
 result = function_1('test')
 '''
@@ -93,7 +93,7 @@ def function_5(m, n):
     else:
         return function_5(m - 1, function_5(m, n - 1))
 
-result = function_2(3, 2)
+result = function_5(3, 2)
 '''
 
     def test_diversity_6(self):
@@ -126,11 +126,11 @@ import pysnooper
 @pysnooper.snoop('test.log')
 def function_8(x):
     i = 0
-    while i < len(x):
-        i += 1
+    j = len(x)
+    i = j + 1
     return i
 
-result = function_8([1, 2, 3, 4])
+result = function_8('test')
 '''
 
     def test_diversity_9(self):
@@ -140,11 +140,13 @@ import pysnooper
 @pysnooper.snoop('test.log')
 def function_9(x):
     r = 0
-    for i in x:
-        r += i
+    if len(x) > 4:
+        r = 2 * len(x)
+    else:
+        r = len(x) 
     return r
 
-result = function_9([1, 2, 3, 4])
+result = function_9('test')
 '''
 
     def test_diversity_10(self):
@@ -177,7 +179,7 @@ import pysnooper
 def function_1(foo):
     x = 42
     y = 2
-    return x / y
+    return x + y
 
 result = function_1('test')
 '''
@@ -241,7 +243,7 @@ def function_5(m, n):
     else:
         return function_5(m - 1, function_5(m, n - 1))
 
-result = function_2(3, 2)
+result = function_5(3, 2)
 '''
 
     def test_diversity_6(self):
@@ -274,11 +276,11 @@ import pysnooper
 @pysnooper.snoop()
 def function_8(x):
     i = 0
-    while i < len(x):
-        i += 1
+    j = len(x)
+    i = j + 1
     return i
 
-result = function_8([1, 2, 3, 4])
+result = function_8('test')
 '''
 
     def test_diversity_9(self):
@@ -288,11 +290,13 @@ import pysnooper
 @pysnooper.snoop()
 def function_9(x):
     r = 0
-    for i in x:
-        r += i
+    if len(x) > 4:
+        r = 2 * len(x)
+    else:
+        r = len(x) 
     return r
 
-result = function_9([1, 2, 3, 4])
+result = function_9('test')
 '''
 
     def test_diversity_10(self):

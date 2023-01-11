@@ -7,7 +7,7 @@ from typing import Union
 from BugsTest.framework import utils
 from BugsTest.projects import TestingFramework
 
-DEFAULT_SUB_PATH = 'bugs_test_unittests.py'
+DEFAULT_SUB_PATH = 'bugstest_unittests.py'
 
 
 class UnittestGenerateReport(utils.GenerateReport):
@@ -15,7 +15,7 @@ class UnittestGenerateReport(utils.GenerateReport):
         super().__init__(utils.UNITTEST, subcommand=utils.GENERATE)
 
 
-class UnittestTestReport(utils.GenerateReport):
+class UnittestTestReport(utils.TestingReport):
     def __init__(self):
         super().__init__(utils.UNITTEST, subcommand=utils.TEST)
 
@@ -77,7 +77,7 @@ def bugstest_generate(work_dir: Path = None, path: Path = None, n: int = 1, fail
 
             command = ['python', '-m', TestingFramework.PYTEST.value, path]
             output = subprocess.run(command, stdout=subprocess.PIPE).stdout
-            report.successful, _, report.varify_failing, report.varify_passing = utils.__get_pytest_result__(output)
+            report.successful, _, report.verify_failing, report.verify_passing = utils.__get_pytest_result__(output)
         else:
             report.successful = True
     except BaseException as e:
@@ -107,7 +107,7 @@ def bugstest_test(work_dir: Path = None, path: Path = None, diversity: bool = Tr
 
         if project.unittests is None:
             raise NotImplementedError(
-                f'Unittest generation is not enabled for {project.project_name}_{project.bug_id}')
+                f'Unittest testing is not enabled for {project.project_name}_{project.bug_id}')
 
         if path is None and not diversity:
             path = work_dir / DEFAULT_SUB_PATH

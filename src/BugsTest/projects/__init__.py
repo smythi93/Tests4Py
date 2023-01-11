@@ -3,6 +3,8 @@ from configparser import ConfigParser
 from pathlib import Path
 from typing import List, Optional
 
+from fuzzingbook.Grammars import Grammar
+
 from BugsTest.tests.generator import UnittestGenerator, SystemtestGenerator
 from BugsTest.tests.utils import API
 
@@ -35,7 +37,8 @@ class Project:
                  test_status_buggy: TestStatus = TestStatus.FAILING,
                  unittests: Optional[UnittestGenerator] = None,
                  systemtests: Optional[SystemtestGenerator] = None,
-                 api: Optional[API] = None):
+                 api: Optional[API] = None,
+                 grammar: Optional[Grammar] = None):
         if project_name not in bugs:
             bugs[project_name] = dict()
         bugs[project_name][bug_id] = self
@@ -59,6 +62,7 @@ class Project:
         self.systemtests = systemtests
         self.unittests = unittests
         self.api = api
+        self.grammar = grammar
 
     def write_bug_info(self, path: Path):
         config = ConfigParser()
