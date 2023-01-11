@@ -1,7 +1,6 @@
 import ast
 import hashlib
 import os
-import random
 import shutil
 from pathlib import Path
 from typing import List, Tuple
@@ -43,7 +42,7 @@ class TestGenerator:
         return NotImplemented
 
 
-class UnitTestGenerator(TestGenerator, ast.NodeVisitor):
+class UnittestGenerator(TestGenerator, ast.NodeVisitor):
     CLASS_NAME = 'BugsTestsUnittests'
 
     @staticmethod
@@ -116,12 +115,12 @@ class UnitTestGenerator(TestGenerator, ast.NodeVisitor):
         return GenerationResult(passing=p, failing=f)
 
 
-class SystemTestGenerator(TestGenerator):
+class SystemtestGenerator(TestGenerator):
     DIR = Path('BugsTestsSystemTests')
 
     @staticmethod
     def get_name(test: str, result: TestResult = TestResult.UNKNOWN, directory: Path = None) -> Path:
-        directory = directory if directory else SystemTestGenerator.DIR
+        directory = directory if directory else SystemtestGenerator.DIR
         hash_ = hashlib.md5(test.encode("utf-8")).hexdigest()
         return directory / f'{"failing" if result == TestResult.FAILING else "passing"}_{hash_}'
 

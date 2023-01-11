@@ -3,8 +3,9 @@ import os
 import sys
 from pathlib import Path
 
-from BugsTest.framework import CHECKOUT, COMPILE, COVERAGE, FUZZ, INFO, MUTATION, TEST, UNITTEST, SYSTEMTEST, GENERATE
 from BugsTest.framework import DEFAULT_WORK_DIR, bugstest_test, bugstest_compile, bugstest_checkout
+from BugsTest.framework.utils import CHECKOUT, COMPILE, COVERAGE, FUZZ, INFO, MUTATION, TEST, UNITTEST, SYSTEMTEST, \
+    GENERATE
 
 
 def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):

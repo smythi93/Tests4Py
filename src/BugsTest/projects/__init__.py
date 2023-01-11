@@ -3,7 +3,7 @@ from configparser import ConfigParser
 from pathlib import Path
 from typing import List, Optional
 
-from BugsTest.tests.generator import UnitTestGenerator, SystemTestGenerator
+from BugsTest.tests.generator import UnittestGenerator, SystemtestGenerator
 from BugsTest.tests.utils import API
 
 bugs = dict()
@@ -33,8 +33,8 @@ class Project:
                  test_cases: List[str], darwin_python_version: Optional[str] = None,
                  test_status_fixed: TestStatus = TestStatus.PASSING,
                  test_status_buggy: TestStatus = TestStatus.FAILING,
-                 unittests: Optional[UnitTestGenerator] = None,
-                 systemtests: Optional[SystemTestGenerator] = None,
+                 unittests: Optional[UnittestGenerator] = None,
+                 systemtests: Optional[SystemtestGenerator] = None,
                  api: Optional[API] = None):
         if project_name not in bugs:
             bugs[project_name] = dict()
@@ -95,5 +95,5 @@ def load_bug_info(path: Path) -> Project:
 
 
 __all__ = [
-    'Status', 'TestStatus', 'TestingFramework', 'Project', 'ansible', 'pysnooper'
+    'Status', 'TestStatus', 'TestingFramework', 'Project', 'load_bug_info', 'ansible', 'pysnooper'
 ]

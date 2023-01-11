@@ -1,10 +1,10 @@
+import unittest
+
 import pysnooper
 from python_toolbox import temp_file_tools
 
-from BugsTest.tests.diversity import DiversityTest
 
-
-class PySnooper3TestsFailing(DiversityTest):
+class TestsFailing(unittest.TestCase):
 
     def test_diversity_1(self):
         with temp_file_tools.create_temp_folder(prefix='pysnooper') as folder:
@@ -74,21 +74,16 @@ class PySnooper3TestsFailing(DiversityTest):
             path = folder / 'test_5.log'
 
             @pysnooper.snoop(str(path))
-            def function_5(x, y, z):
-                if y < z:
-                    if x < y:
-                        return y
-                    elif x < z:
-                        return x
+            def function_5(m, n):
+                if m <= 0:
+                    return n + 1
+                elif n <= 0:
+                    return function_5(m - 1, 1)
                 else:
-                    if x > y:
-                        return y
-                    elif x > z:
-                        return x
-                return z
+                    return function_5(m - 1, function_5(m, n - 1))
 
-            result = function_5(2, 3, 1)
-            self.assertEqual(2, result)
+            result = function_5(3, 2)
+            self.assertEqual(29, result)
             self.assertTrue(path.exists())
 
     def test_diversity_6(self):
@@ -153,6 +148,8 @@ class PySnooper3TestsFailing(DiversityTest):
             @pysnooper.snoop(str(path))
             def function_10(n, k):
                 def fac(x):
+                    if x <= 0:
+                        return 1
                     return x * fac(x - 1)
 
                 return fac(n) / (fac(k) * fac(n - k))
@@ -162,7 +159,7 @@ class PySnooper3TestsFailing(DiversityTest):
             self.assertTrue(path.exists())
 
 
-class PySnooper3TestsPassing(DiversityTest):
+class TestsPassing(unittest.TestCase):
 
     def test_diversity_1(self):
         @pysnooper.snoop()
@@ -213,21 +210,16 @@ class PySnooper3TestsPassing(DiversityTest):
 
     def test_diversity_5(self):
         @pysnooper.snoop()
-        def function_5(x, y, z):
-            if y < z:
-                if x < y:
-                    return y
-                elif x < z:
-                    return x
+        def function_5(m, n):
+            if m <= 0:
+                return n + 1
+            elif n <= 0:
+                return function_5(m - 1, 1)
             else:
-                if x > y:
-                    return y
-                elif x > z:
-                    return x
-            return z
+                return function_5(m - 1, function_5(m, n - 1))
 
-        result = function_5(2, 3, 1)
-        self.assertEqual(2, result)
+        result = function_5(3, 2)
+        self.assertEqual(29, result)
 
     def test_diversity_6(self):
         @pysnooper.snoop()
@@ -272,6 +264,8 @@ class PySnooper3TestsPassing(DiversityTest):
         @pysnooper.snoop()
         def function_10(n, k):
             def fac(x):
+                if x <= 0:
+                    return 1
                 return x * fac(x - 1)
 
             return fac(n) / (fac(k) * fac(n - k))
