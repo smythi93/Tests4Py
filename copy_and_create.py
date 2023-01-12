@@ -26,7 +26,7 @@ def create(to_: Path, from_: Path, s: str):
     for i in range(1, subjects[s] + 1):
         bug_dir = dest / f'bug_{i}'
         os.makedirs(bug_dir)
-        with (bug_dir / '__init__').open('w') as fp:
+        with (bug_dir / '__init__.py').open('w') as fp:
             pass
         if (src / f'{i}' / 'bug_patch.txt').exists():
             shutil.move(src / f'{i}' / 'bug_patch.txt', bug_dir)
@@ -37,15 +37,16 @@ def create(to_: Path, from_: Path, s: str):
 
     all_content = ",\n".join([f"bug_{i}" for i in range(1, subjects[s] + 1)])
 
-    with (dest / 'init.py').open('w') as fp:
+    with (dest / '__init__.py').open('w') as fp:
         fp.write(f'from BugsTest.projects.resources.{s.replace("-", "")} '
                  f'import {",".join([f"bug_{i}" for i in range(1, subjects[s] + 1)])}\n'
                  f'__all__ = [\n{all_content}]')
 
 
+
 def create_all():
     path = Path.cwd()
-    assert path == Path(__file__)
+    assert path / 'copy_and_create.py' == Path(__file__)
     for s in subjects:
         create(path / 'src' / 'BugsTest' / 'projects' / 'resources', path / 'projects_old', s)
 
