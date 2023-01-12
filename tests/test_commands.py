@@ -133,3 +133,111 @@ class CheckOutTests(unittest.TestCase):
         self.assertEqual(20, report.total)
         self.assertEqual(0, report.failing)
         self.assertEqual(20, report.passing)
+
+    def test_unittest_generate_buggy_pysnooper_3(self):
+        report = framework.bugstest_checkout('pysnooper', 3, version_id=0)
+        if report.raised:
+            raise report.raised
+        work_dir = framework.DEFAULT_WORK_DIR / 'pysnooper_3'
+        project = load_bug_info(work_dir / 'bugstest_info.ini')
+        self.assertFalse(project.compiled)
+        report = framework.bugstest_compile(work_dir)
+        if report.raised:
+            raise report.raised
+        project = load_bug_info(work_dir / 'bugstest_info.ini')
+        self.assertTrue(project.compiled)
+        report = framework.unittest.bugstest_generate(work_dir, n=10, p=0.5)
+        if report.raised:
+            raise report.raised
+        self.assertTrue((work_dir / framework.unittest.DEFAULT_SUB_PATH).exists())
+        self.assertEqual(10, report.total)
+        self.assertEqual(5, report.failing)
+        self.assertEqual(5, report.passing)
+        report = framework.unittest.bugstest_test(work_dir, path=work_dir / framework.unittest.DEFAULT_SUB_PATH,
+                                                  diversity=False)
+        if report.raised:
+            raise report.raised
+        self.assertEqual(10, report.total)
+        self.assertEqual(5, report.failing)
+        self.assertEqual(5, report.passing)
+
+    def test_unittest_generate_fixed_pysnooper_3(self):
+        report = framework.bugstest_checkout('pysnooper', 3, version_id=1)
+        if report.raised:
+            raise report.raised
+        work_dir = framework.DEFAULT_WORK_DIR / 'pysnooper_3'
+        project = load_bug_info(work_dir / 'bugstest_info.ini')
+        self.assertFalse(project.compiled)
+        report = framework.bugstest_compile(work_dir)
+        if report.raised:
+            raise report.raised
+        project = load_bug_info(work_dir / 'bugstest_info.ini')
+        self.assertTrue(project.compiled)
+        report = framework.unittest.bugstest_generate(work_dir, n=10, p=0.5)
+        if report.raised:
+            raise report.raised
+        self.assertTrue((work_dir / framework.unittest.DEFAULT_SUB_PATH).exists())
+        self.assertEqual(10, report.total)
+        self.assertEqual(5, report.failing)
+        self.assertEqual(5, report.passing)
+        report = framework.unittest.bugstest_test(work_dir, path=work_dir / framework.unittest.DEFAULT_SUB_PATH,
+                                                  diversity=False)
+        if report.raised:
+            raise report.raised
+        self.assertEqual(10, report.total)
+        self.assertEqual(0, report.failing)
+        self.assertEqual(10, report.passing)
+
+    def test_systemtest_generate_buggy_pysnooper_3(self):
+        report = framework.bugstest_checkout('pysnooper', 3, version_id=0)
+        if report.raised:
+            raise report.raised
+        work_dir = framework.DEFAULT_WORK_DIR / 'pysnooper_3'
+        project = load_bug_info(work_dir / 'bugstest_info.ini')
+        self.assertFalse(project.compiled)
+        report = framework.bugstest_compile(work_dir)
+        if report.raised:
+            raise report.raised
+        project = load_bug_info(work_dir / 'bugstest_info.ini')
+        self.assertTrue(project.compiled)
+        report = framework.systemtest.bugstest_generate(work_dir, n=10, p=0.5)
+        if report.raised:
+            raise report.raised
+        self.assertTrue((work_dir / framework.systemtest.DEFAULT_SUB_PATH).exists())
+        self.assertEqual(10, report.total)
+        self.assertEqual(5, report.failing)
+        self.assertEqual(5, report.passing)
+        report = framework.systemtest.bugstest_test(work_dir, path=work_dir / framework.systemtest.DEFAULT_SUB_PATH,
+                                                    diversity=False)
+        if report.raised:
+            raise report.raised
+        self.assertEqual(10, report.total)
+        self.assertEqual(5, report.failing)
+        self.assertEqual(5, report.passing)
+
+    def test_systemtest_generate_fixed_pysnooper_3(self):
+        report = framework.bugstest_checkout('pysnooper', 3, version_id=1)
+        if report.raised:
+            raise report.raised
+        work_dir = framework.DEFAULT_WORK_DIR / 'pysnooper_3'
+        project = load_bug_info(work_dir / 'bugstest_info.ini')
+        self.assertFalse(project.compiled)
+        report = framework.bugstest_compile(work_dir)
+        if report.raised:
+            raise report.raised
+        project = load_bug_info(work_dir / 'bugstest_info.ini')
+        self.assertTrue(project.compiled)
+        report = framework.systemtest.bugstest_generate(work_dir, n=10, p=0.5)
+        if report.raised:
+            raise report.raised
+        self.assertTrue((work_dir / framework.systemtest.DEFAULT_SUB_PATH).exists())
+        self.assertEqual(10, report.total)
+        self.assertEqual(5, report.failing)
+        self.assertEqual(5, report.passing)
+        report = framework.systemtest.bugstest_test(work_dir, path=work_dir / framework.systemtest.DEFAULT_SUB_PATH,
+                                                    diversity=False)
+        if report.raised:
+            raise report.raised
+        self.assertEqual(10, report.total)
+        self.assertEqual(0, report.failing)
+        self.assertEqual(10, report.passing)

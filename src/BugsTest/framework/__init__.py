@@ -155,6 +155,10 @@ def bugstest_compile(work_dir: Path = None, verbose: bool = True) -> CompileRepo
             raise IOError(f'{work_dir} does not exist')
         project, bugstest_info, bugstest_requirements, bugstest_setup = __get_project__(work_dir)
         report.project = project
+        if project.compiled:
+            LOGGER.info(f'{project} already compiled')
+            report.successful = True
+            return report
         __env_on__(project, verbose=verbose)
         env_dir = Path('env')
         shutil.rmtree(env_dir, ignore_errors=True)

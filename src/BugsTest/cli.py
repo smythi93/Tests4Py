@@ -3,9 +3,9 @@ import os
 import sys
 from pathlib import Path
 
-from BugsTest.framework import DEFAULT_WORK_DIR, bugstest_test, bugstest_compile, bugstest_checkout
+from BugsTest.framework import bugstest_test, bugstest_compile, bugstest_checkout, unittest, systemtest
 from BugsTest.framework.utils import CHECKOUT, COMPILE, COVERAGE, FUZZ, INFO, MUTATION, TEST, UNITTEST, SYSTEMTEST, \
-    GENERATE
+    GENERATE, DEFAULT_WORK_DIR
 
 
 def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
@@ -15,6 +15,8 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         sys.exit(0)
 
     arguments = argparse.ArgumentParser(description='The access point to the BugsTest framework')
+
+    arguments.add_argument('--report', dest='report', default=None, help='Output the report to a file')
 
     # The subparsers
     commands = arguments.add_subparsers(help='The command of the BugsTest framework to execute',
@@ -44,7 +46,7 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
                                       f'working directory. Default will be ({DEFAULT_WORK_DIR})')
 
     # Compile
-    compile_parser.add_argument('-w', dest='work_dir', required=True,
+    compile_parser.add_argument('-w', dest='work_dir', default=None,
                                 help='The working directory to compile the project. '
                                      'Default will be the current directory')
 
@@ -91,7 +93,7 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
                                  help='Run mutation from test case and target that relevant from bugs (Default)')
 
     # Test
-    test_parser.add_argument('-w', dest='work_dir', required=True,
+    test_parser.add_argument('-w', dest='work_dir', default=None,
                              help='The working directory to run the test. Default will be the current directory')
     test_parser.add_argument('-t', dest='single_test', default=None,
                              help='Run single test from input. Default will run the test case that relevant from bugs. '
@@ -105,30 +107,85 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
 
     # unittest
     unittest_commands = unittest_parser.add_subparsers(help='The subcommand of the unittest to execute',
-                                                       dest='unittest_command', required=True)
+                                                       dest='subcommand', required=True)
     unittest_generate = unittest_commands.add_parser(GENERATE, help='Generate new unittests')
     unittest_test = unittest_commands.add_parser(TEST, help='Run the unittests')
 
     # systemtest
     systemtest_commands = systemtest_parser.add_subparsers(help='The subcommand of the systemtest to execute',
-                                                           dest='systemtest_command', required=True)
+                                                           dest='subcommand', required=True)
     systemtest_generate = systemtest_commands.add_parser(GENERATE, help='Generate new systemtests')
     systemtest_test = systemtest_commands.add_parser(TEST, help='Run the systemtests')
+
+    for is_systemtest, generate in enumerate((unittest_generate, systemtest_generate)):
+        generate.add_argument('-w', dest='work_dir', default=None,
+                              help='The working directory to run the test. Default will be the current directory')
+        generate.add_argument('-p', dest='path', default=None,
+                              help=f'The output path of the generated tests. Default will be '
+                                   f'({systemtest.DEFAULT_SUB_PATH if is_systemtest else unittest.DEFAULT_SUB_PATH})')
+        generate.add_argument('-n', dest='n', default=1, type=int,
+                              help='The number of generated tests. Default will be 1')
+        generate.add_argument('-f', dest='p', default=1, type=float,
+                              help='The number or probability of generated failing tests. If the number is a '
+                                   'probability (<1) it will get multiplied with -n to get the total number of '
+                                   'failing tests. Default will be 1')
+        generate.add_argument('--passing', dest='is_only_passing', default=False, action='store_true',
+                              help='Set to generate only passing tests (<=> -p == 0). Cannot be set when '
+                                   '--failing is set')
+        generate.add_argument('--failing', dest='is_only_failing', default=False, action='store_true',
+                              help='Set to generate only failing tests (<=> -p == -n). Cannot be set when '
+                                   '--passing is set')
+        generate.add_argument('-a', dest='append', default=False, action='store_true',
+                              help='Set to append the generated tests to the existing tests at -p')
+        generate.add_argument('-v', dest='verify', default=False, action='store_true',
+                              help='Set to verify the generated tests')
+
+    for is_systemtest, test in enumerate((unittest_test, systemtest_test)):
+        test.add_argument('-w', dest='work_dir', default=None,
+                          help='The working directory to run the test. Default will be the current directory')
+        test.add_argument('-p', dest='path', default=None,
+                          help=f'The output path of the generated tests. Default will be (-w/'
+                               f'{systemtest.DEFAULT_SUB_PATH if is_systemtest else unittest.DEFAULT_SUB_PATH}) '
+                               f'if -d is not set, otherwise only the diversity tests are executed')
+        test.add_argument('-d', dest='diversity', default=False, action='store_true',
+                          help='Set to run diversity tests. When giving -p all tests in -p and the diversity tests are '
+                               'executed and')
+        test.add_argument('-o', dest='output', default=None, help='Output test results to file')
 
     args = arguments.parse_args(args or sys.argv[1:])
 
     if args.command == CHECKOUT:
-        bugstest_checkout(project_name=args.project_name,
-                          bug_id=args.bug_id,
-                          version_id=args.version_id,
-                          work_dir=Path(args.work_dir).absolute())
+        report = bugstest_checkout(project_name=args.project_name,
+                                   bug_id=args.bug_id,
+                                   version_id=args.version_id,
+                                   work_dir=Path(args.work_dir).absolute())
     elif args.command == COMPILE:
-        bugstest_compile(work_dir=Path(args.work_dir).absolute())
+        report = bugstest_compile(work_dir=Path(args.work_dir).absolute() if args.work_dir else None)
     elif args.command == TEST:
-        bugstest_test(work_dir=Path(args.work_dir).absolute(),
-                      single_test=args.single_test,
-                      all_tests=args.all_tests,
-                      output=Path(args.output) if args.output else None)
+        report = bugstest_test(work_dir=Path(args.work_dir).absolute() if args.work_dir else None,
+                               single_test=args.single_test,
+                               all_tests=args.all_tests,
+                               output=Path(args.output).absolute() if args.output else None)
+    elif args.command == UNITTEST or args.command == SYSTEMTEST:
+        if args.command == UNITTEST:
+            command = unittest
+        else:
+            command = systemtest
+        if args.subcommand == TEST:
+            report = command.bugstest_test(work_dir=Path(args.work_dir).absolute() if args.work_dir else None,
+                                           path=Path(args.path).absolute() if args.path else None,
+                                           diversity=args.diversity,
+                                           output=Path(args.output).absolute() if args.output else None)
+        elif args.subcommand == GENERATE:
+            report = command.bugstest_generate(work_dir=Path(args.work_dir).absolute() if args.work_dir else None,
+                                               path=Path(args.path).absolute() if args.path else None,
+                                               n=args.n, p=args.p,
+                                               is_only_passing=args.is_only_passing,
+                                               is_only_failing=args.is_only_failing,
+                                               append=args.append,
+                                               verify=args.verify)
+        else:
+            raise NotImplementedError(f'Subcommand {args.subcommand} not implemented for command {args.command}')
     else:
         raise NotImplementedError(f'Command {args.command} not implemented')
 

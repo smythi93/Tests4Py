@@ -1313,6 +1313,7 @@ class PythonGenerator(Generator):
             posonlyargs=[],
             defaults=[],
             kwonlyargs=[],
+            kw_defaults=[],
         )
 
     def _generate_expr(self) -> expr:
@@ -1990,46 +1991,3 @@ del GENERATIVE_GRAMMAR['<Slice>']
 assert is_valid_grammar(GENERATIVE_GRAMMAR)
 
 GENERATOR = PythonGenerator()
-
-# CONSTRAINT_VARIABLE_DEF_USE = parse_isla('''
-# # variable defined before use
-# forall <Name> name: (
-#     (
-#         exists <FunctionDef> function: (
-#             inside(name, function) and
-#             exists <arg> arg in function: (
-#                 inside(arg, function.<arguments>) and
-#                 (= arg name)
-#             )
-#         )
-#     ) or
-#     (
-#         exists <Assign> assign: (
-#             inside(name, assign.<expr_list>) or
-#             exists <Name> name_def in assign: (
-#                 inside(name_def, assign.<expr_list>) and
-#                 (= name name_def) and
-#                 before(name_def, name) and
-#                 not exists <FunctionDef> function: (
-#                     inside(name_def, function) and
-#                     not inside(name, function)
-#                 )
-#             )
-#         )
-#     )
-# )
-# ''', grammar=grammar, structural_predicates={isla_predicates.BEFORE_PREDICATE, isla_predicates.IN_TREE_PREDICATE})
-#
-# CONSTRAINT_ASSIGN_ONLY_NAME = parse_isla('''
-# # variable defined by name only
-# forall <Assign> assign: (
-#     forall <expr> expr in assign: (
-#         inside(expr, assign.<expr_list>) implies
-#         exists <Name> name in expr: (
-#             direct_child(name, expr)
-#         )
-#     )
-# )
-# ''',
-# grammar=grammar,
-# structural_predicates={isla_predicates.DIRECT_CHILD_PREDICATE, isla_predicates.IN_TREE_PREDICATE})

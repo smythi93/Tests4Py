@@ -4,7 +4,7 @@ import subprocess
 import tempfile
 from os import PathLike
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from BugsTest.grammars import python
 from BugsTest.projects import Project, Status, TestingFramework, TestStatus
@@ -84,7 +84,8 @@ class PySnooperAPI(API):
             test = ast.unparse(self.translator.visit_source(test))
             with tempfile.NamedTemporaryFile('w+', suffix='.py', delete=False) as fp:
                 fp.write(test)
-            process = subprocess.run(['python', fp.name], stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=self.default_timeout)
+            process = subprocess.run(['python', fp.name], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                     timeout=self.default_timeout)
             os.remove(fp.name)
             if process.returncode:
                 if b"NameError: name 'output_path' is not defined" in process.stderr:
@@ -99,9 +100,145 @@ class PySnooperAPI(API):
             return TestResult.PASSING
 
 
-class PySnooperUnittestGenerator(UnittestGenerator):
-    pass
+class PySnooperUnittestGenerator(UnittestGenerator, python.PythonGenerator):
+
+    def __init__(self):
+        super().__init__()
+        python.PythonGenerator.__init__(self, limit_stmt_per_block=6, limit_stmt_depth=3, limit_expr_depth=2,
+                                        limit_args_per_function=3)
+
+    # noinspection SqlNoDataSourceInspection
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        self.reset()
+        with_stmt = ast.parse("with temp_file_tools.create_temp_folder(prefix='pysnooper') as folder:\n"
+                              "    path = folder / 'test.log'").body[0]
+        assert isinstance(with_stmt, ast.With)
+        function = self._generate_FunctionDef()
+        function.decorator_list = [
+            ast.Call(
+                ast.Attribute(
+                    value=ast.Name(id='pysnooper'),
+                    attr='snoop',
+                ),
+                args=[
+                    ast.Call(
+                        func=ast.Name(id='str'),
+                        args=[ast.Name(id='path')],
+                        keywords=[],
+                    )
+                ],
+                keywords=[],
+            )
+        ]
+        with_stmt.body.append(ast.Import(
+            names=[ast.alias(name='pysnooper')]
+        ))
+        with_stmt.body.append(function)
+        with_stmt.body.append(ast.Expr(
+            value=self._generate_Call(),
+        ))
+        with_stmt.body.append(ast.Expr(
+            value=ast.Call(
+                func=ast.Attribute(
+                    value=ast.Name(id='self'),
+                    attr='assertTrue'
+                ),
+                args=[
+                    ast.Call(
+                        func=ast.Attribute(
+                            value=ast.Name(id='path'),
+                            attr='exists'
+                        ),
+                        args=[],
+                        keywords=[],
+                    )
+                ],
+                keywords=[],
+            ),
+        ))
+        test = self.get_empty_test()
+        test.body.append(ast.ImportFrom(
+            module='python_toolbox',
+            names=[ast.alias(name='temp_file_tools')],
+            level=0,
+        ))
+        test.body.append(with_stmt)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        self.reset()
+        test = self.get_empty_test()
+        function = self._generate_FunctionDef()
+        function.decorator_list = [
+            ast.Call(
+                ast.Attribute(
+                    value=ast.Name(id='pysnooper'),
+                    attr='snoop',
+                ),
+                args=[],
+                keywords=[]
+            )
+        ]
+        test.body.append(ast.Import(
+            names=[ast.alias(name='pysnooper')]
+        ))
+        test.body.append(function)
+        test.body.append(ast.Expr(
+            value=self._generate_Call(),
+        ))
+        return test, TestResult.PASSING
 
 
-class PySnooperSystemtestGenerator(SystemtestGenerator):
-    pass
+class PySnooperSystemtestGenerator(SystemtestGenerator, python.PythonGenerator):
+
+    def __init__(self):
+        self.translator = python.ToGrammarVisitor()
+        super().__init__()
+        python.PythonGenerator.__init__(self, limit_stmt_per_block=6, limit_stmt_depth=3, limit_expr_depth=2,
+                                        limit_args_per_function=3)
+
+    def _generate_test(self, function: ast.FunctionDef) -> str:
+        return self.translator.visit(ast.Module(
+            body=[
+                ast.Import(
+                    names=[ast.alias(name='pysnooper')]
+                ),
+                function,
+                ast.Expr(
+                    value=self._generate_Call(),
+                )
+            ],
+            type_ignores=[],
+        ))
+
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        self.reset()
+        function = self._generate_FunctionDef()
+        function.decorator_list = [
+            ast.Call(
+                ast.Attribute(
+                    value=ast.Name(id='pysnooper'),
+                    attr='snoop',
+                ),
+                args=[
+                    ast.Constant('test.log'),
+                ],
+                keywords=[],
+            )
+        ]
+        return self._generate_test(function), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        self.reset()
+        function = self._generate_FunctionDef()
+        function.decorator_list = [
+            ast.Call(
+                ast.Attribute(
+                    value=ast.Name(id='pysnooper'),
+                    attr='snoop',
+                ),
+                args=[],
+                keywords=[],
+            )
+        ]
+        return self._generate_test(function), TestResult.PASSING

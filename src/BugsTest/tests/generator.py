@@ -2,6 +2,7 @@ import ast
 import hashlib
 import os
 import shutil
+from abc import abstractmethod
 from pathlib import Path
 from typing import List, Tuple
 
@@ -45,15 +46,31 @@ class TestGenerator:
 class UnittestGenerator(TestGenerator, ast.NodeVisitor):
     CLASS_NAME = 'BugsTestsUnittests'
 
+    def get_empty_test(self) -> ast.FunctionDef:
+        return ast.FunctionDef(
+            name='test',
+            args=ast.arguments(
+                args=[ast.arg(arg='self')],
+                posonlyargs=[],
+                kwonlyargs=[],
+                kw_defaults=[],
+                defaults=[], ),
+            decorator_list=[],
+            body=[],
+            lineno=0,
+        )
+
     @staticmethod
     def get_name(function: ast.FunctionDef, result: TestResult = TestResult.UNKNOWN) -> ast.FunctionDef:
         hash_ = hashlib.md5(ast.unparse(function).encode("utf-8")).hexdigest()
         function.name = f'test_{"failing" if result == TestResult.FAILING else "passing"}_{hash_}'
         return function
 
+    @abstractmethod
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         return NotImplemented
 
+    @abstractmethod
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         return NotImplemented
 
@@ -77,7 +94,7 @@ class UnittestGenerator(TestGenerator, ast.NodeVisitor):
     def generate_tests(self, n: int, path: Path, append: bool = False) -> GenerationResult:
         f = int(n * self.failing_probability)
         p = n - f
-        body = ([self.get_name(*self.generate_failing_test()) for _ in range(p)] +
+        body = ([self.get_name(*self.generate_passing_test()) for _ in range(p)] +
                 [self.get_name(*self.generate_failing_test()) for _ in range(f)])
         if path.exists() and path.is_dir():
             raise GenerationFailed(f'{path} is a directory')
@@ -104,6 +121,8 @@ class UnittestGenerator(TestGenerator, ast.NodeVisitor):
                             )
                         ],
                         body=body,
+                        keywords=[],
+                        decorator_list=[],
                     )
                 ],
                 type_ignores=[],
@@ -124,17 +143,21 @@ class SystemtestGenerator(TestGenerator):
         hash_ = hashlib.md5(test.encode("utf-8")).hexdigest()
         return directory / f'{"failing" if result == TestResult.FAILING else "passing"}_{hash_}'
 
+    @abstractmethod
     def generate_failing_test(self) -> Tuple[str, TestResult]:
         return NotImplemented
 
+    @abstractmethod
     def generate_passing_test(self) -> Tuple[str, TestResult]:
         return NotImplemented
 
     def generate_tests(self, n: int, path: Path, append: bool = False) -> GenerationResult:
         if path.exists() and not path.is_dir():
             raise GenerationFailed(f'{path} is not a dir')
-        if path.exists() and not append:
+        elif path.exists() and not append:
             shutil.rmtree(path, ignore_errors=True)
+            os.makedirs(path, exist_ok=True)
+        elif not path.exists():
             os.makedirs(path, exist_ok=True)
         f = int(n * self.failing_probability)
         p = n - f
@@ -143,7 +166,7 @@ class SystemtestGenerator(TestGenerator):
             with open(self.get_name(test, result, path), 'w') as fp:
                 fp.write(test)
         for _ in range(f):
-            test, result = self.generate_only_failing_tests()
+            test, result = self.generate_failing_test()
             with open(self.get_name(test, result, path), 'w') as fp:
                 fp.write(test)
         return GenerationResult(passing=p, failing=f)

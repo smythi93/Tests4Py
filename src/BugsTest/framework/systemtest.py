@@ -31,7 +31,7 @@ def _get_system_runs(project: Project, path: os.PathLike) -> Tuple[int, int, int
     return total, passing, failing
 
 
-def bugstest_generate(work_dir: Path = None, path: Path = None, n: int = 1, failing: Union[int, float] = 1,
+def bugstest_generate(work_dir: Path = None, path: Path = None, n: int = 1, p: Union[int, float] = 1,
                       is_only_passing: bool = False, is_only_failing: bool = False, append: bool = False,
                       verify: bool = False, verbose=True) -> SystemtestGenerateReport:
     report = SystemtestGenerateReport()
@@ -60,10 +60,10 @@ def bugstest_generate(work_dir: Path = None, path: Path = None, n: int = 1, fail
         if path.exists() and not path.is_dir():
             raise ValueError(f'Generation of unittest is not possible because {path} is a directory')
 
-        if failing < 1:
-            project.systemtests.failing_probability = failing
+        if p < 1:
+            project.systemtests.failing_probability = p
         else:
-            project.systemtests.failing_probability = failing / n
+            project.systemtests.failing_probability = p / n
 
         if is_only_passing:
             utils.LOGGER.info(
@@ -87,6 +87,7 @@ def bugstest_generate(work_dir: Path = None, path: Path = None, n: int = 1, fail
             utils.__activating_venv__(Path('env'))
 
             _, report.verify_failing, report.verify_passing = _get_system_runs(project, path)
+            utils.LOGGER.info(f'Verify: {report.verify_passing} passed --- {report.verify_failing} failed')
         report.successful = True
     except BaseException as e:
         report.raised = e
@@ -142,6 +143,8 @@ def bugstest_test(work_dir: Path = None, path: Path = None, diversity: bool = Tr
             report.total += t
             report.passing += p
             report.failing += f
+        utils.LOGGER.info(f'Ran {report.total} tests')
+        utils.LOGGER.info(f'{report.passing} passed --- {report.failing} failed')
         report.successful = True
     except BaseException as e:
         report.raised = e

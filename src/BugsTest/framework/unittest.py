@@ -20,7 +20,7 @@ class UnittestTestReport(utils.TestingReport):
         super().__init__(utils.UNITTEST, subcommand=utils.TEST)
 
 
-def bugstest_generate(work_dir: Path = None, path: Path = None, n: int = 1, failing: Union[int, float] = 1,
+def bugstest_generate(work_dir: Path = None, path: Path = None, n: int = 1, p: Union[int, float] = 0.5,
                       is_only_passing: bool = False, is_only_failing: bool = False, append: bool = False,
                       verify: bool = False, verbose=True) -> UnittestGenerateReport:
     report = UnittestGenerateReport()
@@ -49,10 +49,10 @@ def bugstest_generate(work_dir: Path = None, path: Path = None, n: int = 1, fail
         if path.exists() and path.is_dir():
             raise ValueError(f'Generation of unittest is not possible because {path} is a directory')
 
-        if failing < 1:
-            project.unittests.failing_probability = failing
+        if p < 1:
+            project.unittests.failing_probability = p
         else:
-            project.unittests.failing_probability = failing / n
+            project.unittests.failing_probability = p / n
 
         if is_only_passing:
             utils.LOGGER.info(
@@ -63,6 +63,9 @@ def bugstest_generate(work_dir: Path = None, path: Path = None, n: int = 1, fail
                 f'Generate {n} only failing tests for {project.project_name}_{project.bug_id} to {path}')
             result = project.unittests.generate_only_failing_tests(n=n, path=path, append=append)
         else:
+            if n < p:
+                raise ValueError(f'Cannot generate {n} tests with a failing probability '
+                                 f'{project.unittests.failing_probability}>1')
             utils.LOGGER.info(
                 f'Generate {n} passing and failing tests with failing probability '
                 f'{project.unittests.failing_probability} for {project.project_name}_{project.bug_id} to {path}')
@@ -78,6 +81,7 @@ def bugstest_generate(work_dir: Path = None, path: Path = None, n: int = 1, fail
             command = ['python', '-m', TestingFramework.PYTEST.value, path]
             output = subprocess.run(command, stdout=subprocess.PIPE).stdout
             report.successful, _, report.verify_failing, report.verify_passing = utils.__get_pytest_result__(output)
+            utils.LOGGER.info(f'Verify: {report.verify_passing} passed --- {report.verify_failing} failed')
         else:
             report.successful = True
     except BaseException as e:
@@ -127,6 +131,8 @@ def bugstest_test(work_dir: Path = None, path: Path = None, diversity: bool = Tr
         output = subprocess.run(command, stdout=subprocess.PIPE).stdout
         report.successful, report.total, report.failing, report.passing = utils.__get_pytest_result__(
             output)
+        utils.LOGGER.info(f'Ran {report.total} tests')
+        utils.LOGGER.info(f'{report.passing} passed --- {report.failing} failed')
     except BaseException as e:
         report.raised = e
         report.successful = False
