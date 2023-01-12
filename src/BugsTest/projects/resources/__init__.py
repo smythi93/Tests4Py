@@ -1,5 +1,9 @@
-from BugsTest.projects.resources import ansible, pysnooper
+from BugsTest.projects.resources import ansible, black, cookiecutter, fastapi, pysnooper
 
 __all__ = [
-    'ansible', 'pysnooper'
+    'ansible',
+    'black',
+    'cookiecutter',
+    'fastapi',
+    'pysnooper',
 ]

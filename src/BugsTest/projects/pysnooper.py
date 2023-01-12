@@ -198,6 +198,7 @@ class PySnooperSystemtestGenerator(SystemtestGenerator, python.PythonGenerator):
                                         limit_args_per_function=3)
 
     def _generate_test(self, function: ast.FunctionDef) -> str:
+        # noinspection PyTypeChecker
         return self.translator.visit(ast.Module(
             body=[
                 ast.Import(
