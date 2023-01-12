@@ -99,5 +99,7 @@ def load_bug_info(path: Path) -> Project:
 
 
 __all__ = [
-    'Status', 'TestStatus', 'TestingFramework', 'Project', 'load_bug_info', 'ansible', 'black', 'pysnooper'
+    'Status', 'TestStatus', 'TestingFramework', 'Project', 'load_bug_info',
+    'ansible', 'black', 'cookiecutter', 'fastapi', 'httpie', 'keras', 'luigi', 'matplotlib', 'pandas', 'pysnooper',
+    'sanic', 'scrapy', 'spacy', 'thefuck', 'tornado', 'tqdm', 'youtubedl'
 ]

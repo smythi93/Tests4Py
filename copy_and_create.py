@@ -26,14 +26,14 @@ def create(to_: Path, from_: Path, s: str):
     for i in range(1, subjects[s] + 1):
         bug_dir = dest / f'bug_{i}'
         os.makedirs(bug_dir)
-        with (bug_dir / '__init__.py').open('w') as fp:
+        with (bug_dir / '__init__.py').open('w') as _:
             pass
-        if (src / f'{i}' / 'bug_patch.txt').exists():
-            shutil.move(src / f'{i}' / 'bug_patch.txt', bug_dir)
-        if (src / f'{i}' / 'requirements.txt').exists():
-            shutil.move(src / f'{i}' / 'requirements.txt', bug_dir)
-        if (src / f'{i}' / 'setup.sh').exists():
-            shutil.move(src / f'{i}' / 'setup.sh', bug_dir)
+        if (src / 'bugs' / f'{i}' / 'bug_patch.txt').exists():
+            shutil.move(src / 'bugs' / f'{i}' / 'bug_patch.txt', bug_dir)
+        if (src / 'bugs' / f'{i}' / 'requirements.txt').exists():
+            shutil.move(src / 'bugs' / f'{i}' / 'requirements.txt', bug_dir)
+        if (src / 'bugs' / f'{i}' / 'setup.sh').exists():
+            shutil.move(src / 'bugs' / f'{i}' / 'setup.sh', bug_dir)
 
     all_content = ",\n".join([f"bug_{i}" for i in range(1, subjects[s] + 1)])
 
