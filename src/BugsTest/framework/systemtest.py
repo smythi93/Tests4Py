@@ -84,7 +84,7 @@ def bugstest_generate(work_dir: Path = None, path: Path = None, n: int = 1, p: U
         report.total = n
         if verify:
             utils.__env_on__(project, verbose=verbose)
-            utils.__activating_venv__(Path('env'))
+            utils.__activating_venv__(work_dir / utils.VENV)
 
             _, report.verify_failing, report.verify_passing = _get_system_runs(project, path)
             utils.LOGGER.info(f'Verify: {report.verify_passing} passed --- {report.verify_failing} failed')
@@ -124,7 +124,7 @@ def bugstest_test(work_dir: Path = None, path: Path = None, diversity: bool = Tr
             raise ValueError(f'Running of systemtests is not possible because {path} does not exist')
 
         utils.__env_on__(project, verbose=verbose)
-        utils.__activating_venv__(Path('env'))
+        utils.__activating_venv__(work_dir / utils.VENV)
 
         report.total, report.passing, report.failing = 0, 0, 0
 

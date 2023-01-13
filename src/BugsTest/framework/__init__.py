@@ -11,7 +11,7 @@ from BugsTest.framework import unittest, systemtest
 from BugsTest.framework.utils import DEFAULT_WORK_DIR, DEFAULT_UNITTESTS_DIVERSITY_PATH, \
     DEFAULT_SYSTEMTESTS_DIVERSITY_PATH, LOGGER, UNITTEST_TOTAL_PATTERN, UNITTEST_FAILED_PATTERN, \
     SYSTEMTESTS_PASSING_CLASS, SYSTEMTESTS_FAILING_CLASS, CheckoutReport, CompileReport, TestReport, __setup__, \
-    __env_on__, __activating_venv__, __deactivating_venv__, __get_project__, __get_pytest_result__
+    __env_on__, __activating_venv__, __deactivating_venv__, __get_project__, __get_pytest_result__, VENV
 from BugsTest.projects import resources, TestingFramework
 
 
@@ -163,7 +163,7 @@ def bugstest_compile(work_dir: Path = None, verbose: bool = True) -> CompileRepo
             report.successful = True
             return report
         __env_on__(project, verbose=verbose)
-        env_dir = Path('venv')
+        env_dir = work_dir / VENV
         shutil.rmtree(env_dir, ignore_errors=True)
 
         LOGGER.info('Creating virtual env')
@@ -256,7 +256,7 @@ def bugstest_test(work_dir: Path = None, single_test: str = None, all_tests: boo
             LOGGER.warning(f'The tests will fail on this fixed version {project.project_name}_{project.bug_id}')
 
         __env_on__(project, verbose=verbose)
-        __activating_venv__(Path('venv'))
+        __activating_venv__(work_dir / VENV)
 
         command = ['python', '-m']
 

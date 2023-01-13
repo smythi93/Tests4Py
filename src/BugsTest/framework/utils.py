@@ -39,6 +39,8 @@ UNITTEST_FAILED_PATTERN = re.compile(rb'FAILED (failures=(?P<f>\d+))')
 SYSTEMTESTS_FAILING_CLASS = 'TestsFailing'
 SYSTEMTESTS_PASSING_CLASS = 'TestsPassing'
 
+VENV = 'venv'
+
 
 class Report:
 
@@ -231,7 +233,6 @@ def __get_project__(work_dir: Path) -> Tuple[Project, Path, Path, Path]:
 
 def __get_pytest_result__(output: bytes) -> tuple[bool, int, int, int] | tuple[bool, None, None, None]:
     match = PYTEST_PATTERN.search(output)
-    print(match)
     if match:
         if match.group('f'):
             failing = int(match.group('f'))

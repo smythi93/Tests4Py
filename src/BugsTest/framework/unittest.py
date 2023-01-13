@@ -76,7 +76,7 @@ def bugstest_generate(work_dir: Path = None, path: Path = None, n: int = 1, p: U
         report.total = n
         if verify:
             utils.__env_on__(project, verbose=verbose)
-            utils.__activating_venv__(Path('env'))
+            utils.__activating_venv__(work_dir / utils.VENV)
 
             command = ['python', '-m', TestingFramework.PYTEST.value, path]
             output = subprocess.run(command, stdout=subprocess.PIPE).stdout
@@ -119,7 +119,7 @@ def bugstest_test(work_dir: Path = None, path: Path = None, diversity: bool = Tr
             raise ValueError(f'Running of unittest is not possible because {path} is a directory')
 
         utils.__env_on__(project, verbose=verbose)
-        utils.__activating_venv__(Path('env'))
+        utils.__activating_venv__(work_dir / utils.VENV)
 
         command = ['python', '-m', TestingFramework.PYTEST.value]
         if output:
