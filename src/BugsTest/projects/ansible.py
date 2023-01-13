@@ -32,11 +32,24 @@ def register():
     Ansible(
         bug_id=1,
         python_version='3.6.9',
+        darwin_python_version='3.6.15',
         python_path='ansible/build/lib/',
         buggy_commit_id='25c5388fdec9e56517a93feb5e8d485680946c25',
         fixed_commit_id='343ffaa18b63c92e182b16c3ad84b8d81ca4df69',
         test_file=[Path('test', 'units', 'galaxy', 'test_collection.py')],
-        test_cases=['test/units/galaxy/test_collection.py::test_verify_collections_no_version']
+        test_cases=['test/units/galaxy/test_collection.py::test_verify_collections_no_version'],
+        test_status_buggy=TestStatus.PASSING,
+    )
+    Ansible(
+        bug_id=2,
+        python_version='3.6.9',
+        darwin_python_version='3.6.15',
+        python_path='ansible/build/lib/',
+        buggy_commit_id='de59b17c7f69d5cfb72479b71776cc8b97e29a6b',
+        fixed_commit_id='5b9418c06ca6d51507468124250bb58046886be6',
+        test_file=[Path('test', 'units', 'utils', 'test_version.py')],
+        test_cases=['test/units/utils/test_version.py::test_alpha', 'test/units/utils/test_version.py::test_numeric'],
+        test_status_buggy=TestStatus.PASSING
     )
     # TODO implement the 18 bugs of black
 

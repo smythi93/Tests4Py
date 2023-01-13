@@ -189,6 +189,9 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
     else:
         raise NotImplementedError(f'Command {args.command} not implemented')
 
+    if report.raised:
+        raise report.raised
+
 
 if __name__ == '__main__':
     if '-O' in sys.argv:

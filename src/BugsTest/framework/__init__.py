@@ -116,15 +116,18 @@ def bugstest_checkout(project_name: str, bug_id: int, version_id: int = 1, work_
         LOGGER.info(f'Copying resources for {project.project_name}_{project.bug_id}')
         with importlib.resources.path(getattr(getattr(resources, project.project_name), f'bug_{project.bug_id}'),
                                       'requirements.txt') as resource:
-            shutil.copy(resource, work_location / 'bugstest_requirements.txt')
+            if resource.exists():
+                shutil.copy(resource, work_location / 'bugstest_requirements.txt')
         with importlib.resources.path(getattr(getattr(resources, project.project_name), f'bug_{project.bug_id}'),
                                       'setup.sh') as resource:
-            shutil.copy(resource, work_location / 'bugstest_setup.sh')
+            if resource.exists():
+                shutil.copy(resource, work_location / 'bugstest_setup.sh')
 
         if project.unittests:
             with importlib.resources.path(getattr(getattr(resources, project.project_name), f'bug_{project.bug_id}'),
                                           'unittests.py') as resource:
-                shutil.copy(resource, work_location / DEFAULT_UNITTESTS_DIVERSITY_PATH)
+                if resource.exists():
+                    shutil.copy(resource, work_location / DEFAULT_UNITTESTS_DIVERSITY_PATH)
 
         if project.systemtests:
             module = getattr(getattr(getattr(resources, project.project_name), f'bug_{project.bug_id}'), 'systemtests')
@@ -160,7 +163,7 @@ def bugstest_compile(work_dir: Path = None, verbose: bool = True) -> CompileRepo
             report.successful = True
             return report
         __env_on__(project, verbose=verbose)
-        env_dir = Path('env')
+        env_dir = Path('venv')
         shutil.rmtree(env_dir, ignore_errors=True)
 
         LOGGER.info('Creating virtual env')
@@ -185,10 +188,11 @@ def bugstest_compile(work_dir: Path = None, verbose: bool = True) -> CompileRepo
             subprocess.check_call(['python', '-m', 'pip', 'install', '-r', test_requirements])
 
         LOGGER.info('Run setup')
-        with open(bugstest_setup, 'r') as setup_file:
-            for line in setup_file:
-                if line:
-                    subprocess.check_call(line, shell=True)
+        if bugstest_setup.exists():
+            with open(bugstest_setup, 'r') as setup_file:
+                for line in setup_file:
+                    if line:
+                        subprocess.check_call(line, shell=True)
 
         LOGGER.info('Set compiled flag')
         project.compiled = True
@@ -252,7 +256,7 @@ def bugstest_test(work_dir: Path = None, single_test: str = None, all_tests: boo
             LOGGER.warning(f'The tests will fail on this fixed version {project.project_name}_{project.bug_id}')
 
         __env_on__(project, verbose=verbose)
-        __activating_venv__(Path('env'))
+        __activating_venv__(Path('venv'))
 
         command = ['python', '-m']
 
@@ -292,6 +296,8 @@ def bugstest_test(work_dir: Path = None, single_test: str = None, all_tests: boo
                 successful = True
         else:
             raise NotImplementedError(f'No command found for {project.testing_framework.value}')
+        LOGGER.info(f'Ran {report.total} tests')
+        LOGGER.info(f'{report.passing} passed --- {report.failing} failed')
         report.successful = successful
     except BaseException as e:
         report.raised = e

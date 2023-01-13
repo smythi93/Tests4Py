@@ -7,7 +7,8 @@ from pathlib import Path
 from typing import Optional, Tuple
 
 from BugsTest import projects
-from BugsTest.projects import Project, ansible, pysnooper
+from BugsTest.projects import Project, ansible, black, cookiecutter, fastapi, httpie, keras, luigi, matplotlib, \
+    pandas, pysnooper, sanic, scrapy, spacy, thefuck, tornado, tqdm, youtubedl
 
 CHECKOUT = 'checkout'
 COMPILE = 'compile'
@@ -91,10 +92,24 @@ class GenerateReport(TestingReport):
 
 
 def __setup__():
-    # TODO setup all projects
     LOGGER.info('Loading projects')
     ansible.register()
+    black.register()
+    cookiecutter.register()
+    fastapi.register()
+    httpie.register()
+    keras.register()
+    luigi.register()
+    matplotlib.register()
+    pandas.register()
     pysnooper.register()
+    sanic.register()
+    scrapy.register()
+    spacy.register()
+    thefuck.register()
+    tornado.register()
+    tqdm.register()
+    youtubedl.register()
 
 
 def __env_on__(project: Project, verbose=True):
@@ -148,8 +163,21 @@ def __env_on__(project: Project, verbose=True):
     subprocess.run(['pip', 'install', '--upgrade', 'pip'])
 
 
+def __update_env__(output):
+    pass  # TODO
+
+
 def __source__(script):
     output = subprocess.check_output(f'. {script}; env', shell=True).decode('utf-8')
+    env = dict()
+    for line in output.splitlines():
+        key, value = line.split('=', 1)
+        env[key] = value
+    os.environ.update(env)
+
+
+def __deactivate__(script):
+    output = subprocess.check_output(f'{script}; env', shell=True).decode('utf-8')
     env = dict()
     for line in output.splitlines():
         key, value = line.split('=', 1)
@@ -174,7 +202,6 @@ def __activating_venv__(env_dir: Path, verbose=True):
             raise ValueError(f'Please install dos2unix (sudo apt-get dos2unix)')
         __source__(env_dir / 'bin' / 'activate')
 
-
 def __deactivating_venv__(verbose=True):
     if verbose:
         LOGGER.setLevel(logging.INFO)
@@ -197,8 +224,6 @@ def __get_project__(work_dir: Path) -> Tuple[Project, Path, Path, Path]:
         raise ValueError(f'No BugsTest project found int {work_dir}, no bugstest_info')
     elif not bugstest_requirements.exists():
         raise ValueError(f'No BugsTest project found int {work_dir}, no bugstest_requirements')
-    elif not bugstest_setup.exists():
-        raise ValueError(f'No BugsTest project found int {work_dir}, no bugstest_setup')
 
     __setup__()
     return projects.load_bug_info(bugstest_info), bugstest_info, bugstest_requirements, bugstest_setup
@@ -206,6 +231,7 @@ def __get_project__(work_dir: Path) -> Tuple[Project, Path, Path, Path]:
 
 def __get_pytest_result__(output: bytes) -> tuple[bool, int, int, int] | tuple[bool, None, None, None]:
     match = PYTEST_PATTERN.search(output)
+    print(match)
     if match:
         if match.group('f'):
             failing = int(match.group('f'))
