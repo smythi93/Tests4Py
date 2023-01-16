@@ -8,7 +8,7 @@ from fuzzingbook.GrammarFuzzer import GrammarFuzzer
 from fuzzingbook.Grammars import Grammar, srange, is_valid_grammar
 from isla.derivation_tree import DerivationTree
 
-from BugsTest.grammars.utils import GrammarVisitor, Generator
+from Tests4Py.grammars.utils import GrammarVisitor, Generator
 
 
 class PythonVisitor(GrammarVisitor):

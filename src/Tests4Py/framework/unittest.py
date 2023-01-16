@@ -4,8 +4,8 @@ import subprocess
 from pathlib import Path
 from typing import Union
 
-from BugsTest.framework import utils
-from BugsTest.projects import TestingFramework
+from Tests4Py.framework import utils
+from Tests4Py.projects import TestingFramework
 
 DEFAULT_SUB_PATH = 'bugstest_unittests.py'
 

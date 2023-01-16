@@ -4,7 +4,7 @@ import subprocess
 import tempfile
 import unittest
 
-from BugsTest.grammars import python
+from Tests4Py.grammars import python
 
 
 class TestPythonGeneration(unittest.TestCase):

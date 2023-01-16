@@ -2,12 +2,12 @@ from os import PathLike
 from pathlib import Path
 from typing import List, Optional
 
-from BugsTest.projects import Project, Status, TestingFramework, TestStatus
-from BugsTest.tests.generator import UnittestGenerator, SystemtestGenerator
-from BugsTest.tests.utils import API, TestResult
+from Tests4Py.projects import Project, Status, TestingFramework, TestStatus
+from Tests4Py.tests.generator import UnittestGenerator, SystemtestGenerator
+from Tests4Py.tests.utils import API, TestResult
 
 
-class TheFuck(Project):
+class Keras(Project):
 
     def __init__(self, bug_id: int, python_version: str, python_path: str,
                  buggy_commit_id: str, fixed_commit_id: str, test_file: List[Path], test_cases: List[str],
@@ -17,7 +17,7 @@ class TheFuck(Project):
                  unittests: Optional[UnittestGenerator] = None,
                  systemtests: Optional[SystemtestGenerator] = None,
                  api: Optional[API] = None):
-        super().__init__(bug_id=bug_id, project_name='thefuck', github_url='https://github.com/nvbn/thefuck',
+        super().__init__(bug_id=bug_id, project_name='keras', github_url='https://github.com/keras-team/keras',
                          status=Status.OK, cause='N.A.',
                          python_version=python_version, python_path=python_path, buggy_commit_id=buggy_commit_id,
                          fixed_commit_id=fixed_commit_id, testing_framework=TestingFramework.PYTEST,
@@ -27,11 +27,11 @@ class TheFuck(Project):
 
 
 def register():
-    # TODO implement the 32 bugs of thefuck
+    # TODO implement the 45 bugs of keras
     pass
 
 
-class TheFuckAPI(API):
+class KerasAPI(API):
 
     def __init__(self, default_timeout: int = 5):
         super().__init__(default_timeout=default_timeout)

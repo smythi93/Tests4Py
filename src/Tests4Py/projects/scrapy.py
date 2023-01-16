@@ -2,9 +2,9 @@ from os import PathLike
 from pathlib import Path
 from typing import List, Optional
 
-from BugsTest.projects import Project, Status, TestingFramework, TestStatus
-from BugsTest.tests.generator import UnittestGenerator, SystemtestGenerator
-from BugsTest.tests.utils import API, TestResult
+from Tests4Py.projects import Project, Status, TestingFramework, TestStatus
+from Tests4Py.tests.generator import UnittestGenerator, SystemtestGenerator
+from Tests4Py.tests.utils import API, TestResult
 
 
 class Scrapy(Project):

@@ -3,9 +3,9 @@ import os
 from pathlib import Path
 from typing import Union, Tuple
 
-from BugsTest.framework import utils
-from BugsTest.projects import Project
-from BugsTest.tests.utils import TestResult
+from Tests4Py.framework import utils
+from Tests4Py.projects import Project
+from Tests4Py.tests.utils import TestResult
 
 DEFAULT_SUB_PATH = 'bugstest_systemtests'
 

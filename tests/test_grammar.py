@@ -6,8 +6,8 @@ from fuzzingbook.Grammars import EXPR_GRAMMAR, Grammar, is_valid_grammar
 from isla.derivation_tree import DerivationTree
 from isla.parser import EarleyParser
 
-from BugsTest.grammars import antlr, python
-from BugsTest.grammars.utils import GrammarVisitor
+from Tests4Py.grammars import antlr, python
+from Tests4Py.grammars.utils import GrammarVisitor
 
 
 class ExprVisitor(GrammarVisitor):
@@ -30,14 +30,15 @@ class TestVisitor(unittest.TestCase):
 
         class TermVisitor(ExprVisitor):
 
-            def __init__(self):
+            def __init__(self, grammar: Grammar):
+                super().__init__(grammar)
                 self.term_correct = False
 
             def visit_term(self, node: DerivationTree):
                 if node.children[1].value == ' / ':
                     self.term_correct = True
 
-        visitor = TermVisitor()
+        visitor = TermVisitor(self.grammar)
         visitor.visit(tree)
         self.assertTrue(visitor.term_correct)
 

@@ -1,8 +1,8 @@
 import os
 import unittest
 
-from BugsTest import framework
-from BugsTest.projects import load_bug_info
+from Tests4Py import framework
+from Tests4Py.projects import load_bug_info
 
 
 class CheckOutTests(unittest.TestCase):

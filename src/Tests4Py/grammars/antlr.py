@@ -3,7 +3,7 @@ from typing import List, Union, Any, Callable
 
 from fuzzingbook.Grammars import Grammar, RE_NONTERMINAL, is_nonterminal
 
-from BugsTest.grammars.utils import GrammarVisitor
+from Tests4Py.grammars.utils import GrammarVisitor
 
 
 class Antlr4AST:

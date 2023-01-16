@@ -6,16 +6,16 @@ import subprocess
 import sys
 from pathlib import Path
 
-from BugsTest import projects
-from BugsTest.framework import unittest, systemtest
-from BugsTest.framework.utils import DEFAULT_WORK_DIR, DEFAULT_UNITTESTS_DIVERSITY_PATH, \
+from Tests4Py import projects
+from Tests4Py.framework import unittest, systemtest
+from Tests4Py.framework.utils import DEFAULT_WORK_DIR, DEFAULT_UNITTESTS_DIVERSITY_PATH, \
     DEFAULT_SYSTEMTESTS_DIVERSITY_PATH, LOGGER, UNITTEST_TOTAL_PATTERN, UNITTEST_FAILED_PATTERN, \
     SYSTEMTESTS_PASSING_CLASS, SYSTEMTESTS_FAILING_CLASS, CheckoutReport, CompileReport, TestReport, __setup__, \
     __env_on__, __activating_venv__, __deactivating_venv__, __get_project__, __get_pytest_result__, VENV
-from BugsTest.projects import resources, TestingFramework
+from Tests4Py.projects import resources, TestingFramework
 
 
-def bugstest_checkout(project_name: str, bug_id: int, version_id: int = 1, work_dir: Path = DEFAULT_WORK_DIR,
+def tests4py_checkout(project_name: str, bug_id: int, version_id: int = 1, work_dir: Path = DEFAULT_WORK_DIR,
                       verbose=True) -> CheckoutReport:
     report = CheckoutReport()
     if verbose:
@@ -141,7 +141,7 @@ def bugstest_checkout(project_name: str, bug_id: int, version_id: int = 1, work_
     return report
 
 
-def bugstest_compile(work_dir: Path = None, verbose: bool = True) -> CompileReport:
+def tests4py_compile(work_dir: Path = None, verbose: bool = True) -> CompileReport:
     report = CompileReport()
     if verbose:
         LOGGER.setLevel(logging.INFO)
@@ -208,11 +208,11 @@ def bugstest_compile(work_dir: Path = None, verbose: bool = True) -> CompileRepo
     return report
 
 
-def coverage(work_dir: str, single_test: str = None, all_tests: bool = False, relevant_tests: bool = True):
+def tests4py_coverage(work_dir: str, single_test: str = None, all_tests: bool = False, relevant_tests: bool = True):
     pass
 
 
-def fuzz(project_name: str, bug_id: int, work_dir: str):
+def tests4py_fuzz(project_name: str, bug_id: int, work_dir: str):
     if not project_name:
         raise AttributeError('Please input project name')
     if bug_id is None:
@@ -220,7 +220,7 @@ def fuzz(project_name: str, bug_id: int, work_dir: str):
     pass
 
 
-def info(project_name: str, bug_id: int):
+def tests4py_info(project_name: str, bug_id: int):
     if not project_name:
         raise AttributeError('Please input project name')
     if bug_id is None:
@@ -228,11 +228,11 @@ def info(project_name: str, bug_id: int):
     pass
 
 
-def mutation(work_dir: str, target: str = None, unit_test: str = None, relevant_tests: bool = True):
+def tests4py_mutation(work_dir: str, target: str = None, unit_test: str = None, relevant_tests: bool = True):
     pass
 
 
-def bugstest_test(work_dir: Path = None, single_test: str = None, all_tests: bool = False, output: Path = None,
+def tests4py_test(work_dir: Path = None, single_test: str = None, all_tests: bool = False, output: Path = None,
                   verbose=True) -> TestReport:
     report = TestReport()
     if verbose:
@@ -308,4 +308,4 @@ def bugstest_test(work_dir: Path = None, single_test: str = None, all_tests: boo
     return report
 
 
-__all__ = ['bugstest_checkout', 'bugstest_compile', 'bugstest_test', 'systemtest', 'unittest', 'utils']
+__all__ = ['tests4py_checkout', 'tests4py_compile', 'tests4py_test', 'systemtest', 'unittest', 'utils']

@@ -6,8 +6,8 @@ import sys
 from pathlib import Path
 from typing import Optional, Tuple
 
-from BugsTest import projects
-from BugsTest.projects import Project, ansible, black, cookiecutter, fastapi, httpie, keras, luigi, matplotlib, \
+from Tests4Py import projects
+from Tests4Py.projects import Project, ansible, black, cookiecutter, fastapi, httpie, keras, luigi, matplotlib, \
     pandas, pysnooper, sanic, scrapy, spacy, thefuck, tornado, tqdm, youtubedl
 
 CHECKOUT = 'checkout'
