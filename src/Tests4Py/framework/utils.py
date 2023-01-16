@@ -22,10 +22,10 @@ SYSTEMTEST = 'systemtest'
 GENERATE = 'generate'
 
 DEFAULT_WORK_DIR = Path(Path.cwd(), 'tmp').absolute()
-DEFAULT_UNITTESTS_DIVERSITY_PATH = 'bugstest_unittests_diversity.py'
-DEFAULT_SYSTEMTESTS_DIVERSITY_PATH = 'bugstest_systemtest_diversity'
+DEFAULT_UNITTESTS_DIVERSITY_PATH = 'tests4py_unittests_diversity.py'
+DEFAULT_SYSTEMTESTS_DIVERSITY_PATH = 'tests4py_systemtest_diversity'
 
-LOGGER = logging.getLogger('BugsTest')
+LOGGER = logging.getLogger('Tests4Py')
 logging.basicConfig(
     level=logging.INFO,
     format='%(name)s :: %(levelname)-8s :: %(message)s',
@@ -40,6 +40,13 @@ SYSTEMTESTS_FAILING_CLASS = 'TestsFailing'
 SYSTEMTESTS_PASSING_CLASS = 'TestsPassing'
 
 VENV = 'venv'
+
+# ~~~~~~ FILES ~~~~~~ #
+
+INFO_FILE = 'tests4py_info.ini'
+REQUIREMENTS_FILE = 'tests4py_requirements.txt'
+SETUP_FILE = 'tests4py_setup.sh'
+PATCH_FILE = 'tests4py_bug.patch'
 
 
 class Report:
@@ -204,6 +211,7 @@ def __activating_venv__(env_dir: Path, verbose=True):
             raise ValueError(f'Please install dos2unix (sudo apt-get dos2unix)')
         __source__(env_dir / 'bin' / 'activate')
 
+
 def __deactivating_venv__(verbose=True):
     if verbose:
         LOGGER.setLevel(logging.INFO)
@@ -218,17 +226,17 @@ def __get_project__(work_dir: Path) -> Tuple[Project, Path, Path, Path]:
     LOGGER.info(f'Entering dir {work_dir}')
     os.chdir(work_dir)
 
-    LOGGER.info(f'Checking whether BugsTest project')
-    bugstest_info = work_dir / 'bugstest_info.ini'
-    bugstest_requirements = work_dir / 'bugstest_requirements.txt'
-    bugstest_setup = work_dir / 'bugstest_setup.sh'
-    if not bugstest_info.exists():
-        raise ValueError(f'No BugsTest project found int {work_dir}, no bugstest_info')
-    elif not bugstest_requirements.exists():
-        raise ValueError(f'No BugsTest project found int {work_dir}, no bugstest_requirements')
+    LOGGER.info(f'Checking whether Tests4Py project')
+    tests4py_info = work_dir / INFO_FILE
+    tests4py_requirements = work_dir / REQUIREMENTS_FILE
+    tests4py_setup = work_dir / SETUP_FILE
+    if not tests4py_info.exists():
+        raise ValueError(f'No Tests4Py project found int {work_dir}, no tests4py_info')
+    elif not tests4py_requirements.exists():
+        raise ValueError(f'No Tests4Py project found int {work_dir}, no tests4py_requirements')
 
     __setup__()
-    return projects.load_bug_info(bugstest_info), bugstest_info, bugstest_requirements, bugstest_setup
+    return projects.load_bug_info(tests4py_info), tests4py_info, tests4py_requirements, tests4py_setup
 
 
 def __get_pytest_result__(output: bytes) -> tuple[bool, int, int, int] | tuple[bool, None, None, None]:

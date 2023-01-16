@@ -1,1 +1,2 @@
 python_toolbox==1.0.11
+six==1.16.0

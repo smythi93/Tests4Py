@@ -25,7 +25,10 @@ class TestsFailing(Tests):
         return '''
 import pysnooper
 
-@pysnooper.snoop('test.log')
+def f(x):
+    return x * 2
+
+@pysnooper.snoop('test.log', custom_repr=(int, f))
 def function_1(foo):
     x = 42
     y = 2
@@ -38,7 +41,7 @@ result = function_1('test')
         return '''
 import pysnooper
 
-@pysnooper.snoop('test.log')
+@pysnooper.snoop(custom_repr=(int, str))
 def function_2(x):
     if x < 1:
         return 1
@@ -52,7 +55,10 @@ result = function_2(4)
         return '''
 from pysnooper import snoop
 
-@snoop('test.log')
+def f(x):
+    return x + 2
+    
+@snoop(custom_repr=(int, f))
 def function_3(x):
     return x
 
@@ -63,7 +69,10 @@ result = function_3(4)
         return '''
 from pysnooper import snoop
 
-@snoop('test.log')
+def f(x):
+    return x == 2
+
+@snoop('test.log', custom_repr=(int, f))
 def function_4(x, y, z):
     if y < z:
         if x < y:
@@ -84,7 +93,10 @@ result = function_4(2, 3, 1)
         return '''
 import pysnooper
 
-@pysnooper.snoop('test.log')
+def f(x):
+    return 'x'
+
+@pysnooper.snoop('test.log', custom_repr=(int, f))
 def function_5(m, n):
     if m <= 0:
         return n + 1
@@ -100,7 +112,10 @@ result = function_5(3, 2)
         return '''
 import pysnooper
 
-@pysnooper.snoop('test.log')
+def f(x):
+    return x * x
+
+@pysnooper.snoop(custom_repr=(int, f))
 def function_6(x, y):
     z = 2
     return x ** z - z * x * y + y ** z
@@ -112,7 +127,13 @@ result = function_6(2, 2)
         return '''
 import pysnooper
 
-@pysnooper.snoop('test.log')
+def test(x):
+    return isinstance(x, int) and x == 42
+    
+def f(x):
+    return x ** 2
+
+@pysnooper.snoop(custom_repr=(test, f))
 def function_7(x):
     return x * x
 
@@ -123,7 +144,7 @@ result = function_7(4)
         return '''
 import pysnooper
 
-@pysnooper.snoop('test.log')
+@pysnooper.snoop(custom_repr=(str, len))
 def function_8(x):
     i = 0
     j = len(x)
@@ -137,7 +158,10 @@ result = function_8('test')
         return '''
 import pysnooper
 
-@pysnooper.snoop('test.log')
+def f(x):
+    return isinstance(x, str) and 't' in x
+
+@pysnooper.snoop(custom_repr=(f, len))
 def function_9(x):
     r = 0
     if len(x) > 4:
@@ -153,7 +177,13 @@ result = function_9('test')
         return '''
 import pysnooper
 
-@pysnooper.snoop('test.log')
+def test(x):
+    return 1
+
+def f(x):
+    return x
+
+@pysnooper.snoop('test.log', custom_repr=(test, f))
 def function_10(n, k):
     def fac(x):
         if x <= 0:
@@ -213,7 +243,7 @@ result = function_3(4)
         return '''
 from pysnooper import snoop
 
-@snoop()
+@snoop('test.log')
 def function_4(x, y, z):
     if y < z:
         if x < y:
@@ -234,7 +264,7 @@ result = function_4(2, 3, 1)
         return '''
 import pysnooper
 
-@pysnooper.snoop()
+@pysnooper.snoop('test.log')
 def function_5(m, n):
     if m <= 0:
         return n + 1
@@ -303,7 +333,7 @@ result = function_9('test')
         return '''
 import pysnooper
 
-@pysnooper.snoop()
+@pysnooper.snoop('test.log')
 def function_10(n, k):
     def fac(x):
         if x <= 0:

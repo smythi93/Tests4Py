@@ -50,10 +50,12 @@ def register():
         python_path='',
         buggy_commit_id='e21a31162f4c54be693d8ca8260e42393b39abd3',
         fixed_commit_id='814abc34a098c1b98cb327105ac396f985d2413e',
-        test_file=[Path('tests', 'test_pysnooper.py')],
-        test_cases=['tests/test_pysnooper.py::test_custom_repr_single'],
-        test_status_fixed=TestStatus.ERROR,
-        test_status_buggy=TestStatus.ERROR,
+        test_file=[Path('tests', 'test_pysnooper.py'), Path('tests', 'mini_toolbox'), Path('pysnooper', 'pycompat.py'),
+                   Path('pysnooper', 'utils.py')],
+        test_cases=['tests/test_pysnooper.py::test_custom_repr_single', 'tests/test_pysnooper.py::test_custom_repr'],
+        api=PySnooperAPI(b"TypeError: __init__() got an unexpected keyword argument 'custom_repr'"),
+        unittests=PySnooper2UnittestGenerator(),
+        systemtests=PySnooper2SystemtestGenerator(),
     )
     PySnooper(
         bug_id=3,
@@ -64,15 +66,16 @@ def register():
         fixed_commit_id='15555ed760000b049aff8fecc79d29339c1224c3',
         test_file=[Path('tests', 'test_pysnooper.py')],
         test_cases=['tests/test_pysnooper.py::test_file_output'],
-        api=PySnooperAPI(),
-        unittests=PySnooperUnittestGenerator(),
-        systemtests=PySnooperSystemtestGenerator(),
+        api=PySnooperAPI(b"NameError: name 'output_path' is not defined"),
+        unittests=PySnooper3UnittestGenerator(),
+        systemtests=PySnooper3SystemtestGenerator(),
     )
 
 
 class PySnooperAPI(API):
 
-    def __init__(self, default_timeout: int = 5):
+    def __init__(self, expected_error: bytes, default_timeout: int = 5):
+        self.expected_error = expected_error
         self.translator = python.ToASTVisitor(python.GENERATIVE_GRAMMAR)
         super().__init__(default_timeout=default_timeout)
 
@@ -88,7 +91,7 @@ class PySnooperAPI(API):
                                      timeout=self.default_timeout)
             os.remove(fp.name)
             if process.returncode:
-                if b"NameError: name 'output_path' is not defined" in process.stderr:
+                if self.expected_error in process.stderr:
                     return TestResult.FAILING
                 else:
                     return TestResult.UNKNOWN
@@ -100,19 +103,33 @@ class PySnooperAPI(API):
             return TestResult.PASSING
 
 
-class PySnooperUnittestGenerator(UnittestGenerator, python.PythonGenerator):
+class PySnooperTestGenerator(python.PythonGenerator):
 
     def __init__(self):
-        super().__init__()
         python.PythonGenerator.__init__(self, limit_stmt_per_block=6, limit_stmt_depth=3, limit_expr_depth=2,
                                         limit_args_per_function=3)
 
-    # noinspection SqlNoDataSourceInspection
-    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        self.reset()
-        with_stmt = ast.parse("with temp_file_tools.create_temp_folder(prefix='pysnooper') as folder:\n"
-                              "    path = folder / 'test.log'").body[0]
-        assert isinstance(with_stmt, ast.With)
+    def _get_failing_args(self) -> List[ast.expr]:
+        return []
+
+    @staticmethod
+    def _get_passing_args() -> List[ast.expr]:
+        return []
+
+    def _get_failing_keywords(self) -> List[ast.keyword]:
+        return []
+
+    @staticmethod
+    def _get_passing_keywords() -> List[ast.keyword]:
+        return []
+
+    def _get_failing_prefix(self) -> List[ast.stmt]:
+        return []
+
+    def _get_passing_prefix(self) -> List[ast.stmt]:
+        return []
+
+    def _get_function_call(self, args: List[ast.expr] = None, keywords: List[ast.keyword] = None) -> ast.FunctionDef:
         function = self._generate_FunctionDef()
         function.decorator_list = [
             ast.Call(
@@ -120,16 +137,176 @@ class PySnooperUnittestGenerator(UnittestGenerator, python.PythonGenerator):
                     value=ast.Name(id='pysnooper'),
                     attr='snoop',
                 ),
-                args=[
-                    ast.Call(
-                        func=ast.Name(id='str'),
-                        args=[ast.Name(id='path')],
-                        keywords=[],
-                    )
-                ],
+                args=[] if args is None else args,
+                keywords=[] if keywords is None else keywords,
+            )
+        ]
+        return function
+
+    def _get_failing_body(self, function: ast.FunctionDef, prefix: List[ast.stmt] = None) -> List[ast.stmt]:
+        if prefix:
+            return prefix + [function]
+        return [function]
+
+    def _get_passing_body(self, function: ast.FunctionDef, prefix: List[ast.stmt] = None) -> List[ast.stmt]:
+        if prefix:
+            return prefix + [function]
+        return [function]
+
+
+class PySnooperUnittestGenerator(UnittestGenerator, PySnooperTestGenerator):
+
+    def __init__(self):
+        UnittestGenerator.__init__(self)
+        PySnooperTestGenerator.__init__(self)
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        self.reset()
+        test = self.get_empty_test()
+        prefix = self._get_failing_prefix()
+        test.body = self._get_failing_body(self._get_function_call(self._get_failing_args(),
+                                                                   self._get_failing_keywords()), prefix=prefix)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        self.reset()
+        test = self.get_empty_test()
+        prefix = self._get_passing_prefix()
+        test.body = self._get_passing_body(self._get_function_call(self._get_passing_args(),
+                                                                   self._get_passing_keywords()), prefix=prefix)
+        return test, TestResult.PASSING
+
+
+class PySnooperSystemtestGenerator(SystemtestGenerator, PySnooperTestGenerator):
+
+    def __init__(self):
+        self.translator = python.ToGrammarVisitor()
+        UnittestGenerator.__init__(self)
+        PySnooperTestGenerator.__init__(self)
+
+    def _generate_test(self, module: ast.Module, function_name: str) -> str:
+        # noinspection PyTypeChecker
+        module.body = [
+                          ast.Import(
+                              names=[ast.alias(name='pysnooper')]
+                          )
+                      ] + module.body + [
+                          ast.Expr(
+                              value=self._generate_Call(function_name)
+                          )
+                      ]
+        # noinspection PyTypeChecker
+        return self.translator.visit(module)
+
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        self.reset()
+        test = ast.Module(
+            body=[],
+            type_ignores=[],
+        )
+        prefix = self._get_failing_prefix()
+        function_call = self._get_function_call(self._get_failing_args(), self._get_failing_keywords())
+        test.body = self._get_failing_body(function_call, prefix)
+        return self._generate_test(test, function_call.name), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        self.reset()
+        test = ast.Module(
+            body=[],
+            type_ignores=[],
+        )
+        prefix = self._get_passing_prefix()
+        function_call = self._get_function_call(self._get_passing_args(), self._get_passing_keywords())
+        test.body = self._get_passing_body(function_call, prefix)
+        return self._generate_test(test, function_call.name), TestResult.PASSING
+
+
+class PySnooper2UnittestGenerator(PySnooperUnittestGenerator):
+    def _get_failing_keywords(self) -> List[ast.keyword]:
+        return [
+            ast.keyword(
+                arg='custom_repr',
+                value=ast.Tuple(
+                    elts=[
+                        ast.Tuple(
+                            elts=[
+                                ast.Name(id=self.scope.get_function()[0]),
+                                ast.Name(id=self.scope.get_function()[0])
+                            ]
+                        )
+                    ]
+                )
+            )
+        ]
+
+    def _get_failing_prefix(self) -> List[ast.stmt]:
+        return [
+            ast.Import(
+                names=[ast.alias(name='pysnooper')]
+            ),
+            self._generate_FunctionDef(num_args=1),
+            self._generate_FunctionDef(num_args=1),
+        ]
+
+    def _get_passing_prefix(self) -> List[ast.stmt]:
+        return [
+            ast.Import(
+                names=[ast.alias(name='pysnooper')]
+            )
+        ]
+
+
+class PySnooper2SystemtestGenerator(PySnooperSystemtestGenerator):
+
+    def _get_failing_prefix(self) -> List[ast.stmt]:
+        return [
+            self._generate_FunctionDef(num_args=1),
+            self._generate_FunctionDef(num_args=1),
+        ]
+
+    def _get_failing_keywords(self) -> List[ast.keyword]:
+        return [
+            ast.keyword(
+                arg='custom_repr',
+                value=ast.Tuple(
+                    elts=[
+                        ast.Tuple(
+                            elts=[
+                                ast.Name(id=self.scope.get_function()[0]),
+                                ast.Name(id=self.scope.get_function()[0])
+                            ]
+                        )
+                    ]
+                )
+            )
+        ]
+
+
+class PySnooper3UnittestGenerator(PySnooperUnittestGenerator):
+
+    def _get_failing_args(self) -> List[ast.expr]:
+        return [
+            ast.Call(
+                func=ast.Name(id='str'),
+                args=[ast.Name(id='path')],
                 keywords=[],
             )
         ]
+
+    def _get_failing_prefix(self):
+        return [
+            ast.ImportFrom(
+                module='python_toolbox',
+                names=[ast.alias(name='temp_file_tools')],
+                level=0,
+            )
+        ]
+
+    def _get_failing_body(self, function: ast.FunctionDef, prefix: List[ast.stmt] = None) -> List[ast.stmt]:
+        # noinspection SqlNoDataSourceInspection
+        with_stmt = ast.parse("with temp_file_tools.create_temp_folder(prefix='pysnooper') as folder:\n"
+                              "    path = folder / 'test.log'").body[0]
+        assert isinstance(with_stmt, ast.With)
         with_stmt.body.append(ast.Import(
             names=[ast.alias(name='pysnooper')]
         ))
@@ -156,90 +333,19 @@ class PySnooperUnittestGenerator(UnittestGenerator, python.PythonGenerator):
                 keywords=[],
             ),
         ))
-        test = self.get_empty_test()
-        test.body.append(ast.ImportFrom(
-            module='python_toolbox',
-            names=[ast.alias(name='temp_file_tools')],
-            level=0,
-        ))
-        test.body.append(with_stmt)
-        return test, TestResult.FAILING
+        return prefix + [with_stmt]
 
-    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        self.reset()
-        test = self.get_empty_test()
-        function = self._generate_FunctionDef()
-        function.decorator_list = [
-            ast.Call(
-                ast.Attribute(
-                    value=ast.Name(id='pysnooper'),
-                    attr='snoop',
-                ),
-                args=[],
-                keywords=[]
-            )
+    def _get_passing_body(self, function: ast.FunctionDef, prefix: List[ast.stmt] = None) -> List[ast.stmt]:
+        return [
+            ast.Import(names=[ast.alias(name='pysnooper')]),
+            function,
+            ast.Expr(value=self._generate_Call()),
         ]
-        test.body.append(ast.Import(
-            names=[ast.alias(name='pysnooper')]
-        ))
-        test.body.append(function)
-        test.body.append(ast.Expr(
-            value=self._generate_Call(),
-        ))
-        return test, TestResult.PASSING
 
 
-class PySnooperSystemtestGenerator(SystemtestGenerator, python.PythonGenerator):
+class PySnooper3SystemtestGenerator(PySnooperSystemtestGenerator):
 
-    def __init__(self):
-        self.translator = python.ToGrammarVisitor()
-        super().__init__()
-        python.PythonGenerator.__init__(self, limit_stmt_per_block=6, limit_stmt_depth=3, limit_expr_depth=2,
-                                        limit_args_per_function=3)
-
-    def _generate_test(self, function: ast.FunctionDef) -> str:
-        # noinspection PyTypeChecker
-        return self.translator.visit(ast.Module(
-            body=[
-                ast.Import(
-                    names=[ast.alias(name='pysnooper')]
-                ),
-                function,
-                ast.Expr(
-                    value=self._generate_Call(),
-                )
-            ],
-            type_ignores=[],
-        ))
-
-    def generate_failing_test(self) -> Tuple[str, TestResult]:
-        self.reset()
-        function = self._generate_FunctionDef()
-        function.decorator_list = [
-            ast.Call(
-                ast.Attribute(
-                    value=ast.Name(id='pysnooper'),
-                    attr='snoop',
-                ),
-                args=[
-                    ast.Constant('test.log'),
-                ],
-                keywords=[],
-            )
+    def _get_failing_args(self) -> List[ast.expr]:
+        return [
+            ast.Constant(constant='test.log')
         ]
-        return self._generate_test(function), TestResult.FAILING
-
-    def generate_passing_test(self) -> Tuple[str, TestResult]:
-        self.reset()
-        function = self._generate_FunctionDef()
-        function.decorator_list = [
-            ast.Call(
-                ast.Attribute(
-                    value=ast.Name(id='pysnooper'),
-                    attr='snoop',
-                ),
-                args=[],
-                keywords=[],
-            )
-        ]
-        return self._generate_test(function), TestResult.PASSING

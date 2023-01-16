@@ -11,7 +11,8 @@ from Tests4Py.framework import unittest, systemtest
 from Tests4Py.framework.utils import DEFAULT_WORK_DIR, DEFAULT_UNITTESTS_DIVERSITY_PATH, \
     DEFAULT_SYSTEMTESTS_DIVERSITY_PATH, LOGGER, UNITTEST_TOTAL_PATTERN, UNITTEST_FAILED_PATTERN, \
     SYSTEMTESTS_PASSING_CLASS, SYSTEMTESTS_FAILING_CLASS, CheckoutReport, CompileReport, TestReport, __setup__, \
-    __env_on__, __activating_venv__, __deactivating_venv__, __get_project__, __get_pytest_result__, VENV
+    __env_on__, __activating_venv__, __deactivating_venv__, __get_project__, __get_pytest_result__, VENV, INFO_FILE, \
+    REQUIREMENTS_FILE, SETUP_FILE, PATCH_FILE
 from Tests4Py.projects import resources, TestingFramework
 
 
@@ -48,7 +49,7 @@ def tests4py_checkout(project_name: str, bug_id: int, version_id: int = 1, work_
         check_further = project.status is projects.Status.OK
 
         work_location = work_dir / f'{project.project_name}_{project.bug_id}'
-        tmp_location = (work_dir / 'tmp' / project_name).absolute()
+        tmp_location = (work_dir / f'tmp_{project_name}').absolute()
 
         if check_further:
             LOGGER.info(f'Cloning {project.github_url} into {work_location}... ')
@@ -82,8 +83,12 @@ def tests4py_checkout(project_name: str, bug_id: int, version_id: int = 1, work_
                                         tmp_location / line.replace(os.path.sep, '_'))
 
             for test_file in project.test_file:
-                shutil.copy(test_file,
-                            tmp_location / str(test_file).replace(os.path.sep, '_'))
+                if test_file.is_dir():
+                    shutil.copytree(test_file, tmp_location / str(test_file).replace(os.path.sep, '_'),
+                                    dirs_exist_ok=True)
+                else:
+                    shutil.copy(test_file,
+                                tmp_location / str(test_file).replace(os.path.sep, '_'))
 
             LOGGER.info(f'Checkout buggy commit id {project.buggy_commit_id}')
             subprocess.run(['git', 'reset', '--hard', project.buggy_commit_id])
@@ -92,8 +97,11 @@ def tests4py_checkout(project_name: str, bug_id: int, version_id: int = 1, work_
             LOGGER.info(f'Copying required files from {tmp_location}')
 
             for test_file in project.test_file:
-                shutil.copy(tmp_location / str(test_file).replace(os.path.sep, '_'),
-                            test_file)
+                dest = tmp_location / str(test_file).replace(os.path.sep, '_')
+                if dest.is_dir():
+                    shutil.copytree(dest, test_file, dirs_exist_ok=True)
+                else:
+                    shutil.copy(dest, test_file)
 
             patch_fix_all = list()
             # Copy other change file from fixed to buggy if version is fixed commit
@@ -104,24 +112,25 @@ def tests4py_checkout(project_name: str, bug_id: int, version_id: int = 1, work_
                     if version_id == 1:
                         shutil.move(change_file_path, change_file)
         finally:
+            shutil.rmtree(tmp_location, ignore_errors=True)
             os.chdir(current_dir)
 
         LOGGER.info(f'Create info file')
-        with open(work_location / 'bugstest_patchfile.info', 'w') as fp:
+        with open(work_location / PATCH_FILE, 'w') as fp:
             fp.write(';'.join(patch_fix_all))
 
         # Move information about bug to clone project folder
-        project.write_bug_info(work_location / 'bugstest_info.ini')
+        project.write_bug_info(work_location / INFO_FILE)
 
         LOGGER.info(f'Copying resources for {project.project_name}_{project.bug_id}')
         with importlib.resources.path(getattr(getattr(resources, project.project_name), f'bug_{project.bug_id}'),
                                       'requirements.txt') as resource:
             if resource.exists():
-                shutil.copy(resource, work_location / 'bugstest_requirements.txt')
+                shutil.copy(resource, work_location / REQUIREMENTS_FILE)
         with importlib.resources.path(getattr(getattr(resources, project.project_name), f'bug_{project.bug_id}'),
                                       'setup.sh') as resource:
             if resource.exists():
-                shutil.copy(resource, work_location / 'bugstest_setup.sh')
+                shutil.copy(resource, work_location / SETUP_FILE)
 
         if project.unittests:
             with importlib.resources.path(getattr(getattr(resources, project.project_name), f'bug_{project.bug_id}'),
@@ -156,7 +165,7 @@ def tests4py_compile(work_dir: Path = None, verbose: bool = True) -> CompileRepo
 
         if not work_dir.exists():
             raise IOError(f'{work_dir} does not exist')
-        project, bugstest_info, bugstest_requirements, bugstest_setup = __get_project__(work_dir)
+        project, tests4py_info, tests4py_requirements, tests4py_setup = __get_project__(work_dir)
         report.project = project
         if project.compiled:
             LOGGER.info(f'{project} already compiled')
@@ -171,7 +180,7 @@ def tests4py_compile(work_dir: Path = None, verbose: bool = True) -> CompileRepo
 
         __activating_venv__(env_dir)
         if sys.platform not in ('win32', 'cygwin'):
-            subprocess.run(['dos2unix', bugstest_requirements])
+            subprocess.run(['dos2unix', tests4py_requirements])
 
         LOGGER.info('Installing utilities')
         subprocess.check_call(['python', '-m', 'pip', 'install', '--upgrade', 'pip'])
@@ -180,7 +189,7 @@ def tests4py_compile(work_dir: Path = None, verbose: bool = True) -> CompileRepo
         subprocess.check_call(['python', '-m', 'pip', 'install', 'pytest==7.0.1'])
 
         LOGGER.info('Installing requirements')
-        subprocess.check_call(['python', '-m', 'pip', 'install', '-r', bugstest_requirements])
+        subprocess.check_call(['python', '-m', 'pip', 'install', '-r', tests4py_requirements])
 
         LOGGER.info('Checking and installing test requirements')
         test_requirements = Path('test_requirements.txt')
@@ -188,15 +197,15 @@ def tests4py_compile(work_dir: Path = None, verbose: bool = True) -> CompileRepo
             subprocess.check_call(['python', '-m', 'pip', 'install', '-r', test_requirements])
 
         LOGGER.info('Run setup')
-        if bugstest_setup.exists():
-            with open(bugstest_setup, 'r') as setup_file:
+        if tests4py_setup.exists():
+            with open(tests4py_setup, 'r') as setup_file:
                 for line in setup_file:
                     if line:
                         subprocess.check_call(line, shell=True)
 
         LOGGER.info('Set compiled flag')
         project.compiled = True
-        project.write_bug_info(bugstest_info)
+        project.write_bug_info(tests4py_info)
 
         report.successful = True
     except BaseException as e:
@@ -280,6 +289,7 @@ def tests4py_test(work_dir: Path = None, single_test: str = None, all_tests: boo
 
         LOGGER.info(f'Run tests with command {command}')
         output = subprocess.run(command, stdout=subprocess.PIPE).stdout
+        LOGGER.info(output.decode('utf-8'))
 
         successful = False
         if project.testing_framework == TestingFramework.PYTEST:

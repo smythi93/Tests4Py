@@ -7,7 +7,7 @@ from Tests4Py.framework import utils
 from Tests4Py.projects import Project
 from Tests4Py.tests.utils import TestResult
 
-DEFAULT_SUB_PATH = 'bugstest_systemtests'
+DEFAULT_SUB_PATH = 'tests4py_systemtests'
 
 
 class SystemtestGenerateReport(utils.GenerateReport):
@@ -31,7 +31,7 @@ def _get_system_runs(project: Project, path: os.PathLike) -> Tuple[int, int, int
     return total, passing, failing
 
 
-def bugstest_generate(work_dir: Path = None, path: Path = None, n: int = 1, p: Union[int, float] = 1,
+def tests4py_generate(work_dir: Path = None, path: Path = None, n: int = 1, p: Union[int, float] = 1,
                       is_only_passing: bool = False, is_only_failing: bool = False, append: bool = False,
                       verify: bool = False, verbose=True) -> SystemtestGenerateReport:
     report = SystemtestGenerateReport()
@@ -98,7 +98,7 @@ def bugstest_generate(work_dir: Path = None, path: Path = None, n: int = 1, p: U
     return report
 
 
-def bugstest_test(work_dir: Path = None, path: Path = None, diversity: bool = True, output: Path = None,
+def tests4py_test(work_dir: Path = None, path: Path = None, diversity: bool = True, output: Path = None,
                   verbose=True) -> SystemtestTestReport:
     report = SystemtestTestReport()
     if verbose:

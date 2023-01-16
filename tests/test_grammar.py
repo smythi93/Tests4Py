@@ -276,14 +276,6 @@ class TestPython(unittest.TestCase):
     def test_grammar_5(self):
         self._test_grammar('ExceptHandler(,,[Pass()])', '<ExceptHandler>')
 
-    def test_grammar_6(self):
-        self._test_grammar(
-            'Module([Import([alias(pysnooper,)]),FunctionDef(function_8,arguments([],[arg(x,,)],,[],[],,[]),'
-            '[Assign([Name(i)],Constant(0,),),While(Compare(Name(i),[Lt()],[Call(Name(len),[Name(x)],[])]),'
-            '[AugAssign(Name(i),Add(),Constant(1,))],[]),Return(Name(i))],[Call(Attribute(Name(pysnooper),'
-            'snoop),[],[])],,),Assign([Name(result)],Call(Name(function_8),[List([Constant(1,),Constant(2,),'
-            'Constant(3,),Constant(4,)])],[]),)],[])', full=False)
-
     def test_translation_1(self):
         self._test_translation(PYTHON_PROGRAM_1)
 

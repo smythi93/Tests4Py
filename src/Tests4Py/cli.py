@@ -3,8 +3,8 @@ import os
 import sys
 from pathlib import Path
 
-from BugsTest.framework import bugstest_test, bugstest_compile, bugstest_checkout, unittest, systemtest
-from BugsTest.framework.utils import CHECKOUT, COMPILE, COVERAGE, FUZZ, INFO, MUTATION, TEST, UNITTEST, SYSTEMTEST, \
+from Tests4Py.framework import tests4py_test, tests4py_compile, tests4py_checkout, unittest, systemtest
+from Tests4Py.framework.utils import CHECKOUT, COMPILE, COVERAGE, FUZZ, INFO, MUTATION, TEST, UNITTEST, SYSTEMTEST, \
     GENERATE, DEFAULT_WORK_DIR
 
 
@@ -14,12 +14,12 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         os.execl(sys.executable, sys.executable, "-O", *sys.argv)
         sys.exit(0)
 
-    arguments = argparse.ArgumentParser(description='The access point to the BugsTest framework')
+    arguments = argparse.ArgumentParser(description='The access point to the Tests4Py framework')
 
     arguments.add_argument('--report', dest='report', default=None, help='Output the report to a file')
 
     # The subparsers
-    commands = arguments.add_subparsers(help='The command of the BugsTest framework to execute',
+    commands = arguments.add_subparsers(help='The command of the Tests4Py framework to execute',
                                         dest='command', required=True)
     checkout_parser = commands.add_parser(CHECKOUT, help='Check out a project')
     compile_parser = commands.add_parser(COMPILE, help='Compile a project')
@@ -34,10 +34,10 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
     # Checkout
     checkout_parser.add_argument('-p', dest='project_name', required=True,
                                  help='The name of the project for which a particular version shall be checked out. '
-                                      'Run bugstest info to check available project')
+                                      'Run Tests4Py info to check available project')
     checkout_parser.add_argument('-i', dest='bug_id', type=int, required=True,
-                                 help='The number of bug from project in bugstest. '
-                                      'Run bugstest info to check bug id number')
+                                 help='The number of bug from project in Tests4Py. '
+                                      'Run Tests4Py info to check bug id number')
     checkout_parser.add_argument('-v', dest='version_id', type=int, default=1,
                                  help='The version id that shall be checked out (1 fixed, 0 buggy, default will be 1)')
     checkout_parser.add_argument('-w', dest='work_dir', default=DEFAULT_WORK_DIR,
@@ -58,7 +58,7 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
                                       'Default will run coverage from test cases that relevant from bugs. '
                                       'Format for pytest: <test_file_path>::<test_method>. '
                                       'Format for unittest: <test_file_path_without.py>.<test_class>.<test_method> . '
-                                      'Use bugstest info to get the information about the project')
+                                      'Use Tests4Py info to get the information about the project')
     coverage_parser.add_argument('-a', dest='all_tests', default=False, action='store_true',
                                  help='Run coverage from all test cases in the project. '
                                       'Default will run coverage from test cases that relevant from bugs')
@@ -67,9 +67,9 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
 
     # Fuzz
     fuzz_parser.add_argument('-p', dest='project_name', required=True,
-                             help='The name of the project from BugsTest')
+                             help='The name of the project from Tests4Py')
     fuzz_parser.add_argument('-i', dest='bug_id', type=int, required=True,
-                             help='The bug number from project in BugsTest')
+                             help='The bug number from project in Tests4Py')
     fuzz_parser.add_argument('-w', dest='work_dir', default='',
                              help='The working directory that the project has been checked out. '
                                   'Default will be the current directory.')
@@ -99,7 +99,7 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
                              help='Run single test from input. Default will run the test case that relevant from bugs. '
                                   'Format for pytest: <test_file_path>::<test_method>. '
                                   'Format for unittest: <test_file_path_without.py>.<test_class>.<test_method> . '
-                                  'Use bugstest info to get the information about the project')
+                                  'Use Tests4Py info to get the information about the project')
     test_parser.add_argument('-a', dest='all_tests', default=False, action='store_true',
                              help='Run all test case in the project. '
                                   'Default will run the test case that relevant from bugs')
@@ -155,14 +155,14 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
     args = arguments.parse_args(args or sys.argv[1:])
 
     if args.command == CHECKOUT:
-        report = bugstest_checkout(project_name=args.project_name,
+        report = tests4py_checkout(project_name=args.project_name,
                                    bug_id=args.bug_id,
                                    version_id=args.version_id,
                                    work_dir=Path(args.work_dir).absolute())
     elif args.command == COMPILE:
-        report = bugstest_compile(work_dir=Path(args.work_dir).absolute() if args.work_dir else None)
+        report = tests4py_compile(work_dir=Path(args.work_dir).absolute() if args.work_dir else None)
     elif args.command == TEST:
-        report = bugstest_test(work_dir=Path(args.work_dir).absolute() if args.work_dir else None,
+        report = tests4py_test(work_dir=Path(args.work_dir).absolute() if args.work_dir else None,
                                single_test=args.single_test,
                                all_tests=args.all_tests,
                                output=Path(args.output).absolute() if args.output else None)
@@ -172,12 +172,12 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         else:
             command = systemtest
         if args.subcommand == TEST:
-            report = command.bugstest_test(work_dir=Path(args.work_dir).absolute() if args.work_dir else None,
+            report = command.tests4py_test(work_dir=Path(args.work_dir).absolute() if args.work_dir else None,
                                            path=Path(args.path).absolute() if args.path else None,
                                            diversity=args.diversity,
                                            output=Path(args.output).absolute() if args.output else None)
         elif args.subcommand == GENERATE:
-            report = command.bugstest_generate(work_dir=Path(args.work_dir).absolute() if args.work_dir else None,
+            report = command.tests4py_generate(work_dir=Path(args.work_dir).absolute() if args.work_dir else None,
                                                path=Path(args.path).absolute() if args.path else None,
                                                n=args.n, p=args.p,
                                                is_only_passing=args.is_only_passing,

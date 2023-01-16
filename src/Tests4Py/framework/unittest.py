@@ -7,7 +7,7 @@ from typing import Union
 from Tests4Py.framework import utils
 from Tests4Py.projects import TestingFramework
 
-DEFAULT_SUB_PATH = 'bugstest_unittests.py'
+DEFAULT_SUB_PATH = 'tests4py_unittests.py'
 
 
 class UnittestGenerateReport(utils.GenerateReport):
@@ -20,7 +20,7 @@ class UnittestTestReport(utils.TestingReport):
         super().__init__(utils.UNITTEST, subcommand=utils.TEST)
 
 
-def bugstest_generate(work_dir: Path = None, path: Path = None, n: int = 1, p: Union[int, float] = 0.5,
+def tests4py_generate(work_dir: Path = None, path: Path = None, n: int = 1, p: Union[int, float] = 0.5,
                       is_only_passing: bool = False, is_only_failing: bool = False, append: bool = False,
                       verify: bool = False, verbose=True) -> UnittestGenerateReport:
     report = UnittestGenerateReport()
@@ -93,7 +93,7 @@ def bugstest_generate(work_dir: Path = None, path: Path = None, n: int = 1, p: U
     return report
 
 
-def bugstest_test(work_dir: Path = None, path: Path = None, diversity: bool = True, output: Path = None,
+def tests4py_test(work_dir: Path = None, path: Path = None, diversity: bool = True, output: Path = None,
                   verbose=True) -> UnittestTestReport:
     report = UnittestTestReport()
     if verbose:

@@ -1,4 +1,4 @@
-from BugsTest.projects.resources import ansible, black, cookiecutter, fastapi, httpie, keras, luigi, matplotlib, \
+from Tests4Py.projects.resources import ansible, black, cookiecutter, fastapi, httpie, keras, luigi, matplotlib, \
     pandas, pysnooper, sanic, scrapy, spacy, thefuck, tornado, tqdm, youtubedl
 
 __all__ = [

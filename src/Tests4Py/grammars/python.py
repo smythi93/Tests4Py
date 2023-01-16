@@ -1083,7 +1083,7 @@ class ToGrammarVisitor(NodeVisitor):
                f'{"" if node.type_comment is None else self.visit(node.type_comment)})'
 
     def visit_keyword(self, node: keyword) -> str:
-        return f'keyword({"" if node.arg is None else self.visit(node.arg)},' \
+        return f'keyword({"" if node.arg is None else node.arg},' \
                f'{self.visit(node.value)})'
 
     def visit_alias(self, node: alias) -> str:
@@ -1181,6 +1181,13 @@ class PythonGenerator(Generator):
             else:
                 return None, 0
 
+        def get_args(self, function: str) -> Optional[int]:
+            functions = self.get_functions()
+            if function in functions:
+                return functions[function]
+            else:
+                return None
+
     def __init__(self, limit_stmt_per_block=10, limit_stmt_depth=4, limit_expr_depth=4, limit_args_per_function=4,
                  limit_assign_target=1):
         self.limit_expr_depth = limit_expr_depth
@@ -1240,10 +1247,10 @@ class PythonGenerator(Generator):
         self.stmt_depth -= 1
         return stmt_
 
-    def _generate_FunctionDef(self) -> FunctionDef:
+    def _generate_FunctionDef(self, num_args: Optional[int] = None) -> FunctionDef:
         name = self._generate_identifier()
         self.enter_scope()
-        args = self._generate_arguments()
+        args = self._generate_arguments(num_args)
         prev = self.is_in_function
         self.is_in_function = True
         body = self._generate_stmt_list()
@@ -1307,9 +1314,10 @@ class PythonGenerator(Generator):
             identifier = self.identifier_fuzzer.fuzz()
         return identifier
 
-    def _generate_arguments(self) -> arguments:
+    def _generate_arguments(self, num_args: Optional[int] = None) -> arguments:
         return arguments(
-            args=[self._generate_arg() for _ in range(random.randint(0, self.limit_args_per_function))],
+            args=[self._generate_arg() for _ in
+                  range(random.randint(0, self.limit_args_per_function) if num_args is None else num_args)],
             posonlyargs=[],
             defaults=[],
             kwonlyargs=[],
@@ -1373,8 +1381,12 @@ class PythonGenerator(Generator):
             comparators=[self._generate_expr()]
         )
 
-    def _generate_Call(self) -> Union[Call | expr]:
-        function, num_args = self.scope.get_function()
+    def _generate_Call(self, function: Optional[str] = None) -> Union[Call | expr]:
+        num_args = None
+        if function:
+            num_args = self.scope.get_args(function)
+        if num_args is None:
+            function, num_args = self.scope.get_function()
         if function:
             return Call(
                 func=Name(id=function),
@@ -1979,13 +1991,12 @@ GENERATIVE_GRAMMAR['<expr>'] = [
     # '<Subscript>',
     '<Name>',
     # '<List>',
-    # '<Tuple>'
+    '<Tuple>'
 ]
 del GENERATIVE_GRAMMAR['<For>']
 del GENERATIVE_GRAMMAR['<IfExp>']
 del GENERATIVE_GRAMMAR['<Subscript>']
 del GENERATIVE_GRAMMAR['<List>']
-del GENERATIVE_GRAMMAR['<Tuple>']
 del GENERATIVE_GRAMMAR['<Slice>']
 
 assert is_valid_grammar(GENERATIVE_GRAMMAR)

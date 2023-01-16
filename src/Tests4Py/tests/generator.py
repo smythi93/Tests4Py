@@ -6,7 +6,7 @@ from abc import abstractmethod
 from pathlib import Path
 from typing import List, Tuple
 
-from BugsTest.tests.utils import TestResult
+from Tests4Py.tests.utils import TestResult
 
 
 class GenerationFailed(RuntimeWarning):
