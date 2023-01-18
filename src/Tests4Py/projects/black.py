@@ -28,8 +28,16 @@ class Black(Project):
 
 
 def register():
-    # TODO implement the 23 bugs of black
-    pass
+    Black(
+        bug_id=1,
+        python_version='3.8.3',
+        darwin_python_version='3.8.3',
+        python_path='',
+        buggy_commit_id='26c9465a22c732ab1e17b0dec578fa3432e9b558',
+        fixed_commit_id='c0a7582e3d4cc8bec3b7f5a6c52b36880dcb57d7',
+        test_file=[Path('tests', 'test_black.py')],
+        test_cases=['']
+    )
 
 
 class BlackAPI(API):
