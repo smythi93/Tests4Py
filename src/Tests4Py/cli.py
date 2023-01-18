@@ -17,6 +17,12 @@ def check_pyenv():
         logging.error("Pyenv is not installed! Exiting.")
         sys.exit(-1)
 
+    try:
+        os.environ["PYENV_ROOT"]
+    except KeyError:
+        logging.error("Environment Variable PYENV_ROOT not set! Existing.")
+        sys.exit(-1)
+
 
 def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
     if "-O" in sys.argv:
