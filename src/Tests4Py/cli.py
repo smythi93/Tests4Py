@@ -24,6 +24,14 @@ def check_pyenv():
         sys.exit(-1)
 
 
+def check_dos2_unix():
+    try:
+        subprocess.check_call(['dos2unix', '--version'])
+    except OSError:
+        logging.error("Please install dos2unix! Exiting")
+        sys.exit(-1)
+
+
 def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
     if "-O" in sys.argv:
         sys.argv.remove("-O")
@@ -31,6 +39,7 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         sys.exit(0)
 
     check_pyenv()
+    check_dos2_unix()
 
     arguments = argparse.ArgumentParser(description='The access point to the Tests4Py framework')
 
