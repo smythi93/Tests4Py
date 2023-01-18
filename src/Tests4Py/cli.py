@@ -2,10 +2,20 @@ import argparse
 import os
 import sys
 from pathlib import Path
+import subprocess
+import logging
 
 from Tests4Py.framework import tests4py_test, tests4py_compile, tests4py_checkout, unittest, systemtest
 from Tests4Py.framework.utils import CHECKOUT, COMPILE, COVERAGE, FUZZ, INFO, MUTATION, TEST, UNITTEST, SYSTEMTEST, \
     GENERATE, DEFAULT_WORK_DIR
+
+
+def check_pyenv():
+    try:
+        _ = subprocess.check_output(['pyenv', '--version'])
+    except FileNotFoundError:
+        logging.error("Pyenv is not installed! Exiting.")
+        sys.exit(-1)
 
 
 def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
@@ -13,6 +23,8 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         sys.argv.remove("-O")
         os.execl(sys.executable, sys.executable, "-O", *sys.argv)
         sys.exit(0)
+
+    check_pyenv()
 
     arguments = argparse.ArgumentParser(description='The access point to the Tests4Py framework')
 
