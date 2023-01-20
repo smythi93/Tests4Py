@@ -249,6 +249,7 @@ class PySnooper2UnittestGenerator(PySnooperUnittestGenerator):
         ]
 
     def _get_passing_prefix(self) -> List[ast.stmt]:
+        # noinspection PyTypeChecker
         return [
             ast.Import(
                 names=[ast.alias(name='pysnooper')]

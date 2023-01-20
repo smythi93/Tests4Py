@@ -1,0 +1,1 @@
+The bug in PySnooper 1 is not reproducable because all tests pass on the buggy version.

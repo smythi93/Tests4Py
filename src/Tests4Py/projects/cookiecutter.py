@@ -29,8 +29,52 @@ class CookieCutter(Project):
 
 
 def register():
+    CookieCutter(
+        bug_id=1,
+        python_version='3.6.9',
+        darwin_python_version='3.6.15',  # version 3.6.9 do not work on mac os
+        python_path='cookiecutter/build/lib/',
+        buggy_commit_id='c15633745df6abdb24e02746b82aadb20b8cdf8c',
+        fixed_commit_id='7f6804c4953a18386809f11faf4d86898570debc',
+        test_file=[Path('tests', 'test_generate_context.py'), Path('tests', 'test-generate-context', 'non_ascii.json')],
+        test_cases=['tests/test_generate_context.py::test_generate_context_decodes_non_ascii_chars'],
+        test_status_buggy=TestStatus.PASSING,  # It was just a missing test file
+    )
+    CookieCutter(
+        bug_id=2,
+        python_version='3.6.9',
+        darwin_python_version='3.6.15',  # version 3.8.1-3 do not work on mac os
+        python_path='cookiecutter/build/lib/',
+        buggy_commit_id='d7e7b28811e474e14d1bed747115e47dcdd15ba3',
+        fixed_commit_id='90434ff4ea4477941444f1e83313beb414838535',
+        test_file=[Path('tests', 'test_hooks.py')],
+        test_cases=['tests/test_hooks.py::TestFindHooks::test_find_hook',
+                    'tests/test_hooks.py::TestExternalHooks::test_run_hook'],
+        systemtests=None,  # Bug does not propagate
+    )
+    CookieCutter(
+        bug_id=3,
+        python_version='3.6.9',
+        darwin_python_version='3.6.15',  # version 3.8.1-3 do not work on mac os
+        python_path='cookiecutter/build/lib/',
+        buggy_commit_id='5c282f020a8db7e5e7c4e7b51b010556ca31fb7f',
+        fixed_commit_id='7129d474206761a6156925db78eee4b62a0e3944',
+        test_file=[Path('tests', 'test_read_user_choice.py')],
+        test_cases=['tests/test_read_user_choice.py::test_click_invocation'],
+        systemtests=None,  # Bug does not propagate
+    )
+    CookieCutter(
+        bug_id=4,
+        python_version='3.6.9',
+        darwin_python_version='3.6.15',  # version 3.8.1-3 do not work on mac os
+        python_path='cookiecutter/build/lib/',
+        buggy_commit_id='9568ab6ecd2d6836646006c59473c4a4ac0dee04',
+        fixed_commit_id='457a1a4e862aab4102b644ff1d2b2e2b5a766b3c',
+        test_file=[Path('tests', 'test_hooks.py')],
+        test_cases=['tests/test_hooks.py::TestExternalHooks::test_run_failing_hook'],
+        systemtests=None,  # Bug does not propagate
+    )
     # TODO implement the 4 bugs of cookiecutter
-    pass
 
 
 class CookieCutterAPI(API):

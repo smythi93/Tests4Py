@@ -1,1 +1,0 @@
-pytest tests/test_skip_defaults.py::test_return_defaults
