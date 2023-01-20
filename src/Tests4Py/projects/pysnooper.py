@@ -6,6 +6,7 @@ from os import PathLike
 from pathlib import Path
 from typing import List, Optional, Tuple
 
+from Tests4Py.framework.typing import Environment
 from Tests4Py.grammars import python
 from Tests4Py.projects import Project, Status, TestingFramework, TestStatus
 from Tests4Py.tests.generator import UnittestGenerator, SystemtestGenerator
@@ -80,7 +81,7 @@ class PySnooperAPI(API):
         super().__init__(default_timeout=default_timeout)
 
     # noinspection PyBroadException
-    def run(self, system_test_path: PathLike) -> TestResult:
+    def run(self, system_test_path: PathLike, environ: Environment) -> TestResult:
         try:
             with open(system_test_path, 'r') as fp:
                 test = fp.read()
@@ -88,7 +89,7 @@ class PySnooperAPI(API):
             with tempfile.NamedTemporaryFile('w+', suffix='.py', delete=False) as fp:
                 fp.write(test)
             process = subprocess.run(['python', fp.name], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                     timeout=self.default_timeout)
+                                     timeout=self.default_timeout, env=environ)
             os.remove(fp.name)
             if process.returncode:
                 if self.expected_error in process.stderr:
@@ -348,5 +349,5 @@ class PySnooper3SystemtestGenerator(PySnooperSystemtestGenerator):
 
     def _get_failing_args(self) -> List[ast.expr]:
         return [
-            ast.Constant(constant='test.log')
+            ast.Constant(value='test.log')
         ]

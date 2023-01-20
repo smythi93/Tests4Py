@@ -2,7 +2,7 @@ from os import PathLike
 from pathlib import Path
 from typing import List, Optional
 
-from Tests4Py.grammars import python
+from Tests4Py.framework.typing import Environment
 from Tests4Py.projects import Project, Status, TestingFramework, TestStatus
 from Tests4Py.tests.generator import UnittestGenerator, SystemtestGenerator
 from Tests4Py.tests.utils import API, TestResult
@@ -10,7 +10,8 @@ from Tests4Py.tests.utils import API, TestResult
 
 class FastAPI(Project):
 
-    def __init__(self, bug_id: int, buggy_commit_id: str, fixed_commit_id: str, test_file: List[Path], test_cases: List[str],
+    def __init__(self, bug_id: int, buggy_commit_id: str, fixed_commit_id: str, test_file: List[Path],
+                 test_cases: List[str],
                  test_status_fixed: TestStatus = TestStatus.PASSING,
                  test_status_buggy: TestStatus = TestStatus.FAILING,
                  unittests: Optional[UnittestGenerator] = None,
@@ -172,5 +173,5 @@ class FastAPIAPI(API):
         super().__init__(default_timeout=default_timeout)
 
     # noinspection PyBroadException
-    def run(self, system_test_path: PathLike) -> TestResult:
+    def run(self, system_test_path: PathLike, environ: Environment) -> TestResult:
         return TestResult.UNKNOWN

@@ -1,9 +1,10 @@
 import logging
 import os
 from pathlib import Path
-from typing import Union, Tuple
+from typing import Union, Tuple, Dict
 
-from Tests4Py.framework import utils
+from Tests4Py.framework.logger import LOGGER
+from Tests4Py.framework import utils, environment
 from Tests4Py.projects import Project
 from Tests4Py.tests.utils import TestResult
 
@@ -20,9 +21,9 @@ class SystemtestTestReport(utils.TestingReport):
         super().__init__(utils.SYSTEMTEST, subcommand=utils.TEST)
 
 
-def _get_system_runs(project: Project, path: os.PathLike) -> Tuple[int, int, int]:
+def _get_system_runs(project: Project, path: os.PathLike, environ: Dict[str, str]) -> Tuple[int, int, int]:
     total, passing, failing = 0, 0, 0
-    for _, result in project.api.runs(path):
+    for _, result in project.api.runs(path, environ):
         if TestResult.PASSING == result:
             passing += 1
         elif TestResult.FAILING == result:
@@ -36,9 +37,9 @@ def tests4py_generate(work_dir: Path = None, path: Path = None, n: int = 1, p: U
                       verify: bool = False, verbose=True) -> SystemtestGenerateReport:
     report = SystemtestGenerateReport()
     if verbose:
-        utils.LOGGER.setLevel(logging.INFO)
+        LOGGER.setLevel(logging.INFO)
     else:
-        utils.LOGGER.setLevel(logging.WARNING)
+        LOGGER.setLevel(logging.WARNING)
 
     if work_dir is None:
         work_dir = Path.cwd()
@@ -66,15 +67,15 @@ def tests4py_generate(work_dir: Path = None, path: Path = None, n: int = 1, p: U
             project.systemtests.failing_probability = p / n
 
         if is_only_passing:
-            utils.LOGGER.info(
+            LOGGER.info(
                 f'Generate {n} only passing tests for {project.project_name}_{project.bug_id} to {path}')
             result = project.systemtests.generate_only_passing_tests(n=n, path=path, append=append)
         elif is_only_failing:
-            utils.LOGGER.info(
+            LOGGER.info(
                 f'Generate {n} only failing tests for {project.project_name}_{project.bug_id} to {path}')
             result = project.systemtests.generate_only_failing_tests(n=n, path=path, append=append)
         else:
-            utils.LOGGER.info(
+            LOGGER.info(
                 f'Generate {n} passing and failing tests with failing probability '
                 f'{project.systemtests.failing_probability} for {project.project_name}_{project.bug_id} to {path}')
             result = project.systemtests.generate_tests(n=n, path=path, append=append)
@@ -83,17 +84,16 @@ def tests4py_generate(work_dir: Path = None, path: Path = None, n: int = 1, p: U
         report.failing = result.failing
         report.total = n
         if verify:
-            utils.__env_on__(project, verbose=verbose)
-            utils.__activating_venv__(work_dir / utils.VENV)
+            environ = environment.__env_on__(project, verbose=verbose)
+            environ = environment.__activating_venv__(work_dir, environ)
 
-            _, report.verify_failing, report.verify_passing = _get_system_runs(project, path)
-            utils.LOGGER.info(f'Verify: {report.verify_passing} passed --- {report.verify_failing} failed')
+            _, report.verify_failing, report.verify_passing = _get_system_runs(project, path, environ)
+            LOGGER.info(f'Verify: {report.verify_passing} passed --- {report.verify_failing} failed')
         report.successful = True
     except BaseException as e:
         report.raised = e
         report.successful = False
     finally:
-        utils.__deactivating_venv__(verbose=verbose)
         os.chdir(current_dir)
     return report
 
@@ -102,9 +102,9 @@ def tests4py_test(work_dir: Path = None, path: Path = None, diversity: bool = Tr
                   verbose=True) -> SystemtestTestReport:
     report = SystemtestTestReport()
     if verbose:
-        utils.LOGGER.setLevel(logging.INFO)
+        LOGGER.setLevel(logging.INFO)
     else:
-        utils.LOGGER.setLevel(logging.WARNING)
+        LOGGER.setLevel(logging.WARNING)
 
     if work_dir is None:
         work_dir = Path.cwd()
@@ -123,33 +123,32 @@ def tests4py_test(work_dir: Path = None, path: Path = None, diversity: bool = Tr
         if path and not path.exists():
             raise ValueError(f'Running of systemtests is not possible because {path} does not exist')
 
-        utils.__env_on__(project, verbose=verbose)
-        utils.__activating_venv__(work_dir / utils.VENV)
+        environ = environment.__env_on__(project, verbose=verbose)
+        environ = environment.__activating_venv__(work_dir, environ)
 
         report.total, report.passing, report.failing = 0, 0, 0
 
         if path:
             if path.is_dir():
-                report.total, report.passing, report.failing = _get_system_runs(project, path)
+                report.total, report.passing, report.failing = _get_system_runs(project, path, environ)
             else:
                 report.total = 1
-                result = project.api.run(path)
+                result = project.api.run(path, environ)
                 if TestResult.PASSING == result:
                     report.passing = 1
                 elif TestResult.FAILING == result:
                     report.failing = 1
         if diversity and (work_dir / utils.DEFAULT_SYSTEMTESTS_DIVERSITY_PATH).exists():
-            t, p, f = _get_system_runs(project, work_dir / utils.DEFAULT_SYSTEMTESTS_DIVERSITY_PATH)
+            t, p, f = _get_system_runs(project, work_dir / utils.DEFAULT_SYSTEMTESTS_DIVERSITY_PATH, environ)
             report.total += t
             report.passing += p
             report.failing += f
-        utils.LOGGER.info(f'Ran {report.total} tests')
-        utils.LOGGER.info(f'{report.passing} passed --- {report.failing} failed')
+        LOGGER.info(f'Ran {report.total} tests')
+        LOGGER.info(f'{report.passing} passed --- {report.failing} failed')
         report.successful = True
     except BaseException as e:
         report.raised = e
         report.successful = False
     finally:
-        utils.__deactivating_venv__(verbose=verbose)
         os.chdir(current_dir)
     return report
