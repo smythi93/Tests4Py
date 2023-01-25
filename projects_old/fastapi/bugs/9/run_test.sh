@@ -1,1 +1,0 @@
-pytest tests/test_request_body_parameters_media_type.py::test_openapi_schema

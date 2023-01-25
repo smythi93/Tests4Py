@@ -2,6 +2,7 @@ from os import PathLike
 from pathlib import Path
 from typing import List, Optional
 
+from Tests4Py.framework.typing import Environment
 from Tests4Py.projects import Project, Status, TestingFramework, TestStatus
 from Tests4Py.tests.generator import UnittestGenerator, SystemtestGenerator
 from Tests4Py.tests.utils import API, TestResult
@@ -60,5 +61,5 @@ class AnsibleAPI(API):
         super().__init__(default_timeout=default_timeout)
 
     # noinspection PyBroadException
-    def run(self, system_test_path: PathLike) -> TestResult:
+    def run(self, system_test_path: PathLike, environ: Environment) -> TestResult:
         return TestResult.UNKNOWN

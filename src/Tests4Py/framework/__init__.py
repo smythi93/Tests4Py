@@ -3,7 +3,6 @@ import logging
 import os
 import shutil
 import subprocess
-import sys
 from pathlib import Path
 
 from Tests4Py import projects
@@ -11,8 +10,9 @@ from Tests4Py.framework import unittest, systemtest
 from Tests4Py.framework.utils import DEFAULT_WORK_DIR, DEFAULT_UNITTESTS_DIVERSITY_PATH, \
     DEFAULT_SYSTEMTESTS_DIVERSITY_PATH, LOGGER, UNITTEST_TOTAL_PATTERN, UNITTEST_FAILED_PATTERN, \
     SYSTEMTESTS_PASSING_CLASS, SYSTEMTESTS_FAILING_CLASS, CheckoutReport, CompileReport, TestReport, __setup__, \
-    __env_on__, __activating_venv__, __deactivating_venv__, __get_project__, __get_pytest_result__, VENV, INFO_FILE, \
+    __get_project__, __get_pytest_result__, INFO_FILE, \
     REQUIREMENTS_FILE, SETUP_FILE, PATCH_FILE
+from Tests4Py.framework.environment import VENV, __env_on__, __activating_venv__, __create_venv__
 from Tests4Py.projects import resources, TestingFramework
 
 
@@ -165,54 +165,47 @@ def tests4py_compile(work_dir: Path = None, verbose: bool = True) -> CompileRepo
 
         if not work_dir.exists():
             raise IOError(f'{work_dir} does not exist')
-        project, tests4py_info, tests4py_requirements, tests4py_setup = __get_project__(work_dir)
+        project, t4p_info, t4p_requirements, t4p_setup = __get_project__(work_dir)
         report.project = project
         if project.compiled:
             LOGGER.info(f'{project} already compiled')
             report.successful = True
             return report
-        __env_on__(project, verbose=verbose)
-        env_dir = work_dir / VENV
-        shutil.rmtree(env_dir, ignore_errors=True)
+        environ = __env_on__(project, verbose=verbose)
+        __create_venv__(work_dir, environ)
 
-        LOGGER.info('Creating virtual env')
-        subprocess.run(['python', '-m', 'venv', env_dir])
-
-        __activating_venv__(env_dir)
-        if sys.platform not in ('win32', 'cygwin'):
-            subprocess.run(['dos2unix', tests4py_requirements])
+        environ = __activating_venv__(work_dir, environ, verbose=verbose)
 
         LOGGER.info('Installing utilities')
-        subprocess.check_call(['python', '-m', 'pip', 'install', '--upgrade', 'pip'])
-        subprocess.check_call(['python', '-m', 'pip', 'install', '--upgrade', 'setuptools'])
-        subprocess.check_call(['python', '-m', 'pip', 'install', 'wheel==0.37.1'])
-        subprocess.check_call(['python', '-m', 'pip', 'install', 'pytest==7.0.1'])
+        subprocess.check_call(['python', '-m', 'pip', 'install', '--upgrade', 'pip'], env=environ)
+        subprocess.check_call(['python', '-m', 'pip', 'install', '--upgrade', 'setuptools'], env=environ)
+        subprocess.check_call(['python', '-m', 'pip', 'install', 'wheel==0.37.1'], env=environ)
+        subprocess.check_call(['python', '-m', 'pip', 'install', 'pytest==7.0.1'], env=environ)
 
         LOGGER.info('Installing requirements')
-        subprocess.check_call(['python', '-m', 'pip', 'install', '-r', tests4py_requirements])
+        subprocess.check_call(['python', '-m', 'pip', 'install', '-r', t4p_requirements], env=environ)
 
         LOGGER.info('Checking and installing test requirements')
         test_requirements = Path('test_requirements.txt')
         if test_requirements.exists():
-            subprocess.check_call(['python', '-m', 'pip', 'install', '-r', test_requirements])
+            subprocess.check_call(['python', '-m', 'pip', 'install', '-r', test_requirements], env=environ)
 
         LOGGER.info('Run setup')
-        if tests4py_setup.exists():
-            with open(tests4py_setup, 'r') as setup_file:
+        if t4p_setup.exists():
+            with open(t4p_setup, 'r') as setup_file:
                 for line in setup_file:
                     if line:
-                        subprocess.check_call(line, shell=True)
+                        subprocess.check_call(line, shell=True, env=environ)
 
         LOGGER.info('Set compiled flag')
         project.compiled = True
-        project.write_bug_info(tests4py_info)
+        project.write_bug_info(t4p_info)
 
         report.successful = True
     except BaseException as e:
         report.raised = e
         report.successful = False
     finally:
-        __deactivating_venv__()
         os.chdir(current_dir)
     return report
 
@@ -264,8 +257,8 @@ def tests4py_test(work_dir: Path = None, single_test: str = None, all_tests: boo
         elif not project.buggy and project.test_status_fixed == projects.TestStatus.FAILING:
             LOGGER.warning(f'The tests will fail on this fixed version {project.project_name}_{project.bug_id}')
 
-        __env_on__(project, verbose=verbose)
-        __activating_venv__(work_dir / VENV)
+        environ = __env_on__(project, verbose=verbose)
+        environ = __activating_venv__(work_dir, environ)
 
         command = ['python', '-m']
 
@@ -275,7 +268,7 @@ def tests4py_test(work_dir: Path = None, single_test: str = None, all_tests: boo
                 command.append(f'--junit-xml={output.absolute()}')
         elif project.testing_framework == TestingFramework.UNITTEST:
             if output:
-                subprocess.run(['python', '-m', 'pip', 'install', 'unittest-xml-reporting'])
+                subprocess.run(['python', '-m', 'pip', 'install', 'unittest-xml-reporting'], env=environ)
                 command += ['xmlrunner', '--output-file', output.absolute()]
             else:
                 command.append(TestingFramework.UNITTEST.value)
@@ -288,7 +281,7 @@ def tests4py_test(work_dir: Path = None, single_test: str = None, all_tests: boo
             command.append(single_test)
 
         LOGGER.info(f'Run tests with command {command}')
-        output = subprocess.run(command, stdout=subprocess.PIPE).stdout
+        output = subprocess.run(command, stdout=subprocess.PIPE, env=environ).stdout
         LOGGER.info(output.decode('utf-8'))
 
         successful = False
@@ -313,7 +306,6 @@ def tests4py_test(work_dir: Path = None, single_test: str = None, all_tests: boo
         report.raised = e
         report.successful = False
     finally:
-        __deactivating_venv__(verbose=verbose)
         os.chdir(current_dir)
     return report
 

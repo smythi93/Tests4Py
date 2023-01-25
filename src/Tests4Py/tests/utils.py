@@ -1,8 +1,11 @@
 import enum
 import os
+from abc import abstractmethod
 from os import PathLike
 from pathlib import Path
 from typing import List, Tuple
+
+from Tests4Py.framework.typing import Environment
 
 
 class TestResult(enum.Enum):
@@ -16,10 +19,11 @@ class API:
     def __init__(self, default_timeout=5):
         self.default_timeout = default_timeout
 
-    def run(self, system_test_path: PathLike) -> TestResult:
+    @abstractmethod
+    def run(self, system_test_path: PathLike, environ: Environment) -> TestResult:
         return NotImplemented
 
-    def runs(self, system_tests_path: PathLike) -> List[Tuple[PathLike, TestResult]]:
+    def runs(self, system_tests_path: PathLike, environ: Environment) -> List[Tuple[PathLike, TestResult]]:
         system_tests_path = Path(system_tests_path)
         if not system_tests_path.exists():
             raise ValueError(f'{system_tests_path} does not exist')
@@ -29,5 +33,5 @@ class API:
         for dir_path, _, files in os.walk(system_tests_path):
             for file in files:
                 path = Path(dir_path, file)
-                tests.append((path, self.run(path)))
+                tests.append((path, self.run(path, environ)))
         return tests

@@ -17,9 +17,10 @@ class Status(enum.Enum):
 
 
 class TestStatus(enum.Enum):
-    PASSING = 0
-    FAILING = 1
-    ERROR = 2
+    PASSING = 0  # Indicates passing tests
+    FAILING = 1  # Indicates failing tests
+    ERROR = 2  # Indicates tests that cannot run because of an error
+    WRONG = 3  # Indicates tests that are wrong, i.e., the tests contain the bug, not the program
 
 
 class TestingFramework(enum.Enum):

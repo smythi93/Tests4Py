@@ -1,1 +1,0 @@
-tox tests/test_read_user_choice.py::test_click_invocation
