@@ -18,18 +18,26 @@ class YoutubeDL(Project):
                  unittests: Optional[UnittestGenerator] = None,
                  systemtests: Optional[SystemtestGenerator] = None,
                  api: Optional[API] = None):
-        super().__init__(bug_id=bug_id, project_name='youtube-dl', github_url='https://github.com/ytdl-org/youtube-dl',
+        super().__init__(bug_id=bug_id, project_name='youtubedl', github_url='https://github.com/ytdl-org/youtube-dl',
                          status=Status.OK, cause='N.A.',
                          python_version=python_version, python_path=python_path, buggy_commit_id=buggy_commit_id,
-                         fixed_commit_id=fixed_commit_id, testing_framework=TestingFramework.PYTEST,
+                         fixed_commit_id=fixed_commit_id, testing_framework=TestingFramework.UNITTEST,
                          test_file=test_file, test_cases=test_cases, darwin_python_version=darwin_python_version,
                          test_status_fixed=test_status_fixed, test_status_buggy=test_status_buggy,
                          unittests=unittests, systemtests=systemtests, api=api, grammar=None)  # TODO adjust parameters
 
 
 def register():
-    # TODO implement the 43 bugs of youtube-dl
-    pass
+    YoutubeDL(
+        bug_id=1,
+        python_version='3.7.0',
+        darwin_python_version='3.7.12',
+        python_path='',
+        buggy_commit_id='99036a1298089068dcf80c0985bfcc3f8c24f281',
+        fixed_commit_id='1cc47c667419e0eadc0a6989256ab7b276852adf',
+        test_file=[Path('test', 'test_utils.py')],
+        test_cases=['test.test_utils.TestUtil.test_match_str']
+    )
 
 
 class YoutubeDLAPI(API):
