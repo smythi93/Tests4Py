@@ -36,7 +36,7 @@ def register():
         buggy_commit_id='26c9465a22c732ab1e17b0dec578fa3432e9b558',
         fixed_commit_id='c0a7582e3d4cc8bec3b7f5a6c52b36880dcb57d7',
         test_file=[Path('tests', 'test_black.py')],
-        test_cases=['']
+        test_cases=['tests.test_black.BlackTestCase.test_works_in_mono_process_only_environment']
     )
 
 
