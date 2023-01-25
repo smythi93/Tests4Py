@@ -1,6 +1,4 @@
-from Tests4Py.projects.resources.tqdm import bug_1, bug_2, bug_3, bug_4, bug_5, bug_6, bug_7, bug_8, bug_9
-
-__all__ = [
+from Tests4Py.projects.resources.tqdm import (
     bug_1,
     bug_2,
     bug_3,
@@ -9,5 +7,7 @@ __all__ = [
     bug_6,
     bug_7,
     bug_8,
-    bug_9
-]
+    bug_9,
+)
+
+__all__ = [bug_1, bug_2, bug_3, bug_4, bug_5, bug_6, bug_7, bug_8, bug_9]

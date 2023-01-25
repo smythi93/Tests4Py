@@ -7,13 +7,11 @@ from Tests4Py.grammars.utils import GrammarVisitor
 
 
 class Antlr4AST:
-
     def __str__(self):
         return repr(self)
 
 
 class Antlr4NonTerminal(Antlr4AST):
-
     def __repr__(self):
         return self.symbol
 
@@ -22,7 +20,6 @@ class Antlr4NonTerminal(Antlr4AST):
 
 
 class Antlr4Terminal(Antlr4AST):
-
     def __repr__(self):
         return f"'{self.symbol}'"
 
@@ -31,37 +28,37 @@ class Antlr4Terminal(Antlr4AST):
 
 
 class Antlr4Concatenation(Antlr4AST):
-
     def __repr__(self):
-        return ' '.join(repr(symbol) for symbol in self.symbols)
+        return " ".join(repr(symbol) for symbol in self.symbols)
 
     def __init__(self, symbols: List[Union[Antlr4Terminal, Antlr4NonTerminal]]):
         self.symbols = symbols
 
 
 class Antlr4Alternatives(Antlr4AST):
-
     def __repr__(self):
-        return ' | '.join(repr(alternative) for alternative in self.alternatives)
+        return " | ".join(repr(alternative) for alternative in self.alternatives)
 
     def __init__(self, alternatives: List[Antlr4Concatenation]):
         self.alternatives = alternatives
 
 
 class Antlr4Rule(Antlr4AST):
-
     def __repr__(self):
-        return f'{self.name} : {repr(self.expansion)} ;'
+        return f"{self.name} : {repr(self.expansion)} ;"
 
-    def __init__(self, name: str, expansion: Union[Antlr4Alternatives, Antlr4Concatenation]):
+    def __init__(
+        self, name: str, expansion: Union[Antlr4Alternatives, Antlr4Concatenation]
+    ):
         self.name = name
         self.expansion = expansion
 
 
 class Antlr4Grammar(Antlr4AST):
-
     def __repr__(self):
-        return f'grammar {self.name};\n\n' + '\n\n'.join(repr(rule) for rule in self.rules)
+        return f"grammar {self.name};\n\n" + "\n\n".join(
+            repr(rule) for rule in self.rules
+        )
 
     def __init__(self, name: str, rules: List[Antlr4Rule]):
         self.name = name
@@ -80,13 +77,12 @@ class Antlr4Visitor:
                         self.visit(item)
 
     def visit(self, node: Antlr4AST) -> Any:
-        method = 'visit_' + node.__class__.__name__
+        method = "visit_" + node.__class__.__name__
         visitor: Callable[[Antlr4AST], Any] = getattr(self, method, self.generic_visit)
         return visitor(node)
 
 
 class TerminalFinder(Antlr4Visitor):
-
     def __init__(self):
         self.terminal_symbols = list()
         self.non_terminal_symbol_found = False
@@ -102,7 +98,6 @@ class TerminalFinder(Antlr4Visitor):
 
 
 class LexerReplacer(Antlr4Visitor):
-
     def __init__(self, terminal_symbols: List[str]):
         self.terminal_symbols = terminal_symbols
 
@@ -132,7 +127,9 @@ def _parse_concatenation(concatenation: str) -> Antlr4Concatenation:
 
 
 def _parse_alternatives(alternatives: List[str]) -> Antlr4Alternatives:
-    return Antlr4Alternatives([_parse_concatenation(concatenation) for concatenation in alternatives])
+    return Antlr4Alternatives(
+        [_parse_concatenation(concatenation) for concatenation in alternatives]
+    )
 
 
 def _parse_rule(rule: str, expansions: List[str]) -> Antlr4Rule:
@@ -145,7 +142,7 @@ def _parse_rule(rule: str, expansions: List[str]) -> Antlr4Rule:
     return Antlr4Rule(GrammarVisitor.get_name(rule), expansion)
 
 
-def to_antlr4(grammar: Grammar, name: str = 'TMP') -> Antlr4Grammar:
+def to_antlr4(grammar: Grammar, name: str = "TMP") -> Antlr4Grammar:
     rules: List[Antlr4Rule] = list()
     for rule in grammar:
         rules.append(_parse_rule(rule, grammar[rule]))
@@ -156,10 +153,10 @@ def to_antlr4(grammar: Grammar, name: str = 'TMP') -> Antlr4Grammar:
     return g
 
 
-def to_antlr4_string(grammar: Grammar, name: str = 'TMP') -> str:
+def to_antlr4_string(grammar: Grammar, name: str = "TMP") -> str:
     return str(to_antlr4(grammar, name))
 
 
-def to_antlr4_file(file: PathLike, grammar: Grammar, name: str = 'TMP'):
-    with open(file, 'w') as fp:
+def to_antlr4_file(file: PathLike, grammar: Grammar, name: str = "TMP"):
+    with open(file, "w") as fp:
         fp.write(to_antlr4_string(grammar, name))

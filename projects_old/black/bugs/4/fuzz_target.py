@@ -6,7 +6,7 @@ from black import lib2to3_parse, get_future_imports, LineGenerator, EmptyLineTra
 @PythonFuzz
 def fuzz(buf):
     try:
-        src_node = lib2to3_parse(buf.lstrip().decode('utf-8'))
+        src_node = lib2to3_parse(buf.lstrip().decode("utf-8"))
     except Exception:
         # not interested in bad input here
         return
@@ -24,6 +24,5 @@ def fuzz(buf):
         before, after = elt.maybe_empty_lines(current_line)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     fuzz()
-

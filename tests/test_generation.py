@@ -8,10 +8,13 @@ from Tests4Py.grammars import python
 
 
 class TestPythonGeneration(unittest.TestCase):
-
     def setUp(self) -> None:
-        self.generator = python.PythonGenerator(limit_stmt_per_block=3, limit_stmt_depth=3, limit_expr_depth=2,
-                                                limit_args_per_function=2)
+        self.generator = python.PythonGenerator(
+            limit_stmt_per_block=3,
+            limit_stmt_depth=3,
+            limit_expr_depth=2,
+            limit_args_per_function=2,
+        )
 
     def test_fuzzing_100_syntax(self):
         self._test_fuzzing_syntax(100)
@@ -46,8 +49,10 @@ class TestPythonGeneration(unittest.TestCase):
             self.generator.reset()
             p = self.generator.generate()
             self.assertIsNotNone(p)
-            with tempfile.NamedTemporaryFile('w+', suffix='.py', delete=False) as fp:
+            with tempfile.NamedTemporaryFile("w+", suffix=".py", delete=False) as fp:
                 fp.write(p)
-            process = subprocess.run(['python3.10', fp.name], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            process = subprocess.run(
+                ["python3.10", fp.name], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
             os.remove(fp.name)
             self.assertEqual(0, process.returncode)

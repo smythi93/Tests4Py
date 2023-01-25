@@ -5,10 +5,9 @@ from python_toolbox import temp_file_tools
 
 
 class TestsFailing(unittest.TestCase):
-
     def test_diversity_1(self):
-        with temp_file_tools.create_temp_folder(prefix='pysnooper') as folder:
-            path = folder / 'test_1.log'
+        with temp_file_tools.create_temp_folder(prefix="pysnooper") as folder:
+            path = folder / "test_1.log"
 
             @pysnooper.snoop(str(path))
             def function_1(foo):
@@ -16,13 +15,13 @@ class TestsFailing(unittest.TestCase):
                 y = 2
                 return x / y
 
-            result = function_1('test')
+            result = function_1("test")
             self.assertEqual(21, result)
             self.assertTrue(path.exists())
 
     def test_diversity_2(self):
-        with temp_file_tools.create_temp_folder(prefix='pysnooper') as folder:
-            path = folder / 'test_2.log'
+        with temp_file_tools.create_temp_folder(prefix="pysnooper") as folder:
+            path = folder / "test_2.log"
 
             @pysnooper.snoop(str(path))
             def function_2(x):
@@ -36,8 +35,8 @@ class TestsFailing(unittest.TestCase):
             self.assertTrue(path.exists())
 
     def test_diversity_3(self):
-        with temp_file_tools.create_temp_folder(prefix='pysnooper') as folder:
-            path = folder / 'test_3.log'
+        with temp_file_tools.create_temp_folder(prefix="pysnooper") as folder:
+            path = folder / "test_3.log"
 
             @pysnooper.snoop(str(path))
             def function_3(x):
@@ -48,8 +47,8 @@ class TestsFailing(unittest.TestCase):
             self.assertTrue(path.exists())
 
     def test_diversity_4(self):
-        with temp_file_tools.create_temp_folder(prefix='pysnooper') as folder:
-            path = folder / 'test_4.log'
+        with temp_file_tools.create_temp_folder(prefix="pysnooper") as folder:
+            path = folder / "test_4.log"
 
             @pysnooper.snoop(str(path))
             def function_4(x, y, z):
@@ -70,8 +69,8 @@ class TestsFailing(unittest.TestCase):
             self.assertTrue(path.exists())
 
     def test_diversity_5(self):
-        with temp_file_tools.create_temp_folder(prefix='pysnooper') as folder:
-            path = folder / 'test_5.log'
+        with temp_file_tools.create_temp_folder(prefix="pysnooper") as folder:
+            path = folder / "test_5.log"
 
             @pysnooper.snoop(str(path))
             def function_5(m, n):
@@ -87,21 +86,21 @@ class TestsFailing(unittest.TestCase):
             self.assertTrue(path.exists())
 
     def test_diversity_6(self):
-        with temp_file_tools.create_temp_folder(prefix='pysnooper') as folder:
-            path = folder / 'test_6.log'
+        with temp_file_tools.create_temp_folder(prefix="pysnooper") as folder:
+            path = folder / "test_6.log"
 
             @pysnooper.snoop(str(path))
             def function_6(x, y):
                 z = 2
-                return x ** z - z * x * y + y ** z
+                return x**z - z * x * y + y**z
 
             result = function_6(2, 2)
             self.assertEqual(0, result)
             self.assertTrue(path.exists())
 
     def test_diversity_7(self):
-        with temp_file_tools.create_temp_folder(prefix='pysnooper') as folder:
-            path = folder / 'test_7.log'
+        with temp_file_tools.create_temp_folder(prefix="pysnooper") as folder:
+            path = folder / "test_7.log"
 
             @pysnooper.snoop(str(path))
             def function_7(x):
@@ -112,8 +111,8 @@ class TestsFailing(unittest.TestCase):
             self.assertTrue(path.exists())
 
     def test_diversity_8(self):
-        with temp_file_tools.create_temp_folder(prefix='pysnooper') as folder:
-            path = folder / 'test_7.log'
+        with temp_file_tools.create_temp_folder(prefix="pysnooper") as folder:
+            path = folder / "test_7.log"
 
             @pysnooper.snoop(str(path))
             def function_8(x):
@@ -127,8 +126,8 @@ class TestsFailing(unittest.TestCase):
             self.assertTrue(path.exists())
 
     def test_diversity_9(self):
-        with temp_file_tools.create_temp_folder(prefix='pysnooper') as folder:
-            path = folder / 'test_9.log'
+        with temp_file_tools.create_temp_folder(prefix="pysnooper") as folder:
+            path = folder / "test_9.log"
 
             @pysnooper.snoop(str(path))
             def function_9(x):
@@ -142,8 +141,8 @@ class TestsFailing(unittest.TestCase):
             self.assertTrue(path.exists())
 
     def test_diversity_10(self):
-        with temp_file_tools.create_temp_folder(prefix='pysnooper') as folder:
-            path = folder / 'test_10.log'
+        with temp_file_tools.create_temp_folder(prefix="pysnooper") as folder:
+            path = folder / "test_10.log"
 
             @pysnooper.snoop(str(path))
             def function_10(n, k):
@@ -160,7 +159,6 @@ class TestsFailing(unittest.TestCase):
 
 
 class TestsPassing(unittest.TestCase):
-
     def test_diversity_1(self):
         @pysnooper.snoop()
         def function_1(foo):
@@ -168,7 +166,7 @@ class TestsPassing(unittest.TestCase):
             y = 2
             return x / y
 
-        result = function_1('test')
+        result = function_1("test")
         self.assertEqual(21, result)
 
     def test_diversity_2(self):
@@ -225,7 +223,7 @@ class TestsPassing(unittest.TestCase):
         @pysnooper.snoop()
         def function_6(x, y):
             z = 2
-            return x ** z - z * x * y + y ** z
+            return x**z - z * x * y + y**z
 
         result = function_6(2, 2)
         self.assertEqual(0, result)

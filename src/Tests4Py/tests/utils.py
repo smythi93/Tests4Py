@@ -15,7 +15,6 @@ class TestResult(enum.Enum):
 
 
 class API:
-
     def __init__(self, default_timeout=5):
         self.default_timeout = default_timeout
 
@@ -23,12 +22,14 @@ class API:
     def run(self, system_test_path: PathLike, environ: Environment) -> TestResult:
         return NotImplemented
 
-    def runs(self, system_tests_path: PathLike, environ: Environment) -> List[Tuple[PathLike, TestResult]]:
+    def runs(
+        self, system_tests_path: PathLike, environ: Environment
+    ) -> List[Tuple[PathLike, TestResult]]:
         system_tests_path = Path(system_tests_path)
         if not system_tests_path.exists():
-            raise ValueError(f'{system_tests_path} does not exist')
+            raise ValueError(f"{system_tests_path} does not exist")
         if not system_tests_path.is_dir():
-            raise ValueError(f'{system_tests_path} is not a directory')
+            raise ValueError(f"{system_tests_path} is not a directory")
         tests = list()
         for dir_path, _, files in os.walk(system_tests_path):
             for file in files:

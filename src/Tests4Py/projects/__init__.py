@@ -24,22 +24,33 @@ class TestStatus(enum.Enum):
 
 
 class TestingFramework(enum.Enum):
-    PYTEST = 'pytest'
-    UNITTEST = 'unittest'
+    PYTEST = "pytest"
+    UNITTEST = "unittest"
 
 
 class Project:
-
-    def __init__(self, bug_id: int, project_name: str, github_url: str, status: Status, cause: str,
-                 python_version: str, python_path: str, buggy_commit_id: str,
-                 fixed_commit_id: str, testing_framework: TestingFramework, test_file: List[Path],
-                 test_cases: List[str], darwin_python_version: Optional[str] = None,
-                 test_status_fixed: TestStatus = TestStatus.PASSING,
-                 test_status_buggy: TestStatus = TestStatus.FAILING,
-                 unittests: Optional[UnittestGenerator] = None,
-                 systemtests: Optional[SystemtestGenerator] = None,
-                 api: Optional[API] = None,
-                 grammar: Optional[Grammar] = None):
+    def __init__(
+        self,
+        bug_id: int,
+        project_name: str,
+        github_url: str,
+        status: Status,
+        cause: str,
+        python_version: str,
+        python_path: str,
+        buggy_commit_id: str,
+        fixed_commit_id: str,
+        testing_framework: TestingFramework,
+        test_file: List[Path],
+        test_cases: List[str],
+        darwin_python_version: Optional[str] = None,
+        test_status_fixed: TestStatus = TestStatus.PASSING,
+        test_status_buggy: TestStatus = TestStatus.FAILING,
+        unittests: Optional[UnittestGenerator] = None,
+        systemtests: Optional[SystemtestGenerator] = None,
+        api: Optional[API] = None,
+        grammar: Optional[Grammar] = None,
+    ):
         if project_name not in bugs:
             bugs[project_name] = dict()
         bugs[project_name][bug_id] = self
@@ -55,7 +66,11 @@ class Project:
         self.testing_framework = testing_framework
         self.test_file = test_file
         self.test_cases = test_cases
-        self.darwin_python_version = darwin_python_version if darwin_python_version is not None else python_version
+        self.darwin_python_version = (
+            darwin_python_version
+            if darwin_python_version is not None
+            else python_version
+        )
         self.test_status_fixed = test_status_fixed
         self.test_status_buggy = test_status_buggy
         self.buggy = False
@@ -67,13 +82,13 @@ class Project:
 
     def write_bug_info(self, path: Path):
         config = ConfigParser()
-        config['info'] = {
-            'name': self.project_name,
-            'bug_id': self.bug_id,
-            'buggy': self.buggy,
-            'compiled': self.compiled,
+        config["info"] = {
+            "name": self.project_name,
+            "bug_id": self.bug_id,
+            "buggy": self.buggy,
+            "compiled": self.compiled,
         }
-        with open(path, 'w') as fp:
+        with open(path, "w") as fp:
             config.write(fp)
 
 
@@ -82,25 +97,44 @@ def get_project(project_name: str, bug_id: int) -> Project:
     try:
         bug = bugs[project_name]
     except KeyError:
-        raise ValueError(f'Project {project_name} not found')
+        raise ValueError(f"Project {project_name} not found")
     try:
         project: Project = bug[bug_id]
     except KeyError:
-        raise ValueError(f'BugID {bug_id} not found for project {project_name}')
+        raise ValueError(f"BugID {bug_id} not found for project {project_name}")
     return project
 
 
 def load_bug_info(path: Path) -> Project:
     config = ConfigParser()
     config.read(path.absolute())
-    project = get_project(config['info']['name'], int(config['info']['bug_id']))
-    project.buggy = config['info']['buggy'] == 'True'
-    project.compiled = config['info']['compiled'] == 'True'
+    project = get_project(config["info"]["name"], int(config["info"]["bug_id"]))
+    project.buggy = config["info"]["buggy"] == "True"
+    project.compiled = config["info"]["compiled"] == "True"
     return project
 
 
 __all__ = [
-    'Status', 'TestStatus', 'TestingFramework', 'Project', 'load_bug_info',
-    'ansible', 'black', 'cookiecutter', 'fastapi', 'httpie', 'keras', 'luigi', 'matplotlib', 'pandas', 'pysnooper',
-    'sanic', 'scrapy', 'spacy', 'thefuck', 'tornado', 'tqdm', 'youtubedl'
+    "Status",
+    "TestStatus",
+    "TestingFramework",
+    "Project",
+    "load_bug_info",
+    "ansible",
+    "black",
+    "cookiecutter",
+    "fastapi",
+    "httpie",
+    "keras",
+    "luigi",
+    "matplotlib",
+    "pandas",
+    "pysnooper",
+    "sanic",
+    "scrapy",
+    "spacy",
+    "thefuck",
+    "tornado",
+    "tqdm",
+    "youtubedl",
 ]
