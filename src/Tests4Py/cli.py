@@ -5,9 +5,10 @@ from pathlib import Path
 import subprocess
 import logging
 
-from Tests4Py.framework import tests4py_test, tests4py_compile, tests4py_checkout, unittest, systemtest
-from Tests4Py.framework.utils import CHECKOUT, COMPILE, COVERAGE, FUZZ, INFO, MUTATION, TEST, UNITTEST, SYSTEMTEST, \
-    GENERATE, DEFAULT_WORK_DIR
+from Tests4Py.framework import tests4py_test, tests4py_compile, tests4py_checkout, unittest, systemtest, \
+    DEFAULT_WORK_DIR
+from Tests4Py.framework.constants import CHECKOUT, COMPILE, COVERAGE, FUZZ, INFO, MUTATION, TEST, UNITTEST, SYSTEMTEST, \
+    GENERATE
 
 
 def check_pyenv():
@@ -76,6 +77,8 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
     compile_parser.add_argument('-w', dest='work_dir', default=None,
                                 help='The working directory to compile the project. '
                                      'Default will be the current directory')
+    compile_parser.add_argument('-r', dest='recompile', default=False, action='store_true',
+                                help='Set to recompile the project from scratch')
 
     # Coverage
     coverage_parser.add_argument('-w', dest='work_dir', required=True,
@@ -187,7 +190,8 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
                                    version_id=args.version_id,
                                    work_dir=Path(args.work_dir).absolute())
     elif args.command == COMPILE:
-        report = tests4py_compile(work_dir=Path(args.work_dir).absolute() if args.work_dir else None)
+        report = tests4py_compile(work_dir=Path(args.work_dir).absolute() if args.work_dir else None,
+                                  recompile=args.recompile)
     elif args.command == TEST:
         report = tests4py_test(work_dir=Path(args.work_dir).absolute() if args.work_dir else None,
                                single_test=args.single_test,

@@ -6,6 +6,7 @@ from abc import abstractmethod
 from pathlib import Path
 from typing import List, Tuple
 
+from Tests4Py.framework.constants import DEFAULT_SYSTEMTESTS_DIVERSITY_PATH
 from Tests4Py.tests.utils import TestResult
 
 
@@ -44,9 +45,10 @@ class TestGenerator:
 
 
 class UnittestGenerator(TestGenerator, ast.NodeVisitor):
-    CLASS_NAME = 'BugsTestsUnittests'
+    CLASS_NAME = 'Tests4PyUnittests'
 
-    def get_empty_test(self) -> ast.FunctionDef:
+    @staticmethod
+    def get_empty_test() -> ast.FunctionDef:
         return ast.FunctionDef(
             name='test',
             args=ast.arguments(
@@ -135,11 +137,10 @@ class UnittestGenerator(TestGenerator, ast.NodeVisitor):
 
 
 class SystemtestGenerator(TestGenerator):
-    DIR = Path('BugsTestsSystemTests')
 
     @staticmethod
     def get_name(test: str, result: TestResult = TestResult.UNKNOWN, directory: Path = None) -> Path:
-        directory = directory if directory else SystemtestGenerator.DIR
+        directory = directory if directory else DEFAULT_SYSTEMTESTS_DIVERSITY_PATH
         hash_ = hashlib.md5(test.encode("utf-8")).hexdigest()
         return directory / f'{"failing" if result == TestResult.FAILING else "passing"}_{hash_}'
 
@@ -161,12 +162,21 @@ class SystemtestGenerator(TestGenerator):
             os.makedirs(path, exist_ok=True)
         f = int(n * self.failing_probability)
         p = n - f
+        tests = {None}
         for _ in range(p):
-            test, result = self.generate_passing_test()
-            with open(self.get_name(test, result, path), 'w') as fp:
+            test, result, name = '', TestResult.UNKNOWN, None
+            while name in tests:
+                test, result = self.generate_passing_test()
+                name = self.get_name(test, result, path)
+            tests.add(name)
+            with open(name, 'w') as fp:
                 fp.write(test)
         for _ in range(f):
-            test, result = self.generate_failing_test()
+            test, result, name = '', TestResult.UNKNOWN, None
+            while name in tests:
+                test, result = self.generate_failing_test()
+                name = self.get_name(test, result, path)
+            tests.add(name)
             with open(self.get_name(test, result, path), 'w') as fp:
                 fp.write(test)
         return GenerationResult(passing=p, failing=f)

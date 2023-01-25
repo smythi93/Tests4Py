@@ -7,12 +7,12 @@ from pathlib import Path
 
 from Tests4Py import projects
 from Tests4Py.framework import unittest, systemtest
-from Tests4Py.framework.utils import DEFAULT_WORK_DIR, DEFAULT_UNITTESTS_DIVERSITY_PATH, \
-    DEFAULT_SYSTEMTESTS_DIVERSITY_PATH, LOGGER, UNITTEST_TOTAL_PATTERN, UNITTEST_FAILED_PATTERN, \
-    SYSTEMTESTS_PASSING_CLASS, SYSTEMTESTS_FAILING_CLASS, CheckoutReport, CompileReport, TestReport, __setup__, \
-    __get_project__, __get_pytest_result__, INFO_FILE, \
-    REQUIREMENTS_FILE, SETUP_FILE, PATCH_FILE
+from Tests4Py.framework.constants import DEFAULT_WORK_DIR, DEFAULT_UNITTESTS_DIVERSITY_PATH, \
+    DEFAULT_SYSTEMTESTS_DIVERSITY_PATH, UNITTEST_TOTAL_PATTERN, UNITTEST_FAILED_PATTERN, SYSTEMTESTS_FAILING_CLASS, \
+    SYSTEMTESTS_PASSING_CLASS, INFO_FILE, REQUIREMENTS_FILE, SETUP_FILE, PATCH_FILE, FIX_FILES, HARNESS_FILE
 from Tests4Py.framework.environment import VENV, __env_on__, __activating_venv__, __create_venv__
+from Tests4Py.framework.utils import LOGGER, CheckoutReport, CompileReport, TestReport, __setup__, \
+    __get_project__, __get_pytest_result__
 from Tests4Py.projects import resources, TestingFramework
 
 
@@ -116,7 +116,7 @@ def tests4py_checkout(project_name: str, bug_id: int, version_id: int = 1, work_
             os.chdir(current_dir)
 
         LOGGER.info(f'Create info file')
-        with open(work_location / PATCH_FILE, 'w') as fp:
+        with open(work_location / FIX_FILES, 'w') as fp:
             fp.write(';'.join(patch_fix_all))
 
         # Move information about bug to clone project folder
@@ -131,6 +131,14 @@ def tests4py_checkout(project_name: str, bug_id: int, version_id: int = 1, work_
                                       'setup.sh') as resource:
             if resource.exists():
                 shutil.copy(resource, work_location / SETUP_FILE)
+        with importlib.resources.path(getattr(resources, project.project_name),
+                                      'harness.py') as resource:
+            if resource.exists():
+                shutil.copy(resource, work_location / HARNESS_FILE)
+        with importlib.resources.path(getattr(getattr(resources, project.project_name), f'bug_{project.bug_id}'),
+                                      'fix.patch') as resource:
+            if resource.exists():
+                shutil.copy(resource, work_location / PATCH_FILE)
 
         if project.unittests:
             with importlib.resources.path(getattr(getattr(resources, project.project_name), f'bug_{project.bug_id}'),
@@ -150,7 +158,7 @@ def tests4py_checkout(project_name: str, bug_id: int, version_id: int = 1, work_
     return report
 
 
-def tests4py_compile(work_dir: Path = None, verbose: bool = True) -> CompileReport:
+def tests4py_compile(work_dir: Path = None, recompile: bool = False, verbose: bool = True) -> CompileReport:
     report = CompileReport()
     if verbose:
         LOGGER.setLevel(logging.INFO)
@@ -167,7 +175,7 @@ def tests4py_compile(work_dir: Path = None, verbose: bool = True) -> CompileRepo
             raise IOError(f'{work_dir} does not exist')
         project, t4p_info, t4p_requirements, t4p_setup = __get_project__(work_dir)
         report.project = project
-        if project.compiled:
+        if project.compiled and not recompile:
             LOGGER.info(f'{project} already compiled')
             report.successful = True
             return report

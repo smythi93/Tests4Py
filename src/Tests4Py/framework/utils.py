@@ -1,41 +1,13 @@
 import os
-import re
 from pathlib import Path
 from typing import Optional, Tuple
 
 from Tests4Py import projects
+from Tests4Py.framework.constants import INFO_FILE, REQUIREMENTS_FILE, SETUP_FILE, CHECKOUT, COMPILE, TEST, \
+    PYTEST_PATTERN
 from Tests4Py.framework.logger import LOGGER
 from Tests4Py.projects import Project, ansible, black, cookiecutter, fastapi, httpie, keras, luigi, matplotlib, \
     pandas, pysnooper, sanic, scrapy, spacy, thefuck, tornado, tqdm, youtubedl
-
-CHECKOUT = 'checkout'
-COMPILE = 'compile'
-COVERAGE = 'coverage'
-FUZZ = 'fuzz'
-INFO = 'info'
-MUTATION = 'mutation'
-TEST = 'test'
-UNITTEST = 'unittest'
-SYSTEMTEST = 'systemtest'
-GENERATE = 'generate'
-
-DEFAULT_WORK_DIR = Path(Path.cwd(), 'tmp').absolute()
-DEFAULT_UNITTESTS_DIVERSITY_PATH = 'tests4py_unittests_diversity.py'
-DEFAULT_SYSTEMTESTS_DIVERSITY_PATH = 'tests4py_systemtest_diversity'
-
-PYTEST_PATTERN = re.compile(rb'= ((((?P<f>\d+) failed)|((?P<p>\d+) passed)|(\d+ warnings?))(, )?)+ in ')
-UNITTEST_TOTAL_PATTERN = re.compile(rb'Ran (?P<t>\d+) tests? in')
-UNITTEST_FAILED_PATTERN = re.compile(rb'FAILED (failures=(?P<f>\d+))')
-
-SYSTEMTESTS_FAILING_CLASS = 'TestsFailing'
-SYSTEMTESTS_PASSING_CLASS = 'TestsPassing'
-
-# ~~~~~~ FILES ~~~~~~ #
-
-INFO_FILE = 'tests4py_info.ini'
-REQUIREMENTS_FILE = 'tests4py_requirements.txt'
-SETUP_FILE = 'tests4py_setup.sh'
-PATCH_FILE = 'tests4py_bug.patch'
 
 
 class Report:

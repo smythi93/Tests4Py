@@ -1,12 +1,18 @@
 import ast
 import os
+import random
+import string
 import subprocess
-import tempfile
+from _ast import Call
+from abc import abstractmethod
 from os import PathLike
 from pathlib import Path
 from typing import List, Optional, Tuple
 
-from Tests4Py.framework.typing import Environment
+from fuzzingbook.Grammars import Grammar, srange, is_valid_grammar
+from isla.fuzzer import GrammarFuzzer
+
+from Tests4Py.framework.constants import Environment, HARNESS_FILE
 from Tests4Py.grammars import python
 from Tests4Py.projects import Project, Status, TestingFramework, TestStatus
 from Tests4Py.tests.generator import UnittestGenerator, SystemtestGenerator
@@ -29,7 +35,7 @@ class PySnooper(Project):
                          fixed_commit_id=fixed_commit_id, testing_framework=TestingFramework.PYTEST,
                          test_file=test_file, test_cases=test_cases, darwin_python_version=darwin_python_version,
                          test_status_fixed=test_status_fixed, test_status_buggy=test_status_buggy,
-                         unittests=unittests, systemtests=systemtests, api=api, grammar=python.GENERATIVE_GRAMMAR)
+                         unittests=unittests, systemtests=systemtests, api=api, grammar=grammar)
 
 
 def register():
@@ -85,12 +91,12 @@ class PySnooperAPI(API):
         try:
             with open(system_test_path, 'r') as fp:
                 test = fp.read()
-            test = ast.unparse(self.translator.visit_source(test))
-            with tempfile.NamedTemporaryFile('w+', suffix='.py', delete=False) as fp:
-                fp.write(test)
-            process = subprocess.run(['python', fp.name], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                     timeout=self.default_timeout, env=environ)
-            os.remove(fp.name)
+            if test:
+                test = test.split('\n')
+            else:
+                test = []
+            process = subprocess.run(['python', HARNESS_FILE] + test, stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE, timeout=self.default_timeout, env=environ)
             if process.returncode:
                 if self.expected_error in process.stderr:
                     return TestResult.FAILING
@@ -98,17 +104,18 @@ class PySnooperAPI(API):
                     return TestResult.UNKNOWN
             else:
                 return TestResult.PASSING
-        except (subprocess.TimeoutExpired, SyntaxError):
+        except subprocess.TimeoutExpired:
             return TestResult.UNKNOWN
         except Exception:
-            return TestResult.PASSING
+            return TestResult.UNKNOWN
 
 
-class PySnooperTestGenerator(python.PythonGenerator):
+class PySnooperUnittestGenerator(python.PythonGenerator, UnittestGenerator):
 
     def __init__(self):
         python.PythonGenerator.__init__(self, limit_stmt_per_block=6, limit_stmt_depth=3, limit_expr_depth=2,
                                         limit_args_per_function=3)
+        UnittestGenerator.__init__(self)
 
     def _get_failing_args(self) -> List[ast.expr]:
         return []
@@ -154,13 +161,6 @@ class PySnooperTestGenerator(python.PythonGenerator):
             return prefix + [function]
         return [function]
 
-
-class PySnooperUnittestGenerator(UnittestGenerator, PySnooperTestGenerator):
-
-    def __init__(self):
-        UnittestGenerator.__init__(self)
-        PySnooperTestGenerator.__init__(self)
-
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         self.reset()
         test = self.get_empty_test()
@@ -178,48 +178,55 @@ class PySnooperUnittestGenerator(UnittestGenerator, PySnooperTestGenerator):
         return test, TestResult.PASSING
 
 
-class PySnooperSystemtestGenerator(SystemtestGenerator, PySnooperTestGenerator):
+class PySnooperSystemtestGenerator(SystemtestGenerator):
 
     def __init__(self):
-        self.translator = python.ToGrammarVisitor()
-        UnittestGenerator.__init__(self)
-        PySnooperTestGenerator.__init__(self)
+        super().__init__()
+        self.variables_fuzzer = GrammarFuzzer(grammar, start_symbol='<variable_list>')
+        self.predicate_fuzzer = GrammarFuzzer(grammar, start_symbol='<predicate_list>')
+        self.str_fuzzer = GrammarFuzzer(grammar, start_symbol='<str>')
 
-    def _generate_test(self, module: ast.Module, function_name: str) -> str:
-        # noinspection PyTypeChecker
-        module.body = [
-                          ast.Import(
-                              names=[ast.alias(name='pysnooper')]
-                          )
-                      ] + module.body + [
-                          ast.Expr(
-                              value=self._generate_Call(function_name)
-                          )
-                      ]
-        # noinspection PyTypeChecker
-        return self.translator.visit(module)
+    def _generate_parameters(self, required: List[str], parameters: List[str], output_prob=.5):
+        selection = required + random.sample(parameters, random.randint(0, len(parameters)))
+        params = list()
+        if 'output' in selection:
+            if random.random() < output_prob:
+                params.append('-o')
+            else:
+                params.append('-otest.log')
+        if 'variables' in selection:
+            params.append('-v' + self.variables_fuzzer.fuzz())
+        if 'depth' in selection:
+            params.append(f'-d{random.randint(1, 5)}')
+        if 'prefix' in selection:
+            params.append('-p' + self.str_fuzzer.fuzz())
+        if 'watch' in selection:
+            params.append('-w' + self.variables_fuzzer.fuzz())
+        if 'custom_repr' in selection:
+            params.append('-c' + self.predicate_fuzzer.fuzz())
+        if 'overwrite' in selection and 'output' in selection and '-o' not in params:
+            params.append('-O')
+        if 'thread_info' in selection:
+            params.append('-T')
+        return params
+
+    @abstractmethod
+    def _get_failing_params(self):
+        return []
+
+    @abstractmethod
+    def _get_passing_params(self):
+        return []
 
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        self.reset()
-        test = ast.Module(
-            body=[],
-            type_ignores=[],
-        )
-        prefix = self._get_failing_prefix()
-        function_call = self._get_function_call(self._get_failing_args(), self._get_failing_keywords())
-        test.body = self._get_failing_body(function_call, prefix)
-        return self._generate_test(test, function_call.name), TestResult.FAILING
+        params = self._get_failing_params()
+        random.shuffle(params)
+        return '\n'.join(params), TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        self.reset()
-        test = ast.Module(
-            body=[],
-            type_ignores=[],
-        )
-        prefix = self._get_passing_prefix()
-        function_call = self._get_function_call(self._get_passing_args(), self._get_passing_keywords())
-        test.body = self._get_passing_body(function_call, prefix)
-        return self._generate_test(test, function_call.name), TestResult.PASSING
+        params = self._get_passing_params()
+        random.shuffle(params)
+        return '\n'.join(params), TestResult.PASSING
 
 
 class PySnooper2UnittestGenerator(PySnooperUnittestGenerator):
@@ -259,34 +266,17 @@ class PySnooper2UnittestGenerator(PySnooperUnittestGenerator):
 
 
 class PySnooper2SystemtestGenerator(PySnooperSystemtestGenerator):
+    def _get_failing_params(self):
+        return self._generate_parameters(['custom_repr'], ['output', 'depth', 'watch', 'prefix', 'overwrite',
+                                                           'thread_info'])
 
-    def _get_failing_prefix(self) -> List[ast.stmt]:
-        return [
-            self._generate_FunctionDef(num_args=1),
-            self._generate_FunctionDef(num_args=1),
-        ]
-
-    def _get_failing_keywords(self) -> List[ast.keyword]:
-        return [
-            ast.keyword(
-                arg='custom_repr',
-                value=ast.Tuple(
-                    elts=[
-                        ast.Tuple(
-                            elts=[
-                                ast.Name(id=self.scope.get_function()[0]),
-                                ast.Name(id=self.scope.get_function()[0])
-                            ]
-                        )
-                    ]
-                )
-            )
-        ]
+    def _get_passing_params(self):
+        return self._generate_parameters([], ['output', 'depth', 'watch', 'prefix', 'overwrite', 'thread_info'])
 
 
 class PySnooper3UnittestGenerator(PySnooperUnittestGenerator):
 
-    def _get_failing_args(self) -> List[ast.expr]:
+    def _get_failing_args(self) -> list[Call]:
         return [
             ast.Call(
                 func=ast.Name(id='str'),
@@ -312,6 +302,7 @@ class PySnooper3UnittestGenerator(PySnooperUnittestGenerator):
         with_stmt.body.append(ast.Import(
             names=[ast.alias(name='pysnooper')]
         ))
+        # noinspection PyTypeChecker
         with_stmt.body.append(function)
         with_stmt.body.append(ast.Expr(
             value=self._generate_Call(),
@@ -335,6 +326,7 @@ class PySnooper3UnittestGenerator(PySnooperUnittestGenerator):
                 keywords=[],
             ),
         ))
+        # noinspection PyTypeChecker
         return prefix + [with_stmt]
 
     def _get_passing_body(self, function: ast.FunctionDef, prefix: List[ast.stmt] = None) -> List[ast.stmt]:
@@ -346,8 +338,52 @@ class PySnooper3UnittestGenerator(PySnooperUnittestGenerator):
 
 
 class PySnooper3SystemtestGenerator(PySnooperSystemtestGenerator):
+    def _get_failing_params(self):
+        return self._generate_parameters(['output'], ['depth', 'variables', 'prefix'], output_prob=-1)
 
-    def _get_failing_args(self) -> List[ast.expr]:
-        return [
-            ast.Constant(value='test.log')
-        ]
+    def _get_passing_params(self):
+        return self._generate_parameters([], ['output', 'depth', 'variables', 'prefix'], output_prob=2)
+
+
+grammar: Grammar = {
+    '<start>': ['<options>'],
+    '<options>': ['', '<option_list>'],
+    '<option_list>': ['<option>', '<option_list>\n<option>'],
+    '<option>': [
+        '<output>',
+        '<variables>',
+        '<depth>',
+        '<prefix>',
+        '<watch>',
+        '<custom_repr>',
+        '<overwrite>',
+        '<thread_info>',
+    ],
+    '<output>': ['-o', '-o<path>'],
+    '<variables>': ['-v<variable_list>'],
+    '<depth>': ['-d<int>'],
+    '<prefix>': ['-p<str>'],
+    '<watch>': ['-w<variable_list>'],
+    '<custom_repr>': ['-c<predicate_list>'],
+    '<overwrite>': ['-O'],
+    '<thread_info>': ['-T'],
+    '<path>': ['<location>', '<location>.<str>'],
+    '<location>': ['<str>', os.path.join('<path>', '<str>')],
+    '<variable_list>': ['<variable>', '<variable_list>,<variable>'],
+    '<variable>': ['<name>', '<variable>.<name>'],
+    '<name>': ['<letter><chars>'],
+    '<chars>': ['', '<chars><char>'],
+    '<letter>': srange(string.ascii_letters),
+    '<digit>': srange(string.digits),
+    '<char>': ['<letter>', '<digit>', '_'],
+    '<int>': ['<nonzero><digits>', '0'],
+    '<digits>': ['', '<digits><digit>'],
+    '<nonzero>': ['1', '2', '3', '4', '5', '6', '7', '8', '9'],
+    '<str>': ['<char><chars>'],
+    '<predicate_list>': ['<predicate>', '<predicate_list>,<predicate>'],
+    '<predicate>': ['<p_function>=<t_function>'],
+    '<p_function>': ['int', 'str', 'float', 'bool'],
+    '<t_function>': ['repr', 'str', 'int'],
+}
+
+assert is_valid_grammar(grammar)

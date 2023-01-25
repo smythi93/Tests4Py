@@ -5,7 +5,7 @@ from os import PathLike
 from pathlib import Path
 from typing import List, Tuple
 
-from Tests4Py.framework.typing import Environment
+from Tests4Py.framework.constants import Environment
 
 
 class TestResult(enum.Enum):

@@ -4,6 +4,7 @@ import subprocess
 from pathlib import Path
 from typing import Union
 
+import Tests4Py.framework.constants
 from Tests4Py.framework import utils, environment
 from Tests4Py.framework.logger import LOGGER
 from Tests4Py.projects import TestingFramework
@@ -13,12 +14,12 @@ DEFAULT_SUB_PATH = 'tests4py_unittests.py'
 
 class UnittestGenerateReport(utils.GenerateReport):
     def __init__(self):
-        super().__init__(utils.UNITTEST, subcommand=utils.GENERATE)
+        super().__init__(Tests4Py.framework.constants.UNITTEST, subcommand=Tests4Py.framework.constants.GENERATE)
 
 
 class UnittestTestReport(utils.TestingReport):
     def __init__(self):
-        super().__init__(utils.UNITTEST, subcommand=utils.TEST)
+        super().__init__(Tests4Py.framework.constants.UNITTEST, subcommand=Tests4Py.framework.constants.TEST)
 
 
 def tests4py_generate(work_dir: Path = None, path: Path = None, n: int = 1, p: Union[int, float] = 0.5,
@@ -124,8 +125,8 @@ def tests4py_test(work_dir: Path = None, path: Path = None, diversity: bool = Tr
         command = ['python', '-m', TestingFramework.PYTEST.value]
         if output:
             command.append(f'--junit-xml={output.absolute()}')
-        if diversity and (work_dir / utils.DEFAULT_UNITTESTS_DIVERSITY_PATH).exists():
-            command.append(work_dir / utils.DEFAULT_UNITTESTS_DIVERSITY_PATH)
+        if diversity and (work_dir / Tests4Py.framework.constants.DEFAULT_UNITTESTS_DIVERSITY_PATH).exists():
+            command.append(work_dir / Tests4Py.framework.constants.DEFAULT_UNITTESTS_DIVERSITY_PATH)
         if path:
             command.append(path)
         output = subprocess.run(command, stdout=subprocess.PIPE, env=environ).stdout

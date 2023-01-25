@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from typing import Union, Tuple, Dict
 
+import Tests4Py.framework.constants
 from Tests4Py.framework.logger import LOGGER
 from Tests4Py.framework import utils, environment
 from Tests4Py.projects import Project
@@ -13,12 +14,12 @@ DEFAULT_SUB_PATH = 'tests4py_systemtests'
 
 class SystemtestGenerateReport(utils.GenerateReport):
     def __init__(self):
-        super().__init__(utils.SYSTEMTEST, subcommand=utils.GENERATE)
+        super().__init__(Tests4Py.framework.constants.SYSTEMTEST, subcommand=Tests4Py.framework.constants.GENERATE)
 
 
 class SystemtestTestReport(utils.TestingReport):
     def __init__(self):
-        super().__init__(utils.SYSTEMTEST, subcommand=utils.TEST)
+        super().__init__(Tests4Py.framework.constants.SYSTEMTEST, subcommand=Tests4Py.framework.constants.TEST)
 
 
 def _get_system_runs(project: Project, path: os.PathLike, environ: Dict[str, str]) -> Tuple[int, int, int]:
@@ -138,8 +139,8 @@ def tests4py_test(work_dir: Path = None, path: Path = None, diversity: bool = Tr
                     report.passing = 1
                 elif TestResult.FAILING == result:
                     report.failing = 1
-        if diversity and (work_dir / utils.DEFAULT_SYSTEMTESTS_DIVERSITY_PATH).exists():
-            t, p, f = _get_system_runs(project, work_dir / utils.DEFAULT_SYSTEMTESTS_DIVERSITY_PATH, environ)
+        if diversity and (work_dir / Tests4Py.framework.constants.DEFAULT_SYSTEMTESTS_DIVERSITY_PATH).exists():
+            t, p, f = _get_system_runs(project, work_dir / Tests4Py.framework.constants.DEFAULT_SYSTEMTESTS_DIVERSITY_PATH, environ)
             report.total += t
             report.passing += p
             report.failing += f
