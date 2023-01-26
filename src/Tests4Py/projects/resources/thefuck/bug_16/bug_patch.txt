@@ -13,8 +13,7 @@ index d6e9b2c..8f4e0e1 100644
 +        alias = "alias {0}='TF_CMD=$(TF_ALIAS={0}" \
 +                " PYTHONIOENCODING=utf-8" \
 +                " TF_SHELL_ALIASES=$(alias)" \
-+                " thefuck $(fc -ln -1)) &&" \
-                 " eval $TF_CMD".format(fuck)
++                " thefuck $(fc -ln -1)) &&"" eval $TF_CMD".format(fuck)
  
          if settings.alter_history:
 diff --git a/thefuck/shells/fish.py b/thefuck/shells/fish.py
@@ -39,13 +38,11 @@ index a8c0587..e522d6a 100644
      def app_alias(self, alias_name):
 -        alias = "alias {0}='TF_ALIAS={0}" \
 +        # It is VERY important to have the variables declared WITHIN the alias
-+        alias = "alias {0}='TF_CMD=$(TF_ALIAS={0}" \
-                 " PYTHONIOENCODING=utf-8" \
++        alias = "alias {0}='TF_CMD=$(TF_ALIAS={0}"" PYTHONIOENCODING=utf-8" \
 -                ' TF_SHELL_ALIASES=$(alias)' \
 -                " TF_CMD=$(thefuck $(fc -ln -1 | tail -n 1)) &&" \
 +                " TF_SHELL_ALIASES=$(alias)" \
-+                " thefuck $(fc -ln -1 | tail -n 1)) &&" \
-                 " eval $TF_CMD".format(alias_name)
++                " thefuck $(fc -ln -1 | tail -n 1)) &&"" eval $TF_CMD".format(alias_name)
  
          if settings.alter_history:
 diff --git a/thefuck/types.py b/thefuck/types.py

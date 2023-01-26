@@ -193,8 +193,7 @@ diff --git a/blib2to3/pgen2/tokenize.py b/blib2to3/pgen2/tokenize.py
 index 1f51ff0..43e1d59 100644
 --- a/blib2to3/pgen2/tokenize.py
 +++ b/blib2to3/pgen2/tokenize.py
-@@ -31,6 +31,7 @@ __credits__ = \
- 
+@@ -31,6 +31,7 @@ __credits__ =
  import re
  from codecs import BOM_UTF8, lookup
 +from attr import dataclass

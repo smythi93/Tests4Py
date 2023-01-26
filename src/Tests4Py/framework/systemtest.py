@@ -4,8 +4,8 @@ from pathlib import Path
 from typing import Union, Tuple, Dict
 
 import Tests4Py.framework.constants
-from Tests4Py.framework.logger import LOGGER
 from Tests4Py.framework import utils, environment
+from Tests4Py.framework.logger import LOGGER
 from Tests4Py.projects import Project
 from Tests4Py.tests.utils import TestResult
 

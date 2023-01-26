@@ -411,8 +411,7 @@ index d4cc4130..d9a59e16 100644
 --- a/scrapy/utils/signal.py
 +++ b/scrapy/utils/signal.py
 @@ -8,6 +8,7 @@ from twisted.python.failure import Failure
- from scrapy.xlib.pydispatch.dispatcher import Any, Anonymous, liveReceivers, \
-     getAllReceivers, disconnect
+ from scrapy.xlib.pydispatch.dispatcher import Any, Anonymous, liveReceivers,getAllReceivers, disconnect
  from scrapy.xlib.pydispatch.robustapply import robustApply
 +from scrapy.utils.log import failure_to_exc_info
  

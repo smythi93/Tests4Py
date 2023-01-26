@@ -1,13 +1,14 @@
 import os
 import random
+import re
 import shutil
 import string
 import subprocess
 import sys
-import traceback
 from abc import abstractmethod, ABC
 from os import PathLike
 from pathlib import Path
+from subprocess import Popen
 from typing import List, Optional, Tuple
 
 from fuzzingbook.Grammars import Grammar, srange, is_valid_grammar
@@ -103,7 +104,8 @@ def register():
         fixed_commit_id="7129d474206761a6156925db78eee4b62a0e3944",
         test_file=[Path("tests", "test_read_user_choice.py")],
         test_cases=["tests/test_read_user_choice.py::test_click_invocation"],
-        systemtests=None,  # Bug does not propagate
+        api=CookieCutter3API(),
+        systemtests=CookieCutter3SystemtestGenerator(),
     )
     CookieCutter(
         bug_id=4,
@@ -114,7 +116,8 @@ def register():
         fixed_commit_id="457a1a4e862aab4102b644ff1d2b2e2b5a766b3c",
         test_file=[Path("tests", "test_hooks.py")],
         test_cases=["tests/test_hooks.py::TestExternalHooks::test_run_failing_hook"],
-        systemtests=None,  # Bug does not propagate
+        api=CookieCutter4API(),
+        systemtests=CookieCutter4SystemtestGenerator(),
     )
     # TODO implement the 4 bugs of cookiecutter
 
@@ -128,11 +131,15 @@ class CookieCutterAPI(API, GrammarVisitor):
         self.config = None
         self.pre_hooks = []
         self.post_hooks = []
-        self.path = None
+        self.path = []
+        self.pre_hook_crash = False
+        self.post_hook_crash = False
 
     def visit_hooks(self, node: DerivationTree):
         self.pre_hooks = []
         self.post_hooks = []
+        self.pre_hook_crash = False
+        self.post_hook_crash = False
         for children in node.children:
             self.visit(children)
 
@@ -142,24 +149,45 @@ class CookieCutterAPI(API, GrammarVisitor):
             self.visit(child)
 
     def visit_repo_name(self, node: DerivationTree):
-        self.path = node.children[1].to_string()
+        self.path = list(
+            map(lambda x: x.replace('"', ""), node.children[1].to_string().split(","))
+        )
+
+    def _set_hook_crash(self, hook: str, pre: bool = True):
+        c, v = hook.split(",")
+        if c == "exit" and v != "0":
+            if pre:
+                self.pre_hook_crash = True
+            else:
+                self.post_hook_crash = True
 
     def visit_pre_hook(self, node: DerivationTree):
-        self.pre_hooks.append(node.children[1].to_string())
+        hook = node.children[1].to_string()
+        self._set_hook_crash(hook)
+        self.pre_hooks.append(hook)
 
     def visit_post_hook(self, node: DerivationTree):
-        self.post_hooks.append(node.children[1].to_string())
+        hook = node.children[1].to_string()
+        self._set_hook_crash(hook, pre=False)
+        self.post_hooks.append(hook)
 
     @staticmethod
     def _write_hook(hooks_path, hooks, file):
         for i, hook in enumerate(hooks):
+            c, v = hook.split(",")
             with open(os.path.join(hooks_path, f"{file}.{i}"), "w") as fp:
                 if sys.platform.startswith("win"):
-                    fp.write("@echo off\n")
-                    fp.write(f"echo {hook}\n")
+                    if c == "exit":
+                        fp.write(f"exit \\b {v}\n")
+                    else:
+                        fp.write("@echo off\n")
+                        fp.write(f"echo {v}\n")
                 else:
                     fp.write("#!/bin/sh\n")
-                    fp.write(f'echo "{hook}"\n')
+                    if c == "exit":
+                        fp.write(f"exit {v}\n")
+                    else:
+                        fp.write(f'echo "{v}"\n')
 
     def _setup(self):
         if os.path.exists(self.REPO_PATH):
@@ -192,12 +220,15 @@ class CookieCutterAPI(API, GrammarVisitor):
                 self._write_hook(hooks_path, self.post_hooks, "post_gen_project")
 
     @abstractmethod
-    def _validate(self, process: subprocess.CompletedProcess) -> TestResult:
+    def _validate(self, process: subprocess.Popen, stdout, stderr) -> TestResult:
         pass
 
     @abstractmethod
     def _get_command_parameters(self) -> List[str]:
         return []
+
+    def _communicate(self, process: Popen) -> Tuple[bytes, bytes] | Tuple[str, str]:
+        return process.communicate(20 * b"\n", self.default_timeout)
 
     # noinspection PyBroadException
     def run(self, system_test_path: PathLike, environ: Environment) -> TestResult:
@@ -206,21 +237,26 @@ class CookieCutterAPI(API, GrammarVisitor):
                 content = fp.read()
             self.visit_source(content)
             self._setup()
-            process = subprocess.run(
+            if self.path:
+                for p in self.path:
+                    shutil.rmtree(p, ignore_errors=True)
+            process = subprocess.Popen(
                 ["cookiecutter"] + self._get_command_parameters() + [self.REPO_PATH],
+                stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                timeout=self.default_timeout,
                 env=environ,
             )
-            return self._validate(process)
+            stdout, stderr = self._communicate(process)
+            return self._validate(process, stdout, stderr)
         except subprocess.TimeoutExpired:
             return TestResult.UNDEFINED
         except Exception:
             return TestResult.UNDEFINED
         finally:
             if self.path:
-                shutil.rmtree(self.path, ignore_errors=True)
+                for p in self.path:
+                    shutil.rmtree(p, ignore_errors=True)
             shutil.rmtree(self.REPO_PATH, ignore_errors=True)
 
 
@@ -228,15 +264,80 @@ class CookieCutter2API(CookieCutterAPI):
     def _get_command_parameters(self) -> List[str]:
         return ["--no-input", "-v"]
 
-    def _validate(self, process: subprocess.CompletedProcess) -> TestResult:
+    def _validate(
+        self, process: subprocess.Popen, stdout: bytes | str, stderr: bytes | str
+    ) -> TestResult:
         if process.returncode != 0:
             return TestResult.UNDEFINED
-        output: str = process.stdout.decode("utf-8")
+        if isinstance(stdout, str):
+            output = stdout
+        else:
+            output = stdout.decode("utf-8")
         for hook in self.pre_hooks + self.post_hooks:
-            hook_repr = "\n" + hook + "\n"
-            if hook_repr in output:
-                output = output.replace(hook_repr, "\n", 1)
+            command, hook = hook.split(",")
+            if command == "echo":
+                hook_repr = "\n" + hook + "\n"
+                if hook_repr in output:
+                    output = output.replace(hook_repr, "\n", 1)
+                else:
+                    return TestResult.FAILING
             else:
+                return TestResult.UNDEFINED
+        return TestResult.PASSING
+
+
+class CookieCutter3API(CookieCutterAPI):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+        self.choice_pattern = re.compile(r"Choose from \d+(, \d)+ \(\d+(, \d)+\)")
+
+    def _get_command_parameters(self) -> List[str]:
+        return []
+
+    def _validate(
+        self, process: subprocess.Popen, stdout: bytes | str, stderr: bytes | str
+    ) -> TestResult:
+        if process.returncode != 0:
+            return TestResult.UNDEFINED
+        if isinstance(stdout, str):
+            output = stdout
+        else:
+            output = stdout.decode("utf-8")
+        if self.choice_pattern.search(output):
+            return TestResult.FAILING
+        return TestResult.PASSING
+
+
+class CookieCutter4API(CookieCutterAPI):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def _get_command_parameters(self) -> List[str]:
+        return ["-v"]
+
+    def _validate(
+        self, process: subprocess.Popen, stdout: bytes | str, stderr: bytes | str
+    ) -> TestResult:
+        if isinstance(stderr, str):
+            output = stderr
+        else:
+            output = stderr.decode("utf-8")
+        captured = True
+        if self.pre_hook_crash:
+            if (
+                "Stopping generation because pre_gen_project hook script didn't exit sucessfully"
+                in output
+            ):
+                return TestResult.PASSING
+            else:
+                return TestResult.FAILING
+        if self.post_hook_crash:
+            if (
+                "cookiecutter.exceptions.FailedHookException: Hook script failed"
+                in output
+            ):
+                return TestResult.PASSING
+            if self.post_hook_crash:
                 return TestResult.FAILING
         return TestResult.PASSING
 
@@ -306,30 +407,138 @@ class CookieCutterSystemtestGenerator(SystemtestGenerator, ABC):
             f'"version":{version}}}'
         )
 
-    def _generate_hook(self, pre=True) -> str:
-        if pre:
-            return self.pre_hook_fuzzer.fuzz()
+    def _generate_config_with_choices(self, selection=None, n=4) -> str:
+        choices = [
+            "full_name",
+            "email",
+            "github_username",
+            "project_name",
+            "repo_name",
+            "project_short_description",
+            "release_date",
+            "year",
+            "version",
+        ]
+        if selection is None:
+            n = max(1, min(n, len(choices)))
+            selection = random.sample(
+                choices,
+                random.randint(1, n),
+            )
+        parameters = dict()
+        for s in selection:
+            if s in ["full_name", "project_name", "project_short_description"]:
+                fuzzer = self.str_with_spaces_fuzzer
+            elif s == "email":
+                fuzzer = self.email_fuzzer
+            elif s == "release_date":
+                fuzzer = self.date_fuzzer
+            elif s == "year":
+                fuzzer = self.int_fuzzer
+            elif s == "version":
+                fuzzer = self.version_fuzzer
+            else:
+                fuzzer = self.str_fuzzer
+            value = ",".join(f'"{fuzzer.fuzz()}"' for _ in range(random.randint(2, 5)))
+            parameters[s] = f"[{value}]"
+        return self._generate_default_config(**parameters)
+
+    def _generate_hook(
+        self, pre=True, echo=True, exit_=False, exit_codes: str | list = "0"
+    ) -> str:
+        hook_contents = []
+        if exit_:
+            hook_contents.append(lambda: f"exit,{random.choice(exit_codes)}")
+        if echo:
+            hook_contents.append(lambda: f"echo,{self.str_with_spaces_fuzzer.fuzz()}")
+        if hook_contents:
+            hook_content = random.choice(hook_contents)()
         else:
-            return self.post_hook_fuzzer.fuzz()
+            hook_content = f"echo,{self.str_with_spaces_fuzzer.fuzz()}"
+        if pre:
+            return f"pre:{hook_content}"
+        else:
+            return f"post:{hook_content}"
+
+    def _generate_hooks(
+        self,
+        pre=True,
+        pre_min=0,
+        pre_max=1,
+        post_min=0,
+        post_max=1,
+        echo=True,
+        exit_=False,
+        exit_codes: str | list = "0",
+    ) -> List[str]:
+        hooks = [
+            self._generate_hook(pre=pre, echo=echo, exit_=exit_, exit_codes=exit_codes)
+            for _ in range(0, random.randint(pre_min, pre_max))
+        ] + [
+            self._generate_hook(
+                pre=not pre, echo=echo, exit_=exit_, exit_codes=exit_codes
+            )
+            for _ in range(0, random.randint(post_min, post_max))
+        ]
+        if hooks:
+            random.shuffle(hooks)
+            return hooks
+        else:
+            return [""]
 
 
 class CookieCutter2SystemtestGenerator(CookieCutterSystemtestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
         pre = random.choice([True, False])
-        hooks = [
-            self._generate_hook(pre=pre) for _ in range(0, random.randint(2, 5))
-        ] + [self._generate_hook(pre=not pre) for _ in range(0, random.randint(0, 5))]
-        random.shuffle(hooks)
+        hooks = self._generate_hooks(pre=pre, pre_min=2, pre_max=5, post_max=5)
         return "\n".join([self._generate_default_config()] + hooks), TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        hooks = [
-            self._generate_hook(pre=True) for _ in range(0, random.randint(0, 1))
-        ] + [self._generate_hook(pre=False) for _ in range(0, random.randint(0, 1))]
-        if hooks:
-            random.shuffle(hooks)
-        else:
-            hooks = [""]
+        hooks = self._generate_hooks()
+        return "\n".join([self._generate_default_config()] + hooks), TestResult.PASSING
+
+
+class CookieCutter3SystemtestGenerator(CookieCutterSystemtestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        hooks = self._generate_hooks(pre_max=2, post_max=2, exit_=True)
+        return (
+            "\n".join(
+                [self._generate_config_with_choices(n=random.randint(1, 5))] + hooks
+            ),
+            TestResult.FAILING,
+        )
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        hooks = self._generate_hooks(pre_max=2, post_max=2, exit_=True)
+        return "\n".join([self._generate_default_config()] + hooks), TestResult.PASSING
+
+
+class CookieCutter4SystemtestGenerator(CookieCutterSystemtestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        hooks = self._generate_hooks(
+            pre_max=0,
+            post_min=1,
+            echo=False,
+            exit_=True,
+            exit_codes=list(range(1, 256)),
+        )
+        hooks += self._generate_hooks(post_max=0, exit_=True)
+        if "" in hooks:
+            hooks.remove("")
+        random.shuffle(hooks)
+        return (
+            "\n".join(
+                [self._generate_config_with_choices(n=random.randint(1, 5))] + hooks
+            ),
+            TestResult.FAILING,
+        )
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        hooks = self._generate_hooks(post_max=0, exit_=True, exit_codes="001")
+        hooks += self._generate_hooks(pre_max=0, post_max=1, exit_=True)
+        if "" in hooks:
+            hooks.remove("")
+        random.shuffle(hooks)
         return "\n".join([self._generate_default_config()] + hooks), TestResult.PASSING
 
 
@@ -339,8 +548,9 @@ grammar: Grammar = {
     "<hooks>": ["", "<hook_list>"],
     "<hook_list>": ["<hook>", "<hook_list>\n<hook>"],
     "<hook>": ["<pre_hook>", "<post_hook>"],
-    "<pre_hook>": ["pre:<str_with_spaces>"],
-    "<post_hook>": ["post:<str_with_spaces>"],
+    "<pre_hook>": ["pre:<hook_content>"],
+    "<post_hook>": ["post:<hook_content>"],
+    "<hook_content>": ["echo,<str_with_spaces>", "exit,<int>"],
     "<pairs>": ["<pair>", "<pairs>,<pair>"],
     "<pair>": [
         "<full_name>",

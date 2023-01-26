@@ -1,9 +1,9 @@
 import argparse
+import logging
 import os
+import subprocess
 import sys
 from pathlib import Path
-import subprocess
-import logging
 
 from Tests4Py.framework import (
     tests4py_test,

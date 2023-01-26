@@ -5,8 +5,8 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
-from Tests4Py.framework.constants import Environment
 
+from Tests4Py.framework.constants import Environment
 from Tests4Py.framework.logger import LOGGER
 from Tests4Py.projects import Project
 

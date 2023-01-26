@@ -126,7 +126,7 @@ def __get_project__(work_dir: Path) -> Tuple[Project, Path, Path, Path]:
 
 def __get_pytest_result__(
     output: bytes,
-) -> tuple[bool, int, int, int] | tuple[bool, None, None, None]:
+) -> tuple[bool, Optional[int], Optional[int], Optional[int]]:
     match = PYTEST_PATTERN.search(output)
     if match:
         if match.group("f"):

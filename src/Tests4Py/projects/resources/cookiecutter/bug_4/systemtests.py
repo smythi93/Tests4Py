@@ -37,44 +37,43 @@ class TestsFailing(DefaultTests):
         super().__init__(passing=False)
 
     def test_diversity_1(self):
-        return f"{self._default_config()}\npre:echo,pre1\npre:echo,pre2"
+        return f"{self._default_config()}\npost:exit,42\npre:echo,pre1"
 
     def test_diversity_2(self):
-        return f"{self._default_config()}\npost:echo,post1\npost:echo,post2"
+        return f"{self._default_config()}\npre:exit,0\npost:exit,15"
 
     def test_diversity_3(self):
-        return (
-            f"{self._default_config()}\npre:echo,pre1\npost:echo,post2\npre:echo,pre2"
-        )
+        return f"{self._default_config()}\npre:echo,pre1\npost:exit,52"
 
     def test_diversity_4(self):
-        return (
-            f"{self._default_config()}\npost:echo,post1\npost:echo,post2\npre:echo,pre1"
-        )
+        return f"{self._default_config()}\npost:exit,1\npre:exit,0"
 
     def test_diversity_5(self):
-        return f"{self._default_config()}\npre:echo,pre1\npost:echo,post1\npre:echo,pre2\npost:echo,post2"
+        return f"{self._default_config()}\npre:exit,0\npost:exit,1"
 
     def test_diversity_6(self):
-        return f"{self._default_config()}\npre:echo,pre1\npre:echo,pre2\npre:echo,pre3"
+        full_name = '["Marius Smytzek","Martin Eberlein"]'
+        return f"{self._default_config(full_name=full_name)}\npre:exit,0\npost:exit,42"
 
     def test_diversity_7(self):
-        return f"{self._default_config()}\npost:echo,post1\npost:echo,post2\npost:echo,post3"
+        return f"{self._default_config()}\npost:exit,42424242"
 
     def test_diversity_8(self):
         full_name = '["Marius Smytzek","Martin Eberlein"]'
-        return f"{self._default_config(full_name=full_name)}\npost:echo,post1\npost:echo,post2"
+        return (
+            f"{self._default_config(full_name=full_name)}\npre:echo,pre1\npost:exit,42"
+        )
 
     def test_diversity_9(self):
         full_name = '["Marius Smytzek","Martin Eberlein"]'
         return (
-            f"{self._default_config(full_name=full_name)}\npre:echo,pre1\npre:echo,pre2"
+            f"{self._default_config(full_name=full_name)}\npre:echo,pre1\npost:exit,1"
         )
 
     def test_diversity_10(self):
         return (
             f"{self._default_config()}\npre:echo,This is a more complex example of a pre hook_ Will this work\n"
-            f"pre:echo,pre2"
+            f"post:exit,42"
         )
 
 
@@ -83,35 +82,41 @@ class TestsPassing(DefaultTests):
         super().__init__(passing=True)
 
     def test_diversity_1(self):
-        return f"{self._default_config()}\npre:echo,pre1"
+        return f"{self._default_config()}\npost:exit,0\npre:echo,pre1"
 
     def test_diversity_2(self):
-        return f"{self._default_config()}\npost:echo,post1"
+        return f"{self._default_config()}\npre:exit,0"
 
     def test_diversity_3(self):
-        return f"{self._default_config()}\npre:echo,pre1\npost:echo,post1"
+        return f"{self._default_config()}\npre:echo,pre1\npost:exit,0"
 
     def test_diversity_4(self):
-        return f"{self._default_config()}\npost:echo,post1\npre:echo,pre1"
+        return f"{self._default_config()}\npost:echo,post1\npre:exit,0"
 
     def test_diversity_5(self):
-        return f"{self._default_config()}\n"
+        return f"{self._default_config()}\npre:exit,1\npost:exit,0"
 
     def test_diversity_6(self):
         full_name = '["Marius Smytzek","Martin Eberlein"]'
-        return f"{self._default_config(full_name=full_name)}\npre:echo,pre1"
+        return f"{self._default_config(full_name=full_name)}\npre:exit,0\npost:exit,0"
 
     def test_diversity_7(self):
-        full_name = '["Marius Smytzek","Martin Eberlein"]'
-        return f"{self._default_config(full_name=full_name)}\npre:echo,pre1\npost:echo,post1"
+        return f"{self._default_config()}\npost:exit,0"
 
     def test_diversity_8(self):
         full_name = '["Marius Smytzek","Martin Eberlein"]'
-        return f"{self._default_config(full_name=full_name)}\npost:echo,post1"
+        return (
+            f"{self._default_config(full_name=full_name)}\npre:echo,pre1\npost:exit,0"
+        )
 
     def test_diversity_9(self):
         full_name = '["Marius Smytzek","Martin Eberlein"]'
-        return f"{self._default_config(full_name=full_name)}\n"
+        return (
+            f"{self._default_config(full_name=full_name)}\npost:echo,post1\npre:exit,1"
+        )
 
     def test_diversity_10(self):
-        return f"{self._default_config()}\npre:echo,This is a more complex example of a pre hook_ Will this work"
+        return (
+            f"{self._default_config()}\npre:echo,This is a more complex example of a pre hook_ Will this work\n"
+            f"post:exit,0"
+        )
