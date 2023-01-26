@@ -75,12 +75,22 @@ def __env_on__(project: Project, verbose=True) -> Environment:
             f"Python version {v} not set, because current version is {output}"
         )
     LOGGER.info(f"Using pyenv python {v}")
-    subprocess.run(["pip", "install", "--upgrade", "pip"], env=environ)
     return environ
 
 
-def __update_env__(output):
-    pass  # TODO
+def __update_env__(environ: Environment):
+    subprocess.check_call(
+        ["python", "-m", "pip", "install", "--upgrade", "pip"], env=environ
+    )
+    subprocess.check_call(
+        ["python", "-m", "pip", "install", "--upgrade", "setuptools"], env=environ
+    )
+    subprocess.check_call(
+        ["python", "-m", "pip", "install", "--upgrade", "wheel"], env=environ
+    )
+    subprocess.check_call(
+        ["python", "-m", "pip", "install", "--upgrade", "pytest"], env=environ
+    )
 
 
 def __activating_venv__(

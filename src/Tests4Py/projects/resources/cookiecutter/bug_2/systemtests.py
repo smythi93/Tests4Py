@@ -3,7 +3,7 @@ from abc import ABC
 from Tests4Py.tests.diversity import Systemtests
 
 
-class DefaultTests(ABC, Systemtests):
+class DefaultTests(Systemtests, ABC):
     def __init__(self, passing: bool = False):
         Systemtests.__init__(self, passing=passing)
 
@@ -26,7 +26,7 @@ class DefaultTests(ABC, Systemtests):
             f'"project_name":{project_name},'
             f'"repo_name":{repo_name},'
             f'"project_short_description":{project_short_description},'
-            f'"release_date":{release_date}'
+            f'"release_date":{release_date},'
             f'"year":{year},'
             f'"version":{version}}}'
         )
@@ -71,7 +71,7 @@ class TestsFailing(DefaultTests):
 
 class TestsPassing(DefaultTests):
     def __init__(self):
-        super().__init__(passing=False)
+        super().__init__(passing=True)
 
     def test_diversity_1(self):
         return f"{self._default_config()}\npre:pre1"

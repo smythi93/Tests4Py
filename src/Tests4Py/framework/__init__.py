@@ -28,6 +28,7 @@ from Tests4Py.framework.environment import (
     __env_on__,
     __activating_venv__,
     __create_venv__,
+    __update_env__,
 )
 from Tests4Py.framework.utils import (
     LOGGER,
@@ -258,18 +259,7 @@ def tests4py_compile(
         environ = __activating_venv__(work_dir, environ, verbose=verbose)
 
         LOGGER.info("Installing utilities")
-        subprocess.check_call(
-            ["python", "-m", "pip", "install", "--upgrade", "pip"], env=environ
-        )
-        subprocess.check_call(
-            ["python", "-m", "pip", "install", "--upgrade", "setuptools"], env=environ
-        )
-        subprocess.check_call(
-            ["python", "-m", "pip", "install", "wheel==0.37.1"], env=environ
-        )
-        subprocess.check_call(
-            ["python", "-m", "pip", "install", "pytest==7.0.1"], env=environ
-        )
+        __update_env__(environ)
 
         LOGGER.info("Installing requirements")
         subprocess.check_call(

@@ -59,4 +59,4 @@ class SanicAPI(API):
 
     # noinspection PyBroadException
     def run(self, system_test_path: PathLike, environ: Environment) -> TestResult:
-        return TestResult.UNKNOWN
+        return TestResult.UNDEFINED

@@ -11,7 +11,7 @@ from Tests4Py.framework.constants import Environment
 class TestResult(enum.Enum):
     FAILING = 0
     PASSING = 1
-    UNKNOWN = 2
+    UNDEFINED = 2
 
 
 class API:

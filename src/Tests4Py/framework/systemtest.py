@@ -116,7 +116,7 @@ def tests4py_generate(
             environ = environment.__env_on__(project, verbose=verbose)
             environ = environment.__activating_venv__(work_dir, environ)
 
-            _, report.verify_failing, report.verify_passing = _get_system_runs(
+            _, report.verify_passing, report.verify_failing = _get_system_runs(
                 project, path, environ
             )
             LOGGER.info(

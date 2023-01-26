@@ -69,7 +69,7 @@ class UnittestGenerator(TestGenerator, ast.NodeVisitor):
 
     @staticmethod
     def get_name(
-        function: ast.FunctionDef, result: TestResult = TestResult.UNKNOWN
+        function: ast.FunctionDef, result: TestResult = TestResult.UNDEFINED
     ) -> ast.FunctionDef:
         hash_ = hashlib.md5(ast.unparse(function).encode("utf-8")).hexdigest()
         function.name = (
@@ -148,7 +148,7 @@ class UnittestGenerator(TestGenerator, ast.NodeVisitor):
 class SystemtestGenerator(TestGenerator):
     @staticmethod
     def get_name(
-        test: str, result: TestResult = TestResult.UNKNOWN, directory: Path = None
+        test: str, result: TestResult = TestResult.UNDEFINED, directory: Path = None
     ) -> Path:
         directory = directory if directory else DEFAULT_SYSTEMTESTS_DIVERSITY_PATH
         hash_ = hashlib.md5(test.encode("utf-8")).hexdigest()
@@ -179,7 +179,7 @@ class SystemtestGenerator(TestGenerator):
         p = n - f
         tests = {None}
         for _ in range(p):
-            test, result, name = "", TestResult.UNKNOWN, None
+            test, result, name = "", TestResult.UNDEFINED, None
             while name in tests:
                 test, result = self.generate_passing_test()
                 name = self.get_name(test, result, path)
@@ -187,7 +187,7 @@ class SystemtestGenerator(TestGenerator):
             with open(name, "w") as fp:
                 fp.write(test)
         for _ in range(f):
-            test, result, name = "", TestResult.UNKNOWN, None
+            test, result, name = "", TestResult.UNDEFINED, None
             while name in tests:
                 test, result = self.generate_failing_test()
                 name = self.get_name(test, result, path)

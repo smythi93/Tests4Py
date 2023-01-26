@@ -135,13 +135,13 @@ class PySnooperAPI(API):
                 if self.expected_error in process.stderr:
                     return TestResult.FAILING
                 else:
-                    return TestResult.UNKNOWN
+                    return TestResult.UNDEFINED
             else:
                 return TestResult.PASSING
         except subprocess.TimeoutExpired:
-            return TestResult.UNKNOWN
+            return TestResult.UNDEFINED
         except Exception:
-            return TestResult.UNKNOWN
+            return TestResult.UNDEFINED
 
 
 class PySnooperUnittestGenerator(python.PythonGenerator, UnittestGenerator):

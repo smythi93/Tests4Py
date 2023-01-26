@@ -1,14 +1,19 @@
 import os
+import random
 import shutil
 import string
 import subprocess
-from abc import abstractmethod
+import sys
+import traceback
+from abc import abstractmethod, ABC
 from os import PathLike
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from fuzzingbook.Grammars import Grammar, srange, is_valid_grammar
 from isla.derivation_tree import DerivationTree
+from isla.fuzzer import GrammarFuzzer
+from isla.parser import EarleyParser
 
 from Tests4Py.framework.constants import Environment
 from Tests4Py.grammars.utils import GrammarVisitor
@@ -53,7 +58,7 @@ class CookieCutter(Project):
             unittests=unittests,
             systemtests=systemtests,
             api=api,
-            grammar=None,
+            grammar=grammar,
         )  # TODO adjust parameters
 
 
@@ -87,7 +92,7 @@ def register():
             "tests/test_hooks.py::TestExternalHooks::test_run_hook",
         ],
         api=CookieCutter2API(),
-        systemtests=None,  # Bug does not propagate
+        systemtests=CookieCutter2SystemtestGenerator(),
     )
     CookieCutter(
         bug_id=3,
@@ -123,6 +128,7 @@ class CookieCutterAPI(API, GrammarVisitor):
         self.config = None
         self.pre_hooks = []
         self.post_hooks = []
+        self.path = None
 
     def visit_hooks(self, node: DerivationTree):
         self.pre_hooks = []
@@ -131,13 +137,29 @@ class CookieCutterAPI(API, GrammarVisitor):
             self.visit(children)
 
     def visit_config(self, node: DerivationTree):
-        self.config = node.value
+        self.config = node.to_string()
+        for child in node.children:
+            self.visit(child)
+
+    def visit_repo_name(self, node: DerivationTree):
+        self.path = node.children[1].to_string()
 
     def visit_pre_hook(self, node: DerivationTree):
-        self.pre_hooks.append(node.children[1])
+        self.pre_hooks.append(node.children[1].to_string())
 
     def visit_post_hook(self, node: DerivationTree):
-        self.post_hooks.append(node.children[1])
+        self.post_hooks.append(node.children[1].to_string())
+
+    @staticmethod
+    def _write_hook(hooks_path, hooks, file):
+        for i, hook in enumerate(hooks):
+            with open(os.path.join(hooks_path, f"{file}.{i}"), "w") as fp:
+                if sys.platform.startswith("win"):
+                    fp.write("@echo off\n")
+                    fp.write(f"echo {hook}\n")
+                else:
+                    fp.write("#!/bin/sh\n")
+                    fp.write(f'echo "{hook}"\n')
 
     def _setup(self):
         if os.path.exists(self.REPO_PATH):
@@ -148,7 +170,7 @@ class CookieCutterAPI(API, GrammarVisitor):
 
         os.makedirs(self.REPO_PATH)
 
-        with open("cookiecutter.json", "w") as fp:
+        with open(os.path.join(self.REPO_PATH, "cookiecutter.json"), "w") as fp:
             fp.write(self.config)
 
         repo_path = os.path.join(self.REPO_PATH, "{{cookiecutter.repo_name}}")
@@ -165,21 +187,17 @@ class CookieCutterAPI(API, GrammarVisitor):
             hooks_path = os.path.join(self.REPO_PATH, "hooks")
             os.makedirs(hooks_path)
             if self.pre_hooks:
-                for i, pre_hook in enumerate(self.pre_hooks):
-                    with open(
-                        os.path.join(hooks_path, f"pre_gen_project.{i}.py"), "w"
-                    ) as fp:
-                        fp.write(f'print("{pre_hook}")')
+                self._write_hook(hooks_path, self.pre_hooks, "pre_gen_project")
             if self.post_hooks:
-                for i, post_hook in enumerate(self.post_hooks):
-                    with open(
-                        os.path.join(hooks_path, f"post_gen_project.{i}.py"), "w"
-                    ) as fp:
-                        fp.write(f'print("{post_hook}")')
+                self._write_hook(hooks_path, self.post_hooks, "post_gen_project")
 
     @abstractmethod
     def _validate(self, process: subprocess.CompletedProcess) -> TestResult:
         pass
+
+    @abstractmethod
+    def _get_command_parameters(self) -> List[str]:
+        return []
 
     # noinspection PyBroadException
     def run(self, system_test_path: PathLike, environ: Environment) -> TestResult:
@@ -189,7 +207,7 @@ class CookieCutterAPI(API, GrammarVisitor):
             self.visit_source(content)
             self._setup()
             process = subprocess.run(
-                ["cookiecutter", self.REPO_PATH],
+                ["cookiecutter"] + self._get_command_parameters() + [self.REPO_PATH],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 timeout=self.default_timeout,
@@ -197,22 +215,122 @@ class CookieCutterAPI(API, GrammarVisitor):
             )
             return self._validate(process)
         except subprocess.TimeoutExpired:
-            return TestResult.UNKNOWN
+            return TestResult.UNDEFINED
         except Exception:
-            return TestResult.UNKNOWN
+            return TestResult.UNDEFINED
         finally:
+            if self.path:
+                shutil.rmtree(self.path, ignore_errors=True)
             shutil.rmtree(self.REPO_PATH, ignore_errors=True)
 
 
 class CookieCutter2API(CookieCutterAPI):
+    def _get_command_parameters(self) -> List[str]:
+        return ["--no-input", "-v"]
+
     def _validate(self, process: subprocess.CompletedProcess) -> TestResult:
+        if process.returncode != 0:
+            return TestResult.UNDEFINED
         output: str = process.stdout.decode("utf-8")
         for hook in self.pre_hooks + self.post_hooks:
-            if hook in output:
-                output = output.replace(hook, "", 1)
+            hook_repr = "\n" + hook + "\n"
+            if hook_repr in output:
+                output = output.replace(hook_repr, "\n", 1)
             else:
                 return TestResult.FAILING
         return TestResult.PASSING
+
+
+class CookieCutterSystemtestGenerator(SystemtestGenerator, ABC):
+    def __init__(self):
+        SystemtestGenerator.__init__(self)
+        self.pre_hook_fuzzer = GrammarFuzzer(grammar, start_symbol="<pre_hook>")
+        self.post_hook_fuzzer = GrammarFuzzer(grammar, start_symbol="<post_hook>")
+        self.str_fuzzer = GrammarFuzzer(grammar, start_symbol="<str>")
+        self.str_with_spaces_fuzzer = GrammarFuzzer(
+            grammar, start_symbol="<str_with_spaces>"
+        )
+        self.email_fuzzer = GrammarFuzzer(grammar, start_symbol="<email_address>")
+        self.date_fuzzer = GrammarFuzzer(grammar, start_symbol="<date>")
+        self.int_fuzzer = GrammarFuzzer(grammar, start_symbol="<int>")
+        self.version_fuzzer = GrammarFuzzer(grammar, start_symbol="<v>")
+
+    def _generate_default_config(
+        self,
+        full_name=None,
+        email=None,
+        github_username=None,
+        project_name=None,
+        repo_name=None,
+        project_short_description=None,
+        release_date=None,
+        year=None,
+        version=None,
+    ) -> str:
+        full_name = (
+            f'"{self.str_with_spaces_fuzzer.fuzz()}"'
+            if full_name is None
+            else full_name
+        )
+        email = f'"{self.email_fuzzer.fuzz()}"' if email is None else email
+        github_username = (
+            f'"{self.str_fuzzer.fuzz()}"'
+            if github_username is None
+            else github_username
+        )
+        project_name = (
+            f'"{self.str_with_spaces_fuzzer.fuzz()}"'
+            if project_name is None
+            else project_name
+        )
+        repo_name = f'"{self.str_fuzzer.fuzz()}"' if repo_name is None else repo_name
+        project_short_description = (
+            f'"{self.str_with_spaces_fuzzer.fuzz()}"'
+            if project_short_description is None
+            else project_short_description
+        )
+        release_date = (
+            f'"{self.date_fuzzer.fuzz()}"' if release_date is None else release_date
+        )
+        year = f'"{self.int_fuzzer.fuzz()}"' if year is None else year
+        version = f'"{self.version_fuzzer.fuzz()}"' if version is None else version
+        return (
+            f'{{"full_name":{full_name},'
+            f'"email":{email},'
+            f'"github_username":{github_username},'
+            f'"project_name":{project_name},'
+            f'"repo_name":{repo_name},'
+            f'"project_short_description":{project_short_description},'
+            f'"release_date":{release_date},'
+            f'"year":{year},'
+            f'"version":{version}}}'
+        )
+
+    def _generate_hook(self, pre=True) -> str:
+        if pre:
+            return self.pre_hook_fuzzer.fuzz()
+        else:
+            return self.post_hook_fuzzer.fuzz()
+
+
+class CookieCutter2SystemtestGenerator(CookieCutterSystemtestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        pre = random.choice([True, False])
+        hooks = [
+            self._generate_hook(pre=pre) for _ in range(0, random.randint(2, 5))
+        ] + [self._generate_hook(pre=not pre) for _ in range(0, random.randint(0, 5))]
+        random.shuffle(hooks)
+        return "\n".join([self._generate_default_config()] + hooks), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        hooks = [
+            self._generate_hook(pre=True) for _ in range(0, random.randint(0, 1))
+        ] + [self._generate_hook(pre=False) for _ in range(0, random.randint(0, 1))]
+        if hooks:
+            random.shuffle(hooks)
+        else:
+            hooks = [""]
+        return "\n".join([self._generate_default_config()] + hooks), TestResult.PASSING
 
 
 grammar: Grammar = {
@@ -221,8 +339,8 @@ grammar: Grammar = {
     "<hooks>": ["", "<hook_list>"],
     "<hook_list>": ["<hook>", "<hook_list>\n<hook>"],
     "<hook>": ["<pre_hook>", "<post_hook>"],
-    "<pre_hook>": ["pre:<str_with_space>"],
-    "<post_hook>": ["post:<str_with_space>"],
+    "<pre_hook>": ["pre:<str_with_spaces>"],
+    "<post_hook>": ["post:<str_with_spaces>"],
     "<pairs>": ["<pair>", "<pairs>,<pair>"],
     "<pair>": [
         "<full_name>",
@@ -232,44 +350,45 @@ grammar: Grammar = {
         "<repo_name>",
         "<project_short_description>",
         "<release_date>",
+        "<year>",
         "<version>",
     ],
     "<full_name>": [
-        '"full_name":"str_with_space"',
-        '"full_name":[<str_with_space_list>]',
+        '"full_name":"<str_with_spaces>"',
+        '"full_name":[<str_with_spaces_list>]',
     ],
-    "<email>": ['"email":"<email>"', '"email":[<email_list>]'],
+    "<email>": ['"email":"<email_address>"', '"email":[<email_list>]'],
     "<github_username>": [
         '"github_username":"<str>"',
         '"github_username":[<str_list>]',
     ],
     "<project_name>": [
-        '"project_name":"<str_with_space>"',
-        '"project_name":[<str_with_space_list>]',
+        '"project_name":"<str_with_spaces>"',
+        '"project_name":[<str_with_spaces_list>]',
     ],
     "<repo_name>": ['"repo_name":"<str>"', '"repo_name":[<str_list>]'],
     "<project_short_description>": [
-        '"project_name":"<str_with_space>"',
-        '"project_name":[<str_with_space_list>]',
+        '"project_short_description":"<str_with_spaces>"',
+        '"project_short_description":[<str_with_spaces_list>]',
     ],
     "<release_date>": ['"release_date":"<date>"', '"release_date":[<date_list>]'],
     "<year>": ['"year":"<int>"', '"year":[<int_list>]'],
     "<version>": ['"version":"<v>"', '"version":[<version_list>]'],
-    "<str_with_space_list>": [
-        "<str_with_space>",
-        "<str_with_space_list>,<str_with_space>",
+    "<str_with_spaces_list>": [
+        '"<str_with_spaces>"',
+        '<str_with_spaces_list>,"<str_with_spaces>"',
     ],
-    "<email_list>": ["<email_address>", "<email_list>,<email_address>"],
-    "<str_list>": ["<str>", "<str_list>,<str>"],
-    "<int_list>": ["<int>", "<int_list>,<int>"],
-    "<date_list>": ["<date>", "<date_list>,<date>"],
-    "<version_list>": ["<v>", "<version_list>,<v>"],
+    "<email_list>": ['"<email_address>"', '<email_list>,"<email_address>"'],
+    "<str_list>": ['"<str>"', '<str_list>,"<str>"'],
+    "<int_list>": ['"<int>"', '<int_list>,"<int>"'],
+    "<date_list>": ['"<date>"', '<date_list>,"<date>"'],
+    "<version_list>": ['"<v>"', '<version_list>,"<v>"'],
     "<chars>": ["", "<chars><char>"],
     "<char>": srange(string.ascii_letters + string.digits + "_"),
-    "<chars_with_space>": ["", "<chars_with_space><char_with_space>"],
-    "<char_with_space>": srange(string.ascii_letters + string.digits + "_ "),
+    "<chars_with_spaces>": ["", "<chars_with_spaces><char_with_spaces>"],
+    "<char_with_spaces>": srange(string.ascii_letters + string.digits + "_ "),
     "<str>": ["<char><chars>"],
-    "<str_with_space>": ["<char_with_space><chars_with_space>"],
+    "<str_with_spaces>": ["<char_with_spaces><chars_with_spaces>"],
     "<email_address>": ["<str>@<str>.<str>"],
     "<date>": ["<day>.<month>.<int>", "<int>-<month>-<day>"],
     "<month>": ["0<nonzero>", "<nonzero>", "10", "11", "12"],
@@ -291,3 +410,6 @@ grammar: Grammar = {
 }
 
 assert is_valid_grammar(grammar)
+
+for _ in EarleyParser(grammar).parse('{"full_name":["Marius Smytzek","test"]}\n'):
+    pass
