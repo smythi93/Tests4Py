@@ -1,316 +1,71 @@
-import ast
-from abc import ABC
-
-from Tests4Py.grammars.python import ToGrammarVisitor
 from Tests4Py.tests.diversity import Systemtests
 
 
-class Tests(Systemtests, ABC):
-
-    def __init__(self, passing: bool = True):
-        self.transformer = ToGrammarVisitor()
-        super().__init__(passing=passing)
-
-    def parse(self, test: str):
-        tree = ast.parse(test)
-        return self.transformer.visit(tree)
-
-
-class TestsFailing(Tests):
-
+class TestsFailing(Systemtests):
     def __init__(self):
         super().__init__(passing=False)
 
     def test_diversity_1(self):
-        return '''
-import pysnooper
-
-@pysnooper.snoop('test.log')
-def function_1(foo):
-    x = 42
-    y = 2
-    return x + y
-    
-result = function_1('test')
-'''
+        return "-otest1.log"
 
     def test_diversity_2(self):
-        return '''
-import pysnooper
-
-@pysnooper.snoop('test.log')
-def function_2(x):
-    if x < 1:
-        return 1
-    else:
-        return x * function_2(x - 1)
-
-result = function_2(4)
-'''
+        return "-otest2.log\n-d1"
 
     def test_diversity_3(self):
-        return '''
-from pysnooper import snoop
-
-@snoop('test.log')
-def function_3(x):
-    return x
-
-result = function_3(4)
-'''
+        return "-otest3.log\n-vx"
 
     def test_diversity_4(self):
-        return '''
-from pysnooper import snoop
-
-@snoop('test.log')
-def function_4(x, y, z):
-    if y < z:
-        if x < y:
-            return y
-        elif x < z:
-            return x
-    else:
-        if x > y:
-            return y
-        elif x > z:
-            return x
-    return z
-
-result = function_4(2, 3, 1)
-'''
+        return "-otest4.log\n-vx,y"
 
     def test_diversity_5(self):
-        return '''
-import pysnooper
-
-@pysnooper.snoop('test.log')
-def function_5(m, n):
-    if m <= 0:
-        return n + 1
-    elif n <= 0:
-        return function_5(m - 1, 1)
-    else:
-        return function_5(m - 1, function_5(m, n - 1))
-
-result = function_5(3, 2)
-'''
+        return "-otest5.log\n-vw\n-d2"
 
     def test_diversity_6(self):
-        return '''
-import pysnooper
-
-@pysnooper.snoop('test.log')
-def function_6(x, y):
-    z = 2
-    return x ** z - z * x * y + y ** z
-
-result = function_6(2, 2)
-'''
+        return "-otest6.log\n-ptest"
 
     def test_diversity_7(self):
-        return '''
-import pysnooper
-
-@pysnooper.snoop('test.log')
-def function_7(x):
-    return x * x
-
-result = function_7(4)
-'''
+        return "-otest7.log\n-d1\n-ptest"
 
     def test_diversity_8(self):
-        return '''
-import pysnooper
-
-@pysnooper.snoop('test.log')
-def function_8(x):
-    i = 0
-    j = len(x)
-    i = j + 1
-    return i
-
-result = function_8('test')
-'''
+        return "-otest8.log\n-vx\n-ptest"
 
     def test_diversity_9(self):
-        return '''
-import pysnooper
-
-@pysnooper.snoop('test.log')
-def function_9(x):
-    r = 0
-    if len(x) > 4:
-        r = 2 * len(x)
-    else:
-        r = len(x) 
-    return r
-
-result = function_9('test')
-'''
+        return "-otest9.log\n-d1\n-vw,x,y,z"
 
     def test_diversity_10(self):
-        return '''
-import pysnooper
-
-@pysnooper.snoop('test.log')
-def function_10(n, k):
-    def fac(x):
-        if x <= 0:
-            return 1
-        return x * fac(x - 1)
-
-    return fac(n) / (fac(k) * fac(n - k))
-
-result = function_10(4, 2)
-'''
+        return "-otest10.log\n-d1\n-ptest\n-vx,z"
 
 
-class TestsPassing(Tests):
-
+class TestsPassing(Systemtests):
     def __init__(self):
         super().__init__(passing=True)
 
     def test_diversity_1(self):
-        return '''
-import pysnooper
-
-@pysnooper.snoop()
-def function_1(foo):
-    x = 42
-    y = 2
-    return x + y
-
-result = function_1('test')
-'''
+        return ""
 
     def test_diversity_2(self):
-        return '''
-import pysnooper
-
-@pysnooper.snoop()
-def function_2(x):
-    if x < 1:
-        return 1
-    else:
-        return x * function_2(x - 1)
-
-result = function_2(4)
-'''
+        return "-o\n-d1"
 
     def test_diversity_3(self):
-        return '''
-from pysnooper import snoop
-
-@snoop()
-def function_3(x):
-    return x
-
-result = function_3(4)
-'''
+        return "-vx"
 
     def test_diversity_4(self):
-        return '''
-from pysnooper import snoop
-
-@snoop()
-def function_4(x, y, z):
-    if y < z:
-        if x < y:
-            return y
-        elif x < z:
-            return x
-    else:
-        if x > y:
-            return y
-        elif x > z:
-            return x
-    return z
-
-result = function_4(2, 3, 1)
-'''
+        return "-o\n-vx,y"
 
     def test_diversity_5(self):
-        return '''
-import pysnooper
-
-@pysnooper.snoop()
-def function_5(m, n):
-    if m <= 0:
-        return n + 1
-    elif n <= 0:
-        return function_5(m - 1, 1)
-    else:
-        return function_5(m - 1, function_5(m, n - 1))
-
-result = function_5(3, 2)
-'''
+        return "-vw\n-d2"
 
     def test_diversity_6(self):
-        return '''
-import pysnooper
-
-@pysnooper.snoop()
-def function_6(x, y):
-    z = 2
-    return x ** z - z * x * y + y ** z
-
-result = function_6(2, 2)
-'''
+        return "-o\n-ptest"
 
     def test_diversity_7(self):
-        return '''
-import pysnooper
-
-@pysnooper.snoop()
-def function_7(x):
-    return x * x
-
-result = function_7(4)
-'''
+        return "-d1\n-ptest"
 
     def test_diversity_8(self):
-        return '''
-import pysnooper
-
-@pysnooper.snoop()
-def function_8(x):
-    i = 0
-    j = len(x)
-    i = j + 1
-    return i
-
-result = function_8('test')
-'''
+        return "-o\n-vx\n-ptest"
 
     def test_diversity_9(self):
-        return '''
-import pysnooper
-
-@pysnooper.snoop()
-def function_9(x):
-    r = 0
-    if len(x) > 4:
-        r = 2 * len(x)
-    else:
-        r = len(x) 
-    return r
-
-result = function_9('test')
-'''
+        return "-d1\n-vw,x,y,z"
 
     def test_diversity_10(self):
-        return '''
-import pysnooper
-
-@pysnooper.snoop()
-def function_10(n, k):
-    def fac(x):
-        if x <= 0:
-            return 1
-        return x * fac(x - 1)
-
-    return fac(n) / (fac(k) * fac(n - k))
-
-result = function_10(4, 2)
-'''
+        return "-o\n-d1\n-ptest\n-vx,z"

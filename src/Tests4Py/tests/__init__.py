@@ -1,5 +1,1 @@
-__all__ = [
-    'diversity',
-    'generator',
-    'utils'
-]
+__all__ = ["diversity", "generator", "utils"]

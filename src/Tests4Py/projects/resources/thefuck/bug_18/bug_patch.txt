@@ -10,5 +10,5 @@ index 121efe7..9711444 100644
 +        return False
 +
      for pattern in patterns:
-         if pattern.lower() in command.stderr.lower()\
-                 or pattern.lower() in command.stdout.lower():
+         if pattern.lower() in command.stderr.lower()
+                                                                                                                                                                                                                                                                                                                                                    or pattern.lower() in command.stdout.lower():

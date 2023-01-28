@@ -1,2 +1,2 @@
-The bug in PySnooper 3 does occur whenever the snoop function/decorator was used with the `output` argument. This call
-resolves in a NameError because the argument is referred to as `output_path`.
+The bug in PySnooper 3 does occur whenever the snoop function/decorator was used with the `output` argument taken a
+path. This call resolves in a NameError because the argument is referred to as `output_path`.

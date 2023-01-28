@@ -18,5 +18,4 @@ index 318249b..9e54c5f 100755
 +        return self.__bool__()
 +
      def __len__(self):
-         return self.total if self.iterable is None else \
-             (self.iterable.shape[0] if hasattr(self.iterable, "shape")
+         return self.total if self.iterable is None else(self.iterable.shape[0] if hasattr(self.iterable, "shape")

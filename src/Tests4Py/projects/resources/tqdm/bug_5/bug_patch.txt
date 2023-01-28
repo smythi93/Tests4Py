@@ -32,6 +32,5 @@ index f0261da..2ab2854 100755
 -            except (TypeError, AttributeError):
 -                total = None
 -
-         if ((ncols is None) and (file in (sys.stderr, sys.stdout))) or \
-                 dynamic_ncols:  # pragma: no cover
+         if ((ncols is None) and (file in (sys.stderr, sys.stdout))) ordynamic_ncols:  # pragma: no cover
              if dynamic_ncols:

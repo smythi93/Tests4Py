@@ -1,0 +1,2 @@
+The bug in cookiecutter 2 does occur whenever multiple `pre_gen_project` and/or `post_gen_project` hooks are provided.
+Only one of the hooks will be executed pre-generation and one post-generation. The other hooks will be ignored. 
