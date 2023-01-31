@@ -114,7 +114,7 @@ def tests4py_generate(
         report.total = n
         if verify:
             environ = environment.__env_on__(project, verbose=verbose)
-            environ = environment.__activating_venv__(work_dir, environ)
+            environ = environment.__activate_venv__(work_dir, environ)
 
             _, report.verify_passing, report.verify_failing = _get_system_runs(
                 project, path, environ
@@ -165,7 +165,7 @@ def tests4py_test(
             )
 
         environ = environment.__env_on__(project, verbose=verbose)
-        environ = environment.__activating_venv__(work_dir, environ)
+        environ = environment.__activate_venv__(work_dir, environ)
 
         report.total, report.passing, report.failing = 0, 0, 0
 

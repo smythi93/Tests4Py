@@ -2,21 +2,18 @@ import ast
 import os
 import random
 import string
-import subprocess
 from _ast import Call
 from abc import abstractmethod
-from os import PathLike
 from pathlib import Path
 from typing import List, Optional, Tuple
 
 from fuzzingbook.Grammars import Grammar, srange, is_valid_grammar
 from isla.fuzzer import GrammarFuzzer
 
-from Tests4Py.framework.constants import Environment, HARNESS_FILE
 from Tests4Py.grammars import python
 from Tests4Py.projects import Project, Status, TestingFramework, TestStatus
 from Tests4Py.tests.generator import UnittestGenerator, SystemtestGenerator
-from Tests4Py.tests.utils import API, TestResult
+from Tests4Py.tests.utils import API, TestResult, ExpectErrAPI
 
 
 class PySnooper(Project):
@@ -109,39 +106,8 @@ def register():
     )
 
 
-class PySnooperAPI(API):
-    def __init__(self, expected_error: bytes, default_timeout: int = 5):
-        self.expected_error = expected_error
-        self.translator = python.ToASTVisitor(python.GENERATIVE_GRAMMAR)
-        super().__init__(default_timeout=default_timeout)
-
-    # noinspection PyBroadException
-    def run(self, system_test_path: PathLike, environ: Environment) -> TestResult:
-        try:
-            with open(system_test_path, "r") as fp:
-                test = fp.read()
-            if test:
-                test = test.split("\n")
-            else:
-                test = []
-            process = subprocess.run(
-                ["python", HARNESS_FILE] + test,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                timeout=self.default_timeout,
-                env=environ,
-            )
-            if process.returncode:
-                if self.expected_error in process.stderr:
-                    return TestResult.FAILING
-                else:
-                    return TestResult.UNDEFINED
-            else:
-                return TestResult.PASSING
-        except subprocess.TimeoutExpired:
-            return TestResult.UNDEFINED
-        except Exception:
-            return TestResult.UNDEFINED
+class PySnooperAPI(ExpectErrAPI):
+    pass
 
 
 class PySnooperUnittestGenerator(python.PythonGenerator, UnittestGenerator):

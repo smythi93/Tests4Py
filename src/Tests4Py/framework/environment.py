@@ -93,7 +93,7 @@ def __update_env__(environ: Environment):
     )
 
 
-def __activating_venv__(
+def __activate_venv__(
     work_dir: Path, environ: Environment, verbose=True
 ) -> Environment:
     if verbose:

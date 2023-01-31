@@ -14,39 +14,39 @@ class DiversityTest:
 
     @abstractmethod
     def test_diversity_2(self):
-        raise NotImplementedError("Diversity test 1 is missing")
+        raise NotImplementedError("Diversity test 2 is missing")
 
     @abstractmethod
     def test_diversity_3(self):
-        raise NotImplementedError("Diversity test 1 is missing")
+        raise NotImplementedError("Diversity test 3 is missing")
 
     @abstractmethod
     def test_diversity_4(self):
-        raise NotImplementedError("Diversity test 1 is missing")
+        raise NotImplementedError("Diversity test 4 is missing")
 
     @abstractmethod
     def test_diversity_5(self):
-        raise NotImplementedError("Diversity test 1 is missing")
+        raise NotImplementedError("Diversity test 5 is missing")
 
     @abstractmethod
     def test_diversity_6(self):
-        raise NotImplementedError("Diversity test 1 is missing")
+        raise NotImplementedError("Diversity test 6 is missing")
 
     @abstractmethod
     def test_diversity_7(self):
-        raise NotImplementedError("Diversity test 1 is missing")
+        raise NotImplementedError("Diversity test 7 is missing")
 
     @abstractmethod
     def test_diversity_8(self):
-        raise NotImplementedError("Diversity test 1 is missing")
+        raise NotImplementedError("Diversity test 8 is missing")
 
     @abstractmethod
     def test_diversity_9(self):
-        raise NotImplementedError("Diversity test 1 is missing")
+        raise NotImplementedError("Diversity test 9 is missing")
 
     @abstractmethod
     def test_diversity_10(self):
-        raise NotImplementedError("Diversity test 1 is missing")
+        raise NotImplementedError("Diversity test 10 is missing")
 
 
 class Systemtests(DiversityTest, ABC):
@@ -127,3 +127,13 @@ class Unittests(unittest.TestCase, DiversityTest):
     @unittest.skip
     def test_diversity_10(self):
         raise NotImplementedError("Diversity test 1 is missing")
+
+
+class FailingSystemtests(Systemtests, ABC):
+    def __init__(self):
+        super().__init__(passing=False)
+
+
+class PassingSystemtests(Systemtests, ABC):
+    def __init__(self):
+        super().__init__(passing=True)

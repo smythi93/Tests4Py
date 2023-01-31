@@ -6,12 +6,13 @@ import sys
 from pathlib import Path
 
 from Tests4Py.framework import (
-    tests4py_test,
-    tests4py_compile,
-    tests4py_checkout,
     unittest,
     systemtest,
-    DEFAULT_WORK_DIR,
+)
+from Tests4Py.framework.default import (
+    tests4py_checkout,
+    tests4py_compile,
+    tests4py_test,
 )
 from Tests4Py.framework.constants import (
     CHECKOUT,
@@ -24,6 +25,7 @@ from Tests4Py.framework.constants import (
     UNITTEST,
     SYSTEMTEST,
     GENERATE,
+    DEFAULT_WORK_DIR,
 )
 
 
@@ -113,9 +115,17 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         "-w",
         dest="work_dir",
         default=DEFAULT_WORK_DIR,
-        help="The working directory to which the buggy or fixed project version shall be "
-        "checked out. The working directory has to be either empty or a previously used "
-        f"working directory. Default will be ({DEFAULT_WORK_DIR})",
+        help="The working directory to which the buggy or fixed project version shall be checked out. The working "
+        "directory has to be either empty or a previously used working directory. Default will be "
+        f"({DEFAULT_WORK_DIR})",
+    )
+    checkout_parser.add_argument(
+        "-u",
+        dest="update",
+        default=False,
+        action="store_true",
+        help="If set the project won't be checked out again if it already exists at the specified location but only "
+        "the tests4py data will be updated",
     )
 
     # Compile
@@ -379,6 +389,7 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
             bug_id=args.bug_id,
             version_id=args.version_id,
             work_dir=Path(args.work_dir).absolute(),
+            update=args.update,
         )
     elif args.command == COMPILE:
         report = tests4py_compile(

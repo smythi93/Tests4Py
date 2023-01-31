@@ -13,6 +13,8 @@ DEFAULT_SUB_PATH = "tests4py_unittests.py"
 
 
 class UnittestGenerateReport(utils.GenerateReport):
+    """ """
+
     def __init__(self):
         super().__init__(
             Tests4Py.framework.constants.UNITTEST,
@@ -21,6 +23,8 @@ class UnittestGenerateReport(utils.GenerateReport):
 
 
 class UnittestTestReport(utils.TestingReport):
+    """ """
+
     def __init__(self):
         super().__init__(
             Tests4Py.framework.constants.UNITTEST,
@@ -106,7 +110,7 @@ def tests4py_generate(
         report.total = n
         if verify:
             environ = environment.__env_on__(project, verbose=verbose)
-            environ = environment.__activating_venv__(work_dir, environ)
+            environ = environment.__activate_venv__(work_dir, environ)
 
             command = ["python", "-m", TestingFramework.PYTEST.value, path]
             output = subprocess.run(command, stdout=subprocess.PIPE, env=environ).stdout
@@ -163,7 +167,7 @@ def tests4py_test(
             )
 
         environ = environment.__env_on__(project, verbose=verbose)
-        environ = environment.__activating_venv__(work_dir, environ)
+        environ = environment.__activate_venv__(work_dir, environ)
 
         command = ["python", "-m", TestingFramework.PYTEST.value]
         if output:

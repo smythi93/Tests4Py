@@ -2,13 +2,14 @@ import os
 import unittest
 
 import Tests4Py.framework.constants
+import Tests4Py.framework.default
 from Tests4Py import framework
 from Tests4Py.projects import load_bug_info
 
 
 class CheckOutTests(unittest.TestCase):
     def test_checkout_pysnooper_1(self):
-        report = framework.tests4py_checkout("pysnooper", 1)
+        report = Tests4Py.framework.default.tests4py_checkout("pysnooper", 1)
         if report.raised:
             raise report.raised
         self.assertTrue(
@@ -30,7 +31,7 @@ class CheckOutTests(unittest.TestCase):
         )
 
     def test_checkout_pysnooper_2(self):
-        report = framework.tests4py_checkout("pysnooper", 2)
+        report = Tests4Py.framework.default.tests4py_checkout("pysnooper", 2)
         if report.raised:
             raise report.raised
         self.assertTrue(
@@ -76,7 +77,7 @@ class CheckOutTests(unittest.TestCase):
         )
 
     def test_checkout_pysnooper_3(self):
-        report = framework.tests4py_checkout("pysnooper", 3)
+        report = Tests4Py.framework.default.tests4py_checkout("pysnooper", 3)
         if report.raised:
             raise report.raised
         self.assertTrue(
@@ -122,27 +123,27 @@ class CheckOutTests(unittest.TestCase):
         )
 
     def test_compile_pysnooper_1(self):
-        report = framework.tests4py_checkout("pysnooper", 1)
+        report = Tests4Py.framework.default.tests4py_checkout("pysnooper", 1)
         if report.raised:
             raise report.raised
         work_dir = Tests4Py.framework.constants.DEFAULT_WORK_DIR / "pysnooper_1"
         project = load_bug_info(work_dir / Tests4Py.framework.constants.INFO_FILE)
         self.assertFalse(project.compiled)
-        report = framework.tests4py_compile(work_dir)
+        report = Tests4Py.framework.default.tests4py_compile(work_dir)
         if report.raised:
             raise report.raised
         project = load_bug_info(work_dir / Tests4Py.framework.constants.INFO_FILE)
         self.assertTrue(project.compiled)
 
     def test_test_pysnooper_3(self):
-        framework.tests4py_checkout("pysnooper", 3, version_id=0)
+        Tests4Py.framework.default.tests4py_checkout("pysnooper", 3, version_id=0)
         work_dir = Tests4Py.framework.constants.DEFAULT_WORK_DIR / "pysnooper_3"
         project = load_bug_info(work_dir / Tests4Py.framework.constants.INFO_FILE)
         self.assertFalse(project.compiled)
-        framework.tests4py_compile(work_dir)
+        Tests4Py.framework.default.tests4py_compile(work_dir)
         project = load_bug_info(work_dir / Tests4Py.framework.constants.INFO_FILE)
         self.assertTrue(project.compiled)
-        report = framework.tests4py_test(work_dir)
+        report = Tests4Py.framework.default.tests4py_test(work_dir)
         if report.raised:
             raise report.raised
         self.assertEqual(1, report.total)
@@ -150,13 +151,15 @@ class CheckOutTests(unittest.TestCase):
         self.assertEqual(0, report.passing)
 
     def test_unittest_test_buggy_pysnooper_3(self):
-        report = framework.tests4py_checkout("pysnooper", 3, version_id=0)
+        report = Tests4Py.framework.default.tests4py_checkout(
+            "pysnooper", 3, version_id=0
+        )
         if report.raised:
             raise report.raised
         work_dir = Tests4Py.framework.constants.DEFAULT_WORK_DIR / "pysnooper_3"
         project = load_bug_info(work_dir / Tests4Py.framework.constants.INFO_FILE)
         self.assertFalse(project.compiled)
-        report = framework.tests4py_compile(work_dir)
+        report = Tests4Py.framework.default.tests4py_compile(work_dir)
         if report.raised:
             raise report.raised
         project = load_bug_info(work_dir / Tests4Py.framework.constants.INFO_FILE)
@@ -169,13 +172,15 @@ class CheckOutTests(unittest.TestCase):
         self.assertEqual(10, report.passing)
 
     def test_unittest_test_fixed_pysnooper_3(self):
-        report = framework.tests4py_checkout("pysnooper", 3, version_id=1)
+        report = Tests4Py.framework.default.tests4py_checkout(
+            "pysnooper", 3, version_id=1
+        )
         if report.raised:
             raise report.raised
         work_dir = Tests4Py.framework.constants.DEFAULT_WORK_DIR / "pysnooper_3"
         project = load_bug_info(work_dir / Tests4Py.framework.constants.INFO_FILE)
         self.assertFalse(project.compiled)
-        report = framework.tests4py_compile(work_dir)
+        report = Tests4Py.framework.default.tests4py_compile(work_dir)
         if report.raised:
             raise report.raised
         project = load_bug_info(work_dir / Tests4Py.framework.constants.INFO_FILE)
@@ -188,13 +193,15 @@ class CheckOutTests(unittest.TestCase):
         self.assertEqual(20, report.passing)
 
     def test_systemtest_test_buggy_pysnooper_3(self):
-        report = framework.tests4py_checkout("pysnooper", 3, version_id=0)
+        report = Tests4Py.framework.default.tests4py_checkout(
+            "pysnooper", 3, version_id=0
+        )
         if report.raised:
             raise report.raised
         work_dir = Tests4Py.framework.constants.DEFAULT_WORK_DIR / "pysnooper_3"
         project = load_bug_info(work_dir / Tests4Py.framework.constants.INFO_FILE)
         self.assertFalse(project.compiled)
-        report = framework.tests4py_compile(work_dir)
+        report = Tests4Py.framework.default.tests4py_compile(work_dir)
         if report.raised:
             raise report.raised
         project = load_bug_info(work_dir / Tests4Py.framework.constants.INFO_FILE)
@@ -207,13 +214,15 @@ class CheckOutTests(unittest.TestCase):
         self.assertEqual(10, report.passing)
 
     def test_systemtest_test_fixed_pysnooper_3(self):
-        report = framework.tests4py_checkout("pysnooper", 3, version_id=1)
+        report = Tests4Py.framework.default.tests4py_checkout(
+            "pysnooper", 3, version_id=1
+        )
         if report.raised:
             raise report.raised
         work_dir = Tests4Py.framework.constants.DEFAULT_WORK_DIR / "pysnooper_3"
         project = load_bug_info(work_dir / Tests4Py.framework.constants.INFO_FILE)
         self.assertFalse(project.compiled)
-        report = framework.tests4py_compile(work_dir)
+        report = Tests4Py.framework.default.tests4py_compile(work_dir)
         if report.raised:
             raise report.raised
         project = load_bug_info(work_dir / Tests4Py.framework.constants.INFO_FILE)
@@ -226,13 +235,15 @@ class CheckOutTests(unittest.TestCase):
         self.assertEqual(20, report.passing)
 
     def test_unittest_generate_buggy_pysnooper_3(self):
-        report = framework.tests4py_checkout("pysnooper", 3, version_id=0)
+        report = Tests4Py.framework.default.tests4py_checkout(
+            "pysnooper", 3, version_id=0
+        )
         if report.raised:
             raise report.raised
         work_dir = Tests4Py.framework.constants.DEFAULT_WORK_DIR / "pysnooper_3"
         project = load_bug_info(work_dir / Tests4Py.framework.constants.INFO_FILE)
         self.assertFalse(project.compiled)
-        report = framework.tests4py_compile(work_dir)
+        report = Tests4Py.framework.default.tests4py_compile(work_dir)
         if report.raised:
             raise report.raised
         project = load_bug_info(work_dir / Tests4Py.framework.constants.INFO_FILE)
@@ -256,13 +267,15 @@ class CheckOutTests(unittest.TestCase):
         self.assertEqual(5, report.passing)
 
     def test_unittest_generate_fixed_pysnooper_3(self):
-        report = framework.tests4py_checkout("pysnooper", 3, version_id=1)
+        report = Tests4Py.framework.default.tests4py_checkout(
+            "pysnooper", 3, version_id=1
+        )
         if report.raised:
             raise report.raised
         work_dir = Tests4Py.framework.constants.DEFAULT_WORK_DIR / "pysnooper_3"
         project = load_bug_info(work_dir / Tests4Py.framework.constants.INFO_FILE)
         self.assertFalse(project.compiled)
-        report = framework.tests4py_compile(work_dir)
+        report = Tests4Py.framework.default.tests4py_compile(work_dir)
         if report.raised:
             raise report.raised
         project = load_bug_info(work_dir / Tests4Py.framework.constants.INFO_FILE)
@@ -286,13 +299,15 @@ class CheckOutTests(unittest.TestCase):
         self.assertEqual(10, report.passing)
 
     def test_systemtest_generate_buggy_pysnooper_3(self):
-        report = framework.tests4py_checkout("pysnooper", 3, version_id=0)
+        report = Tests4Py.framework.default.tests4py_checkout(
+            "pysnooper", 3, version_id=0
+        )
         if report.raised:
             raise report.raised
         work_dir = Tests4Py.framework.constants.DEFAULT_WORK_DIR / "pysnooper_3"
         project = load_bug_info(work_dir / Tests4Py.framework.constants.INFO_FILE)
         self.assertFalse(project.compiled)
-        report = framework.tests4py_compile(work_dir)
+        report = Tests4Py.framework.default.tests4py_compile(work_dir)
         if report.raised:
             raise report.raised
         project = load_bug_info(work_dir / Tests4Py.framework.constants.INFO_FILE)
@@ -316,13 +331,15 @@ class CheckOutTests(unittest.TestCase):
         self.assertEqual(5, report.passing)
 
     def test_systemtest_generate_fixed_pysnooper_3(self):
-        report = framework.tests4py_checkout("pysnooper", 3, version_id=1)
+        report = Tests4Py.framework.default.tests4py_checkout(
+            "pysnooper", 3, version_id=1
+        )
         if report.raised:
             raise report.raised
         work_dir = Tests4Py.framework.constants.DEFAULT_WORK_DIR / "pysnooper_3"
         project = load_bug_info(work_dir / Tests4Py.framework.constants.INFO_FILE)
         self.assertFalse(project.compiled)
-        report = framework.tests4py_compile(work_dir)
+        report = Tests4Py.framework.default.tests4py_compile(work_dir)
         if report.raised:
             raise report.raised
         project = load_bug_info(work_dir / Tests4Py.framework.constants.INFO_FILE)

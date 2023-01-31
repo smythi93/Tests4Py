@@ -14,7 +14,6 @@ from typing import List, Optional, Tuple
 from fuzzingbook.Grammars import Grammar, srange, is_valid_grammar
 from isla.derivation_tree import DerivationTree
 from isla.fuzzer import GrammarFuzzer
-from isla.parser import EarleyParser
 
 from Tests4Py.framework.constants import Environment
 from Tests4Py.grammars.utils import GrammarVisitor
@@ -620,6 +619,3 @@ grammar: Grammar = {
 }
 
 assert is_valid_grammar(grammar)
-
-for _ in EarleyParser(grammar).parse('{"full_name":["Marius Smytzek","test"]}\n'):
-    pass
