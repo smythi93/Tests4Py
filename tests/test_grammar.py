@@ -6,8 +6,8 @@ from fuzzingbook.Grammars import EXPR_GRAMMAR, Grammar, is_valid_grammar
 from isla.derivation_tree import DerivationTree
 from isla.parser import EarleyParser
 
-from Tests4Py.grammars import antlr, python
-from Tests4Py.grammars.utils import GrammarVisitor
+from tests4py.grammars import antlr, python
+from tests4py.grammars.utils import GrammarVisitor
 
 
 class ExprVisitor(GrammarVisitor):
