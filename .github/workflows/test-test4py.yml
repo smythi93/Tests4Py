@@ -20,7 +20,7 @@ jobs:
       with:
         python-version: "3.10"
     - name: setup pyenv
-      uses: "gabrielfalcao/pyenv-action@v11"
+      uses: "gabrielfalcao/pyenv-action@v13"
       with:
         default: 3.10.9
     - name: Install dependencies
