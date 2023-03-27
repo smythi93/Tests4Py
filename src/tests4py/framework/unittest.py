@@ -108,7 +108,7 @@ def tests4py_generate(
         report.failing = result.failing
         report.total = n
         if verify:
-            environ = environment.__env_on__(project, verbose=verbose)
+            environ = environment.__env_on__(project)
             environ = environment.__activate_venv__(work_dir, environ)
 
             command = ["python", "-m", TestingFramework.PYTEST.value, path]
@@ -165,7 +165,7 @@ def tests4py_test(
                 f"Running of unittest is not possible because {path} is a directory"
             )
 
-        environ = environment.__env_on__(project, verbose=verbose)
+        environ = environment.__env_on__(project)
         environ = environment.__activate_venv__(work_dir, environ)
 
         command = ["python", "-m", TestingFramework.PYTEST.value]
