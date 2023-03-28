@@ -1,5 +1,4 @@
 import importlib.resources
-import logging
 import os
 import shutil
 import subprocess
@@ -34,6 +33,7 @@ from tests4py.framework.utils import (
     CompileReport,
     TestReport,
     __get_pytest_result__,
+    __init_logger__,
 )
 from tests4py.projects import resources, TestingFramework
 
@@ -47,10 +47,7 @@ def tests4py_checkout(
     verbose=True,
 ) -> CheckoutReport:
     report = CheckoutReport()
-    if verbose:
-        LOGGER.setLevel(logging.INFO)
-    else:
-        LOGGER.setLevel(logging.WARNING)
+    __init_logger__(verbose=verbose)
 
     try:
         if not project_name:
@@ -254,10 +251,7 @@ def tests4py_compile(
     work_dir: Path = None, recompile: bool = False, verbose: bool = True
 ) -> CompileReport:
     report = CompileReport()
-    if verbose:
-        LOGGER.setLevel(logging.INFO)
-    else:
-        LOGGER.setLevel(logging.WARNING)
+    __init_logger__(verbose=verbose)
 
     if work_dir is None:
         work_dir = Path.cwd()
@@ -355,10 +349,7 @@ def tests4py_test(
     verbose=True,
 ) -> TestReport:
     report = TestReport()
-    if verbose:
-        LOGGER.setLevel(logging.INFO)
-    else:
-        LOGGER.setLevel(logging.WARNING)
+    __init_logger__(verbose=verbose)
 
     if work_dir is None:
         work_dir = Path.cwd()

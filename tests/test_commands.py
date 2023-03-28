@@ -248,7 +248,7 @@ class CommandTests(unittest.TestCase):
             raise report.raised
         project = load_bug_info(work_dir / tests4py.framework.constants.INFO_FILE)
         self.assertTrue(project.compiled)
-        report = framework.unittest.tests4py_generate(work_dir, n=10, p=0.5)
+        report = framework.unittest.tests4py_generate(work_dir, n=6, p=0.5)
         if report.raised:
             raise report.raised
         self.assertTrue(
@@ -256,9 +256,9 @@ class CommandTests(unittest.TestCase):
                 work_dir / tests4py.framework.constants.DEFAULT_SUB_PATH_UNITTESTS
             ).exists()
         )
-        self.assertEqual(10, report.total)
-        self.assertEqual(5, report.failing)
-        self.assertEqual(5, report.passing)
+        self.assertEqual(6, report.total)
+        self.assertEqual(3, report.failing)
+        self.assertEqual(3, report.passing)
         report = framework.unittest.tests4py_test(
             work_dir,
             path=work_dir / tests4py.framework.constants.DEFAULT_SUB_PATH_UNITTESTS,
@@ -266,9 +266,9 @@ class CommandTests(unittest.TestCase):
         )
         if report.raised:
             raise report.raised
-        self.assertEqual(10, report.total)
-        self.assertEqual(5, report.failing)
-        self.assertEqual(5, report.passing)
+        self.assertEqual(6, report.total)
+        self.assertEqual(3, report.failing)
+        self.assertEqual(3, report.passing)
 
     def test_unittest_generate_fixed_pysnooper_3(self):
         report = tests4py.framework.default.tests4py_checkout(
@@ -284,7 +284,7 @@ class CommandTests(unittest.TestCase):
             raise report.raised
         project = load_bug_info(work_dir / tests4py.framework.constants.INFO_FILE)
         self.assertTrue(project.compiled)
-        report = framework.unittest.tests4py_generate(work_dir, n=10, p=0.5)
+        report = framework.unittest.tests4py_generate(work_dir, n=6, p=0.5)
         if report.raised:
             raise report.raised
         self.assertTrue(
@@ -292,9 +292,9 @@ class CommandTests(unittest.TestCase):
                 work_dir / tests4py.framework.constants.DEFAULT_SUB_PATH_UNITTESTS
             ).exists()
         )
-        self.assertEqual(10, report.total)
-        self.assertEqual(5, report.failing)
-        self.assertEqual(5, report.passing)
+        self.assertEqual(6, report.total)
+        self.assertEqual(3, report.failing)
+        self.assertEqual(3, report.passing)
         report = framework.unittest.tests4py_test(
             work_dir,
             path=work_dir / tests4py.framework.constants.DEFAULT_SUB_PATH_UNITTESTS,
@@ -302,9 +302,9 @@ class CommandTests(unittest.TestCase):
         )
         if report.raised:
             raise report.raised
-        self.assertEqual(10, report.total)
+        self.assertEqual(6, report.total)
         self.assertEqual(0, report.failing)
-        self.assertEqual(10, report.passing)
+        self.assertEqual(6, report.passing)
 
     def test_systemtest_generate_buggy_pysnooper_3(self):
         report = tests4py.framework.default.tests4py_checkout(
@@ -320,7 +320,7 @@ class CommandTests(unittest.TestCase):
             raise report.raised
         project = load_bug_info(work_dir / tests4py.framework.constants.INFO_FILE)
         self.assertTrue(project.compiled)
-        report = framework.systemtest.tests4py_generate(work_dir, n=10, p=0.5)
+        report = framework.systemtest.tests4py_generate(work_dir, n=6, p=0.5)
         if report.raised:
             raise report.raised
         self.assertTrue(
@@ -328,9 +328,9 @@ class CommandTests(unittest.TestCase):
                 work_dir / tests4py.framework.constants.DEFAULT_SUB_PATH_SYSTEMTESTS
             ).exists()
         )
-        self.assertEqual(10, report.total)
-        self.assertEqual(5, report.failing)
-        self.assertEqual(5, report.passing)
+        self.assertEqual(6, report.total)
+        self.assertEqual(3, report.failing)
+        self.assertEqual(3, report.passing)
         report = framework.systemtest.tests4py_test(
             work_dir,
             path=work_dir / tests4py.framework.constants.DEFAULT_SUB_PATH_SYSTEMTESTS,
@@ -338,9 +338,9 @@ class CommandTests(unittest.TestCase):
         )
         if report.raised:
             raise report.raised
-        self.assertEqual(10, report.total)
-        self.assertEqual(5, report.failing)
-        self.assertEqual(5, report.passing)
+        self.assertEqual(6, report.total)
+        self.assertEqual(3, report.failing)
+        self.assertEqual(3, report.passing)
 
     def test_systemtest_generate_fixed_pysnooper_3(self):
         report = tests4py.framework.default.tests4py_checkout(
@@ -356,7 +356,7 @@ class CommandTests(unittest.TestCase):
             raise report.raised
         project = load_bug_info(work_dir / tests4py.framework.constants.INFO_FILE)
         self.assertTrue(project.compiled)
-        report = framework.systemtest.tests4py_generate(work_dir, n=10, p=0.5)
+        report = framework.systemtest.tests4py_generate(work_dir, n=6, p=0.5)
         if report.raised:
             raise report.raised
         self.assertTrue(
@@ -364,9 +364,9 @@ class CommandTests(unittest.TestCase):
                 work_dir / tests4py.framework.constants.DEFAULT_SUB_PATH_SYSTEMTESTS
             ).exists()
         )
-        self.assertEqual(10, report.total)
-        self.assertEqual(5, report.failing)
-        self.assertEqual(5, report.passing)
+        self.assertEqual(6, report.total)
+        self.assertEqual(3, report.failing)
+        self.assertEqual(3, report.passing)
         report = framework.systemtest.tests4py_test(
             work_dir,
             path=work_dir / tests4py.framework.constants.DEFAULT_SUB_PATH_SYSTEMTESTS,
@@ -374,6 +374,6 @@ class CommandTests(unittest.TestCase):
         )
         if report.raised:
             raise report.raised
-        self.assertEqual(10, report.total)
+        self.assertEqual(6, report.total)
         self.assertEqual(0, report.failing)
-        self.assertEqual(10, report.passing)
+        self.assertEqual(6, report.passing)

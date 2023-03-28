@@ -1,5 +1,5 @@
 import re
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import Callable, Any
 
 from fuzzingbook.Grammars import Grammar
@@ -39,8 +39,10 @@ class GrammarVisitor(ABC):
 
 
 class Generator:
+    @abstractmethod
     def generate(self):
-        NotImplemented()
+        raise NotImplementedError()
 
+    @abstractmethod
     def reset(self):
-        NotImplemented()
+        raise NotImplementedError()

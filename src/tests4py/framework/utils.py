@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 from typing import Optional, Tuple
@@ -139,3 +140,10 @@ def __get_pytest_result__(
             passing = 0
         return True, failing + passing, failing, passing
     return False, None, None, None
+
+
+def __init_logger__(verbose=True):
+    if verbose:
+        LOGGER.setLevel(logging.INFO)
+    else:
+        LOGGER.setLevel(logging.WARNING)
