@@ -14,6 +14,7 @@ from tests4py.framework.default import (
     tests4py_checkout,
     tests4py_compile,
     tests4py_test,
+    tests4py_info,
 )
 from tests4py.framework.constants import (
     CHECKOUT,
@@ -40,15 +41,7 @@ def check_pyenv():
     try:
         os.environ["PYENV_ROOT"]
     except KeyError:
-        logging.error("Environment Variable PYENV_ROOT not set! Existing.")
-        sys.exit(-1)
-
-
-def check_dos2_unix():
-    try:
-        subprocess.check_call(["dos2unix", "--version"])
-    except OSError:
-        logging.error("Please install dos2unix! Exiting")
+        logging.error("Environment Variable PYENV_ROOT not set! Exiting.")
         sys.exit(-1)
 
 
@@ -58,8 +51,12 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         os.execl(sys.executable, sys.executable, "-O", *sys.argv)
         sys.exit(0)
 
+    if stdout is not None:
+        sys.stdout = stdout
+    if stderr is not None:
+        sys.stderr = stderr
+
     check_pyenv()
-    check_dos2_unix()
 
     arguments = argparse.ArgumentParser(
         description="The access point to the tests4py framework"
@@ -204,14 +201,14 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
     info_parser.add_argument(
         "-p",
         dest="project_name",
-        required=True,
+        default=None,
         help="The id of the project for which the information shall be printed",
     )
     info_parser.add_argument(
         "-i",
         dest="bug_id",
         type=int,
-        required=True,
+        default=None,
         help="The bug number of the project_name for which the information shall be printed",
     )
 
@@ -301,12 +298,16 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
             default=None,
             help="The working directory to run the test. Default will be the current directory",
         )
+        default = (
+            tests4py.framework.constants.DEFAULT_SUB_PATH_SYSTEMTESTS
+            if is_systemtest
+            else tests4py.framework.constants.DEFAULT_SUB_PATH_UNITTESTS
+        )
         generate.add_argument(
             "-p",
             dest="path",
             default=None,
-            help=f"The output path of the generated tests. Default will be "
-            f"({tests4py.framework.constants.DEFAULT_SUB_PATH_SYSTEMTESTS if is_systemtest else tests4py.framework.constants.DEFAULT_SUB_PATH_UNITTESTS})",
+            help=f"The output path of the generated tests. Default will be ({default})",
         )
         generate.add_argument(
             "-n",
@@ -362,13 +363,17 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
             default=None,
             help="The working directory to run the test. Default will be the current directory",
         )
+        default = (
+            tests4py.framework.constants.DEFAULT_SUB_PATH_SYSTEMTESTS
+            if is_systemtest
+            else tests4py.framework.constants.DEFAULT_SUB_PATH_UNITTESTS
+        )
         test.add_argument(
             "-p",
             dest="path",
             default=None,
             help=f"The output path of the generated tests. Default will be (-w/"
-            f"{tests4py.framework.constants.DEFAULT_SUB_PATH_SYSTEMTESTS if is_systemtest else tests4py.framework.constants.DEFAULT_SUB_PATH_UNITTESTS}) "
-            f"if -d is not set, otherwise only the diversity tests are executed",
+            f"{default}) if -d is not set, otherwise only the diversity tests are executed",
         )
         test.add_argument(
             "-d",
@@ -396,6 +401,11 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         report = tests4py_compile(
             work_dir=Path(args.work_dir).absolute() if args.work_dir else None,
             recompile=args.recompile,
+        )
+    elif args.command == INFO:
+        report = tests4py_info(
+            project_name=args.project_name,
+            bug_id=args.bug_id,
         )
     elif args.command == TEST:
         report = tests4py_test(

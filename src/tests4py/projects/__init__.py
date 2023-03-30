@@ -105,6 +105,20 @@ def get_project(project_name: str, bug_id: int) -> Project:
     return project
 
 
+def get_number_of_bugs(project_name: str) -> int:
+    global bugs
+    try:
+        bug = bugs[project_name]
+    except KeyError:
+        raise ValueError(f"Project {project_name} not found")
+    return len(bug)
+
+
+def get_project_names() -> List[str]:
+    global bugs
+    return list(bugs.keys())
+
+
 def load_bug_info(path: Path) -> Project:
     config = ConfigParser()
     config.read(path.absolute())

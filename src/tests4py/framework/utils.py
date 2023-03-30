@@ -12,6 +12,7 @@ from tests4py.framework.constants import (
     COMPILE,
     TEST,
     PYTEST_PATTERN,
+    INFO,
 )
 from tests4py.framework.logger import LOGGER
 from tests4py.projects import (
@@ -58,6 +59,12 @@ class CheckoutReport(ProjectReport):
 class CompileReport(ProjectReport):
     def __init__(self):
         super().__init__(COMPILE)
+
+
+class InfoReport(ProjectReport):
+    def __init__(self):
+        super().__init__(INFO)
+        self.example = False
 
 
 class TestingReport(ProjectReport):

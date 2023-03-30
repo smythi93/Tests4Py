@@ -321,7 +321,6 @@ class CookieCutter4API(CookieCutterAPI):
             output = stderr
         else:
             output = stderr.decode("utf-8")
-        captured = True
         if self.pre_hook_crash:
             if (
                 "Stopping generation because pre_gen_project hook script didn't exit sucessfully"

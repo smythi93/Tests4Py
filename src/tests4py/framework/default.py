@@ -3,6 +3,7 @@ import os
 import shutil
 import subprocess
 from pathlib import Path
+from tabulate import tabulate
 
 from tests4py import projects
 from tests4py.framework.constants import (
@@ -34,8 +35,15 @@ from tests4py.framework.utils import (
     TestReport,
     __get_pytest_result__,
     __init_logger__,
+    InfoReport,
 )
-from tests4py.projects import resources, TestingFramework
+from tests4py.projects import (
+    resources,
+    TestingFramework,
+    get_number_of_bugs,
+    get_project_names,
+    TestStatus,
+)
 
 
 def tests4py_checkout(
@@ -324,12 +332,80 @@ def tests4py_fuzz(project_name: str, bug_id: int, work_dir: str):
     pass
 
 
-def tests4py_info(project_name: str, bug_id: int):
-    if not project_name:
-        raise AttributeError("Please input project name")
-    if bug_id is None:
-        raise AttributeError("Please input bug id")
-    pass
+def tests4py_info(project_name: str = None, bug_id: int = None):
+    report = InfoReport()
+    try:
+        __setup__()
+        if not project_name:
+            print("The existing subjects in Tests4Py:")
+            print()
+            print(
+                tabulate(
+                    map(lambda p: [p, get_number_of_bugs(p)], get_project_names()),
+                    headers=["project", "# bugs"],
+                    tablefmt="fancy_grid",
+                )
+            )
+            print()
+            print("Set a project to get further information.")
+            report.successful = True
+            return report
+        project_name = project_name.lower()
+        if bug_id is None:
+            project = projects.get_project(project_name, 1)
+            report.example = True
+            description = project.project_name
+        else:
+            project = projects.get_project(project_name, bug_id)
+            description = f"{project.project_name} with bug id {project.bug_id}"
+
+        data = [
+            ("Name", project.project_name),
+            ("URL", project.github_url),
+            ("Status", project.status),
+        ]
+        if bug_id is None:
+            data.append(("Bugs", get_number_of_bugs(project.project_name)))
+        else:
+            data += [
+                ("ID", project.bug_id),
+                ("Python Version", project.python_version),
+                ("Python Path", project.python_path),
+                ("Buggy Commit", project.buggy_commit_id),
+                ("Fixed Commit", project.fixed_commit_id),
+                ("Test Files", ";".join(map(str, project.test_file))),
+                ("Test Cases", ";".join(project.test_cases)),
+                ("Unit Tests", project.unittests is not None),
+                ("System Tests", project.systemtests is not None),
+            ]
+
+        print(f"Information for project {description}:")
+        print()
+        print(
+            tabulate(
+                data,
+                tablefmt="fancy_grid",
+            )
+        )
+        print()
+
+        if bug_id is not None:
+            if project.test_status_buggy == TestStatus.PASSING:
+                print("WARNING: The tests do not fail on the buggy commit.")
+                print("Hence, this subject is not useful.")
+                print()
+            if project.test_status_fixed == TestStatus.FAILING:
+                print("WARNING: The tests do fail on the fixed commit.")
+                print(
+                    "The subject could still be used and generated tests and the oracle reveal to correct fault."
+                )
+                print()
+
+        report.example = True
+    except BaseException as e:
+        report.raised = e
+        report.successful = False
+    return report
 
 
 def tests4py_mutation(
