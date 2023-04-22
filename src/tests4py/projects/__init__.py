@@ -111,7 +111,7 @@ def get_matching_projects(
     global bugs
     result = list()
     for current_project_name in bugs:
-        for current_bug_id in bugs[project_name]:
+        for current_bug_id in bugs[current_project_name]:
             if (project_name is None or project_name == current_project_name) and (
                 bug_id is None or bug_id == current_bug_id
             ):
