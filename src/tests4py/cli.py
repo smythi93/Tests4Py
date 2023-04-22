@@ -10,6 +10,8 @@ from tests4py.framework import (
     unittest,
     systemtest,
 )
+from tests4py.framework.cache import tests4py_cache
+from tests4py.framework.config import tests4py_config_set
 from tests4py.framework.default import (
     tests4py_checkout,
     tests4py_compile,
@@ -20,13 +22,14 @@ from tests4py.framework.constants import (
     CHECKOUT,
     COMPILE,
     COVERAGE,
-    FUZZ,
     INFO,
     MUTATION,
     TEST,
     UNITTEST,
     SYSTEMTEST,
     GENERATE,
+    CONFIG,
+    CACHE,
     DEFAULT_WORK_DIR,
 )
 
@@ -43,6 +46,18 @@ def check_pyenv():
     except KeyError:
         logging.error("Environment Variable PYENV_ROOT not set! Exiting.")
         sys.exit(-1)
+
+
+def str_to_bool(s):
+    if isinstance(s, bool):
+        return s
+    s = s.lower()
+    if s in ("yes", "true", "t", "y", "1"):
+        return True
+    elif s in ("no", "false", "f", "n", "0"):
+        return False
+    else:
+        raise argparse.ArgumentTypeError("Boolean value expected.")
 
 
 def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
@@ -77,7 +92,6 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
     coverage_parser = commands.add_parser(
         COVERAGE, help="Measure coverage of a project"
     )
-    fuzz_parser = commands.add_parser(FUZZ, help="Fuzz a project")
     info_parser = commands.add_parser(INFO, help="Get information of a project")
     mutation_parser = commands.add_parser(MUTATION, help="Mutate a project")
     test_parser = commands.add_parser(TEST, help="Run tests on a project")
@@ -85,6 +99,8 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
     systemtest_parser = commands.add_parser(
         SYSTEMTEST, help="The systemtest subcommand"
     )
+    config_parser = commands.add_parser(CONFIG, help="The config subcommand")
+    cache_parser = commands.add_parser(CACHE, help="The cache subcommand")
 
     # Checkout
     checkout_parser.add_argument(
@@ -125,6 +141,13 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         help="If set the project won't be checked out again if it already exists at the specified location but only "
         "the tests4py data will be updated",
     )
+    checkout_parser.add_argument(
+        "-f",
+        dest="force",
+        default=False,
+        action="store_true",
+        help="If set the command won't use any cached version, even if the global cache flag is set",
+    )
 
     # Compile
     compile_parser.add_argument(
@@ -140,6 +163,13 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         default=False,
         action="store_true",
         help="Set to recompile the project from scratch",
+    )
+    compile_parser.add_argument(
+        "-f",
+        dest="force",
+        default=False,
+        action="store_true",
+        help="If set the command won't use any cached version, even if the global cache flag is set",
     )
 
     # Coverage
@@ -173,28 +203,6 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         default=False,
         action="store_true",
         help="Run coverage from test cases that relevant from bugs (Default)",
-    )
-
-    # Fuzz
-    fuzz_parser.add_argument(
-        "-p",
-        dest="project_name",
-        required=True,
-        help="The name of the project from tests4py",
-    )
-    fuzz_parser.add_argument(
-        "-i",
-        dest="bug_id",
-        type=int,
-        required=True,
-        help="The bug number from project in tests4py",
-    )
-    fuzz_parser.add_argument(
-        "-w",
-        dest="work_dir",
-        default="",
-        help="The working directory that the project has been checked out. "
-        "Default will be the current directory.",
     )
 
     # Info
@@ -387,6 +395,37 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
             "-o", dest="output", default=None, help="Output test results to file"
         )
 
+    # Config
+    config_parser.add_argument("flag", help="The flag for setting the value")
+    config_parser.add_argument(
+        "value", type=str_to_bool, help="The value to set the flag"
+    )
+
+    # Cache
+    cache_parser.add_argument(
+        "-p",
+        dest="project_name",
+        default=None,
+        help="The name of the project for which a particular version shall be cached. "
+        "If no project name is given, the command will consider all projects for caching that have the specified "
+        "bug_id",
+    )
+    cache_parser.add_argument(
+        "-i",
+        dest="bug_id",
+        type=int,
+        default=None,
+        help="The id of a bug from the project in tests4py to cache. "
+        "If no id is given all projects are considered for caching that have the specified project name",
+    )
+    cache_parser.add_argument(
+        "-f",
+        dest="force",
+        default=False,
+        action="store_true",
+        help="If set the command won't use any cached version, even if the global cache flag is set",
+    )
+
     args = arguments.parse_args(args or sys.argv[1:])
 
     if args.command == CHECKOUT:
@@ -396,11 +435,13 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
             version_id=args.version_id,
             work_dir=Path(args.work_dir).absolute(),
             update=args.update,
+            force=args.force,
         )
     elif args.command == COMPILE:
         report = tests4py_compile(
             work_dir=Path(args.work_dir).absolute() if args.work_dir else None,
             recompile=args.recompile,
+            force=args.force,
         )
     elif args.command == INFO:
         report = tests4py_info(
@@ -441,6 +482,12 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
             raise NotImplementedError(
                 f"Subcommand {args.subcommand} not implemented for command {args.command}"
             )
+    elif args.command == CONFIG:
+        report = tests4py_config_set(name=args.flag, value=args.value)
+    elif args.command == CACHE:
+        report = tests4py_cache(
+            project_name=args.project_name, bug_id=args.bug_id, force=args.force
+        )
     else:
         raise NotImplementedError(f"Command {args.command} not implemented")
 

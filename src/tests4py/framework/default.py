@@ -19,6 +19,7 @@ from tests4py.framework.constants import (
     DEFAULT_SYSTEMTESTS_DIVERSITY_PATH,
     UNITTEST_TOTAL_PATTERN,
     UNITTEST_FAILED_PATTERN,
+    GLOBAL_PROJECTS,
 )
 from tests4py.framework.environment import (
     __env_on__,
@@ -36,6 +37,13 @@ from tests4py.framework.utils import (
     __get_pytest_result__,
     __init_logger__,
     InfoReport,
+    load_config,
+    check_cache_exists_project,
+    copy_cached_project,
+    cache_project,
+    check_cache_exists_env,
+    copy_cached_env,
+    cache_venv,
 )
 from tests4py.projects import (
     resources,
@@ -52,9 +60,11 @@ def tests4py_checkout(
     version_id: int = 1,
     work_dir: Path = DEFAULT_WORK_DIR,
     update: bool = False,
+    force: bool = False,
     verbose=True,
 ) -> CheckoutReport:
     report = CheckoutReport()
+    config = load_config()
     __init_logger__(verbose=verbose)
 
     try:
@@ -94,8 +104,19 @@ def tests4py_checkout(
             tmp_location = (work_dir / f"tmp_{project_name}").absolute()
 
             if check_further:
-                LOGGER.info(f"Cloning {project.github_url} into {work_location}... ")
-                subprocess.run(["git", "clone", project.github_url, work_location])
+                if force or not config.cache or not check_cache_exists_project(project):
+                    LOGGER.info(
+                        f"Cloning {project.github_url} into {work_location}... "
+                    )
+                    subprocess.run(["git", "clone", project.github_url, work_location])
+                    if config.cache:
+                        cache_project(project, work_location)
+                else:
+                    LOGGER.info(
+                        f"Copying {project.github_url} from {GLOBAL_PROJECTS / project.project_name} "
+                        f"into {work_location}... "
+                    )
+                    copy_cached_project(project, work_location)
             else:
                 raise AttributeError("Not status=OK")
 
@@ -256,9 +277,13 @@ def tests4py_checkout(
 
 
 def tests4py_compile(
-    work_dir: Path = None, recompile: bool = False, verbose: bool = True
+    work_dir: Path = None,
+    recompile: bool = False,
+    force: bool = False,
+    verbose: bool = True,
 ) -> CompileReport:
     report = CompileReport()
+    config = load_config()
     __init_logger__(verbose=verbose)
 
     if work_dir is None:
@@ -276,23 +301,30 @@ def tests4py_compile(
             report.successful = True
             return report
         environ = __env_on__(project)
-        __create_venv__(work_dir, environ)
+        if force or not config.cache or not check_cache_exists_env(project):
+            __create_venv__(work_dir, environ)
+            pip_args = list()
+        else:
+            copy_cached_env(project, work_dir)
+            pip_args = ["--no-index", "--retries=0"]
 
         environ = __activate_venv__(work_dir, environ)
 
         LOGGER.info("Installing utilities")
-        __update_env__(environ)
+        __update_env__(environ, pip_args=pip_args)
 
         LOGGER.info("Installing requirements")
         subprocess.check_call(
-            ["python", "-m", "pip", "install", "-r", t4p_requirements], env=environ
+            ["python", "-m", "pip", "install", "-r", t4p_requirements] + pip_args,
+            env=environ,
         )
 
         LOGGER.info("Checking and installing test requirements")
         test_requirements = Path("test_requirements.txt")
         if test_requirements.exists():
             subprocess.check_call(
-                ["python", "-m", "pip", "install", "-r", test_requirements], env=environ
+                ["python", "-m", "pip", "install", "-r", test_requirements] + pip_args,
+                env=environ,
             )
 
         LOGGER.info("Run setup")
@@ -301,6 +333,9 @@ def tests4py_compile(
                 for line in setup_file:
                     if line:
                         subprocess.check_call(line, shell=True, env=environ)
+
+        if config.cache:
+            cache_venv(project, work_dir)
 
         LOGGER.info("Set compiled flag")
         project.compiled = True
@@ -321,14 +356,6 @@ def tests4py_coverage(
     all_tests: bool = False,
     relevant_tests: bool = True,
 ):
-    pass
-
-
-def tests4py_fuzz(project_name: str, bug_id: int, work_dir: str):
-    if not project_name:
-        raise AttributeError("Please input project name")
-    if bug_id is None:
-        raise AttributeError("Please input bug id")
     pass
 
 
@@ -406,15 +433,6 @@ def tests4py_info(project_name: str = None, bug_id: int = None):
         report.raised = e
         report.successful = False
     return report
-
-
-def tests4py_mutation(
-    work_dir: str,
-    target: str = None,
-    unit_test: str = None,
-    relevant_tests: bool = True,
-):
-    pass
 
 
 def tests4py_test(

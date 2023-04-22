@@ -11,13 +11,14 @@ Environment = Dict[str, str]
 CHECKOUT = "checkout"
 COMPILE = "compile"
 COVERAGE = "coverage"
-FUZZ = "fuzz"
 INFO = "info"
 MUTATION = "mutation"
 TEST = "test"
 UNITTEST = "unittest"
 SYSTEMTEST = "systemtest"
 GENERATE = "generate"
+CACHE = "cache"
+CONFIG = "config"
 
 # ~~~~~~ FILES ~~~~~~ #
 
@@ -44,3 +45,15 @@ SYSTEMTESTS_FAILING_CLASS = "TestsFailing"
 SYSTEMTESTS_PASSING_CLASS = "TestsPassing"
 DEFAULT_SUB_PATH_SYSTEMTESTS = "tests4py_systemtests"
 DEFAULT_SUB_PATH_UNITTESTS = "tests4py_unittests.py"
+
+# ~~~~~~ CONFIG ~~~~~~ #
+
+GLOBAL_CONFIGS = Path.home() / ".t4p"
+GLOBAL_CONFIG_FILE = GLOBAL_CONFIGS / "config.ini"
+GLOBAL_PROJECTS = GLOBAL_CONFIGS / "projects"
+GLOBAL_GIT = "project"
+
+# ~~~~~~ VENV ~~~~~~ #
+
+VERSION_PATTERN = re.compile(r"Installed Python-(?P<v>\d+.\d+.\d+)")
+VENV = "tests4py_venv"

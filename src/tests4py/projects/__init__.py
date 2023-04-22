@@ -105,6 +105,20 @@ def get_project(project_name: str, bug_id: int) -> Project:
     return project
 
 
+def get_matching_projects(
+    project_name: str = None, bug_id: int = None
+) -> List[Project]:
+    global bugs
+    result = list()
+    for current_project_name in bugs:
+        for current_bug_id in bugs[project_name]:
+            if (project_name is None or project_name == current_project_name) and (
+                bug_id is None or bug_id == current_bug_id
+            ):
+                result.append(bugs[current_project_name][current_bug_id])
+    return result
+
+
 def get_number_of_bugs(project_name: str) -> int:
     global bugs
     try:
@@ -133,6 +147,8 @@ __all__ = [
     "TestStatus",
     "TestingFramework",
     "Project",
+    "get_number_of_bugs",
+    "get_project_names",
     "load_bug_info",
     "ansible",
     "black",

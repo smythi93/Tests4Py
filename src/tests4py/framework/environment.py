@@ -1,16 +1,13 @@
 import os
-import re
 import shutil
 import subprocess
 import sys
 from pathlib import Path
+from typing import List
 
-from tests4py.framework.constants import Environment
+from tests4py.framework.constants import Environment, VERSION_PATTERN, VENV
 from tests4py.framework.logger import LOGGER
 from tests4py.projects import Project
-
-VERSION_PATTERN = re.compile(r"Installed Python-(?P<v>\d+.\d+.\d+)")
-VENV = "tests4py_venv"
 
 
 def __env_on__(project: Project, skip=False) -> Environment:
@@ -75,18 +72,21 @@ def __env_on__(project: Project, skip=False) -> Environment:
     return environ
 
 
-def __update_env__(environ: Environment):
+def __update_env__(environ: Environment, pip_args: List[str] = None):
+    pip_args = pip_args or []
     subprocess.check_call(
-        ["python", "-m", "pip", "install", "--upgrade", "pip"], env=environ
+        ["python", "-m", "pip", "install", "--upgrade", "pip"] + pip_args, env=environ
     )
     subprocess.check_call(
-        ["python", "-m", "pip", "install", "--upgrade", "setuptools"], env=environ
+        ["python", "-m", "pip", "install", "--upgrade", "setuptools"] + pip_args,
+        env=environ,
     )
     subprocess.check_call(
-        ["python", "-m", "pip", "install", "--upgrade", "wheel"], env=environ
+        ["python", "-m", "pip", "install", "--upgrade", "wheel"] + pip_args, env=environ
     )
     subprocess.check_call(
-        ["python", "-m", "pip", "install", "--upgrade", "pytest"], env=environ
+        ["python", "-m", "pip", "install", "--upgrade", "pytest"] + pip_args,
+        env=environ,
     )
 
 

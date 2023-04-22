@@ -94,7 +94,7 @@ def register():
     PySnooper(
         bug_id=3,
         python_version="3.8.1",
-        darwin_python_version="3.8.10",  # version 3.8.1-3 do not work on mac os
+        darwin_python_version="3.8.4",  # version 3.8.1-3 do not work on mac os
         python_path="",
         buggy_commit_id="6e3d797be3fa0a746fb5b1b7c7fea78eb926c208",
         fixed_commit_id="15555ed760000b049aff8fecc79d29339c1224c3",

@@ -1,5 +1,7 @@
+import json
 import logging
 import os
+import shutil
 from pathlib import Path
 from typing import Optional, Tuple
 
@@ -13,6 +15,13 @@ from tests4py.framework.constants import (
     TEST,
     PYTEST_PATTERN,
     INFO,
+    GLOBAL_CONFIG_FILE,
+    GLOBAL_CONFIGS,
+    GLOBAL_PROJECTS,
+    CACHE,
+    CONFIG,
+    GLOBAL_GIT,
+    VENV,
 )
 from tests4py.framework.logger import LOGGER
 from tests4py.projects import (
@@ -78,6 +87,18 @@ class TestingReport(ProjectReport):
 class TestReport(TestingReport):
     def __init__(self):
         super().__init__(TEST)
+
+
+class CacheReport(Report):
+    def __init__(self):
+        super().__init__(CACHE)
+        self.checkout_reports = dict()
+        self.compile_reports = dict()
+
+
+class ConfigReport(Report):
+    def __init__(self):
+        super().__init__(CONFIG)
 
 
 class GenerateReport(TestingReport):
@@ -154,3 +175,82 @@ def __init_logger__(verbose=True):
         LOGGER.setLevel(logging.INFO)
     else:
         LOGGER.setLevel(logging.WARNING)
+
+
+class GlobalConfig:
+    def __init__(self, cache: bool = None):
+        self.cache: bool = bool(cache)
+
+    @staticmethod
+    def load():
+        with open(GLOBAL_CONFIG_FILE, "r") as fp:
+            json_dict = json.loads(fp.read() or "{}")
+        return GlobalConfig(**json_dict)
+
+    def write(self):
+        with open(GLOBAL_CONFIG_FILE, "w") as fp:
+            json.dump(self.__dict__, fp)
+
+
+def load_config() -> GlobalConfig:
+    os.makedirs(GLOBAL_CONFIGS, exist_ok=True)
+    if os.path.exists(GLOBAL_CONFIG_FILE):
+        config = GlobalConfig.load()
+    else:
+        config = GlobalConfig()
+        config.write()
+    os.makedirs(GLOBAL_PROJECTS, exist_ok=True)
+    return config
+
+
+def check_cache_exists_project(project: Project):
+    return (GLOBAL_PROJECTS / project.project_name / GLOBAL_GIT).exists()
+
+
+def copy_cached_project(project: Project, dst: Path):
+    shutil.rmtree(dst, ignore_errors=True)
+    return shutil.copytree(
+        GLOBAL_PROJECTS / project.project_name / GLOBAL_GIT,
+        dst,
+        dirs_exist_ok=True,
+        copy_function=shutil.copy,
+    )
+
+
+def cache_project(project: Project, src: Path):
+    shutil.rmtree(
+        GLOBAL_PROJECTS / project.project_name / GLOBAL_GIT, ignore_errors=True
+    )
+    return shutil.copytree(
+        src,
+        GLOBAL_PROJECTS / project.project_name / GLOBAL_GIT,
+        dirs_exist_ok=True,
+        copy_function=shutil.copy,
+    )
+
+
+def check_cache_exists_env(project: Project):
+    return (GLOBAL_PROJECTS / project.project_name / f"venv_{project.bug_id}").exists()
+
+
+def copy_cached_env(project: Project, dst: Path):
+    shutil.rmtree(dst / VENV, ignore_errors=True)
+    return shutil.copytree(
+        GLOBAL_PROJECTS / project.project_name / f"venv_{project.bug_id}",
+        dst / VENV,
+        dirs_exist_ok=True,
+        copy_function=shutil.copy,
+    )
+
+
+def cache_venv(project: Project, src: Path):
+    shutil.rmtree(
+        GLOBAL_PROJECTS / project.project_name / f"venv_{project.bug_id}",
+        ignore_errors=True,
+    )
+    return shutil.copytree(
+        src / VENV,
+        GLOBAL_PROJECTS / project.project_name / f"venv_{project.bug_id}",
+        dirs_exist_ok=True,
+        copy_function=shutil.copy,
+    )
