@@ -4,7 +4,6 @@ binaryornot==0.4.4
 certifi==2020.4.5.2
 chardet==3.0.4
 click==7.1.2
--e git+https://github.com/cookiecutter/cookiecutter@5c282f020a8db7e5e7c4e7b51b010556ca31fb7f#egg=cookiecutter
 distlib==0.3.0
 filelock==3.0.12
 idna==2.9

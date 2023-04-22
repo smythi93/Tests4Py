@@ -109,7 +109,7 @@ def tests4py_checkout(
                         f"Cloning {project.github_url} into {work_location}... "
                     )
                     subprocess.run(["git", "clone", project.github_url, work_location])
-                    if config.cache:
+                    if config.cache and not check_cache_exists_project(project):
                         cache_project(project, work_location)
                 else:
                     LOGGER.info(
@@ -303,29 +303,30 @@ def tests4py_compile(
         environ = __env_on__(project)
         if force or not config.cache or not check_cache_exists_env(project):
             __create_venv__(work_dir, environ)
-            pip_args = list()
+            env_exists = False
         else:
             copy_cached_env(project, work_dir)
-            pip_args = ["--no-index", "--retries=0"]
+            env_exists = True
 
         environ = __activate_venv__(work_dir, environ)
 
-        LOGGER.info("Installing utilities")
-        __update_env__(environ, pip_args=pip_args)
+        if not env_exists:
+            LOGGER.info("Installing utilities")
+            __update_env__(environ)
 
-        LOGGER.info("Installing requirements")
-        subprocess.check_call(
-            ["python", "-m", "pip", "install", "-r", t4p_requirements] + pip_args,
-            env=environ,
-        )
-
-        LOGGER.info("Checking and installing test requirements")
-        test_requirements = Path("test_requirements.txt")
-        if test_requirements.exists():
+            LOGGER.info("Installing requirements")
             subprocess.check_call(
-                ["python", "-m", "pip", "install", "-r", test_requirements] + pip_args,
+                ["python", "-m", "pip", "install", "-r", t4p_requirements],
                 env=environ,
             )
+
+            LOGGER.info("Checking and installing test requirements")
+            test_requirements = Path("test_requirements.txt")
+            if test_requirements.exists():
+                subprocess.check_call(
+                    ["python", "-m", "pip", "install", "-r", test_requirements],
+                    env=environ,
+                )
 
         LOGGER.info("Run setup")
         if t4p_setup.exists():

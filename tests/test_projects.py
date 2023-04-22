@@ -1,5 +1,3 @@
-import unittest
-
 from parameterized import parameterized
 
 from tests4py import projects, framework
@@ -21,7 +19,7 @@ class BaseProjectTests(BaseTest):
     PROJECTS = _get_projects()
 
 
-class TestGenerationTests(unittest.TestCase):
+class TestGenerationTests(BaseProjectTests):
     def _assert_test_generation(self, name: str, project: Project, systemtest=True):
         report = framework.default.tests4py_checkout(
             project.project_name, project.bug_id, version_id=0
@@ -47,7 +45,14 @@ class TestGenerationTests(unittest.TestCase):
         if report.raised:
             raise report.raised
         self.assertTrue(
-            (work_dir / framework.constants.DEFAULT_SUB_PATH_UNITTESTS).exists()
+            (
+                work_dir
+                / (
+                    framework.constants.DEFAULT_SUB_PATH_SYSTEMTESTS
+                    if systemtest
+                    else framework.constants.DEFAULT_SUB_PATH_UNITTESTS
+                )
+            ).exists()
         )
         self.assertEqual(2, report.total)
         self.assertEqual(1, report.failing)

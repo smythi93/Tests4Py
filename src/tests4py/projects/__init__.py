@@ -97,6 +97,12 @@ class Project:
         with open(path, "w") as fp:
             config.write(fp)
 
+    def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
+        return f"{self.project_name}_{self.bug_id}_{'buggy' if self.buggy else 'fixed'}"
+
 
 def get_project(project_name: str, bug_id: int) -> Project:
     global bugs

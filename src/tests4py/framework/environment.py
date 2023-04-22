@@ -28,8 +28,8 @@ def __install_version__(project: Project):
             return v
         except subprocess.CalledProcessError:  #
             pass
-        LOGGER.info(f"Failed. Check for fallback version to pyenv python {v}")
-        if v != project.python_fallback_version:
+        if project.python_version and v != project.python_fallback_version:
+            LOGGER.info(f"Failed. Check for fallback version to pyenv python {v}")
             try:
                 LOGGER.info(f"Try to install pyenv python {v}")
                 subprocess.check_call(["pyenv", "install", v])
@@ -65,6 +65,8 @@ def __install_version__(project: Project):
         except subprocess.CalledProcessError:
             LOGGER.info(f"Failed. Using lates python version instead.")
             return current_versions[-1]
+    else:
+        return v
 
 
 def __env_on__(project: Project, skip=False) -> Environment:
@@ -91,20 +93,19 @@ def __env_on__(project: Project, skip=False) -> Environment:
     return environ
 
 
-def __update_env__(environ: Environment, pip_args: List[str] = None):
-    pip_args = pip_args or []
+def __update_env__(environ: Environment):
     subprocess.check_call(
-        ["python", "-m", "pip", "install", "--upgrade", "pip"] + pip_args, env=environ
+        ["python", "-m", "pip", "install", "--upgrade", "pip"], env=environ
     )
     subprocess.check_call(
-        ["python", "-m", "pip", "install", "--upgrade", "setuptools"] + pip_args,
+        ["python", "-m", "pip", "install", "--upgrade", "setuptools"],
         env=environ,
     )
     subprocess.check_call(
-        ["python", "-m", "pip", "install", "--upgrade", "wheel"] + pip_args, env=environ
+        ["python", "-m", "pip", "install", "--upgrade", "wheel"], env=environ
     )
     subprocess.check_call(
-        ["python", "-m", "pip", "install", "--upgrade", "pytest"] + pip_args,
+        ["python", "-m", "pip", "install", "--upgrade", "pytest"],
         env=environ,
     )
 
