@@ -53,6 +53,7 @@ class CookieCutter(Project):
             test_file=test_file,
             test_cases=test_cases,
             darwin_python_version=darwin_python_version,
+            python_fallback_version=darwin_python_version,
             test_status_fixed=test_status_fixed,
             test_status_buggy=test_status_buggy,
             unittests=unittests,

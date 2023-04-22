@@ -10,11 +10,7 @@ from tests4py.framework.logger import LOGGER
 from tests4py.projects import Project
 
 
-def __env_on__(project: Project, skip=False) -> Environment:
-    environ = dict(os.environ)
-    if skip:
-        return environ
-
+def __install_version__(project: Project):
     LOGGER.info(f"Checking for platform {sys.platform}")
     if sys.platform == "darwin":
         v = project.darwin_python_version
@@ -29,32 +25,55 @@ def __env_on__(project: Project, skip=False) -> Environment:
         try:
             LOGGER.info(f"Try to install pyenv python {v}")
             subprocess.check_call(["pyenv", "install", v])
-        except subprocess.CalledProcessError:
-            LOGGER.info(f"Failed. Check for best alternative to pyenv python {v}")
-            v = ".".join(project.python_version.split(".")[:-1])
-            p, r, s = project.python_version.split(".")[:3]
-            s = int(s)
-            best_sub_version = None
-            for candidate in current_versions:
-                cp, cr, cs = candidate.split(".")[:3]
-                if cp == p and cr == r:
-                    cs = int(cs)
-                    if cs >= s and best_sub_version is None or cs < best_sub_version:
-                        best_sub_version = cs
-            if best_sub_version is not None:
-                v = f"{v}.{best_sub_version}"
-                LOGGER.info(f"Found alternative to pyenv python {v}")
+            return v
+        except subprocess.CalledProcessError:  #
+            pass
+        LOGGER.info(f"Failed. Check for fallback version to pyenv python {v}")
+        if v != project.python_fallback_version:
+            try:
+                LOGGER.info(f"Try to install pyenv python {v}")
+                subprocess.check_call(["pyenv", "install", v])
+                return v
+            except subprocess.CalledProcessError:
+                pass
+        LOGGER.info(f"Failed. Check for best alternative to pyenv python {v}")
+        v = ".".join(project.python_version.split(".")[:-1])
+        p, r, s = project.python_version.split(".")[:3]
+        s = int(s)
+        best_sub_version = None
+        for candidate in current_versions:
+            cp, cr, cs = candidate.split(".")[:3]
+            if cp == p and cr == r:
+                cs = int(cs)
+                if cs >= s and best_sub_version is None or cs < best_sub_version:
+                    best_sub_version = cs
+        if best_sub_version is not None:
+            v = f"{v}.{best_sub_version}"
+            LOGGER.info(f"Found alternative to pyenv python {v}")
+            return v
+        LOGGER.info(f"Failed. Try to install fallback pyenv python {v}")
+        try:
+            output = subprocess.check_output(["pyenv", "install", v]).decode("utf-8")
+            match = VERSION_PATTERN.search(output)
+            if match:
+                v = match.group("v")
+                LOGGER.info(f"Found pyenv python {v}")
+                return v
             else:
-                LOGGER.info(f"Failed. Try to install fallback pyenv python {v}")
-                output = subprocess.check_output(["pyenv", "install", v]).decode(
-                    "utf-8"
-                )
-                match = VERSION_PATTERN.search(output)
-                if match:
-                    v = match.group("v")
-                    LOGGER.info(f"Found pyenv python {v}")
-                else:
-                    LOGGER.info(f"Failed. Using current python version instead.")
+                LOGGER.info(f"Failed. Using latest python version instead.")
+                return current_versions[-1]
+        except subprocess.CalledProcessError:
+            LOGGER.info(f"Failed. Using lates python version instead.")
+            return current_versions[-1]
+
+
+def __env_on__(project: Project, skip=False) -> Environment:
+    environ = dict(os.environ)
+    if skip:
+        return environ
+
+    v = __install_version__(project)
+
     environ[
         "PATH"
     ] = f'{Path(os.environ["PYENV_ROOT"], "versions", v, "bin")}:{os.environ["PATH"]}'

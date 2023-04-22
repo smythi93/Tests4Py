@@ -2,20 +2,14 @@ import unittest
 
 from parameterized import parameterized
 
-import tests4py
-from tests4py import projects
-from tests4py.framework import utils
+from tests4py import projects, framework
 from tests4py.framework.constants import DEFAULT_WORK_DIR, INFO_FILE
-from tests4py.framework.default import (
-    tests4py_checkout,
-    tests4py_compile,
-)
 from tests4py.projects import Project, load_bug_info
 from utils import BaseTest
 
 
 def _get_projects():
-    utils.__setup__()
+    framework.utils.__setup__()
     return [
         project
         for project_name in projects.bugs.values()
@@ -29,31 +23,31 @@ class BaseProjectTests(BaseTest):
 
 class TestGenerationTests(unittest.TestCase):
     def _assert_test_generation(self, name: str, project: Project, systemtest=True):
-        report = tests4py_checkout(project.project_name, project.bug_id, version_id=0)
+        report = framework.default.tests4py_checkout(
+            project.project_name, project.bug_id, version_id=0
+        )
         if report.raised:
             raise report.raised
         work_dir = DEFAULT_WORK_DIR / name
         project_ = load_bug_info(work_dir / INFO_FILE)
         self.assertFalse(project_.compiled)
-        report = tests4py_compile(work_dir)
+        report = framework.default.tests4py_compile(work_dir)
         if report.raised:
             raise report.raised
         project_ = load_bug_info(work_dir / INFO_FILE)
         self.assertTrue(project_.compiled)
         if systemtest:
-            report = tests4py.framework.systemtest.tests4py_generate(
+            report = framework.systemtest.tests4py_generate(
                 work_dir, n=2, p=0.5, verify=True
             )
         else:
-            report = tests4py.framework.unittest.tests4py_generate(
+            report = framework.unittest.tests4py_generate(
                 work_dir, n=2, p=0.5, verify=True
             )
         if report.raised:
             raise report.raised
         self.assertTrue(
-            (
-                work_dir / tests4py.framework.constants.DEFAULT_SUB_PATH_UNITTESTS
-            ).exists()
+            (work_dir / framework.constants.DEFAULT_SUB_PATH_UNITTESTS).exists()
         )
         self.assertEqual(2, report.total)
         self.assertEqual(1, report.failing)

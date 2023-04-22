@@ -46,6 +46,7 @@ class FastAPI(Project):
             test_file=test_file,
             test_cases=test_cases,
             darwin_python_version="3.8.4",
+            python_fallback_version="3.8.4",
             test_status_fixed=test_status_fixed,
             test_status_buggy=test_status_buggy,
             unittests=unittests,

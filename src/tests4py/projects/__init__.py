@@ -44,6 +44,7 @@ class Project:
         test_file: List[Path],
         test_cases: List[str],
         darwin_python_version: Optional[str] = None,
+        python_fallback_version: Optional[str] = None,
         test_status_fixed: TestStatus = TestStatus.PASSING,
         test_status_buggy: TestStatus = TestStatus.FAILING,
         unittests: Optional[UnittestGenerator] = None,
@@ -67,6 +68,11 @@ class Project:
         self.test_file = test_file
         self.test_cases = test_cases
         self.darwin_python_version = (
+            darwin_python_version
+            if darwin_python_version is not None
+            else python_version
+        )
+        self.python_fallback_version = (
             darwin_python_version
             if darwin_python_version is not None
             else python_version
