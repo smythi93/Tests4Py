@@ -11,6 +11,7 @@ from tests4py.framework.default import (
     tests4py_compile,
 )
 from tests4py.projects import Project, load_bug_info
+from utils import BaseTest
 
 
 def _get_projects():
@@ -22,7 +23,7 @@ def _get_projects():
     ]
 
 
-class BaseProjectTests:
+class BaseProjectTests(BaseTest):
     PROJECTS = _get_projects()
 
 

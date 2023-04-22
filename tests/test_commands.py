@@ -5,9 +5,10 @@ import tests4py.framework.constants
 import tests4py.framework.default
 from tests4py import framework
 from tests4py.projects import load_bug_info
+from utils import BaseTest
 
 
-class CommandTests(unittest.TestCase):
+class CommandTests(BaseTest):
     def test_checkout_pysnooper_1(self):
         report = tests4py.framework.default.tests4py_checkout("pysnooper", 1)
         if report.raised:
