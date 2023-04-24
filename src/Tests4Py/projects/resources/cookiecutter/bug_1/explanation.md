@@ -1,1 +1,0 @@
-The bug in cookiecutter 1 is not reproducable because all tests pass on the buggy version.

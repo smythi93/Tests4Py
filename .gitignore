@@ -152,4 +152,5 @@ tests/test_dir
 event-files
 tmp.ini
 tmp.py
+*.DS_Store
 

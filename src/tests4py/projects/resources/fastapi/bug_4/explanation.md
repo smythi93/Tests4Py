@@ -1,0 +1,2 @@
+The bug in fastapi 4 does occur whenever the openapi gets the request to retrieve the json and a handler requires 
+parameters. The parameters will be added twice to the response because there is no duplication removal.

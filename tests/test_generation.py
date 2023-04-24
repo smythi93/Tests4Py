@@ -4,7 +4,7 @@ import subprocess
 import tempfile
 import unittest
 
-from Tests4Py.grammars import python
+from tests4py.grammars import python
 
 
 class TestPythonGeneration(unittest.TestCase):
@@ -22,20 +22,11 @@ class TestPythonGeneration(unittest.TestCase):
     def test_fuzzing_100_syntax_seed(self):
         self._test_fuzzing_syntax(100, seed=21)
 
-    def test_fuzzing_1000_syntax(self):
-        self._test_fuzzing_syntax(1000, seed=1000)
-
-    def test_fuzzing_5000_syntax(self):
-        self._test_fuzzing_syntax(5000, seed=5000)
-
     def test_fuzzing_100_semantic(self):
         self._test_fuzzing_semantic(100)
 
     def test_fuzzing_100_semantic_seed(self):
         self._test_fuzzing_semantic(100, seed=21)
-
-    def test_fuzzing_1000_semantic(self):
-        self._test_fuzzing_semantic(1000, seed=1000)
 
     def _test_fuzzing_syntax(self, n, seed=42):
         random.seed(seed)

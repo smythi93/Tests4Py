@@ -1,0 +1,2 @@
+The bug in fastapi 8 does occur whenever a custom route class has an attribute that should be accessed. The custom route
+class gets overriden by the standard `APIRoute`, which does not have the attribute.

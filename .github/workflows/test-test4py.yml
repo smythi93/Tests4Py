@@ -1,0 +1,45 @@
+name: Test Tests4Py
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+    - name: setup pyenv
+      uses: "gabrielfalcao/pyenv-action@v13"
+      with:
+        default: 3.10.9
+    - name: Install dependencies
+      run: |
+        sudo apt-get update && sudo apt-get install -y python3-dev
+        sudo apt-get install -y make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev 
+        sudo apt-get install -y wget curl llvm libncurses5-dev libncursesw5-dev xz-utils tk-dev
+        pip install --upgrade pip
+        pip install -e .[test]
+    - name: Test with pytest
+      run: |
+        python3 -m pytest --html=report.html --self-contained-html --cov-report xml:coverage.xml --cov-report term --cov-config=.coveragerc --cov=tests4py tests/
+        python3 -m coverage lcov
+    - uses: actions/upload-artifact@v3
+      with:
+        name: Test Report
+        path: report.html
+#    - name: Coveralls
+#      uses: coverallsapp/github-action@master
+#      with:
+#        github-token: ${{ secrets.GITHUB_TOKEN }}
+#        path-to-lcov: coverage.lcov%

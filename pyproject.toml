@@ -1,0 +1,34 @@
+[build-system]
+requires = [
+    "setuptools>=67.6.0",
+    "wheel"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tests4py"
+version = "0.0.1a"
+authors = [
+    { name = "Marius Smytzek", email = "marius.smytzek@cispa.de" },
+    { name = "Martin Eberlein", email = "ebermart@informatik.hu-berlin.de" },
+]
+description = "Tests4Py a benchmark for testing bugs"
+readme = "README.md"
+license = { file = "COPYING" }
+requires-python = ">=3.10"
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Software Development :: Testing"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/smythi93/Tests4Py"
+"Bug Tracker" = "https://github.com/smythi93/Tests4Py/issues"
+
+[tool.black]
+line-length = 88
+target-version = ['py310']
