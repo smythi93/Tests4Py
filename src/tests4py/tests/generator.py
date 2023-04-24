@@ -85,6 +85,9 @@ class UnittestGenerator(TestGenerator, ast.NodeVisitor):
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         return NotImplemented
 
+    def get_utils(self) -> List[ast.stmt]:
+        return list()
+
     def generic_visit(self, node: ast.AST) -> List[ast.AST]:
         result = list()
         for field, value in ast.iter_fields(node):
@@ -107,9 +110,11 @@ class UnittestGenerator(TestGenerator, ast.NodeVisitor):
     ) -> GenerationResult:
         f = int(n * self.failing_probability)
         p = n - f
-        body = [self.get_name(*self.generate_passing_test()) for _ in range(p)] + [
-            self.get_name(*self.generate_failing_test()) for _ in range(f)
-        ]
+        body = (
+            self.get_utils()
+            + [self.get_name(*self.generate_passing_test()) for _ in range(p)]
+            + [self.get_name(*self.generate_failing_test()) for _ in range(f)]
+        )
         if path.exists() and path.is_dir():
             raise GenerationFailed(f"{path} is a directory")
         if append and path.exists() and path.is_file():

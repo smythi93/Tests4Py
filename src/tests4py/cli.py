@@ -119,11 +119,12 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         "Run tests4py info to check bug id number",
     )
     checkout_parser.add_argument(
-        "-v",
-        dest="version_id",
-        type=int,
-        default=1,
-        help="The version id that shall be checked out (1 fixed, 0 buggy, default will be 1)",
+        "-r",
+        "--repaired",
+        dest="fixed",
+        action="store_true",
+        default=False,
+        help="Set the flag to checkout the repaired version, without the flag the buggy version will be checked out",
     )
     checkout_parser.add_argument(
         "-w",
@@ -432,7 +433,7 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         report = tests4py_checkout(
             project_name=args.project_name,
             bug_id=args.bug_id,
-            version_id=args.version_id,
+            fixed=args.fixed,
             work_dir=Path(args.work_dir).absolute(),
             update=args.update,
             force=args.force,

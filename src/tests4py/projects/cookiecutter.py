@@ -60,7 +60,7 @@ class CookieCutter(Project):
             systemtests=systemtests,
             api=api,
             grammar=grammar,
-        )  # TODO adjust parameters
+        )
 
 
 def register():
@@ -78,12 +78,12 @@ def register():
         test_cases=[
             "tests/test_generate_context.py::test_generate_context_decodes_non_ascii_chars"
         ],
-        test_status_buggy=TestStatus.PASSING,  # It was just a missing test file
+        test_status_buggy=TestStatus.PASSING,
     )
     CookieCutter(
         bug_id=2,
         python_version="3.6.9",
-        darwin_python_version="3.6.15",  # version 3.8.1-3 do not work on mac os
+        darwin_python_version="3.6.15",  # version 3.6.9 do not work on mac os
         python_path="cookiecutter/build/lib/",
         buggy_commit_id="d7e7b28811e474e14d1bed747115e47dcdd15ba3",
         fixed_commit_id="90434ff4ea4477941444f1e83313beb414838535",
@@ -94,11 +94,12 @@ def register():
         ],
         api=CookieCutter2API(),
         systemtests=CookieCutter2SystemtestGenerator(),
+        unittests=CookieCutter2UnittestGenerator(),
     )
     CookieCutter(
         bug_id=3,
         python_version="3.6.9",
-        darwin_python_version="3.6.15",  # version 3.8.1-3 do not work on mac os
+        darwin_python_version="3.6.15",  # version 3.6.9 do not work on mac os
         python_path="cookiecutter/build/lib/",
         buggy_commit_id="5c282f020a8db7e5e7c4e7b51b010556ca31fb7f",
         fixed_commit_id="7129d474206761a6156925db78eee4b62a0e3944",
@@ -110,7 +111,7 @@ def register():
     CookieCutter(
         bug_id=4,
         python_version="3.6.9",
-        darwin_python_version="3.6.15",  # version 3.8.1-3 do not work on mac os
+        darwin_python_version="3.6.15",  # version 3.6.9 do not work on mac os
         python_path="cookiecutter/build/lib/",
         buggy_commit_id="9568ab6ecd2d6836646006c59473c4a4ac0dee04",
         fixed_commit_id="457a1a4e862aab4102b644ff1d2b2e2b5a766b3c",
@@ -539,6 +540,18 @@ class CookieCutter4SystemtestGenerator(CookieCutterSystemtestGenerator):
             hooks.remove("")
         random.shuffle(hooks)
         return "\n".join([self._generate_default_config()] + hooks), TestResult.PASSING
+
+
+class CookieCutter2UnittestGenerator:
+    pass
+
+
+class CookieCutter3UnittestGenerator:
+    pass
+
+
+class CookieCutter4UnittestGenerator:
+    pass
 
 
 grammar: Grammar = {

@@ -57,7 +57,7 @@ from tests4py.projects import (
 def tests4py_checkout(
     project_name: str,
     bug_id: int,
-    version_id: int = 1,
+    fixed: bool = False,
     work_dir: Path = DEFAULT_WORK_DIR,
     update: bool = False,
     force: bool = False,
@@ -72,20 +72,20 @@ def tests4py_checkout(
             raise AttributeError("Please input project name")
         if bug_id is None:
             raise AttributeError("Please input bug id")
-        if version_id is None or version_id not in (0, 1):
-            version_id = 1
+        if fixed is None or fixed not in (True, False):
+            fixed = False
         if not work_dir:
             work_dir = DEFAULT_WORK_DIR
         project_name = project_name.lower()
         LOGGER.info(f"PROJECT_NAME: {project_name}")
         LOGGER.info(f"BUG_ID: {bug_id}")
-        LOGGER.info(f"VERSION_ID: {version_id}")
+        LOGGER.info(f"FIXED: {fixed}")
         LOGGER.info(f"WORK_DIR: {work_dir}")
 
         __setup__()
 
         project = projects.get_project(project_name, bug_id)
-        if version_id != 1:
+        if not fixed:
             project.buggy = True
         report.project = project
 
@@ -97,10 +97,10 @@ def tests4py_checkout(
             version_verify = 1 - int(project_verify.buggy)
             compiled_verify = project_verify.compiled
         else:
-            version_verify = 1 - version_id
+            version_verify = 1 - int(fixed)
             compiled_verify = False
 
-        if version_verify != version_id:
+        if version_verify != int(fixed):
             tmp_location = (work_dir / f"tmp_{project_name}").absolute()
 
             if check_further:
@@ -146,7 +146,7 @@ def tests4py_checkout(
                         line_path = work_location / line
                         if line_path.exists() and line_path.is_file():
                             change_file_all.append(f"{line}")
-                            if version_id == 1:
+                            if fixed:
                                 shutil.copy(
                                     line_path,
                                     tmp_location / line.replace(os.path.sep, "_"),
@@ -186,7 +186,7 @@ def tests4py_checkout(
                     )
                     if change_file_path.exists():
                         patch_fix_all.append(change_file)
-                        if version_id == 1:
+                        if fixed:
                             shutil.move(change_file_path, change_file)
             finally:
                 shutil.rmtree(tmp_location, ignore_errors=True)
