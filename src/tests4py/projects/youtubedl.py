@@ -95,6 +95,184 @@ def register():
     )
 
     YoutubeDL(
+        bug_id=5,
+        python_version='3.7.0',
+        darwin_python_version='3.7.12',
+        python_path='',
+        buggy_commit_id='b02b960c6bba834d9e7199ac53430c7933079dc8',
+        fixed_commit_id='7dc2a74e0ac9cfa74cc9de6f586ffd5cc8bac0d9',
+        test_file=[Path('test', 'test_utils.py')],
+        test_cases=['test.test_utils.TestUtil.test_unified_timestamps']
+    )
+
+    YoutubeDL(
+        bug_id=6,
+        python_version='3.7.0',
+        darwin_python_version='3.7.12',
+        python_path='',
+        buggy_commit_id='4f29fa99069760dc47ef9ca5dbf607a567d2982f',
+        fixed_commit_id='d631d5f9f27f93767226192e4288990413fa9dbd',
+        test_file=[Path('test', 'test_utils.py')],
+        test_cases=['test.test_utils.TestUtil.test_parse_dfxp_time_expr']
+    )
+
+    YoutubeDL(
+        bug_id=7,
+        python_version='3.7.0',
+        darwin_python_version='3.7.12',
+        python_path='',
+        buggy_commit_id='63a64948342ebfe46db8c258765e698a04a61904',
+        fixed_commit_id='d01949dc89feb2441f251e42e8a6bfa4711b9715',
+        test_file=[Path('test', 'test_utils.py')],
+        test_cases=['test.test_utils.TestUtil.test_js_to_json_realworld']
+    )
+
+    YoutubeDL(
+        bug_id=8,
+        python_version='3.7.0',
+        darwin_python_version='3.7.12',
+        python_path='',
+        buggy_commit_id='cf2ac6df6896dac4d23918867bb86fac1e1088d9',
+        fixed_commit_id='f5f4a27a964b41646303921104f4d6d6fd2098e4',
+        test_file=[Path('test', 'test_YoutubeDL.py')],
+        test_cases=['test.test_YoutubeDL.TestFormatSelection.test_youtube_format_selection']
+    )
+
+    YoutubeDL(
+        bug_id=9,
+        python_version='3.7.0',
+        darwin_python_version='3.7.12',
+        python_path='',
+        buggy_commit_id='0130afb76e5cb6f470f39f127c8d09eea3e82d0d',
+        fixed_commit_id='cf2ac6df6896dac4d23918867bb86fac1e1088d9',
+        test_file=[Path('test', 'test_YoutubeDL.py')],
+        test_cases=['test.test_YoutubeDL.TestFormatSelection.test_youtube_format_selection']
+    )
+
+    YoutubeDL(
+        bug_id=10,
+        python_version='3.7.0',
+        darwin_python_version='3.7.12',
+        python_path='',
+        buggy_commit_id='85d586617750d38d742a24f141b099f6b898d269',
+        fixed_commit_id='d305dd73a3d6927f0a2c63d08662a183fa173833',
+        test_file=[Path('test', 'test_utils.py')],
+        test_cases=['test.test_utils.TestUtil.test_js_to_json_realworld']
+    )
+
+    YoutubeDL(
+        bug_id=11,
+        python_version='3.7.4',
+        darwin_python_version='3.7.12',
+        python_path='',
+        buggy_commit_id='b568561eba6f4aceb87419e21aba11567c5de7da',
+        fixed_commit_id='348c6bf1c1a00eec323d6e21ff7b9b12699afe04',
+        test_file=[Path('test', 'test_utils.py')],
+        test_cases=['test.test_utils.TestUtil.test_str_to_int']
+    )
+
+    YoutubeDL(
+        bug_id=12,
+        python_version='3.7.4',
+        darwin_python_version='3.7.12',
+        python_path='',
+        buggy_commit_id='435e382423f860aca82a58d7c3db58cbfa242b40',
+        fixed_commit_id='e118a8794ffe5a3a414afd489726f34d753b0b23',
+        test_file=[Path('test', 'test_YoutubeDL.py')],
+        test_cases=['test.test_YoutubeDL.TestFormatSelection.test_format_selection_string_ops']
+    )
+
+    YoutubeDL(
+        bug_id=13,
+        python_version='3.7.4',
+        darwin_python_version='3.7.12',
+        python_path='',
+        buggy_commit_id='6945b9e78f38284eb4e440b7badea2fc60b66c2f',
+        fixed_commit_id='fad4ceb53404227f471af2f3544c4c14a5df4acb',
+        test_file=[Path('test', 'test_utils.py')],
+        test_cases=['test.test_utils.TestUtil.test_urljoin']
+    )
+
+    YoutubeDL(
+        bug_id=14,
+        python_version='3.7.4',
+        darwin_python_version='3.7.12',
+        python_path='',
+        buggy_commit_id='562de77f41d0c08df9dbb08cfa86ba6c7d239c5a',
+        fixed_commit_id='84213ea8d41d5fe1608333a16ac578dccdf9a915',
+        test_file=[Path('test', 'test_youtube_chapters.py')],
+        test_cases=['test.test_youtube_chapters.TestYoutubeChapters.test_youtube_chapters']
+    )
+
+    YoutubeDL(
+        bug_id=15,
+        python_version='3.7.4',
+        darwin_python_version='3.7.12',
+        python_path='',
+        buggy_commit_id='e7f3529f68ee7c8ca78366d37f851cb31fa00f31',
+        fixed_commit_id='c384d537f882efab10a78a56ce6dcb0a30f54b47',
+        test_file=[Path('test', 'test_utils.py')],
+        test_cases=['test.test_utils.TestUtil.test_js_to_json_edgecases test.test_utils.TestUtil.test_js_to_json_realworld']
+    )
+
+    YoutubeDL(
+        bug_id=16,
+        python_version='3.7.4',
+        darwin_python_version='3.7.12',
+        python_path='',
+        buggy_commit_id='68d43a61b552007a718894967b869c0f1d8ff00f',
+        fixed_commit_id='3869028ffb6be6ab719e5cf1004276dfdfd1216d',
+        test_file=[Path('test', 'test_utils.py')],
+        test_cases=['test.test_utils.TestUtil.test_dfxp2srt']
+    )
+
+    YoutubeDL(
+        bug_id=17,
+        python_version='3.7.4',
+        darwin_python_version='3.7.12',
+        python_path='',
+        buggy_commit_id='4bf22f7a1014c55e3358b5a419945071b152eafc',
+        fixed_commit_id='5b232f46dcbdc805507c02edd4fd598f31d544d5',
+        test_file=[Path('test', 'test_utils.py')],
+        test_cases=['test.test_utils.TestUtil.test_cli_bool_option']
+    )
+
+    YoutubeDL(
+        bug_id=18,
+        python_version='3.7.4',
+        darwin_python_version='3.7.12',
+        python_path='',
+        buggy_commit_id='dc6520aa3d1fe7afc52613e392f15dde90af4844',
+        fixed_commit_id='0396806f671e5828c2abdeb8048acf8b654507b6',
+        test_file=[Path('test', 'test_YoutubeDL.py')],
+        test_cases=['test.test_YoutubeDL.TestYoutubeDL.test_do_not_override_ie_key_in_url_transparent']
+    )
+
+    YoutubeDL(
+        bug_id=19,
+        python_version='3.7.4',
+        darwin_python_version='3.7.12',
+        python_path='',
+        buggy_commit_id='9a0942ad55bba714d6eaeb9ee4f66a138ec85e17',
+        fixed_commit_id='15da37c7dc8cf14ba5ce880aa1805fceaa71fc44',
+        test_file=[Path('test', 'test_YoutubeDL.py')],
+        test_cases=['test.test_YoutubeDL.TestYoutubeDL.test_prepare_filename']
+    )
+
+    YoutubeDL(
+        bug_id=20,
+        python_version='3.7.4',
+        darwin_python_version='3.7.12',
+        python_path='',
+        buggy_commit_id='b6c9fe416243373bcb59eb8aa5ef0baca8f3c97c',
+        fixed_commit_id='609ff8ca19f1c4c168a81121074b91cc0f0d4c47',
+        test_file=[Path('test', 'test_utils.py')],
+        test_cases=['test.test_utils.TestUtil.test_get_element_by_attribute']
+    )
+
+    # TODO 21-42 youtube-dl
+
+    YoutubeDL(
         bug_id=43,
         python_version='3.7.4',
         darwin_python_version='3.7.12',
