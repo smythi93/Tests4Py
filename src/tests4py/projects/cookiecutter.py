@@ -1,3 +1,4 @@
+import ast
 import os
 import random
 import re
@@ -542,15 +543,227 @@ class CookieCutter4SystemtestGenerator(CookieCutterSystemtestGenerator):
         return "\n".join([self._generate_default_config()] + hooks), TestResult.PASSING
 
 
-class CookieCutter2UnittestGenerator:
+class CookieCutterUnittestGenerator(UnittestGenerator, ABC):
     pass
 
 
-class CookieCutter3UnittestGenerator:
+class CookieCutter2UnittestGenerator(CookieCutterUnittestGenerator):
+    def __init__(
+        self, failing_probability: float = 0.2, min_hooks: int = 0, max_hooks: int = 20
+    ):
+        super().__init__(failing_probability=failing_probability)
+        self.min_hooks = min_hooks
+        self.max_hooks = max(min_hooks + 1, max_hooks)
+
+    def get_utils(self) -> List[ast.stmt]:
+        module = ast.parse(
+            """
+@staticmethod
+def get_hook(prefix, n):
+    if sys.platform.startswith("win"):
+        hook = "@echo off\\n"
+        hook += "IF NOT EXIST test4py_tmp_tests mkdir test4py_tmp_tests\\n"
+    else:
+        hook = "#!/bin/sh\\n"
+        hook += 'if [ ! -d "test4py_tmp_tests" ]; then\\n'
+        hook += '    mkdir "test4py_tmp_tests"\\n'
+        hook += "fi\\n"
+    file = os.path.join("test4py_tmp_tests", f"{prefix}_{n}")
+    hook += f"echo {n} > {file}\\n"
+    return hook
+
+def write_hooks(self, pre_gen_hooks=0, post_gen_hooks=0):
+    if os.path.exists("hooks"):
+        shutil.rmtree("hooks")
+    os.makedirs("hooks")
+    for i in range(pre_gen_hooks):
+        with open(os.path.join("hooks", f"pre_gen_project.{i}"), "w") as fp:
+            fp.write(self.get_hook("pre", i))
+    for i in range(post_gen_hooks):
+        with open(os.path.join("hooks", f"post_gen_project.{i}"), "w") as fp:
+            fp.write(self.get_hook("post", i))
+
+def tearDown(self) -> None:
+    if os.path.exists("hooks"):
+        shutil.rmtree("hooks")
+    if os.path.exists("test4py_tmp_tests"):
+        shutil.rmtree("test4py_tmp_tests")
+"""
+        )
+        return module.body
+
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.Import(names=[ast.alias(name="os")]),
+            ast.Import(names=[ast.alias(name="sys")]),
+            ast.Import(names=[ast.alias(name="shutil")]),
+            ast.ImportFrom(
+                module="cookiecutter.hooks",
+                names=[ast.alias(name="find_hook"), ast.alias(name="run_hook")],
+                level=0,
+            ),
+        ]
+
+    @staticmethod
+    def _get_write_hooks_call(pre: int, post: int) -> ast.Call:
+        return ast.Expr(
+            value=ast.Call(
+                func=ast.Attribute(value=ast.Name(id="self"), attr="write_hooks"),
+                args=[ast.Constant(pre), ast.Constant(post)],
+                keywords=[],
+            )
+        )
+
+    @staticmethod
+    def _get_expected_path(n: int, pre: bool = True) -> ast.Call:
+        return ast.Call(
+            func=ast.Name(id="os.path.abspath"),
+            args=[
+                ast.Call(
+                    func=ast.Name(id="os.path.join"),
+                    args=[
+                        ast.Constant(value="hooks"),
+                        ast.Constant(
+                            value=f"{'pre' if pre else 'post'}_gen_project.{n}"
+                        ),
+                    ],
+                    keywords=[],
+                )
+            ],
+            keywords=[],
+        )
+
+    def _get_expected_paths(self, n, is_pre: bool = True):
+        return ast.List(elts=[self._get_expected_path(i, is_pre) for i in range(n)])
+
+    @staticmethod
+    def _get_expected_runs(n, is_pre: bool = True):
+        return ast.List(
+            elts=[
+                ast.Constant(value=f"{'pre' if is_pre else 'post'}_{n}")
+                for i in range(n)
+            ]
+        )
+
+    def _get_hook_assign(self, n, is_pre: bool = True):
+        return ast.Assign(
+            targets=[ast.Name(id=f"{'pre' if is_pre else 'post'}_expected")],
+            value=self._get_expected_paths(n, is_pre=is_pre),
+            type_comment=None,
+            lineno=0,
+        )
+
+    def _get_run_assign(self, n, is_pre: bool = True):
+        return ast.Assign(
+            targets=[ast.Name(id=f"{'pre' if is_pre else 'post'}_expected")],
+            value=self._get_expected_paths(n, is_pre=is_pre),
+            type_comment=None,
+            lineno=0,
+        )
+
+    @staticmethod
+    def _get_find_hooks(is_pre: bool = True):
+        return ast.parse(
+            f"{'pre' if is_pre else 'post'}_hooks = find_hook('{'pre' if is_pre else 'post'}_gen_project')"
+        )
+
+    @staticmethod
+    def _get_run_hooks(is_pre: bool = True):
+        return ast.parse(
+            f"run_hook('{'pre' if is_pre else 'post'}_gen_project', os.getcwd(), {{}})"
+        )
+
+    @staticmethod
+    def _get_assertion_in(is_pre: bool = True, all_in: bool = False):
+        if all_in:
+            assertion = "all("
+        else:
+            assertion = f"not {'pre' if is_pre else 'post'}_expected or any("
+        assertion += f"x in {'pre' if is_pre else 'post'}_hooks for x in {'pre' if is_pre else 'post'}_expected)"
+        return ast.parse(f"self.assertTrue({assertion})").body[0]
+
+    @staticmethod
+    def _get_assertion_exist(is_pre: bool = True, all_exist: bool = False):
+        if all_exist:
+            assertion = "all("
+        else:
+            assertion = f"not {'pre' if is_pre else 'post'}_expected or any("
+        assertion += (
+            f"os.path.exists(os.path.join('test4py_tmp_tests', x)) "
+            f"for x in {'pre' if is_pre else 'post'}_expected)"
+        )
+        return ast.parse(f"self.assertTrue({assertion})").body[0]
+
+    def _generate_find_test(self, pre=0, post=0, all_in: bool = False):
+        test = self.get_empty_test()
+        test.body = [self._get_write_hooks_call(pre, post)] + sum(
+            [
+                [
+                    self._get_hook_assign(pre if is_pre else post, is_pre=is_pre),
+                    self._get_find_hooks(is_pre=is_pre),
+                    self._get_assertion_in(is_pre=is_pre, all_in=all_in),
+                ]
+                for is_pre in (True, False)
+            ],
+            start=[],
+        )
+        return test
+
+    def _generate_run_test(self, pre=0, post=0, all_exist=False):
+        test = self.get_empty_test()
+        test.body = [self._get_write_hooks_call(pre, post)] + sum(
+            [
+                [
+                    self._get_run_hooks(is_pre=is_pre),
+                    self._get_run_assign(pre if is_pre else post, is_pre=is_pre),
+                    self._get_assertion_exist(is_pre=is_pre, all_exist=all_exist),
+                ]
+                for is_pre in (True, False)
+            ],
+            start=[],
+        )
+        return test
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        if random.getrandbits(1):
+            pre_hooks = random.randint(2, self.max_hooks)
+            post_hooks = random.randint(self.min_hooks, self.max_hooks)
+        else:
+            pre_hooks = random.randint(self.min_hooks, self.max_hooks)
+            post_hooks = random.randint(2, self.max_hooks)
+
+        if random.getrandbits(1):
+            return (
+                self._generate_find_test(pre_hooks, post_hooks, True),
+                TestResult.FAILING,
+            )
+        else:
+            return (
+                self._generate_run_test(pre_hooks, post_hooks, True),
+                TestResult.FAILING,
+            )
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pre_hooks = random.randint(self.min_hooks, self.max_hooks)
+        post_hooks = random.randint(self.min_hooks, self.max_hooks)
+
+        if random.getrandbits(1):
+            return (
+                self._generate_find_test(pre_hooks, post_hooks, False),
+                TestResult.PASSING,
+            )
+        else:
+            return (
+                self._generate_run_test(pre_hooks, post_hooks, False),
+                TestResult.PASSING,
+            )
+
+
+class CookieCutter3UnittestGenerator(CookieCutterUnittestGenerator):
     pass
 
 
-class CookieCutter4UnittestGenerator:
+class CookieCutter4UnittestGenerator(CookieCutterUnittestGenerator):
     pass
 
 

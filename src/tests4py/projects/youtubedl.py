@@ -1,11 +1,6 @@
-import ast
-import os
-import random
-import string
-from _ast import Call
-from abc import abstractmethod
+from os import PathLike
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 from fuzzingbook.Grammars import Grammar, srange, is_valid_grammar
 from isla.fuzzer import GrammarFuzzer
