@@ -108,6 +108,7 @@ def register():
         test_cases=["tests/test_read_user_choice.py::test_click_invocation"],
         api=CookieCutter3API(),
         systemtests=CookieCutter3SystemtestGenerator(),
+        unittests=CookieCutter3UnittestGenerator(),
     )
     CookieCutter(
         bug_id=4,
@@ -120,6 +121,7 @@ def register():
         test_cases=["tests/test_hooks.py::TestExternalHooks::test_run_failing_hook"],
         api=CookieCutter4API(),
         systemtests=CookieCutter4SystemtestGenerator(),
+        unittests=CookieCutter4UnittestGenerator(),
     )
     # TODO implement the 4 bugs of cookiecutter
 

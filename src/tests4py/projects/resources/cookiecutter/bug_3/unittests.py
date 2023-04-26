@@ -1,269 +1,153 @@
 import os.path
-import sys
 import unittest
-import shutil
-from abc import ABC
+import unittest.mock
+import click
 
-from cookiecutter import hooks
+from cookiecutter.prompt import read_user_choice
 
 
-class DefaultTests(unittest.TestCase, ABC):
-
-    REPO_PATH = "tests4py_test_repo"
-
-    @staticmethod
-    def _default_config(
-        full_name='"Marius Smytzek"',
-        email='"mariussmtzek@cispa.de"',
-        github_username='"smythi93"',
-        project_name='"Test4Py Project"',
-        repo_name='"t4p"',
-        project_short_description='"The t4p project"',
-        release_date='"2022-12-25"',
-        year='"2022"',
-        version='"0.1"',
-    ):
-        return (
-            f'{{"full_name":{full_name},'
-            f'"email":{email},'
-            f'"github_username":{github_username},'
-            f'"project_name":{project_name},'
-            f'"repo_name":{repo_name},'
-            f'"project_short_description":{project_short_description},'
-            f'"release_date":{release_date},'
-            f'"year":{year},'
-            f'"version":{version}}}'
+class DefaultTest(unittest.TestCase):
+    def run_test(self, options, user_choice, name, with_args=True):
+        expected = (
+            f"Select {name}:\n"
+            + "\n".join(f"{i} - {c}" for i, c in enumerate(options, 1))
+            + f"\nChoose from {', '.join(str(i) for i in range(1, len(options) + 1))}"
         )
 
-    def project_setup(self, config):
-        if os.path.exists(self.REPO_PATH):
-            if os.path.isdir(self.REPO_PATH):
-                shutil.rmtree(self.REPO_PATH, ignore_errors=True)
-            else:
-                os.remove(self.REPO_PATH)
+        with unittest.mock.patch("click.Choice") as choice:
+            choice.return_value = click.Choice(options)
 
-        os.makedirs(self.REPO_PATH)
+            with unittest.mock.patch("click.prompt") as prompt:
+                prompt.return_value = "{}".format(user_choice)
 
-        with open(os.path.join(self.REPO_PATH, "cookiecutter.json"), "w") as fp:
-            fp.write(config)
+                self.assertEqual(
+                    read_user_choice(name, options), options[user_choice - 1]
+                )
 
-        repo_path = os.path.join(self.REPO_PATH, "{{cookiecutter.repo_name}}")
-        os.makedirs(repo_path)
-
-        with open(os.path.join(repo_path, "README.rst"), "w") as fp:
-            fp.write(
-                "============\nFake Project\n============\n\n"
-                "Project name: **{{ cookiecutter.project_name }}**\n\n"
-                "Blah!!!!\n"
-            )
-
-    def tearDown(self) -> None:
-        if os.path.exists(self.REPO_PATH):
-            if os.path.isdir(self.REPO_PATH):
-                shutil.rmtree(self.REPO_PATH, ignore_errors=True)
-            else:
-                os.remove(self.REPO_PATH)
+                if with_args:
+                    prompt.assert_called_once_with(
+                        expected,
+                        type=click.Choice(options),
+                        default="1",
+                        show_choices=False,
+                    )
+                else:
+                    prompt.assert_called_once()
 
 
-class TestsFailing(DefaultTests):
+class TestsFailing(DefaultTest):
     def test_diversity_1(self):
-        self.write_hooks(pre_gen_hooks=2)
-
-        expected = {
-            os.path.abspath(os.path.join("hooks", "pre_gen_project.0")),
-            os.path.abspath(os.path.join("hooks", "pre_gen_project.1")),
-        }
-        actual_hook_path = hooks.find_hook("pre_gen_project")
-        self.assertEqual(expected, set(actual_hook_path))
+        options = ["a", "b", "c"]
+        user_choice = 1
+        name = "name"
+        self.run_test(options, user_choice, name)
 
     def test_diversity_2(self):
-        self.write_hooks(post_gen_hooks=2)
-
-        expected = {
-            os.path.abspath(os.path.join("hooks", "post_gen_project.0")),
-            os.path.abspath(os.path.join("hooks", "post_gen_project.1")),
-        }
-        actual_hook_path = hooks.find_hook("post_gen_project")
-        self.assertEqual(expected, set(actual_hook_path))
+        options = ["a", "b", "c"]
+        user_choice = 2
+        name = "name"
+        self.run_test(options, user_choice, name)
 
     def test_diversity_3(self):
-        self.write_hooks(pre_gen_hooks=2, post_gen_hooks=2)
-
-        expected = {
-            os.path.abspath(os.path.join("hooks", "pre_gen_project.0")),
-            os.path.abspath(os.path.join("hooks", "pre_gen_project.1")),
-        }
-        actual_hook_path = hooks.find_hook("pre_gen_project")
-        self.assertEqual(expected, set(actual_hook_path))
-
-        expected = {
-            os.path.abspath(os.path.join("hooks", "post_gen_project.0")),
-            os.path.abspath(os.path.join("hooks", "post_gen_project.1")),
-        }
-        actual_hook_path = hooks.find_hook("post_gen_project")
-        self.assertEqual(expected, set(actual_hook_path))
+        options = ["a", "b", "c"]
+        user_choice = 3
+        name = "name"
+        self.run_test(options, user_choice, name)
 
     def test_diversity_4(self):
-        self.write_hooks(pre_gen_hooks=1)
-
-        expected = os.path.abspath(os.path.join("hooks", "pre_gen_project.0"))
-        actual_hook_path = hooks.find_hook("pre_gen_project")
-        self.assertEqual(expected, actual_hook_path[0])
+        options = [str(i) for i in range(100)]
+        user_choice = 100
+        name = "name"
+        self.run_test(options, user_choice, name)
 
     def test_diversity_5(self):
-        self.write_hooks(pre_gen_hooks=1, post_gen_hooks=1)
-
-        expected = os.path.abspath(os.path.join("hooks", "pre_gen_project.0"))
-        actual_hook_path = hooks.find_hook("pre_gen_project")
-        self.assertEqual(expected, actual_hook_path[0])
-
-        expected = os.path.abspath(os.path.join("hooks", "post_gen_project.0"))
-        actual_hook_path = hooks.find_hook("post_gen_project")
-        self.assertEqual(expected, actual_hook_path[0])
+        options = ["a", "b", "c"]
+        user_choice = 3
+        name = "varname"
+        self.run_test(options, user_choice, name)
 
     def test_diversity_6(self):
-        self.write_hooks(pre_gen_hooks=2)
-
-        hooks.run_hook("pre_gen_project", os.getcwd(), {})
-
-        self.assertTrue(os.path.exists(os.path.join("test4py_tmp_tests", "pre_0")))
-        self.assertTrue(os.path.exists(os.path.join("test4py_tmp_tests", "pre_1")))
+        options = ["a", "b", "c"]
+        user_choice = 3
+        name = "varname"
+        self.run_test(options, user_choice, name)
 
     def test_diversity_7(self):
-        self.write_hooks(post_gen_hooks=2)
-
-        hooks.run_hook("post_gen_project", os.getcwd(), {})
-
-        self.assertTrue(os.path.exists(os.path.join("test4py_tmp_tests", "post_0")))
-        self.assertTrue(os.path.exists(os.path.join("test4py_tmp_tests", "post_1")))
+        options = ["a", "b", "c", "d"]
+        user_choice = 3
+        name = "varname"
+        self.run_test(options, user_choice, name)
 
     def test_diversity_8(self):
-        self.write_hooks(pre_gen_hooks=2, post_gen_hooks=2)
-
-        hooks.run_hook("pre_gen_project", os.getcwd(), {})
-        hooks.run_hook("post_gen_project", os.getcwd(), {})
-
-        self.assertTrue(os.path.exists(os.path.join("test4py_tmp_tests", "pre_0")))
-        self.assertTrue(os.path.exists(os.path.join("test4py_tmp_tests", "pre_1")))
-        self.assertTrue(os.path.exists(os.path.join("test4py_tmp_tests", "post_0")))
-        self.assertTrue(os.path.exists(os.path.join("test4py_tmp_tests", "post_1")))
+        options = ["a", "b", "c", "d", "e"]
+        user_choice = 4
+        name = "var"
+        self.run_test(options, user_choice, name)
 
     def test_diversity_9(self):
-        self.write_hooks(pre_gen_hooks=2, post_gen_hooks=1)
-
-        hooks.run_hook("pre_gen_project", os.getcwd(), {})
-        hooks.run_hook("post_gen_project", os.getcwd(), {})
-
-        self.assertTrue(os.path.exists(os.path.join("test4py_tmp_tests", "pre_0")))
-        self.assertTrue(os.path.exists(os.path.join("test4py_tmp_tests", "pre_1")))
-        self.assertTrue(os.path.exists(os.path.join("test4py_tmp_tests", "post_0")))
+        options = ["a"]
+        user_choice = 1
+        name = "varname"
+        self.run_test(options, user_choice, name)
 
     def test_diversity_10(self):
-        self.write_hooks(pre_gen_hooks=10)
-
-        hooks.run_hook("pre_gen_project", os.getcwd(), {})
-
-        for i in range(10):
-            self.assertTrue(
-                os.path.exists(os.path.join("test4py_tmp_tests", f"pre_{i}"))
-            )
+        options = ["a", "b"]
+        user_choice = 2
+        name = "varname"
+        self.run_test(options, user_choice, name)
 
 
-class TestsPassing(DefaultTests):
+class TestsPassing(DefaultTest):
     def test_diversity_1(self):
-        self.write_hooks(pre_gen_hooks=1)
-
-        expected = os.path.abspath(os.path.join("hooks", "pre_gen_project.0"))
-        actual_hook_path = hooks.find_hook("pre_gen_project")
-        self.assertIn(expected, actual_hook_path)
+        options = ["a", "b", "c"]
+        user_choice = 1
+        name = "name"
+        self.run_test(options, user_choice, name, with_args=False)
 
     def test_diversity_2(self):
-        self.write_hooks(post_gen_hooks=1)
-
-        expected = os.path.abspath(os.path.join("hooks", "post_gen_project.0"))
-        actual_hook_path = hooks.find_hook("post_gen_project")
-        self.assertIn(expected, actual_hook_path)
+        options = ["a", "b", "c"]
+        user_choice = 2
+        name = "name"
+        self.run_test(options, user_choice, name, with_args=False)
 
     def test_diversity_3(self):
-        self.write_hooks(pre_gen_hooks=1, post_gen_hooks=1)
-
-        expected = os.path.abspath(os.path.join("hooks", "pre_gen_project.0"))
-        actual_hook_path = hooks.find_hook("pre_gen_project")
-        self.assertIn(expected, actual_hook_path)
-        expected = os.path.abspath(os.path.join("hooks", "post_gen_project.0"))
-        actual_hook_path = hooks.find_hook("post_gen_project")
-        self.assertIn(expected, actual_hook_path)
+        options = ["a", "b", "c"]
+        user_choice = 3
+        name = "name"
+        self.run_test(options, user_choice, name, with_args=False)
 
     def test_diversity_4(self):
-        self.write_hooks(pre_gen_hooks=2)
-
-        expected = [
-            os.path.abspath(os.path.join("hooks", "pre_gen_project.0")),
-            os.path.abspath(os.path.join("hooks", "pre_gen_project.1")),
-        ]
-        actual_hook_path = hooks.find_hook("pre_gen_project")
-        self.assertTrue(any(e in actual_hook_path for e in expected))
+        options = [str(i) for i in range(100)]
+        user_choice = 100
+        name = "name"
+        self.run_test(options, user_choice, name, with_args=False)
 
     def test_diversity_5(self):
-        self.write_hooks(pre_gen_hooks=2, post_gen_hooks=2)
-
-        expected = [
-            os.path.abspath(os.path.join("hooks", "pre_gen_project.0")),
-            os.path.abspath(os.path.join("hooks", "pre_gen_project.1")),
-        ]
-        actual_hook_path = hooks.find_hook("pre_gen_project")
-        self.assertTrue(any(e in actual_hook_path for e in expected))
-
-        expected = [
-            os.path.abspath(os.path.join("hooks", "post_gen_project.0")),
-            os.path.abspath(os.path.join("hooks", "post_gen_project.1")),
-        ]
-        actual_hook_path = hooks.find_hook("post_gen_project")
-        self.assertTrue(any(e in actual_hook_path for e in expected))
+        options = ["a", "b", "c"]
+        user_choice = 3
+        name = "varname"
+        self.run_test(options, user_choice, name, with_args=False)
 
     def test_diversity_6(self):
-        self.write_hooks(pre_gen_hooks=1)
-
-        hooks.run_hook("pre_gen_project", os.getcwd(), {})
-
-        self.assertTrue(os.path.exists(os.path.join("test4py_tmp_tests", "pre_0")))
+        options = ["a", "b", "c"]
+        user_choice = 3
+        name = "varname"
+        self.run_test(options, user_choice, name, with_args=False)
 
     def test_diversity_7(self):
-        self.write_hooks(post_gen_hooks=1)
-
-        hooks.run_hook("post_gen_project", os.getcwd(), {})
-
-        self.assertTrue(os.path.exists(os.path.join("test4py_tmp_tests", "post_0")))
+        options = ["a", "b", "c", "d"]
+        user_choice = 3
+        name = "varname"
+        self.run_test(options, user_choice, name, with_args=False)
 
     def test_diversity_8(self):
-        self.write_hooks(pre_gen_hooks=1, post_gen_hooks=1)
-
-        hooks.run_hook("pre_gen_project", os.getcwd(), {})
-        hooks.run_hook("post_gen_project", os.getcwd(), {})
-
-        self.assertTrue(os.path.exists(os.path.join("test4py_tmp_tests", "pre_0")))
-        self.assertTrue(os.path.exists(os.path.join("test4py_tmp_tests", "post_0")))
+        options = ["a", "b", "c", "d", "e"]
+        user_choice = 4
+        name = "var"
+        self.run_test(options, user_choice, name, with_args=False)
 
     def test_diversity_9(self):
-        self.write_hooks(pre_gen_hooks=2, post_gen_hooks=1)
-
-        hooks.run_hook("pre_gen_project", os.getcwd(), {})
-        hooks.run_hook("post_gen_project", os.getcwd(), {})
-
-        self.assertTrue(
-            os.path.exists(os.path.join("test4py_tmp_tests", "pre_0"))
-            or os.path.exists(os.path.join("test4py_tmp_tests", "pre_1"))
-        )
-        self.assertTrue(os.path.exists(os.path.join("test4py_tmp_tests", "post_0")))
+        self.assertRaises(TypeError, read_user_choice, "name", 1)
 
     def test_diversity_10(self):
-        self.write_hooks(pre_gen_hooks=10)
-
-        hooks.run_hook("pre_gen_project", os.getcwd(), {})
-
-        self.assertTrue(
-            any(
-                os.path.exists(os.path.join("test4py_tmp_tests", f"pre_{i}"))
-                for i in range(10)
-            )
-        )
+        self.assertRaises(ValueError, read_user_choice, "name", [])
