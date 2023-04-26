@@ -1,5 +1,4 @@
 import os
-import unittest
 
 import tests4py.framework.constants
 import tests4py.framework.default
@@ -137,7 +136,7 @@ class CommandTests(BaseTest):
         self.assertTrue(project.compiled)
 
     def test_test_pysnooper_3(self):
-        tests4py.framework.default.tests4py_checkout("pysnooper", 3, fixed=True)
+        tests4py.framework.default.tests4py_checkout("pysnooper", 3, fixed=False)
         work_dir = tests4py.framework.constants.DEFAULT_WORK_DIR / "pysnooper_3"
         project = load_bug_info(work_dir / tests4py.framework.constants.INFO_FILE)
         self.assertFalse(project.compiled)
