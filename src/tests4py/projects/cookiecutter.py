@@ -555,7 +555,7 @@ class CookieCutter2UnittestGenerator(CookieCutterUnittestGenerator):
     ):
         super().__init__(failing_probability=failing_probability)
         self.min_hooks = min_hooks
-        self.max_hooks = max(min_hooks + 1, max_hooks)
+        self.max_hooks = max(2, min_hooks + 1, max_hooks)
 
     def get_utils(self) -> List[ast.stmt]:
         module = ast.parse(
@@ -762,7 +762,84 @@ def tearDown(self) -> None:
 
 
 class CookieCutter3UnittestGenerator(CookieCutterUnittestGenerator):
-    pass
+    def __init__(
+        self,
+        failing_probability: float = 0.2,
+        min_choices: int = 1,
+        max_choices: int = 20,
+    ):
+        super().__init__(failing_probability=failing_probability)
+        self.min_choices = min_choices
+        self.max_choices = max(min_choices, max_choices)
+
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.Import(names=[ast.alias(name="click")]),
+            ast.ImportFrom(
+                module="cookiecutter.prompt",
+                names=[ast.alias(name="read_user_choice")],
+                level=0,
+            ),
+        ]
+
+    def get_utils(self) -> List[ast.stmt]:
+        module = ast.parse(
+            """
+def run_test(self, options, user_choice, name, with_args=True):
+    expected = (
+        f"Select {name}:\\n"
+        + "\\n".join(f"{i} - {c}" for i, c in enumerate(options, 1))
+        + f"\\nChoose from {', '.join(str(i) for i in range(1, len(options) + 1))}"
+    )
+    
+    with unittest.mock.patch("click.Choice") as choice:
+        choice.return_value = click.Choice(options)
+    
+        with unittest.mock.patch("click.prompt") as prompt:
+            prompt.return_value = "{}".format(user_choice)
+    
+            self.assertEqual(
+                read_user_choice(name, options), options[user_choice - 1]
+            )
+    
+            if with_args:
+                prompt.assert_called_once_with(
+                    expected,
+                    type=click.Choice(options),
+                    default="1",
+                    show_choices=False,
+                )
+            else:
+                prompt.assert_called_once()
+            """
+        )
+        return module.body
+
+    @staticmethod
+    def _generate_random_string() -> str:
+        return "".join(
+            random.sample(
+                string.ascii_letters + string.digits + "_- ", random.randint(1, 20)
+            )
+        )
+
+    def _generate_test(
+        self, failing: bool = True
+    ) -> Tuple[ast.FunctionDef, TestResult]:
+        length = random.randint(self.min_choices, self.max_choices)
+        choice = random.randint(1, length)
+        choices = [self._generate_random_string() for _ in range(length)]
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"self.run_test({choices}, {choice}, '{self._generate_random_string()}', with_args={failing})"
+        ).body
+        return test, failing
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        return self._generate_test(True)
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        return self._generate_test(False)
 
 
 class CookieCutter4UnittestGenerator(CookieCutterUnittestGenerator):

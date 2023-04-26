@@ -1,6 +1,4 @@
-import os.path
 import unittest
-import unittest.mock
 import click
 
 from cookiecutter.prompt import read_user_choice
