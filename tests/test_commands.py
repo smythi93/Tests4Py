@@ -137,7 +137,7 @@ class CommandTests(BaseTest):
         self.assertTrue(project.compiled)
 
     def test_test_pysnooper_3(self):
-        tests4py.framework.default.tests4py_checkout("pysnooper", 3, version_id=0)
+        tests4py.framework.default.tests4py_checkout("pysnooper", 3, fixed=True)
         work_dir = tests4py.framework.constants.DEFAULT_WORK_DIR / "pysnooper_3"
         project = load_bug_info(work_dir / tests4py.framework.constants.INFO_FILE)
         self.assertFalse(project.compiled)
@@ -153,7 +153,7 @@ class CommandTests(BaseTest):
 
     def test_unittest_test_buggy_pysnooper_3(self):
         report = tests4py.framework.default.tests4py_checkout(
-            "pysnooper", 3, version_id=0
+            "pysnooper", 3, fixed=False
         )
         if report.raised:
             raise report.raised
@@ -174,7 +174,7 @@ class CommandTests(BaseTest):
 
     def test_unittest_test_fixed_pysnooper_3(self):
         report = tests4py.framework.default.tests4py_checkout(
-            "pysnooper", 3, version_id=1
+            "pysnooper", 3, fixed=True
         )
         if report.raised:
             raise report.raised
@@ -195,7 +195,7 @@ class CommandTests(BaseTest):
 
     def test_systemtest_test_buggy_pysnooper_3(self):
         report = tests4py.framework.default.tests4py_checkout(
-            "pysnooper", 3, version_id=0
+            "pysnooper", 3, fixed=False
         )
         if report.raised:
             raise report.raised
@@ -216,7 +216,7 @@ class CommandTests(BaseTest):
 
     def test_systemtest_test_fixed_pysnooper_3(self):
         report = tests4py.framework.default.tests4py_checkout(
-            "pysnooper", 3, version_id=1
+            "pysnooper", 3, fixed=True
         )
         if report.raised:
             raise report.raised
@@ -237,7 +237,7 @@ class CommandTests(BaseTest):
 
     def test_unittest_generate_buggy_pysnooper_3(self):
         report = tests4py.framework.default.tests4py_checkout(
-            "pysnooper", 3, version_id=0
+            "pysnooper", 3, fixed=False
         )
         if report.raised:
             raise report.raised
@@ -273,7 +273,7 @@ class CommandTests(BaseTest):
 
     def test_unittest_generate_fixed_pysnooper_3(self):
         report = tests4py.framework.default.tests4py_checkout(
-            "pysnooper", 3, version_id=1
+            "pysnooper", 3, fixed=True
         )
         if report.raised:
             raise report.raised
@@ -309,7 +309,7 @@ class CommandTests(BaseTest):
 
     def test_systemtest_generate_buggy_pysnooper_3(self):
         report = tests4py.framework.default.tests4py_checkout(
-            "pysnooper", 3, version_id=0
+            "pysnooper", 3, fixed=False
         )
         if report.raised:
             raise report.raised
@@ -345,7 +345,7 @@ class CommandTests(BaseTest):
 
     def test_systemtest_generate_fixed_pysnooper_3(self):
         report = tests4py.framework.default.tests4py_checkout(
-            "pysnooper", 3, version_id=1
+            "pysnooper", 3, fixed=True
         )
         if report.raised:
             raise report.raised

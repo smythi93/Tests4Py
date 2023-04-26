@@ -22,7 +22,7 @@ class BaseProjectTests(BaseTest):
 class TestGenerationTests(BaseProjectTests):
     def _assert_test_generation(self, name: str, project: Project, systemtest=True):
         report = framework.default.tests4py_checkout(
-            project.project_name, project.bug_id, version_id=0
+            project.project_name, project.bug_id, fixed=False
         )
         if report.raised:
             raise report.raised
