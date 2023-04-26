@@ -153,11 +153,6 @@ def tests4py_test(
         project, _, _, _ = utils.__get_project__(work_dir)
         report.project = project
 
-        if project.unittests is None:
-            raise NotImplementedError(
-                f"Unittest testing is not enabled for {project.project_name}_{project.bug_id}"
-            )
-
         if path is None and not diversity:
             path = work_dir / DEFAULT_SUB_PATH_UNITTESTS
         if path and path.exists() and path.is_dir():

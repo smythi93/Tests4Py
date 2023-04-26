@@ -1,11 +1,19 @@
-from os import PathLike
+import ast
+import os
+import random
+import string
+from _ast import Call
+from abc import abstractmethod
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
-from tests4py.framework.constants import Environment
+from fuzzingbook.Grammars import Grammar, srange, is_valid_grammar
+from isla.fuzzer import GrammarFuzzer
+
+from tests4py.grammars import python
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
-from tests4py.tests.utils import API, TestResult
+from tests4py.tests.utils import API, TestResult, ExpectErrAPI
 
 
 class YoutubeDL(Project):
@@ -58,7 +66,9 @@ def register():
         buggy_commit_id='99036a1298089068dcf80c0985bfcc3f8c24f281',
         fixed_commit_id='1cc47c667419e0eadc0a6989256ab7b276852adf',
         test_file=[Path('test', 'test_utils.py')],
-        test_cases=['test.test_utils.TestUtil.test_match_str']
+        test_cases=['test.test_utils.TestUtil.test_match_str'],
+        unittests=YoutubeDl1UnittestGenerator(),
+        systemtests=YoutubeDlSystemtestGenerator(),
     )
 
     YoutubeDL(
@@ -283,10 +293,151 @@ def register():
         test_cases=['test.test_utils.TestUtil.test_url_basename']
     )
 
+
 class YoutubeDLAPI(API):
     def __init__(self, default_timeout: int = 5):
         super().__init__(default_timeout=default_timeout)
 
     # noinspection PyBroadException
-    def run(self, system_test_path: PathLike, environ: Environment) -> TestResult:
+    def run(self, system_test_path, environ) -> TestResult:
         return TestResult.UNDEFINED
+
+
+class YoutubeDl1UnittestGenerator(python.PythonGenerator, UnittestGenerator):
+    def __init__(self):
+        python.PythonGenerator.__init__(
+            self,
+            limit_stmt_per_block=6,
+            limit_stmt_depth=3,
+            limit_expr_depth=2,
+            limit_args_per_function=3,
+        )
+        UnittestGenerator.__init__(self)
+
+    def _get_failing_args(self) -> List[ast.expr]:
+        return []
+
+    @staticmethod
+    def _get_passing_args() -> List[ast.expr]:
+        return []
+
+    def _get_failing_keywords(self) -> List[ast.keyword]:
+        return []
+
+    @staticmethod
+    def _get_passing_keywords() -> List[ast.keyword]:
+        return []
+
+    def _get_failing_prefix(self) -> List[ast.stmt]:
+        return []
+
+    def _get_passing_prefix(self) -> List[ast.stmt]:
+        return []
+
+    def _get_function_call(
+        self, args: List[ast.expr] = None, keywords: List[ast.keyword] = None
+    ) -> ast.FunctionDef:
+        function = self._generate_FunctionDef()
+        function.decorator_list = [
+            ast.Call(
+                ast.Attribute(
+                    value=ast.Name(id="pysnooper"),
+                    attr="snoop",
+                ),
+                args=[] if args is None else args,
+                keywords=[] if keywords is None else keywords,
+            )
+        ]
+        return function
+
+    def _get_failing_body(
+        self, function: ast.FunctionDef, prefix: List[ast.stmt] = None
+    ) -> List[ast.stmt]:
+        if prefix:
+            return prefix + [function]
+        return [function]
+
+    def _get_passing_body(
+        self, function: ast.FunctionDef, prefix: List[ast.stmt] = None
+    ) -> List[ast.stmt]:
+        if prefix:
+            return prefix + [function]
+        return [function]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        self.reset()
+        test = self.get_empty_test()
+        prefix = self._get_failing_prefix()
+        test.body = self._get_failing_body(
+            self._get_function_call(
+                self._get_failing_args(), self._get_failing_keywords()
+            ),
+            prefix=prefix,
+        )
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        self.reset()
+        test = self.get_empty_test()
+        prefix = self._get_passing_prefix()
+        test.body = self._get_passing_body(
+            self._get_function_call(
+                self._get_passing_args(), self._get_passing_keywords()
+            ),
+            prefix=prefix,
+        )
+        return test, TestResult.PASSING
+
+
+class YoutubeDlSystemtestGenerator(SystemtestGenerator):
+    def __init__(self):
+        super().__init__()
+        #self.variables_fuzzer = GrammarFuzzer(grammar, start_symbol="<variable_list>")
+        #self.predicate_fuzzer = GrammarFuzzer(grammar, start_symbol="<predicate_list>")
+        #self.str_fuzzer = GrammarFuzzer(grammar, start_symbol="<str>")
+
+    def _generate_parameters(
+        self, required: List[str], parameters: List[str], output_prob=0.5
+    ):
+        selection = required + random.sample(
+            parameters, random.randint(0, len(parameters))
+        )
+        params = list()
+        if "output" in selection:
+            if random.random() < output_prob:
+                params.append("-o")
+            else:
+                params.append("-otest.log")
+        if "variables" in selection:
+            params.append("-v" + self.variables_fuzzer.fuzz())
+        if "depth" in selection:
+            params.append(f"-d{random.randint(1, 5)}")
+        if "prefix" in selection:
+            params.append("-p" + self.str_fuzzer.fuzz())
+        if "watch" in selection:
+            params.append("-w" + self.variables_fuzzer.fuzz())
+        if "custom_repr" in selection:
+            params.append("-c" + self.predicate_fuzzer.fuzz())
+        if "overwrite" in selection and "output" in selection and "-o" not in params:
+            params.append("-O")
+        if "thread_info" in selection:
+            params.append("-T")
+        return params
+
+    @abstractmethod
+    def _get_failing_params(self):
+        return []
+
+    @abstractmethod
+    def _get_passing_params(self):
+        return []
+
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        params = self._get_failing_params()
+        random.shuffle(params)
+        return "\n".join(params), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        params = self._get_passing_params()
+        random.shuffle(params)
+        return "\n".join(params), TestResult.PASSING
