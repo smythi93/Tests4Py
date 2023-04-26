@@ -129,6 +129,9 @@ class UnittestGenerator(TestGenerator, ast.NodeVisitor):
             ast.Module(
                 body=[
                     ast.Import(names=[ast.alias(name="unittest")]),
+                ]
+                + self.get_imports()
+                + [
                     ast.ClassDef(
                         name=self.CLASS_NAME,
                         bases=[
@@ -148,6 +151,9 @@ class UnittestGenerator(TestGenerator, ast.NodeVisitor):
         with open(path, "w") as fp:
             fp.write(tests)
         return GenerationResult(passing=p, failing=f)
+
+    def get_imports(self) -> List[ast.stmt]:
+        return []
 
 
 class SystemtestGenerator(TestGenerator):
