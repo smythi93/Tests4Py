@@ -20,7 +20,6 @@ def tests4py_cache(
             checkout_report = tests4py_checkout(
                 project.project_name,
                 project.bug_id,
-                version_id=1,
                 force=force,
                 verbose=verbose,
             )
