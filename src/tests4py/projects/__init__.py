@@ -107,7 +107,7 @@ class Project:
 def get_project(project_name: str, bug_id: int) -> Project:
     global bugs
     try:
-        bug = bugs[project_name]
+        bug = bugs[project_name.lower()]
     except KeyError:
         raise ValueError(f"Project {project_name} not found")
     try:

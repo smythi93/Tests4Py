@@ -30,8 +30,10 @@ from tests4py.framework.constants import (
     GENERATE,
     CONFIG,
     CACHE,
+    GRAMMAR,
     DEFAULT_WORK_DIR,
 )
+from tests4py.framework.grammar import tests4py_grammar
 
 
 def check_pyenv():
@@ -101,6 +103,7 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
     )
     config_parser = commands.add_parser(CONFIG, help="The config subcommand")
     cache_parser = commands.add_parser(CACHE, help="The cache subcommand")
+    grammar_parser = commands.add_parser(GRAMMAR, help="The grammar subcommand")
 
     # Checkout
     checkout_parser.add_argument(
@@ -427,6 +430,33 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         help="If set the command won't use any cached version, even if the global cache flag is set",
     )
 
+    # Grammar
+    grammar_parser.add_argument(
+        "-p",
+        dest="project_name",
+        required=True,
+        help="The id of the project for which the grammar shall be given",
+    )
+    grammar_parser.add_argument(
+        "-i",
+        dest="bug_id",
+        type=int,
+        required=True,
+        help="The bug number of the project_name for which the grammar shall be given",
+    )
+    grammar_parser.add_argument(
+        "-g",
+        dest="grammar_format",
+        default="python",
+        help="The output format for the grammar. Can be python, json, or antlr (default: python)",
+    )
+    grammar_parser.add_argument(
+        "-o",
+        dest="output",
+        default=None,
+        help="Output the grammar to the given file (default: grammar.[py|json|g4])",
+    )
+
     args = arguments.parse_args(args or sys.argv[1:])
 
     if args.command == CHECKOUT:
@@ -488,6 +518,13 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
     elif args.command == CACHE:
         report = tests4py_cache(
             project_name=args.project_name, bug_id=args.bug_id, force=args.force
+        )
+    elif args.command == GRAMMAR:
+        report = tests4py_grammar(
+            project_name=args.project_name,
+            bug_id=args.bug_id,
+            grammar_format=args.grammar_format,
+            output=Path(args.output).absolute() if args.output else None,
         )
     else:
         raise NotImplementedError(f"Command {args.command} not implemented")

@@ -1,7 +1,10 @@
 from tests4py.framework import (
+    cache,
+    config,
     constants,
     default,
     environment,
+    grammar,
     logger,
     systemtest,
     unittest,
@@ -9,9 +12,12 @@ from tests4py.framework import (
 )
 
 __all__ = [
+    "cache",
+    "config",
     "constants",
     "default",
     "environment",
+    "grammar",
     "logger",
     "systemtest",
     "unittest",
