@@ -1,7 +1,8 @@
+import ast
 import queue
+import random
 import string
 import subprocess
-import traceback
 from abc import ABC
 from os import PathLike
 from pathlib import Path
@@ -9,6 +10,7 @@ from typing import List, Optional, Tuple
 
 from fuzzingbook.Grammars import Grammar, is_valid_grammar, srange
 from isla.derivation_tree import DerivationTree
+from isla.fuzzer import GrammarFuzzer
 
 from tests4py.framework.constants import Environment, HARNESS_FILE
 from tests4py.grammars.utils import GrammarVisitor
@@ -70,6 +72,7 @@ def register():
             )
         ),
         systemtests=FastAPI1SystemtestGenerator(),
+        unittests=FastAPI1UnittestGenerator(),
         grammar=grammar_jsonable_encoder,
     )
     FastAPI(
@@ -79,6 +82,7 @@ def register():
         test_file=[Path("tests", "test_ws_router.py")],
         test_cases=["tests/test_ws_router.py::test_router_ws_depends_with_override"],
         systemtests=FastAPI2SystemtestGenerator(),
+        unittests=FastAPI2UnittestGenerator(),
         api=FastAPI2API(),
     )
     FastAPI(
@@ -98,6 +102,7 @@ def register():
         ],
         api=FastAPI3API(),
         systemtests=FastAPI3SystemtestGenerator(),
+        unittests=FastAPI3UnittestGenerator(),
     )
     FastAPI(
         bug_id=4,
@@ -107,6 +112,7 @@ def register():
         test_cases=["tests/test_param_in_path_and_dependency.py::test_reused_param"],
         api=FastAPI4API(),
         systemtests=FastAPI4SystemtestGenerator(),
+        unittests=FastAPI4UnittestGenerator(),
     )
     FastAPI(
         bug_id=5,
@@ -116,6 +122,7 @@ def register():
         test_cases=["tests/test_filter_pydantic_sub_model.py::test_filter_sub_model"],
         api=FastAPI5API(),
         systemtests=FastAPI5SystemtestGenerator(),
+        unittests=FastAPI5UnittestGenerator(),
     )
     FastAPI(
         bug_id=6,
@@ -129,6 +136,7 @@ def register():
         ],
         api=FastAPI6API(),
         systemtests=FastAPI6SystemtestGenerator(),
+        unittests=FastAPI6UnittestGenerator(),
     )
     FastAPI(
         bug_id=7,
@@ -140,6 +148,7 @@ def register():
         ],
         api=FastAPI7API(),
         systemtests=FastAPI7SystemtestGenerator(),
+        unittests=FastAPI7UnittestGenerator(),
     )
     FastAPI(
         bug_id=8,
@@ -149,6 +158,7 @@ def register():
         test_cases=["tests/test_custom_route_class.py::test_route_classes"],
         api=FastAPI8API(),
         systemtests=FastAPI8SystemtestGenerator(),
+        unittests=FastAPI8UnittestGenerator(),
     )
     FastAPI(
         bug_id=9,
@@ -158,6 +168,9 @@ def register():
         test_cases=[
             "tests/test_request_body_parameters_media_type.py::test_openapi_schema"
         ],
+        api=FastAPI9API(),
+        systemtests=FastAPI9SystemtestGenerator(),
+        unittests=FastAPI9UnittestGenerator(),
     )
     FastAPI(
         bug_id=10,
@@ -165,6 +178,9 @@ def register():
         fixed_commit_id="06eb4219345a77d23484528c9d164eb8d2097fec",
         test_file=[Path("tests", "test_skip_defaults.py")],
         test_cases=["tests/test_skip_defaults.py::test_return_defaults"],
+        api=FastAPI10API(),
+        systemtests=FastAPI10SystemtestGenerator(),
+        unittests=FastAPI10UnittestGenerator(),
     )
     FastAPI(
         bug_id=11,
@@ -300,14 +316,12 @@ class FastAPIDefaultAPI(API, GrammarVisitor):
                 if self.fallback_condition(process) and self.fallback_contains(process):
                     return TestResult.FAILING
                 elif self.error_handling(process):
-                    print(process)
                     return TestResult.UNDEFINED
                 else:
                     return TestResult.PASSING
         except subprocess.TimeoutExpired:
             return TestResult.UNDEFINED
-        except Exception as e:
-            traceback.print_exception(e)
+        except:
             return TestResult.UNDEFINED
 
     def error_handling(self, process) -> bool:
@@ -430,16 +444,91 @@ class FastAPI8API(FastAPIDefaultAPI):
         )
 
 
+class FastAPI9API(FastAPIDefaultAPI):
+    pass
+
+
+class FastAPI10API(FastAPIDefaultAPI):
+    pass
+
+
 class FastAPISystemtestGenerator(SystemtestGenerator, ABC):
     pass
 
 
-class FastAPI1SystemtestGenerator(FastAPISystemtestGenerator):
+class FastAPI1TestGenerator(ABC):
+    def __init__(self):
+        self.string_fuzzer = GrammarFuzzer(
+            grammar_jsonable_encoder, start_symbol="<str>"
+        )
+
+    @staticmethod
+    def _get_keys(m: int = 0, n: int = 4):
+        m = max(m, 0)
+        n = min(n, len(grammar_jsonable_encoder["<key>"]))
+        return list(
+            random.sample(grammar_jsonable_encoder["<key>"], k=random.randint(m, n))
+        )
+
+    def _generate_default_object(self, set_self=False):
+        if random.getrandbits(1):
+            entries = [
+                f"'{key}':{self.string_fuzzer.fuzz()}" for key in self._get_keys()
+            ]
+            return f"{{{','.join(entries)}}}"
+        else:
+            keys = self._get_keys()
+            if "foo" not in keys:
+                keys.append("foo")
+                random.shuffle(keys)
+            entries = [f"{key}={self.string_fuzzer.fuzz()}" for key in keys]
+            return f"{'self.' if set_self else ''}Model({','.join(entries)})"
+
+    def _generate_key_list(self):
+        return ",".join(self._get_keys(m=1))
+
+
+class FastAPI1SystemtestGenerator(FastAPISystemtestGenerator, FastAPI1TestGenerator):
+    def __init__(self):
+        FastAPISystemtestGenerator.__init__(self)
+        FastAPI1TestGenerator.__init__(self)
+
+    def _generate_object(self):
+        return "-o" + self._generate_default_object()
+
+    def _generate_test(self, failing=False):
+        args = [self._generate_object()]
+        if random.getrandbits(1):
+            args.append(f"-i{self._generate_key_list()}")
+        if random.getrandbits(1):
+            args.append(f"-e{self._generate_key_list()}")
+        if random.getrandbits(1):
+            args.append("-a")
+        if random.getrandbits(1):
+            args.append("-s")
+        if random.getrandbits(1):
+            args.append("-u")
+        if random.getrandbits(1):
+            args.append("-c{str:repr}")
+        if random.getrandbits(1):
+            args.append("-q")
+        if failing:
+            if random.getrandbits(1):
+                args.append("-d")
+                if random.getrandbits(1):
+                    args.append("-ne")
+            else:
+                args.append("-ne")
+                if random.getrandbits(1):
+                    args.append("-d")
+        random.shuffle(args)
+        return "\n".join(args)
+
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        pass
+        return self._generate_test(failing=True), TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        pass
+        return self._generate_test(failing=False), TestResult.PASSING
 
 
 class FastAPI2SystemtestGenerator(FastAPISystemtestGenerator):
@@ -495,6 +584,193 @@ class FastAPI8SystemtestGenerator(FastAPISystemtestGenerator):
         pass
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass
+
+
+class FastAPI9SystemtestGenerator(FastAPISystemtestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        pass
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass
+
+
+class FastAPI10SystemtestGenerator(FastAPISystemtestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        pass
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass
+
+
+class FastAPI1UnittestGenerator(UnittestGenerator, FastAPI1TestGenerator):
+    def __init__(self):
+        UnittestGenerator.__init__(self)
+        FastAPI1TestGenerator.__init__(self)
+
+    def get_utils(self) -> List[ast.stmt]:
+        return ast.parse(
+            """
+@staticmethod
+def run_test(obj=None, include=None, exclude=None, by_alias=None, skip_defaults=None, exclude_unset=None, 
+    exclude_defaults=None, include_none=None, exclude_none=None, custom_encoder=None, sqlalchemy_safe=None): 
+    parameters = dict()
+    if obj is not None:
+        parameters["obj"] = obj
+    if include is not None:
+        parameters["include"] = include
+    if exclude is not None:
+        parameters["exclude"] = exclude
+    if by_alias is not None:
+        parameters["by_alias"] = False
+    if skip_defaults is not None:
+        parameters["skip_defaults"] = True
+    if exclude_unset is not None:
+        parameters["exclude_unset"] = True
+    if exclude_defaults is not None:
+        parameters["exclude_defaults"] = True
+    if include_none is not None:
+        parameters["include_none"] = False
+    if exclude_none is not None:
+        parameters["exclude_none"] = True
+    if custom_encoder is not None:
+        parameters["custom_encoder"] = custom_encoder
+    if sqlalchemy_safe is not None:
+        parameters["sqlalchemy_safe"] = False
+    jsonable_encoder(**parameters)
+
+class Model(BaseModel):
+    foo: str = Field(..., alias="foo")
+    bar: str = "bar"
+    bla: str = "bla"
+
+    class Config:
+        use_enum_values = True
+"""
+        ).body
+
+    def get_imports(self) -> List[ast.stmt]:
+        return ast.parse(
+            """
+from fastapi.encoders import jsonable_encoder
+from pydantic import BaseModel
+try:
+    from pydantic import Field
+except ImportError:
+    from pydantic import Schema as Field
+"""
+        ).body
+
+    def _generate_test(self, failing=False):
+        args = [f"obj={self._generate_default_object(set_self=True)}"]
+        if random.getrandbits(1):
+            args.append(
+                f"include=[{', '.join([repr(x) for x in self._get_keys(m=1)])}]"
+            )
+        if random.getrandbits(1):
+            args.append(
+                f"exclude=[{', '.join([repr(x) for x in self._get_keys(m=1)])}]"
+            )
+        if random.getrandbits(1):
+            args.append("by_alias=True")
+        if random.getrandbits(1):
+            args.append("skip_defaults=True")
+        if random.getrandbits(1):
+            args.append("exclude_unset=True")
+        if random.getrandbits(1):
+            args.append("custom_encoder={str: repr}")
+        if random.getrandbits(1):
+            args.append("sqlalchemy_safe=True")
+        if failing:
+            if random.getrandbits(1):
+                args.append("exclude_defaults=True")
+                if random.getrandbits(1):
+                    args.append("exclude_none=True")
+            else:
+                args.append("exclude_none=True")
+                if random.getrandbits(1):
+                    args.append("exclude_defaults=True")
+
+        test = self.get_empty_test()
+        test.body = ast.parse(f"self.run_test({', '.join(args)})").body
+        return test
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        return self._generate_test(failing=True), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        return self._generate_test(failing=False), TestResult.PASSING
+
+
+class FastAPI2UnittestGenerator(UnittestGenerator):
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass
+
+
+class FastAPI3UnittestGenerator(UnittestGenerator):
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass
+
+
+class FastAPI4UnittestGenerator(UnittestGenerator):
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass
+
+
+class FastAPI5UnittestGenerator(UnittestGenerator):
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass
+
+
+class FastAPI6UnittestGenerator(UnittestGenerator):
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass
+
+
+class FastAPI7UnittestGenerator(UnittestGenerator):
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass
+
+
+class FastAPI8UnittestGenerator(UnittestGenerator):
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass
+
+
+class FastAPI9UnittestGenerator(UnittestGenerator):
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass
+
+
+class FastAPI10UnittestGenerator(UnittestGenerator):
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass
 
 

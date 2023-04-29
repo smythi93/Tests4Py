@@ -1,7 +1,6 @@
 import enum
 import os
 import subprocess
-import traceback
 from abc import abstractmethod
 from os import PathLike
 from pathlib import Path
