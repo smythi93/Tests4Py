@@ -321,7 +321,7 @@ class FastAPIDefaultAPI(API, GrammarVisitor):
                     return TestResult.PASSING
         except subprocess.TimeoutExpired:
             return TestResult.UNDEFINED
-        except:
+        except BaseException as e:
             return TestResult.UNDEFINED
 
     def error_handling(self, process) -> bool:
@@ -531,12 +531,144 @@ class FastAPI1SystemtestGenerator(FastAPISystemtestGenerator, FastAPI1TestGenera
         return self._generate_test(failing=False), TestResult.PASSING
 
 
-class FastAPI2SystemtestGenerator(FastAPISystemtestGenerator):
+class FastAPIDefaultSystemtestGenerator(FastAPISystemtestGenerator, ABC):
+
+    GET = "get"
+    POST = "post"
+    WEBSOCKET = "websocket"
+    MODES_TO_PATHS = {
+        GET: [
+            "/items/valid",
+            "/items/valid_list",
+            "/items/other",
+            "/user/{user_id}",
+            "/model",
+            "/routes/",
+            "/custom/",
+        ],
+        POST: ["/items/", "/form/python-set", "/form/python-list"],
+        WEBSOCKET: [
+            "/router/",
+        ],
+    }
+    PATHS_TO_MODES = {
+        "/items/valid": GET,
+        "/items/valid_list": GET,
+        "/items/other": GET,
+        "/user/{user_id}": GET,
+        "/model": GET,
+        "/routes/": GET,
+        "/custom/": GET,
+        "/items/": POST,
+        "/form/python-set": POST,
+        "/form/python-list": POST,
+        "/router/": WEBSOCKET,
+    }
+
+    def __init__(self):
+        super().__init__()
+        self.string_fuzzer = GrammarFuzzer(grammar_request, start_symbol="<str>")
+        self.json_fuzzer = GrammarFuzzer(grammar_request, start_symbol="<json>")
+
+    def _generate_mode_and_path(
+        self, mode: str = None, path: str = None, users: bool = False
+    ):
+        if mode and path:
+            return mode, path
+        elif mode and mode in self.MODES_TO_PATHS:
+            path = random.choice(
+                list(
+                    filter(
+                        lambda p: users or "user" not in p, self.MODES_TO_PATHS[mode]
+                    )
+                )
+            )
+        elif path and path in self.PATHS_TO_MODES:
+            mode = self.PATHS_TO_MODES[path]
+        else:
+            path = random.choice(
+                list(
+                    filter(
+                        lambda p: users or "user" not in p, self.PATHS_TO_MODES.keys()
+                    )
+                )
+            )
+            mode = self.PATHS_TO_MODES[path]
+        return mode, path
+
+    def _generate_data(self, data: str = None, path: str = None, aliased: bool = False):
+        if data is not None:
+            return data
+        elif path and path == "/items/":
+            data = "{"
+            if aliased:
+                data += f'"aliased_name":{self.string_fuzzer.fuzz()}'
+            else:
+                data += f'"name":{self.string_fuzzer.fuzz()}'
+            data += (
+                f',"price":{random.random() + random.randint(0, 100)}'
+                + f',"age":{random.randint(0, 100)}}}'
+            )
+            return data
+        else:
+            if random.getrandbits(1):
+                return None
+            return self.json_fuzzer.fuzz()
+
+    def _generate_request(
+        self,
+        mode: str = None,
+        path: str = None,
+        data: str = None,
+        alias: bool = None,
+        override: bool = None,
+        users: bool = None,
+    ):
+        users = bool(random.getrandbits(1)) if users is None else users
+        mode, path = self._generate_mode_and_path(mode=mode, path=path, users=users)
+        alias = bool(random.getrandbits(1)) if alias is None else alias
+        override = bool(random.getrandbits(1)) if override is None else override
+        data = self._generate_data(data, path, alias)
+        request = [f"-m{mode}", f"-p{path}"]
+        if alias:
+            request.append("-a")
+        if override:
+            request.append("-o")
+        if users:
+            request.append("-u")
+        if data is not None:
+            request.append(f"-d{data}")
+        random.shuffle(request)
+        return "\n".join(request)
+
+
+class FastAPI2SystemtestGenerator(FastAPIDefaultSystemtestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        pass
+        return (
+            self._generate_request(path="/router/", override=True),
+            TestResult.FAILING,
+        )
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        pass
+        if random.getrandbits(1):
+            return (
+                self._generate_request(path="/router/", override=False),
+                TestResult.PASSING,
+            )
+        else:
+            return (
+                self._generate_request(
+                    path=random.choice(
+                        list(
+                            filter(
+                                lambda p: "user" not in p and "/router/" not in p,
+                                self.PATHS_TO_MODES.keys(),
+                            )
+                        )
+                    )
+                ),
+                TestResult.PASSING,
+            )
 
 
 class FastAPI3SystemtestGenerator(FastAPISystemtestGenerator):
@@ -703,11 +835,125 @@ except ImportError:
 
 
 class FastAPI2UnittestGenerator(UnittestGenerator):
+    def __init__(self):
+        super().__init__()
+        self.string_fuzzer = GrammarFuzzer(grammar_request, start_symbol="<str>")
+        self.json_fuzzer = GrammarFuzzer(grammar_request, start_symbol="<json>")
+
+    def get_utils(self) -> List[ast.stmt]:
+        return ast.parse(
+            """
+@staticmethod
+def run_test(mode="get", url="/", data=None, depend=None, override=None):
+    app = FastAPI()
+    router = APIRouter()
+
+    depend = "Dependency" if depend is None else depend
+
+    async def dependency():
+        return depend
+
+    @app.get("/get", response_model=str)
+    def get_valid():
+        return f"get_{depend}"
+
+    @app.post("/post", response_model=str)
+    def get_valid():
+        return f"post_{depend}"
+
+    @router.websocket("/")
+    async def router_ws_decorator_depends(
+        websocket_: WebSocket, data_=Depends(dependency)
+    ):
+        await websocket_.accept()
+        await websocket_.send_text(data_)
+        await websocket_.close()
+
+    if override is not None:
+        app.dependency_overrides[dependency] = lambda: override
+
+    app.include_router(router, prefix="/router")
+
+    client = TestClient(app)
+
+    if mode == "websocket":
+        with client.websocket_connect(url) as websocket:
+            return websocket.receive_text(), 200
+    elif data is not None:
+        response = getattr(client, mode)(url, json=data)
+        return response.json(), response.status_code
+    else:
+        response = getattr(client, mode)(url)
+        return response.json(), response.status_code"""
+        ).body
+
+    def get_imports(self) -> List[ast.stmt]:
+        return ast.parse(
+            """
+from fastapi import APIRouter, Depends, FastAPI
+try:
+    from fastapi import WebSocket
+except ImportError:
+    from starlette.websockets import WebSocket
+try:
+    from fastapi.testclient import TestClient
+except ImportError:
+    from starlette.testclient import TestClient
+    """
+        ).body
+
+    def _get_test(
+        self, arguments: List[str], expected_response: str, expected_status: int = 200
+    ):
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"""
+response, status = self.run_test({', '.join(arguments)})
+self.assertEqual({expected_response}, response)
+self.assertEqual({expected_status}, status)
+            """
+        ).body
+        return test
+
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass
+        expected = self.string_fuzzer.fuzz()
+        arguments = ['"websocket"', '"/router/"', f"override={expected}"]
+        if random.getrandbits(1):
+            arguments.append(f"data={self.json_fuzzer.fuzz()}")
+        return self._get_test(arguments, expected), TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass
+        value = self.string_fuzzer.fuzz()
+        status = 200
+        if random.getrandbits(1):
+            expected = value
+            arguments = ["websocket", "/router/", f"depend={value}"]
+        else:
+            p = random.random()
+            e = value.replace('"', "")
+            if p <= 0.45:
+                expected = f'"get_{e}"'
+                arguments = ['"get"', '"/get"', f"depend={value}"]
+            elif p <= 0.9:
+                expected = f'"post_{e}"'
+                arguments = ['"post"', '"/post"', f"depend={value}"]
+            else:
+                expected = '{"detail": "Method Not Allowed"}'
+                if p <= 0.95:
+                    arguments = ['"get"', '"/post"', f"depend={value}"]
+                    status = 405
+                else:
+                    arguments = ['"post"', '"/get"', f"depend={value}"]
+                    status = 405
+
+        if random.random() < 0.1:
+            arguments.append(f"override={value}")
+        if random.getrandbits(1):
+            arguments.append(f"data={self.json_fuzzer.fuzz()}")
+        return (
+            self._get_test(arguments, expected, expected_status=status),
+            TestResult.PASSING,
+        )
 
 
 class FastAPI3UnittestGenerator(UnittestGenerator):
