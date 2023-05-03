@@ -67,7 +67,7 @@ def register():
         fixed_commit_id='1cc47c667419e0eadc0a6989256ab7b276852adf',
         test_file=[Path('test', 'test_utils.py')],
         test_cases=['test.test_utils.TestUtil.test_match_str'],
-        api=YoutubeDL1API(b''),
+        api=YoutubeDL1API(),
         unittests=YoutubeDL1UnittestGenerator(),
         systemtests=YoutubeDL1SystemtestGenerator(),
     )
@@ -299,22 +299,11 @@ class YoutubeDLAPI(API):
     def __init__(self, default_timeout: int = 5):
         super().__init__(default_timeout=default_timeout)
 
-    def contains(self, process: subprocess.CompletedProcess) -> bool:
-        return False
-
-    # noinspection PyBroadException
-    def run(self, system_test_path, environ) -> TestResult:
-        return TestResult.UNDEFINED
-
-
-class YoutubeDL1API(ExpectErrAPI):
-
     def error_handling(self, process) -> bool:
         return process.returncode != 0 and process.returncode != 200
 
     def contains(self, process: subprocess.CompletedProcess) -> bool:
-        return (
-            b"Input does not match the expected outcome!" in process.stderr)
+        return False
 
     # noinspection PyBroadException
     def run(self, system_test_path, environ: Environment) -> TestResult:
@@ -348,6 +337,13 @@ class YoutubeDL1API(ExpectErrAPI):
         except Exception as e:
             traceback.print_exception(e)
             return TestResult.UNDEFINED
+
+
+class YoutubeDL1API(YoutubeDLAPI):
+
+    def contains(self, process: subprocess.CompletedProcess) -> bool:
+        return (
+            b"Input does not match the expected outcome!" in process.stderr)
 
 
 class YoutubeDLUnittestGenerator(UnittestGenerator, ABC):
