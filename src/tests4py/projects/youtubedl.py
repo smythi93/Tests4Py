@@ -80,7 +80,8 @@ def register():
         buggy_commit_id='84f085d4bdb66ee025fb337bcd571eab7469da97',
         fixed_commit_id='9d6ac71c27b1dfb662c795ef598dbfd0286682da',
         test_file=[Path('test', 'test_InfoExtractor.py')],
-        test_cases=['test.test_InfoExtractor.TestInfoExtractor.test_parse_mpd_formats']
+        test_cases=['test.test_InfoExtractor.TestInfoExtractor.test_parse_mpd_formats'],
+        test_status_buggy=TestStatus.PASSING,
     )
 
     YoutubeDL(
@@ -90,8 +91,11 @@ def register():
         python_path='',
         buggy_commit_id='f5469da9e6e259c1690c7ef54f1da1c19f65036f',
         fixed_commit_id='95f3f7c20a05e7ac490e768b8470b20538ef8581',
+        api=YoutubeDL3API(),
         test_file=[Path('test', 'test_utils.py')],
-        test_cases=['test.test_utils.TestUtil.test_unescape_html']
+        test_cases=['test.test_utils.TestUtil.test_unescape_html'],
+        unittests=YoutubeDL1UnittestGenerator(),
+        systemtests=YoutubeDL1SystemtestGenerator(),
     )
 
     YoutubeDL(
@@ -340,6 +344,12 @@ class YoutubeDLAPI(API):
 
 
 class YoutubeDL1API(YoutubeDLAPI):
+
+    def contains(self, process: subprocess.CompletedProcess) -> bool:
+        return (
+            b"Input does not match the expected outcome!" in process.stderr)
+
+class YoutubeDL3API(YoutubeDLAPI):
 
     def contains(self, process: subprocess.CompletedProcess) -> bool:
         return (
