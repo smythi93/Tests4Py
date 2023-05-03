@@ -49,7 +49,7 @@ class TestsPassing(PassingSystemtests):
         return "-q !title\n-d {'title': ''}"
 
     def test_diversity_5(self):
-        return "-q 'like_count > 100 & dislike_count <? 50 & description'\n-d {'like_count': 190, 'dislike_count': 10}"
+        return "-q like_count > 100 & dislike_count <? 50 & description\n-d {'like_count': 190, 'dislike_count': 10}"
 
     def test_diversity_6(self):
         return "-q like_count > 100 & dislike_count <? 50 & description\n-d {'like_count': 190, 'dislike_count': 10, 'description': True}"

@@ -106,5 +106,3 @@ if __name__ == "__main__":
 
     if result_buggy != result_fixed:
         raise AssertionError("Input does not match the expected outcome!")
-    else:
-        raise NotImplementedError(f"Sucess! {query}, {dictionary}, {result_buggy}, {result_fixed}")

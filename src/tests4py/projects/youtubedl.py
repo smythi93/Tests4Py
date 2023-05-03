@@ -309,6 +309,9 @@ class YoutubeDLAPI(API):
 
 class YoutubeDL1API(ExpectErrAPI):
 
+    def error_handling(self, process) -> bool:
+        return process.returncode != 0 and process.returncode != 200
+
     def contains(self, process: subprocess.CompletedProcess) -> bool:
         return (
             b"Input does not match the expected outcome!" in process.stderr)
@@ -335,7 +338,11 @@ class YoutubeDL1API(ExpectErrAPI):
             if self.contains(process):
                 return TestResult.FAILING
             else:
-                return TestResult.PASSING
+                if self.error_handling(process):
+                    print(process)
+                    return TestResult.UNDEFINED
+                else:
+                    return TestResult.PASSING
         except subprocess.TimeoutExpired:
             return TestResult.UNDEFINED
         except Exception as e:
