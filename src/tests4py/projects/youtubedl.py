@@ -1,10 +1,8 @@
 import ast
 import os
 from abc import ABC
-import random
-import string
-from _ast import Call
-from abc import abstractmethod
+import subprocess
+import traceback
 from pathlib import Path
 from typing import List, Optional, Tuple
 
@@ -12,6 +10,7 @@ from fuzzingbook.Grammars import Grammar, srange, is_valid_grammar
 from isla.fuzzer import GrammarFuzzer
 
 from tests4py.grammars import python
+from tests4py.framework.constants import Environment, HARNESS_FILE
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult, ExpectErrAPI
@@ -68,6 +67,7 @@ def register():
         fixed_commit_id='1cc47c667419e0eadc0a6989256ab7b276852adf',
         test_file=[Path('test', 'test_utils.py')],
         test_cases=['test.test_utils.TestUtil.test_match_str'],
+        api=YoutubeDL1API(b''),
         unittests=YoutubeDL1UnittestGenerator(),
         systemtests=YoutubeDL1SystemtestGenerator(),
     )
@@ -299,9 +299,48 @@ class YoutubeDLAPI(API):
     def __init__(self, default_timeout: int = 5):
         super().__init__(default_timeout=default_timeout)
 
+    def contains(self, process: subprocess.CompletedProcess) -> bool:
+        return False
+
     # noinspection PyBroadException
     def run(self, system_test_path, environ) -> TestResult:
         return TestResult.UNDEFINED
+
+
+class YoutubeDL1API(ExpectErrAPI):
+
+    def contains(self, process: subprocess.CompletedProcess) -> bool:
+        return (
+            b"Input does not match the expected outcome!" in process.stderr)
+
+    # noinspection PyBroadException
+    def run(self, system_test_path, environ: Environment) -> TestResult:
+        try:
+            with open(system_test_path, "r") as fp:
+                test = fp.read()
+            if test:
+                test = test.split("\n")
+                for i in test:
+                    i.strip()
+            else:
+                test = []
+
+            process = subprocess.run(
+                ["python", HARNESS_FILE] + test,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=self.default_timeout,
+                env=environ,
+            )
+            if self.contains(process):
+                return TestResult.FAILING
+            else:
+                return TestResult.PASSING
+        except subprocess.TimeoutExpired:
+            return TestResult.UNDEFINED
+        except Exception as e:
+            traceback.print_exception(e)
+            return TestResult.UNDEFINED
 
 
 class YoutubeDLUnittestGenerator(UnittestGenerator, ABC):
@@ -342,3 +381,24 @@ class YoutubeDL1SystemtestGenerator(YoutubeDLSystemtestGenerator):
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
         pass
+
+
+youtubedl_1_grammar: Grammar = {
+    "<start>": ["<match_str>"],
+    "<match_str>": ["(<par><stmt_list><par>, {<dict_list>})"],
+    "<stmt_list>": ["<stmt> & <stmt_list>", "<stmt>"],
+    "<stmt>": ["<bool_stmt>", "<comp_stmt>"],
+    "<bool_stmt>": ["<unary_op><name>"],
+    "<unary_op>": ["!", ""],
+    "<comp_stmt>": ["<name> <comp_op><optional> <int>"],
+    "<optional>": ["?"],
+    "<comp_op>": ["<", ">", "<=", ">=", "=", "!="],
+    "<dict_list>": ["<kv>, <dict_list>", "<kv>"],
+    "<kv>": ["<par><key><par>: <value>"],
+    "<par>": ["'"],
+    "<key>": ["is_live", "like_count", "description", "title", "dislike_count"],
+    "<value>": ['<bool>', "<int>"],
+    "<bool>": ["True", "False"],
+    "<name>": ["is_live", "like_count", "description", "title", "dislike_count"],
+    "<int>": [str(i) for i in range(10)],
+}

@@ -11,9 +11,7 @@ class TestsFailing(unittest.TestCase):
         self.assertTrue(match_str('!test', {'test': False}))
 
     def test_diversity_3(self):
-        self.assertTrue(match_str(
-            '!like_count & dislike_count <? 50 & description',
-            {'like_count': False, 'dislike_count': 10}))
+        self.assertTrue(match_str('!like_count & dislike_count <? 50 & description', {'like_count': False, 'dislike_count': 10, 'description': ""}))
 
     def test_diversity_4(self):
         self.assertTrue(match_str(
@@ -41,13 +39,13 @@ class TestsFailing(unittest.TestCase):
 
     def test_diversity_8(self):
         self.assertTrue(match_str(
-            '!title & title ?> 10',
+            '!title',
             {'title': False, 'description': False})
         )
 
     def test_diversity_9(self):
         self.assertTrue(match_str(
-            'title ?> 10 & !title ',
+            'description >? 10 & !title',
             {'title': False})
         )
 

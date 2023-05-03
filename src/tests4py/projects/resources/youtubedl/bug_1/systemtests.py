@@ -2,66 +2,66 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 
 class TestsFailing(FailingSystemtests):
+
     def test_diversity_1(self):
-        return "-p/items/valid\n-a\n-mget\n-u"
+        return "-q !is_live\n-d {'is_live': False}"
 
     def test_diversity_2(self):
-        return "-p/items/valid_list\n-a\n-mget"
+        return "-q !test\n-d {'test': False}"
 
     def test_diversity_3(self):
-        return "-p/items/other\n-mget"
+        return "-q !like_count & dislike_count <? 50 & description\n-d {'like_count': False, 'dislike_count': 10, 'description': ''}"
 
     def test_diversity_4(self):
-        return "-p/items/valid_list\n-a\n-o\n-mget"
+        return "-q like_count > 100 & dislike_count <? 50 & !description\n-d {'like_count': 190, 'dislike_count': 23, 'description': False}"
 
     def test_diversity_5(self):
-        return '-p/items/valid_list\n-a\n-o\n-mget\n-d[1,2,0.0,"test"]\n-u'
+        return "-q like_count > 100 & !description\n-d {'like_count': 190, 'dislike_count': 4, 'description': False}"
 
     def test_diversity_6(self):
-        return '-p/items/other\n-mget\n-a\n-d[1,2,0.0,"test"]'
+        return "-q !other & !description\n-d {'other': False, 'dislike_count': 1, 'description': False}"
 
     def test_diversity_7(self):
-        return "-a\n-p/items/valid_list\n-o\n-mget"
+        return "-q !description\n-d {'other': False, 'dislike_count': 99999, 'description': False}"
 
     def test_diversity_8(self):
-        return '-p/items/other\n-mget\n-o\n-d{"name":"test-name","price":1.6,"age":5}'
+        return "-q !title\n-d {'title': False, 'description': False}"
 
     def test_diversity_9(self):
-        return '-p/items/valid\n-mget\n-a\n-d"test"\n-u'
+        return "-q description >? 10 & !title\n-d {'title': False}"
 
     def test_diversity_10(self):
-        return "-p/items/other\n-mget\n-d1"
+        return "-q !is_live & description\n-d {'is_live': False, 'description': True}"
 
 
 class TestsPassing(PassingSystemtests):
+
     def test_diversity_1(self):
-        return "-p/router/\n-mwebsocket\n-a"
+        return "-q x>?0\n-d {}"
 
     def test_diversity_2(self):
-        return "-p/user/1\n-u\n-mget"
+        return "-q is_live\n-d {'is_live': None}"
 
     def test_diversity_3(self):
-        return "-p/items/valid\n-mget"
+        return "-q !is_live\n-d {'is_live': None}"
 
     def test_diversity_4(self):
-        return (
-            '-p/form/python-set\n-d{"items":["first","second","third"]}\n-mpost\n-a\n-o'
-        )
+        return "-q !title\n-d {'title': ''}"
 
     def test_diversity_5(self):
-        return '-p/items/\n-mpost\n-d{"name":"test-name","price":1.6,"age":5}'
+        return "-q 'like_count > 100 & dislike_count <? 50 & description'\n-d {'like_count': 190, 'dislike_count': 10}"
 
     def test_diversity_6(self):
-        return '-p/items/\n-mpost\n-a\n-u\n-d{"aliased_name":"test-name","price":1.6,"age":5}'
+        return "-q like_count > 100 & dislike_count <? 50 & description\n-d {'like_count': 190, 'dislike_count': 10, 'description': True}"
 
     def test_diversity_7(self):
-        return '-p/items/valid\n-mget\n-o\n-d[1,2,0.0,"test"]'
+        return "-q dislike_count >? 50 & description\n-d {'like_count': 190, 'dislike_count': 10, 'description': True}"
 
     def test_diversity_8(self):
-        return "-p/openapi.json"
+        return "-q like_count > 100\n-d {'like_count': 190, 'title': False}"
 
     def test_diversity_9(self):
-        return '-p/items/valid_list\n-mget\n-o\n-d"test"'
+        return "-q !title\n-d {'title': 'abc'}"
 
     def test_diversity_10(self):
-        return "-p/model\n-mget\n-o\n-d1"
+        return "-q is_live\n-d {}"
