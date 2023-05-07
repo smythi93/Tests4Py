@@ -123,7 +123,6 @@ def register():
         systemtests=CookieCutter4SystemtestGenerator(),
         unittests=CookieCutter4UnittestGenerator(),
     )
-    # TODO implement the 4 bugs of cookiecutter
 
 
 class CookieCutterAPI(API, GrammarVisitor):
