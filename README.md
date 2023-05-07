@@ -33,7 +33,7 @@ You can find a listing of Tests4Py's most important commands in the following.
 
 The `info` command provides all information about Tests4Py, its projects, and all its subjects.
 It is accessible via the CLI with the following:
-```sh
+```
 usage: t4p info [-h] [-p PROJECT_NAME] [-i BUG_ID]
 
 options:
