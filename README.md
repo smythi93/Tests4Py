@@ -59,7 +59,7 @@ options:
   -r, --repaired   Set the flag to checkout the repaired version, without the flag the buggy version will be checked out
   -w WORK_DIR      The working directory to which the buggy or fixed project version shall be checked out. The working
                    directory has to be either empty or a previously used working directory. Default will be
-                   (/Users/marius/Desktop/work/papers/issta2023-tests4py/tmp)
+                   (cwd/tmp)
   -u               If set the project won't be checked out again if it already exists at the specified location but only the
                    tests4py data will be updated
   -f               If set the command won't use any cached version, even if the global cache flag is set
