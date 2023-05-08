@@ -314,18 +314,6 @@ def register():
             "test/units/module_utils/test_distribution_version.py::test_distribution_version",
         ],
     )
-    Ansible(
-        bug_id=3,
-        python_version="3.6.9",
-        darwin_python_version="3.6.15",
-        python_path="ansible/build/lib/",
-        buggy_commit_id="bb1256ca9aa4c22225dbeef0ef23a20fa9388b2f",
-        fixed_commit_id="056aac1e3012d0e65991b73f2478b844b7cbdfc8",
-        test_file=[Path("test", "units", "cli", "test_galaxy.py")],
-        test_cases=[
-            "test/units/cli/test_galaxy.py::test_collection_default",
-        ],
-    )
 
 
 class AnsibleAPI(API):

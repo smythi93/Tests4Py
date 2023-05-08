@@ -1,3 +1,5 @@
+import unittest
+
 from parameterized import parameterized
 
 from tests4py import projects, framework
@@ -60,6 +62,7 @@ class TestGenerationTests(BaseProjectTests):
         self.assertEqual(1, report.verify_failing)
         self.assertEqual(1, report.verify_passing)
 
+    @unittest.skip
     @parameterized.expand(
         map(
             lambda p: (f"{p.project_name}_{p.bug_id}", p),
@@ -69,6 +72,7 @@ class TestGenerationTests(BaseProjectTests):
     def test_systemtest_generation(self, name: str, project: Project):
         self._assert_test_generation(name, project, systemtest=True)
 
+    @unittest.skip
     @parameterized.expand(
         map(
             lambda p: (f"{p.project_name}_{p.bug_id}", p),

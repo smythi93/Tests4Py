@@ -73,9 +73,13 @@ class Project:
             else python_version
         )
         self.python_fallback_version = (
-            darwin_python_version
-            if darwin_python_version is not None
-            else python_version
+            python_fallback_version
+            if python_fallback_version is not None
+            else (
+                darwin_python_version
+                if darwin_python_version is not None
+                else python_version
+            )
         )
         self.test_status_fixed = test_status_fixed
         self.test_status_buggy = test_status_buggy
