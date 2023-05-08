@@ -44,4 +44,24 @@ options:
                    information shall be printed
 ```
 
+#### Getting a Subject 
+
+The `checkout` command retrieves the source code of a subject to a defined position. Test4Py provides builtin caching; as soon as you check out a subject, Tests4Py will store the project repository in your home directory and uses this version for further checkouts.
+
+```
+t4p checkout [-h] -p PROJECT_NAME -i BUG_ID [-r] [-w WORK_DIR] [-u] [-f]
+
+options:
+  -h, --help       show this help message and exit
+  -p PROJECT_NAME  The name of the project for which a particular version shall be checked out. Run tests4py info to check
+                   available project
+  -i BUG_ID        The number of bug from project in tests4py. Run tests4py info to check bug id number
+  -r, --repaired   Set the flag to checkout the repaired version, without the flag the buggy version will be checked out
+  -w WORK_DIR      The working directory to which the buggy or fixed project version shall be checked out. The working
+                   directory has to be either empty or a previously used working directory. Default will be
+                   (/Users/marius/Desktop/work/papers/issta2023-tests4py/tmp)
+  -u               If set the project won't be checked out again if it already exists at the specified location but only the
+                   tests4py data will be updated
+  -f               If set the command won't use any cached version, even if the global cache flag is set
+```
 
