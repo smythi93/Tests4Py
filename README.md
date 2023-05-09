@@ -13,6 +13,13 @@ Each subject in Tests4Py comes with a testing oracle, predefined system and unit
 
 ## Installation
 
+### Prerequisite
+
+Tests4Py requires [pyenv](https://github.com/pyenv/pyenv) to leverage the correct Python version for each subject. 
+Please follow the instructions at [https://github.com/pyenv/pyenv#installation](https://github.com/pyenv/pyenv#installation) to install pyenv.
+
+### Getting Tests4Py
+
 Installing Tests4Py is as easy as calling the Python package manager `pip`:
 ```sh
 pip install tests4py
@@ -44,9 +51,9 @@ options:
                    information shall be printed
 ```
 
-#### Getting a Subject 
+### Getting a Subject 
 
-The `checkout` command retrieves the source code of a subject to a defined position. Test4Py provides builtin caching; as soon as you check out a subject, Tests4Py will store the project repository in your home directory and uses this version for further checkouts.
+The `checkout` command retrieves the source code of a subject to a defined position. Test4Py provides built-in caching; as soon as you check out a subject, Tests4Py will store the project repository in your home directory and uses this version for further checkouts.
 
 ```
 t4p checkout [-h] -p PROJECT_NAME -i BUG_ID [-r] [-w WORK_DIR] [-u] [-f]
@@ -65,3 +72,16 @@ options:
   -f               If set the command won't use any cached version, even if the global cache flag is set
 ```
 
+### Building a Subject
+
+The `compile` command utilizes the correct Python version based on the subject and your machine leveraging [pyenv](https://github.com/pyenv/pyenv), establishes the virtual environment, including all dependencies, and installs the subject in this environment. Tests4Py will store the virtual environment in your home directory and uses this environment for further compiles of this installed subject.
+
+```
+t4p compile [-h] [-w WORK_DIR] [-r] [-f]
+
+options:
+  -h, --help   show this help message and exit
+  -w WORK_DIR  The working directory to compile the project. Default will be the current directory
+  -r           Set to recompile the project from scratch
+  -f           If set the command won't use any cached version, even if the global cache flag is set
+```
