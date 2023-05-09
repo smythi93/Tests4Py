@@ -1,1 +1,0 @@
-pytest lib/matplotlib/tests/test_colors.py::test_light_source_shading_empty_mask

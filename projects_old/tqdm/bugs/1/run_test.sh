@@ -1,1 +1,0 @@
-python3 -m pytest tqdm/tests/tests_contrib.py::test_enumerate

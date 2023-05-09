@@ -1,1 +1,0 @@
-pytest test/scheduler_test.py::SchedulerTest::test_worker_prune_after_init

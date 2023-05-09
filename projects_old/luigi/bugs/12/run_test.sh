@@ -1,1 +1,0 @@
-pytest test/hdfs_client_test.py::HdfsClientTest::test_get_autoconfig_client_cached

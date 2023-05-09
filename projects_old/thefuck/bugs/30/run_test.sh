@@ -1,1 +1,0 @@
-pytest tests/rules/test_fix_file.py::test_not_file

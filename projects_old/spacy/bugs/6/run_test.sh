@@ -1,1 +1,0 @@
-py.test spacy/tests/pipeline/test_analysis.py::test_analysis_validate_attrs_remove_pipe
