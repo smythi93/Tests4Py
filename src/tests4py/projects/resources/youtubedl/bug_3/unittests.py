@@ -1,100 +1,67 @@
 import unittest
 
-from youtube_dl.utils import match_str
+from youtube_dl.utils import unescapeHTML
 
 
 class TestsFailing(unittest.TestCase):
     def test_diversity_1(self):
-        self.assertTrue(match_str('!is_live', {'is_live': False}))
+        self.assertEqual(unescapeHTML('&a&quot;'), '&a"')
 
     def test_diversity_2(self):
-        self.assertTrue(match_str('!test', {'test': False}))
+        self.assertEqual(unescapeHTML('&a&eacute;'), '&aé')
 
     def test_diversity_3(self):
-        self.assertTrue(match_str('!like_count & dislike_count <? 50 & description', {'like_count': False, 'dislike_count': 10, 'description': ""}))
+        self.assertEqual(unescapeHTML('&anna&&eacute;ric'), '&anna&éric')
 
     def test_diversity_4(self):
-        self.assertTrue(match_str(
-            'like_count > 100 & dislike_count <? 50 & !description',
-            {'like_count': 190, 'dislike_count': 23, 'description': False})
-        )
+        self.assertEqual(unescapeHTML('&anna&#47;&eacute;ric'), '&anna/éric')
 
     def test_diversity_5(self):
-        self.assertTrue(match_str(
-            'like_count > 100 & !description',
-            {'like_count': 190, 'dislike_count': 4, 'description': False})
-        )
+        self.assertEqual(unescapeHTML('&&#47;'), '&/')
 
     def test_diversity_6(self):
-        self.assertTrue(match_str(
-            '!other & !description',
-            {'other': False, 'dislike_count': 1, 'description': False})
-        )
+        self.assertEqual(unescapeHTML('&&#x2F;'), '&/')
 
     def test_diversity_7(self):
-        self.assertTrue(match_str(
-            '!description',
-            {'other': False, 'dislike_count': 99999, 'description': False})
-        )
+        self.assertEqual(unescapeHTML('&&period;'), '&.')
 
     def test_diversity_8(self):
-        self.assertTrue(match_str(
-            '!title',
-            {'title': False, 'description': False})
-        )
+        self.assertEqual(unescapeHTML('&&apos;'), '&\'')
 
     def test_diversity_9(self):
-        self.assertTrue(match_str(
-            'description >? 10 & !title',
-            {'title': False})
-        )
+        self.assertEqual(unescapeHTML('&&apos;&period;'), '&\'.')
 
     def test_diversity_10(self):
-        self.assertTrue(match_str(
-            '!is_live & description',
-            {'is_live': False, 'description': True})
-        )
+        self.assertEqual(unescapeHTML('&period;&&apos;'), '.&\'')
 
 
 class TestsPassing(unittest.TestCase):
     def test_diversity_1(self):
-        result: bool = match_str('x>?0', {})
-        self.assertTrue(result)
+        self.assertEqual(unescapeHTML('%20;'), '%20;')
 
     def test_diversity_2(self):
-        self.assertFalse(match_str('is_live', {'is_live': None}))
+        self.assertEqual(unescapeHTML('&#x2F;'), '/')
 
     def test_diversity_3(self):
-        self.assertTrue(match_str('!is_live', {'is_live': None}))
+        self.assertEqual(unescapeHTML('&#47;'), '/')
 
     def test_diversity_4(self):
-        self.assertFalse(match_str('!title', {'title': ''}))
+        self.assertEqual(unescapeHTML('&eacute;'), 'é')
 
     def test_diversity_5(self):
-        self.assertFalse(match_str(
-            'like_count > 100 & dislike_count <? 50 & description',
-            {'like_count': 190, 'dislike_count': 10}))
+        self.assertEqual(unescapeHTML('&#2013266066;'), '&#2013266066;')
 
     def test_diversity_6(self):
-        self.assertTrue(match_str(
-            'like_count > 100 & dislike_count <? 50 & description',
-            {'like_count': 190, 'dislike_count': 10, 'description': True})
-        )
+        self.assertEqual(unescapeHTML('&period;&apos;'), '.\'')
 
     def test_diversity_7(self):
-        self.assertFalse(match_str(
-            'dislike_count >? 50 & description',
-            {'like_count': 190, 'dislike_count': 10, 'description': True})
-        )
+        self.assertEqual(unescapeHTML('&eacute;ric'), 'éric')
 
     def test_diversity_8(self):
-        self.assertTrue(match_str(
-            'like_count > 100',
-            {'like_count': 190, 'title': False})
-        )
+        self.assertEqual(unescapeHTML('&period;'), '.')
 
     def test_diversity_9(self):
-        self.assertFalse(match_str('!title', {'title': 'abc'}))
+        self.assertEqual(unescapeHTML('&apos;'), '\'')
 
     def test_diversity_10(self):
-        self.assertFalse(match_str('is_live', {}))
+        self.assertEqual(unescapeHTML('%10;'), '%10;')

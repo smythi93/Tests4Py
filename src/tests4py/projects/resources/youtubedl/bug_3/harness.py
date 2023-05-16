@@ -11,6 +11,7 @@ import re
 from youtube_dl.utils import unescapeHTML, _htmlentity_transform
 from youtube_dl.compat import compat_str
 
+
 def unescapeHTML_fixed(s):
     if s is None:
         return None
