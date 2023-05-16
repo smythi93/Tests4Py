@@ -167,6 +167,7 @@ def register():
         test_cases=['test.test_YoutubeDL.TestFormatSelection.test_youtube_format_selection']
     )
 
+    # Performance Bug
     YoutubeDL(
         bug_id=10,
         python_version='3.7.0',
@@ -175,7 +176,8 @@ def register():
         buggy_commit_id='85d586617750d38d742a24f141b099f6b898d269',
         fixed_commit_id='d305dd73a3d6927f0a2c63d08662a183fa173833',
         test_file=[Path('test', 'test_utils.py')],
-        test_cases=['test.test_utils.TestUtil.test_js_to_json_realworld']
+        test_cases=['test.test_utils.TestUtil.test_js_to_json_realworld'],
+        test_status_buggy=TestStatus.PASSING
     )
 
     YoutubeDL(
@@ -185,8 +187,11 @@ def register():
         python_path='',
         buggy_commit_id='b568561eba6f4aceb87419e21aba11567c5de7da',
         fixed_commit_id='348c6bf1c1a00eec323d6e21ff7b9b12699afe04',
+        api=YoutubeDL11API(),
         test_file=[Path('test', 'test_utils.py')],
-        test_cases=['test.test_utils.TestUtil.test_str_to_int']
+        test_cases=['test.test_utils.TestUtil.test_str_to_int'],
+        unittests=YoutubeDL1UnittestGenerator(),
+        systemtests=YoutubeDL1SystemtestGenerator(),
     )
 
     YoutubeDL(
@@ -363,6 +368,12 @@ class YoutubeDL7API(YoutubeDLAPI):
     def contains(self, process: subprocess.CompletedProcess) -> bool:
         return (
             b"Input does not match the expected outcome!" in process.stderr)
+
+
+class YoutubeDL11API(YoutubeDLAPI):
+    def contains(self, process: subprocess.CompletedProcess) -> bool:
+        return (
+            b"TypeError: expected string or bytes-like object" in process.stderr)
 
 
 class YoutubeDLUnittestGenerator(UnittestGenerator, ABC):
