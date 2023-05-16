@@ -349,8 +349,8 @@ class YoutubeDL1API(YoutubeDLAPI):
         return (
             b"Input does not match the expected outcome!" in process.stderr)
 
-class YoutubeDL3API(YoutubeDLAPI):
 
+class YoutubeDL3API(YoutubeDLAPI):
     def contains(self, process: subprocess.CompletedProcess) -> bool:
         return (
             b"Input does not match the expected outcome!" in process.stderr)
