@@ -1,5 +1,4 @@
 import argparse
-import enum
 
 # noinspection PyUnresolvedReferences
 from fastapi.encoders import jsonable_encoder

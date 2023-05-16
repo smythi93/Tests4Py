@@ -1,1 +1,0 @@
-python -m unittest -q tests.test_http_request.RequestTest.test_url_no_scheme

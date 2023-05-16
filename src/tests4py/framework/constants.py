@@ -19,6 +19,7 @@ SYSTEMTEST = "systemtest"
 GENERATE = "generate"
 CACHE = "cache"
 CONFIG = "config"
+GRAMMAR = "grammar"
 
 # ~~~~~~ FILES ~~~~~~ #
 

@@ -401,8 +401,8 @@ def tests4py_info(project_name: str = None, bug_id: int = None):
                 ("Python Path", project.python_path),
                 ("Buggy Commit", project.buggy_commit_id),
                 ("Fixed Commit", project.fixed_commit_id),
-                ("Test Files", ";".join(map(str, project.test_file))),
-                ("Test Cases", ";".join(project.test_cases)),
+                ("Test Files", "\n".join(map(str, project.test_file))),
+                ("Test Cases", "\n".join(project.test_cases)),
                 ("Unit Tests", project.unittests is not None),
                 ("System Tests", project.systemtests is not None),
             ]

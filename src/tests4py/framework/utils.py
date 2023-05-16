@@ -22,6 +22,7 @@ from tests4py.framework.constants import (
     CONFIG,
     GLOBAL_GIT,
     VENV,
+    GRAMMAR,
 )
 from tests4py.framework.logger import LOGGER
 from tests4py.projects import (
@@ -99,6 +100,11 @@ class CacheReport(Report):
 class ConfigReport(Report):
     def __init__(self):
         super().__init__(CONFIG)
+
+
+class GrammarReport(ProjectReport):
+    def __init__(self):
+        super().__init__(GRAMMAR)
 
 
 class GenerateReport(TestingReport):

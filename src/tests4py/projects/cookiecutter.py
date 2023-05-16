@@ -108,6 +108,7 @@ def register():
         test_cases=["tests/test_read_user_choice.py::test_click_invocation"],
         api=CookieCutter3API(),
         systemtests=CookieCutter3SystemtestGenerator(),
+        unittests=CookieCutter3UnittestGenerator(),
     )
     CookieCutter(
         bug_id=4,
@@ -120,8 +121,8 @@ def register():
         test_cases=["tests/test_hooks.py::TestExternalHooks::test_run_failing_hook"],
         api=CookieCutter4API(),
         systemtests=CookieCutter4SystemtestGenerator(),
+        unittests=CookieCutter4UnittestGenerator(),
     )
-    # TODO implement the 4 bugs of cookiecutter
 
 
 class CookieCutterAPI(API, GrammarVisitor):
@@ -553,7 +554,7 @@ class CookieCutter2UnittestGenerator(CookieCutterUnittestGenerator):
     ):
         super().__init__(failing_probability=failing_probability)
         self.min_hooks = min_hooks
-        self.max_hooks = max(min_hooks + 1, max_hooks)
+        self.max_hooks = max(2, min_hooks + 1, max_hooks)
 
     def get_utils(self) -> List[ast.stmt]:
         module = ast.parse(
@@ -760,11 +761,193 @@ def tearDown(self) -> None:
 
 
 class CookieCutter3UnittestGenerator(CookieCutterUnittestGenerator):
-    pass
+    def __init__(
+        self,
+        failing_probability: float = 0.2,
+        min_choices: int = 1,
+        max_choices: int = 20,
+    ):
+        super().__init__(failing_probability=failing_probability)
+        self.min_choices = min_choices
+        self.max_choices = max(min_choices, max_choices)
+
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.Import(names=[ast.alias(name="click")]),
+            ast.ImportFrom(
+                module="cookiecutter.prompt",
+                names=[ast.alias(name="read_user_choice")],
+                level=0,
+            ),
+        ]
+
+    def get_utils(self) -> List[ast.stmt]:
+        module = ast.parse(
+            """
+def run_test(self, options, user_choice, name, with_args=True):
+    expected = (
+        f"Select {name}:\\n"
+        + "\\n".join(f"{i} - {c}" for i, c in enumerate(options, 1))
+        + f"\\nChoose from {', '.join(str(i) for i in range(1, len(options) + 1))}"
+    )
+    
+    with unittest.mock.patch("click.Choice") as choice:
+        choice.return_value = click.Choice(options)
+    
+        with unittest.mock.patch("click.prompt") as prompt:
+            prompt.return_value = "{}".format(user_choice)
+    
+            self.assertEqual(
+                read_user_choice(name, options), options[user_choice - 1]
+            )
+    
+            if with_args:
+                prompt.assert_called_once_with(
+                    expected,
+                    type=click.Choice(options),
+                    default="1",
+                    show_choices=False,
+                )
+            else:
+                prompt.assert_called_once()
+            """
+        )
+        return module.body
+
+    @staticmethod
+    def _generate_random_string() -> str:
+        return "".join(
+            random.sample(
+                string.ascii_letters + string.digits + "_- ", random.randint(1, 20)
+            )
+        )
+
+    def _generate_test(
+        self, failing: bool = True
+    ) -> Tuple[ast.FunctionDef, TestResult]:
+        length = random.randint(self.min_choices, self.max_choices)
+        choice = random.randint(1, length)
+        choices = [self._generate_random_string() for _ in range(length)]
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"self.run_test({choices}, {choice}, '{self._generate_random_string()}', with_args={failing})"
+        ).body
+        return test, failing
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        return self._generate_test(True)
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        return self._generate_test(False)
 
 
 class CookieCutter4UnittestGenerator(CookieCutterUnittestGenerator):
-    pass
+    def __init__(
+        self,
+        failing_probability: float = 0.2,
+        min_hooks: int = 0,
+        max_hooks: int = 20,
+        max_errors: int = 5,
+    ):
+        super().__init__(failing_probability=failing_probability)
+        self.min_hooks = min_hooks
+        self.max_hooks = max(1, min_hooks + 1, max_hooks)
+        self.max_errors = max(1, max_errors)
+
+    def get_utils(self) -> List[ast.stmt]:
+        return ast.parse(
+            """
+@staticmethod
+def get_hook(n):
+    if sys.platform.startswith("win"):
+        hook = f"exit \\\\b {n}\\n"
+    else:
+        hook = "#!/bin/sh\\n"
+        hook += f"exit {n}\\n"
+    return hook
+
+def write_hooks(self, exits_pre: list = None, exits_post: list = None):
+    exits_pre = exits_pre or []
+    exits_post = exits_post or []
+    if os.path.exists("hooks"):
+        shutil.rmtree("hooks")
+    os.makedirs("hooks")
+    for i, e in enumerate(exits_pre):
+        with open(os.path.join("hooks", f"pre_gen_project.{i}"), "w") as fp:
+            fp.write(self.get_hook(e))
+    for i, e in enumerate(exits_post):
+        with open(os.path.join("hooks", f"post_gen_project.{i}"), "w") as fp:
+            fp.write(self.get_hook(e))
+
+def tearDown(self) -> None:
+    if os.path.exists("hooks"):
+        shutil.rmtree("hooks")"""
+        ).body
+
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.Import(names=[ast.alias(name="os")]),
+            ast.Import(names=[ast.alias(name="sys")]),
+            ast.Import(names=[ast.alias(name="shutil")]),
+            ast.ImportFrom(
+                module="cookiecutter",
+                names=[ast.alias(name="hooks"), ast.alias(name="exceptions")],
+                level=0,
+            ),
+        ]
+
+    def _check_exit_code(self, exits):
+        return exits and all(map(bool, exits))
+
+    def _generate_test(
+        self, pre_hooks: List[int] = None, post_hooks: List[int] = None
+    ) -> ast.FunctionDef:
+        pre_hooks = pre_hooks or []
+        post_hooks = post_hooks or []
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"self.write_hooks({pre_hooks}, {post_hooks})\n"
+            + (
+                "self.assertRaises(exceptions.FailedHookException, hooks.run_hook, "
+                "'pre_gen_project', os.getcwd(), {})\n"
+                if self._check_exit_code(pre_hooks)
+                else ""
+            )
+            + (
+                "self.assertRaises(exceptions.FailedHookException, hooks.run_hook, "
+                "'post_gen_project', os.getcwd(), {})\n"
+                if self._check_exit_code(post_hooks)
+                else ""
+            )
+        ).body
+        return test
+
+    def _get_exit_codes_for_hooks(self, error: bool = True):
+        relevant_hooks = [0] * random.randint(
+            1 if error else self.min_hooks, self.max_hooks
+        )
+        irrelevant_hooks = [0] * random.randint(self.min_hooks, self.max_hooks)
+        if error:
+            for i in range(len(relevant_hooks)):
+                relevant_hooks[i] = random.randint(1, 1000)
+            if irrelevant_hooks and random.getrandbits(1):
+                for i in range(random.randint(1, self.max_errors)):
+                    irrelevant_hooks[i] = random.randint(1, 1000)
+        return relevant_hooks, irrelevant_hooks
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        if random.getrandbits(1):
+            pre_hooks, post_hooks = self._get_exit_codes_for_hooks()
+        else:
+            post_hooks, pre_hooks = self._get_exit_codes_for_hooks()
+        return self._generate_test(pre_hooks, post_hooks), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        if random.getrandbits(1):
+            pre_hooks, post_hooks = self._get_exit_codes_for_hooks(error=False)
+        else:
+            post_hooks, pre_hooks = self._get_exit_codes_for_hooks(error=False)
+        return self._generate_test(pre_hooks, post_hooks), TestResult.PASSING
 
 
 grammar: Grammar = {

@@ -51,13 +51,13 @@ def __install_version__(project: Project):
                 cr = int(cr)
                 if cr > r:
                     if best_r is None or cr < best_r or (cr == best_r and cs < best_s):
-                        best_r = r
-                        best_s = s
+                        best_r = cr
+                        best_s = cs
                 elif cr == r:
                     cs = int(cs)
                     if cs >= s and (best_s is None or cs < best_s):
-                        best_r = r
-                        best_s = s
+                        best_r = cr
+                        best_s = cs
         if best_r and best_s:
             v = f"{p}.{best_r}.{best_s}"
             LOGGER.info(f"Found alternative to pyenv python {v}")

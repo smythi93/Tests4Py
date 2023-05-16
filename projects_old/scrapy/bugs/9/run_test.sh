@@ -1,1 +1,0 @@
-python -m unittest -q tests.test_mail.MailSenderTest.test_send_single_values_to_and_cc

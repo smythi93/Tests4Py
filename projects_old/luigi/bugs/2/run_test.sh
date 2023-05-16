@@ -1,1 +1,0 @@
-pytest test/contrib/beam_dataflow_test.py::BeamDataflowTest::test_get_target_path

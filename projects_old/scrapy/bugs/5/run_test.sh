@@ -1,1 +1,0 @@
-python -m unittest -q tests.test_http_response.BaseResponseTest.test_follow_None_url

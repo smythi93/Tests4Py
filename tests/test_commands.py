@@ -1,5 +1,12 @@
+import json
 import os
-import unittest
+import shutil
+import subprocess
+from shutil import which
+
+import antlr4
+from fuzzingbook import Grammars
+from fuzzingbook.Grammars import Grammar
 
 import tests4py.framework.constants
 import tests4py.framework.default
@@ -137,7 +144,7 @@ class CommandTests(BaseTest):
         self.assertTrue(project.compiled)
 
     def test_test_pysnooper_3(self):
-        tests4py.framework.default.tests4py_checkout("pysnooper", 3, version_id=0)
+        tests4py.framework.default.tests4py_checkout("pysnooper", 3, fixed=False)
         work_dir = tests4py.framework.constants.DEFAULT_WORK_DIR / "pysnooper_3"
         project = load_bug_info(work_dir / tests4py.framework.constants.INFO_FILE)
         self.assertFalse(project.compiled)
@@ -153,7 +160,7 @@ class CommandTests(BaseTest):
 
     def test_unittest_test_buggy_pysnooper_3(self):
         report = tests4py.framework.default.tests4py_checkout(
-            "pysnooper", 3, version_id=0
+            "pysnooper", 3, fixed=False
         )
         if report.raised:
             raise report.raised
@@ -174,7 +181,7 @@ class CommandTests(BaseTest):
 
     def test_unittest_test_fixed_pysnooper_3(self):
         report = tests4py.framework.default.tests4py_checkout(
-            "pysnooper", 3, version_id=1
+            "pysnooper", 3, fixed=True
         )
         if report.raised:
             raise report.raised
@@ -195,7 +202,7 @@ class CommandTests(BaseTest):
 
     def test_systemtest_test_buggy_pysnooper_3(self):
         report = tests4py.framework.default.tests4py_checkout(
-            "pysnooper", 3, version_id=0
+            "pysnooper", 3, fixed=False
         )
         if report.raised:
             raise report.raised
@@ -216,7 +223,7 @@ class CommandTests(BaseTest):
 
     def test_systemtest_test_fixed_pysnooper_3(self):
         report = tests4py.framework.default.tests4py_checkout(
-            "pysnooper", 3, version_id=1
+            "pysnooper", 3, fixed=True
         )
         if report.raised:
             raise report.raised
@@ -237,7 +244,7 @@ class CommandTests(BaseTest):
 
     def test_unittest_generate_buggy_pysnooper_3(self):
         report = tests4py.framework.default.tests4py_checkout(
-            "pysnooper", 3, version_id=0
+            "pysnooper", 3, fixed=False
         )
         if report.raised:
             raise report.raised
@@ -273,7 +280,7 @@ class CommandTests(BaseTest):
 
     def test_unittest_generate_fixed_pysnooper_3(self):
         report = tests4py.framework.default.tests4py_checkout(
-            "pysnooper", 3, version_id=1
+            "pysnooper", 3, fixed=True
         )
         if report.raised:
             raise report.raised
@@ -309,7 +316,7 @@ class CommandTests(BaseTest):
 
     def test_systemtest_generate_buggy_pysnooper_3(self):
         report = tests4py.framework.default.tests4py_checkout(
-            "pysnooper", 3, version_id=0
+            "pysnooper", 3, fixed=False
         )
         if report.raised:
             raise report.raised
@@ -345,7 +352,7 @@ class CommandTests(BaseTest):
 
     def test_systemtest_generate_fixed_pysnooper_3(self):
         report = tests4py.framework.default.tests4py_checkout(
-            "pysnooper", 3, version_id=1
+            "pysnooper", 3, fixed=True
         )
         if report.raised:
             raise report.raised
@@ -378,3 +385,35 @@ class CommandTests(BaseTest):
         self.assertEqual(6, report.total)
         self.assertEqual(0, report.failing)
         self.assertEqual(6, report.passing)
+
+    def test_grammar_python(self):
+        file = "grammar.py"
+        tests4py.framework.grammar.tests4py_grammar(
+            "pysnooper", 2, grammar_format="python", output=file
+        )
+        with open(file, "r") as fp:
+            exec(fp.read())
+        self.assertTrue(Grammars.is_valid_grammar(locals()["grammar"]))
+        if os.path.exists(file):
+            os.remove(file)
+
+    def test_grammar_json(self):
+        file = "grammar.json"
+        tests4py.framework.grammar.tests4py_grammar(
+            "pysnooper", 2, grammar_format="json", output=file
+        )
+        with open(file, "r") as fp:
+            grammar = json.load(fp)
+        self.assertTrue(Grammars.is_valid_grammar(grammar))
+        if os.path.exists(file):
+            os.remove(file)
+
+    def test_grammar_antlr(self):
+        file = "grammar.g4"
+        target = "test_antlr"
+        tests4py.framework.grammar.tests4py_grammar(
+            "pysnooper", 2, grammar_format="antlr", output=file
+        )
+        self.assertTrue(os.path.exists(file))
+        if os.path.exists(file):
+            os.remove(file)
