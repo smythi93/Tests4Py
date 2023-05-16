@@ -138,8 +138,11 @@ def register():
         python_path='',
         buggy_commit_id='63a64948342ebfe46db8c258765e698a04a61904',
         fixed_commit_id='d01949dc89feb2441f251e42e8a6bfa4711b9715',
+        api=YoutubeDL7API(),
         test_file=[Path('test', 'test_utils.py')],
-        test_cases=['test.test_utils.TestUtil.test_js_to_json_realworld']
+        test_cases=['test.test_utils.TestUtil.test_js_to_json_realworld'],
+        unittests=YoutubeDL1UnittestGenerator(),
+        systemtests=YoutubeDL1SystemtestGenerator(),
     )
 
     YoutubeDL(
@@ -356,6 +359,12 @@ class YoutubeDL3API(YoutubeDLAPI):
             b"Input does not match the expected outcome!" in process.stderr)
 
 
+class YoutubeDL7API(YoutubeDLAPI):
+    def contains(self, process: subprocess.CompletedProcess) -> bool:
+        return (
+            b"Input does not match the expected outcome!" in process.stderr)
+
+
 class YoutubeDLUnittestGenerator(UnittestGenerator, ABC):
     pass
 
@@ -377,6 +386,14 @@ class YoutubeDL2UnittestGenerator(YoutubeDLUnittestGenerator, ABC):
 
 
 class YoutubeDL3UnittestGenerator(YoutubeDLUnittestGenerator, ABC):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        pass
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass
+
+
+class YoutubeDL7UnittestGenerator(YoutubeDLUnittestGenerator, ABC):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
         pass
 
