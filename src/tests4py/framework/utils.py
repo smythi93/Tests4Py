@@ -54,11 +54,34 @@ class Report:
         self.successful: Optional[bool] = None
         self.raised: Optional[BaseException] = None
 
+    def to_dict(self):
+        dictionary = {
+            "command": self.command,
+        }
+        if self.subcommand:
+            dictionary["subcommand"] = self.subcommand
+        dictionary["successful"] = self.successful
+        if not self.successful and self.raised:
+            dictionary["raised"] = self.raised
+        return dictionary
+
+    def __repr__(self):
+        return json.dumps(self.to_dict(), indent=4)
+
+    def __str__(self):
+        return self.__repr__()
+
 
 class ProjectReport(Report):
     def __init__(self, command: str, subcommand: str = None):
         self.project: Optional[Project] = None
         super().__init__(command, subcommand=subcommand)
+
+    def to_dict(self):
+        dictionary = super().to_dict()
+        if self.project:
+            dictionary["project"] = f"{self.project.project_name}_{self.project.bug_id}"
+        return dictionary
 
 
 class CheckoutReport(ProjectReport):
@@ -75,6 +98,12 @@ class InfoReport(ProjectReport):
     def __init__(self):
         super().__init__(INFO)
         self.example = False
+
+    def to_dict(self):
+        dictionary = super().to_dict()
+        if self.example:
+            dictionary["project"] = self.project.project_name
+        return dictionary
 
 
 class TestingReport(ProjectReport):

@@ -382,9 +382,11 @@ def tests4py_info(project_name: str = None, bug_id: int = None):
         if bug_id is None:
             project = projects.get_project(project_name, 1)
             report.example = True
+            report.project = project
             description = project.project_name
         else:
             project = projects.get_project(project_name, bug_id)
+            report.project = project
             description = f"{project.project_name} with bug id {project.bug_id}"
 
         data = [
@@ -429,7 +431,7 @@ def tests4py_info(project_name: str = None, bug_id: int = None):
                 )
                 print()
 
-        report.example = True
+        report.successful = True
     except BaseException as e:
         report.raised = e
         report.successful = False
