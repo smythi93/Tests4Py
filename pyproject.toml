@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tests4py"
-version = "0.0.1a"
+version = "0.0.1b"
 authors = [
     { name = "Marius Smytzek", email = "marius.smytzek@cispa.de" },
     { name = "Martin Eberlein", email = "ebermart@informatik.hu-berlin.de" },
