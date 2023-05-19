@@ -1,10 +1,10 @@
 # Tests4Py
 
-[![Python Version](https://img.shields.io/pypi/pyversions/sflkit)](https://pypi.org/project/tests4py/)
-[![GitHub release](https://img.shields.io/github/v/release/uds-se/sflkit)](https://img.shields.io/github/v/release/smythi93/tests4py)
-[![PyPI](https://img.shields.io/pypi/v/sflkit)](https://pypi.org/project/tests4py/)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/smythi93/tests4py/test-tests4py.yml?branch=main)](https://img.shields.io/github/actions/workflow/status/smythi93/tests4py/test-tests4py.yml?branch=main)
-[![Coverage Status](https://coveralls.io/repos/github/smythi93/tests4py/badge.svg?branch=main)](https://coveralls.io/github/smythi93/tests4py?branch=main)
+[![Python Version](https://img.shields.io/pypi/pyversions/tests4py)](https://pypi.org/project/tests4py/)
+[![GitHub release](https://img.shields.io/github/v/release/smythi93/Tests4Py)](https://img.shields.io/github/v/release/smythi93/tests4py)
+[![PyPI](https://img.shields.io/pypi/v/tests4py)](https://pypi.org/project/tests4py/)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/smythi93/Tests4Py/test-tests4py.yml?branch=main)](https://img.shields.io/github/actions/workflow/status/smythi93/Tests4Py/test-tests4py.yml?branch=main)
+[![Coverage Status](https://coveralls.io/repos/github/smythi93/Tests4Py/badge.svg?branch=main)](https://coveralls.io/github/smythi93/Tests4Py?branch=main)
 [![Licence](https://img.shields.io/github/license/smythi93/tests4py)](https://img.shields.io/github/license/smythi93/tests4py)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
