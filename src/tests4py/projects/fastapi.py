@@ -244,7 +244,6 @@ def register():
         ],
         test_cases=["tests/test_jsonable_encoder.py::test_encode_model_with_config"],
     )
-    # TODO implement the 16 bugs of fastapi
 
 
 class FastAPI1API(ExpectErrAPI):

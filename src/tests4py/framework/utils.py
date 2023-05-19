@@ -62,7 +62,7 @@ class Report:
             dictionary["subcommand"] = self.subcommand
         dictionary["successful"] = self.successful
         if not self.successful and self.raised:
-            dictionary["raised"] = self.raised
+            dictionary["raised"] = getattr(self.raised, "message", repr(self.raised))
         return dictionary
 
     def __repr__(self):
@@ -173,10 +173,10 @@ def __get_project__(work_dir: Path) -> Tuple[Project, Path, Path, Path]:
     tests4py_requirements = work_dir / REQUIREMENTS_FILE
     tests4py_setup = work_dir / SETUP_FILE
     if not tests4py_info.exists():
-        raise ValueError(f"No Tests4Py project found int {work_dir}, no tests4py_info")
+        raise ValueError(f"No Tests4Py project found in {work_dir}, no tests4py_info")
     elif not tests4py_requirements.exists():
         raise ValueError(
-            f"No Tests4Py project found int {work_dir}, no tests4py_requirements"
+            f"No Tests4Py project found in {work_dir}, no tests4py_requirements"
         )
 
     __setup__()
