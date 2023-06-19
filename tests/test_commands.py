@@ -1,12 +1,7 @@
 import json
 import os
-import shutil
-import subprocess
-from shutil import which
 
-import antlr4
 from fuzzingbook import Grammars
-from fuzzingbook.Grammars import Grammar
 
 import tests4py.framework.constants
 import tests4py.framework.default

@@ -3,7 +3,9 @@ import logging
 import os
 import shutil
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
+from xml import etree
+from xml.etree import ElementTree
 
 from tests4py import projects
 from tests4py.framework.constants import (
@@ -22,7 +24,7 @@ from tests4py.framework.constants import (
     CONFIG,
     GLOBAL_GIT,
     VENV,
-    GRAMMAR,
+    GRAMMAR, NEWLINE_TOKEN,
 )
 from tests4py.framework.logger import LOGGER
 from tests4py.projects import (
@@ -43,8 +45,9 @@ from tests4py.projects import (
     thefuck,
     tornado,
     tqdm,
-    youtubedl,
+    youtubedl, TestingFramework,
 )
+from tests4py.tests.utils import TestResult
 
 
 class Report:
@@ -117,6 +120,7 @@ class TestingReport(ProjectReport):
 class TestReport(TestingReport):
     def __init__(self):
         super().__init__(TEST)
+        self.results: Optional[List[Tuple[str, TestResult]]] = None
 
 
 class CacheReport(Report):
@@ -204,6 +208,77 @@ def __get_pytest_result__(
         return True, failing + passing, failing, passing
     return False, None, None, None
 
+def __replace_important_in_test_report__(s: str):
+    important = False
+    result = ''
+    escaped = False
+    while s:
+        if not important:
+            if s.startswith('name="'):
+                result += 'name="'
+                s = s[6:]
+                important = True
+            elif s.startswith('classname="'):
+                result += 'classname="'
+                s = s[11:]
+                important = True
+            else:
+                result += s[0]
+                s = s[1:]
+        else:
+            if s[0] == '\n':
+                result += NEWLINE_TOKEN
+                s = s[1:]
+            elif s[0] == '"' and not escaped:
+                result += '"'
+                s = s[1:]
+                important = False
+            elif s[0] == '\\' and not escaped:
+                result += '\\'
+                s = s[1:]
+                escaped = True
+            else:
+                result += s[0]
+                s = s[1:]
+                escaped = False
+    return result
+
+def __get_test_results__(project: Project, working_directory: os.PathLike, report_file: os.PathLike):
+    test_results = list()
+    is_unittest_ = project.testing_framework == TestingFramework.UNITTEST
+    try:
+        with open(report_file, 'r') as fp:
+            s = fp.read()
+        tree = ElementTree.fromstring(__replace_important_in_test_report__(s))
+    except FileNotFoundError:
+        print('pytest did not generate file')
+        return test_results
+    except ElementTree.ParseError:
+        print('pytest produced empty file')
+        return test_results
+    for testcase in tree.findall('.//testcase'):
+        if is_unittest_:
+            test = testcase.get('classname').replace(NEWLINE_TOKEN, '\n') + '.' + testcase.get('name').replace(NEWLINE_TOKEN, '\n')
+        else:
+            path = testcase.get('classname').replace(NEWLINE_TOKEN, '\n').split(".")
+            file = ''
+            classes = '::'
+            for i in range(1, len(path) + 1):
+                file = os.path.join(*path[:i]) + '.py'
+                if os.path.exists(os.path.join(working_directory, file)):
+                    if len(path[i:]) > 0:
+                        classes = '::' + '::'.join(path[i:]) + '::'
+                    break
+            test = file + classes + testcase.get('name').replace(NEWLINE_TOKEN, '\n')
+        if testcase.find('failure') is not None or testcase.find('error') is not None:
+            test_results.append((test, TestResult.FAILING))
+        elif len(list(testcase)) == 0 or (
+            (len(list(testcase)) == 1 and (testcase.find('system-out') is not None or testcase.find('system-err') is not None)) or
+            (len(list(testcase)) == 2 and (testcase.find('system-out') is not None and testcase.find('system-err') is not None))):
+            test_results.append((test, TestResult.FAILING))
+        else:
+            test_results.append((test, TestResult.UNDEFINED))
+    return test_results
 
 def __init_logger__(verbose=True):
     if verbose:

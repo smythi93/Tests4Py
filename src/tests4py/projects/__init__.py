@@ -165,6 +165,7 @@ __all__ = [
     "Project",
     "get_number_of_bugs",
     "get_project_names",
+    "get_matching_projects",
     "load_bug_info",
     "ansible",
     "black",
