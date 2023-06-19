@@ -1,9 +1,6 @@
 from pathlib import Path
 
-from tabulate import tabulate
-
 from tests4py import projects, api
-from tests4py.api import test_project
 from tests4py.framework.constants import (
     DEFAULT_WORK_DIR,
 )
@@ -15,11 +12,6 @@ from tests4py.framework.utils import (
     TestReport,
     __init_logger__,
     InfoReport,
-)
-from tests4py.projects import (
-    get_number_of_bugs,
-    get_project_names,
-    TestStatus,
 )
 
 
@@ -88,7 +80,7 @@ def tests4py_compile(
 def tests4py_info(project_name: str = None, bug_id: int = None):
     report = InfoReport()
     try:
-        info_project(project_name=project_name, bug_id=bug_id, report=report)
+        api.info_project(project_name=project_name, bug_id=bug_id, report=report)
     except BaseException as e:
         report.raised = e
         report.successful = False
@@ -109,7 +101,14 @@ def tests4py_test(
     if work_dir is None:
         work_dir = Path.cwd()
     try:
-        test_project(work_dir, single_test, all_tests, output, coverage)
+        api.test_project(
+            work_dir,
+            single_test=single_test,
+            all_tests=all_tests,
+            xml_output=output,
+            coverage=coverage,
+            report=report,
+        )
     except BaseException as e:
         report.raised = e
         report.successful = False

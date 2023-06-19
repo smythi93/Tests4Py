@@ -405,10 +405,10 @@ def info_project(
 
 
 def test_project(
-    work_dir: Path = None,
+    work_dir: Path,
     single_test: str = None,
     all_tests: bool = False,
-    output: Path = None,
+    xml_output: Path = None,
     coverage: bool = False,
     report: TestReport = None,
 ) -> TestReport:
@@ -449,15 +449,15 @@ def test_project(
 
         if project.testing_framework == TestingFramework.PYTEST:
             command.append(TestingFramework.PYTEST.value)
-            if output:
-                command.append(f"--junit-xml={output.absolute()}")
+            if xml_output:
+                command.append(f"--junit-xml={xml_output.absolute()}")
         elif project.testing_framework == TestingFramework.UNITTEST:
-            if output:
+            if xml_output:
                 subprocess.run(
                     ["python", "-m", "pip", "install", "unittest-xml-reporting"],
                     env=environ,
                 )
-                command += ["xmlrunner", "--output-file", output.absolute()]
+                command += ["xmlrunner", "--output-file", xml_output.absolute()]
             else:
                 command.append(TestingFramework.UNITTEST.value)
         else:
@@ -497,8 +497,8 @@ def test_project(
                 f"No command found for {project.testing_framework.value}"
             )
 
-        if output:
-            report.test_results = __get_test_results__(project, work_dir, output)
+        if xml_output:
+            report.test_results = __get_test_results__(project, work_dir, xml_output)
         LOGGER.info(f"Ran {report.total} tests")
         LOGGER.info(f"{report.passing} passed --- {report.failing} failed")
         report.successful = successful
