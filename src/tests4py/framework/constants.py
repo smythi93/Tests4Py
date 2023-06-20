@@ -59,6 +59,6 @@ GLOBAL_GIT = "project"
 VERSION_PATTERN = re.compile(r"Installed Python-(?P<v>\d+.\d+.\d+)")
 VENV = "tests4py_venv"
 
-
 # ~~~~~~ TESTS ~~~~~~ #
-NEWLINE_TOKEN = 'TESTS4PYNEWLINETOKEN'
+
+NEWLINE_TOKEN = "TESTS4PYNEWLINETOKEN"

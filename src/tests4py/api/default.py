@@ -3,6 +3,7 @@ import os
 import shutil
 import subprocess
 from pathlib import Path
+
 from tabulate import tabulate
 
 from tests4py import projects
@@ -30,12 +31,10 @@ from tests4py.framework.environment import (
 from tests4py.framework.logger import LOGGER
 from tests4py.framework.utils import (
     CheckoutReport,
-    __setup__,
     __get_project__,
     CompileReport,
     TestReport,
     __get_pytest_result__,
-    __init_logger__,
     InfoReport,
     load_config,
     check_cache_exists_project,
