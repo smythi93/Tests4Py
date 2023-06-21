@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from tests4py import projects, api
-from tests4py.framework.constants import (
+from tests4py.constants import (
     DEFAULT_WORK_DIR,
 )
 from tests4py.framework.logger import LOGGER

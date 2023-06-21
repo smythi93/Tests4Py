@@ -7,7 +7,7 @@ from pathlib import Path
 from tabulate import tabulate
 
 from tests4py import projects
-from tests4py.framework.constants import (
+from tests4py.constants import (
     DEFAULT_WORK_DIR,
     FIX_FILES,
     INFO_FILE,

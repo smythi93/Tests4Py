@@ -5,7 +5,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-import tests4py.framework.constants
 from tests4py.framework import (
     unittest,
     systemtest,
@@ -18,7 +17,7 @@ from tests4py.framework.default import (
     tests4py_test,
     tests4py_info,
 )
-from tests4py.framework.constants import (
+from tests4py.constants import (
     CHECKOUT,
     COMPILE,
     # COVERAGE,
@@ -32,6 +31,8 @@ from tests4py.framework.constants import (
     CACHE,
     GRAMMAR,
     DEFAULT_WORK_DIR,
+    DEFAULT_SUB_PATH_SYSTEMTESTS,
+    DEFAULT_SUB_PATH_UNITTESTS,
 )
 from tests4py.framework.grammar import tests4py_grammar
 
@@ -311,9 +312,9 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
             help="The working directory to run the test. Default will be the current directory",
         )
         default = (
-            tests4py.framework.constants.DEFAULT_SUB_PATH_SYSTEMTESTS
+            DEFAULT_SUB_PATH_SYSTEMTESTS
             if is_systemtest
-            else tests4py.framework.constants.DEFAULT_SUB_PATH_UNITTESTS
+            else DEFAULT_SUB_PATH_UNITTESTS
         )
         generate.add_argument(
             "-p",
@@ -376,9 +377,9 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
             help="The working directory to run the test. Default will be the current directory",
         )
         default = (
-            tests4py.framework.constants.DEFAULT_SUB_PATH_SYSTEMTESTS
+            DEFAULT_SUB_PATH_SYSTEMTESTS
             if is_systemtest
-            else tests4py.framework.constants.DEFAULT_SUB_PATH_UNITTESTS
+            else DEFAULT_SUB_PATH_UNITTESTS
         )
         test.add_argument(
             "-p",

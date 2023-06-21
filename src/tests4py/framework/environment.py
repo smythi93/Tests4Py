@@ -4,7 +4,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from tests4py.framework.constants import Environment, VERSION_PATTERN, VENV
+from tests4py.constants import Environment, VERSION_PATTERN, VENV
 from tests4py.framework.logger import LOGGER
 from tests4py.projects import Project
 
@@ -123,7 +123,6 @@ def __update_env__(environ: Environment):
 
 
 def __activate_venv__(work_dir: Path, environ: Environment) -> Environment:
-
     LOGGER.info("Activating virtual env")
 
     env_dir = work_dir / VENV

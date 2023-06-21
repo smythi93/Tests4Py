@@ -12,7 +12,7 @@ from fuzzingbook.Grammars import Grammar, is_valid_grammar, srange
 from isla.derivation_tree import DerivationTree
 from isla.fuzzer import GrammarFuzzer
 
-from tests4py.framework.constants import Environment, HARNESS_FILE
+from tests4py.constants import Environment, HARNESS_FILE
 from tests4py.grammars.utils import GrammarVisitor
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
@@ -531,7 +531,6 @@ class FastAPI1SystemtestGenerator(FastAPISystemtestGenerator, FastAPI1TestGenera
 
 
 class FastAPIDefaultSystemtestGenerator(FastAPISystemtestGenerator, ABC):
-
     GET = "get"
     POST = "post"
     WEBSOCKET = "websocket"

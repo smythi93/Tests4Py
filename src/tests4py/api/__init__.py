@@ -60,6 +60,7 @@ def get_faulty_lines(project: Project):
 __all__ = [
     "get_bugs",
     "get_projects",
+    "get_faulty_lines",
     "checkout_project",
     "compile_project",
     "test_project",

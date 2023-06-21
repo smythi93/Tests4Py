@@ -7,7 +7,7 @@ from typing import Optional, Tuple, List
 from xml.etree import ElementTree
 
 from tests4py import projects
-from tests4py.framework.constants import (
+from tests4py.constants import (
     INFO_FILE,
     REQUIREMENTS_FILE,
     SETUP_FILE,

@@ -2,7 +2,7 @@ from os import PathLike
 from pathlib import Path
 from typing import List, Optional
 
-from tests4py.framework.constants import Environment
+from tests4py.constants import Environment
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult

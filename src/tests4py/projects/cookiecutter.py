@@ -16,7 +16,7 @@ from fuzzingbook.Grammars import Grammar, srange, is_valid_grammar
 from isla.derivation_tree import DerivationTree
 from isla.fuzzer import GrammarFuzzer
 
-from tests4py.framework.constants import Environment
+from tests4py.constants import Environment
 from tests4py.grammars.utils import GrammarVisitor
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator

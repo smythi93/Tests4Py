@@ -6,7 +6,7 @@ from os import PathLike
 from pathlib import Path
 from typing import List, Tuple, Collection
 
-from tests4py.framework.constants import Environment, HARNESS_FILE
+from tests4py.constants import Environment, HARNESS_FILE
 
 
 class TestResult(enum.Enum):
