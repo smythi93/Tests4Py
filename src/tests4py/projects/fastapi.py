@@ -293,7 +293,7 @@ class FastAPIDefaultAPI(API, GrammarVisitor):
         return False
 
     # noinspection PyBroadException
-    def run(self, system_test_path: PathLike, environ: Environment) -> TestResult:
+    def execute(self, system_test_path: PathLike, environ: Environment) -> TestResult:
         try:
             with open(system_test_path, "r") as fp:
                 test = fp.read()

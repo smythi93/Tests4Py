@@ -4,7 +4,7 @@ import subprocess
 from abc import abstractmethod
 from os import PathLike
 from pathlib import Path
-from typing import List, Tuple, Collection
+from typing import List, Tuple, Collection, Union, Any, Dict
 
 from tests4py.constants import Environment, HARNESS_FILE
 
@@ -20,8 +20,28 @@ class API:
         self.default_timeout = default_timeout
 
     @abstractmethod
-    def run(self, system_test_path: PathLike, environ: Environment) -> TestResult:
-        return NotImplemented
+    def oracle(self, args: Any) -> TestResult:
+        raise NotImplementedError()
+
+    def get_test_arguments(self, system_test_path: PathLike) -> List[str]:
+        with open(system_test_path, "r") as fp:
+            test = fp.read()
+        return test.split("\n") if test else []
+
+    @abstractmethod
+    def execute(self, system_test_path: PathLike, environ: Environment) -> Any:
+        raise NotImplementedError()
+
+    def run(self, system_test_path: PathLike, environ: Environment):
+        try:
+            return system_test_path, self.oracle(
+                self.execute(system_test_path, environ)
+            )
+        finally:
+            self.clean_up()
+
+    def clean_up(self):
+        pass
 
     def runs(
         self, system_tests_path: PathLike, environ: Environment
@@ -35,7 +55,7 @@ class API:
         for dir_path, _, files in os.walk(system_tests_path):
             for file in files:
                 path = Path(dir_path, file)
-                tests.append((path, self.run(path, environ)))
+                tests.append(self.run(path, environ))
         return tests
 
 
@@ -58,44 +78,42 @@ class ExpectOutputAPI(API):
         self.is_or = is_or
         super().__init__(default_timeout=default_timeout)
 
-    # noinspection PyBroadException
-    def run(self, system_test_path: PathLike, environ: Environment) -> TestResult:
-        try:
-            with open(system_test_path, "r") as fp:
-                test = fp.read()
-            if test:
-                test = test.split("\n")
+    def oracle(self, args: Any) -> TestResult:
+        process = args
+        if process is None:
+            return TestResult.UNDEFINED
+        if self.no_check or process.returncode:
+            if (any if self.is_or else all)(
+                map(
+                    (process.stdout if self.is_stdout else process.stderr).__contains__,
+                    [self.expected]
+                    if isinstance(self.expected, bytes)
+                    else self.expected,
+                )
+            ):
+                return TestResult.PASSING if self.expect_in else TestResult.FAILING
+            elif self.no_check:
+                return TestResult.FAILING if self.expect_in else TestResult.PASSING
             else:
-                test = []
+                return TestResult.UNDEFINED
+        else:
+            return TestResult.PASSING
+
+    # noinspection PyBroadException
+    def execute(self, system_test_path: PathLike, environ: Environment) -> TestResult:
+        try:
             process = subprocess.run(
-                ["python", HARNESS_FILE] + test,
+                ["python", HARNESS_FILE] + self.get_test_arguments(system_test_path),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 timeout=self.default_timeout,
                 env=environ,
             )
-            if self.no_check or process.returncode:
-                if (any if self.is_or else all)(
-                    map(
-                        (
-                            process.stdout if self.is_stdout else process.stderr
-                        ).__contains__,
-                        [self.expected]
-                        if isinstance(self.expected, bytes)
-                        else self.expected,
-                    )
-                ):
-                    return TestResult.PASSING if self.expect_in else TestResult.FAILING
-                elif self.no_check:
-                    return TestResult.FAILING if self.expect_in else TestResult.PASSING
-                else:
-                    return TestResult.UNDEFINED
-            else:
-                return TestResult.PASSING
+            return process
         except subprocess.TimeoutExpired:
-            return TestResult.UNDEFINED
+            return None
         except Exception:
-            return TestResult.UNDEFINED
+            return None
 
 
 class ExpectErrAPI(ExpectOutputAPI):

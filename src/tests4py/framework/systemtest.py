@@ -180,7 +180,7 @@ def tests4py_test(
                 )
             else:
                 report.total = 1
-                result = project.api.run(path, environ)
+                _, result = project.api.run(path, environ)
                 if TestResult.PASSING == result:
                     report.passing = 1
                 elif TestResult.FAILING == result:

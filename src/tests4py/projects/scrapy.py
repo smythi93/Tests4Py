@@ -412,5 +412,5 @@ class ScrapyAPI(API):
         super().__init__(default_timeout=default_timeout)
 
     # noinspection PyBroadException
-    def run(self, system_test_path: PathLike, environ: Environment) -> TestResult:
+    def execute(self, system_test_path: PathLike, environ: Environment) -> TestResult:
         return TestResult.UNDEFINED
