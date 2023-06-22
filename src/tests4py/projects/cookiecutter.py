@@ -248,6 +248,7 @@ class CookieCutterAPI(API, GrammarVisitor, abc.ABC):
         stdout, stderr = args
         return self._validate(process, stdout, stderr)
 
+    # noinspection PyBroadException
     def execute(self, system_test_path: PathLike, environ: Environment) -> Any:
         try:
             process = subprocess.Popen(
@@ -262,40 +263,12 @@ class CookieCutterAPI(API, GrammarVisitor, abc.ABC):
             return None
         except Exception:
             return None
-        finally:
-            if self.path:
-                for p in self.path:
-                    shutil.rmtree(p, ignore_errors=True)
-            shutil.rmtree(self.REPO_PATH, ignore_errors=True)
 
-    # noinspection PyBroadException
-    def run(self, system_test_path: PathLike, environ: Environment) -> TestResult:
-        try:
-            with open(system_test_path, "r") as fp:
-                content = fp.read()
-            self.visit_source(content)
-            self._setup()
-            if self.path:
-                for p in self.path:
-                    shutil.rmtree(p, ignore_errors=True)
-            process = subprocess.Popen(
-                ["cookiecutter"] + self._get_command_parameters() + [self.REPO_PATH],
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                env=environ,
-            )
-            stdout, stderr = self._communicate(process)
-            return self._validate(process, stdout, stderr)
-        except subprocess.TimeoutExpired:
-            return TestResult.UNDEFINED
-        except Exception:
-            return TestResult.UNDEFINED
-        finally:
-            if self.path:
-                for p in self.path:
-                    shutil.rmtree(p, ignore_errors=True)
-            shutil.rmtree(self.REPO_PATH, ignore_errors=True)
+    def clean_up(self):
+        if self.path:
+            for p in self.path:
+                shutil.rmtree(p, ignore_errors=True)
+        shutil.rmtree(self.REPO_PATH, ignore_errors=True)
 
 
 class CookieCutter2API(CookieCutterAPI):

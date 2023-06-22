@@ -2,7 +2,7 @@ import abc
 import string
 from os import PathLike
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Any
 
 from fuzzingbook.Grammars import srange, is_valid_grammar, Grammar
 
@@ -133,9 +133,11 @@ class HttpieAPI(API):
     def __init__(self, default_timeout: int = 5):
         super().__init__(default_timeout=default_timeout)
 
-    # noinspection PyBroadException
-    def execute(self, system_test_path: PathLike, environ: Environment) -> TestResult:
+    def oracle(self, args: Any) -> TestResult:
         return TestResult.UNDEFINED
+
+    def execute(self, system_test_path: PathLike, environ: Environment) -> Any:
+        pass
 
 
 class HttpieSystemtestGenerator(SystemtestGenerator, abc.ABC):

@@ -28,9 +28,21 @@ class API:
             test = fp.read()
         return test.split("\n") if test else []
 
-    @abstractmethod
+    # noinspection PyBroadException
     def execute(self, system_test_path: PathLike, environ: Environment) -> Any:
-        raise NotImplementedError()
+        try:
+            process = subprocess.run(
+                ["python", HARNESS_FILE] + self.get_test_arguments(system_test_path),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=self.default_timeout,
+                env=environ,
+            )
+            return process
+        except subprocess.TimeoutExpired:
+            return None
+        except Exception:
+            return None
 
     def run(self, system_test_path: PathLike, environ: Environment):
         try:
@@ -98,22 +110,6 @@ class ExpectOutputAPI(API):
                 return TestResult.UNDEFINED
         else:
             return TestResult.PASSING
-
-    # noinspection PyBroadException
-    def execute(self, system_test_path: PathLike, environ: Environment) -> TestResult:
-        try:
-            process = subprocess.run(
-                ["python", HARNESS_FILE] + self.get_test_arguments(system_test_path),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                timeout=self.default_timeout,
-                env=environ,
-            )
-            return process
-        except subprocess.TimeoutExpired:
-            return None
-        except Exception:
-            return None
 
 
 class ExpectErrAPI(ExpectOutputAPI):

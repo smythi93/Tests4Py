@@ -1,6 +1,6 @@
 from os import PathLike
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Any
 
 from tests4py.constants import Environment
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
@@ -119,6 +119,8 @@ class TQDMAPI(API):
     def __init__(self, default_timeout: int = 5):
         super().__init__(default_timeout=default_timeout)
 
-    # noinspection PyBroadException
-    def execute(self, system_test_path: PathLike, environ: Environment) -> TestResult:
+    def oracle(self, args: Any) -> TestResult:
         return TestResult.UNDEFINED
+
+    def execute(self, system_test_path: PathLike, environ: Environment) -> Any:
+        pass
