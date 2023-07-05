@@ -3,6 +3,7 @@ import os
 import shutil
 import subprocess
 from pathlib import Path
+from typing import List, Union
 
 from tabulate import tabulate
 
@@ -61,6 +62,7 @@ def checkout_project(
     update: bool = False,
     force: bool = False,
     report: CheckoutReport = None,
+    verbose: bool = False,
 ) -> CheckoutReport:
     if report is None:
         report = CheckoutReport()
@@ -70,7 +72,7 @@ def checkout_project(
 
         check_further = project.status is projects.Status.OK
 
-        work_location = work_dir / f"{project.project_name}_{project.bug_id}"
+        work_location = work_dir / project.get_identifier()
         if update and work_location.exists():
             project_verify, _, _, _ = __get_project__(work_location)
             version_verify = 1 - int(project_verify.buggy)
@@ -87,7 +89,10 @@ def checkout_project(
                     LOGGER.info(
                         f"Cloning {project.github_url} into {work_location}... "
                     )
-                    subprocess.run(["git", "clone", project.github_url, work_location])
+                    subprocess.run(
+                        ["git", "clone", project.github_url, work_location],
+                        stdout=subprocess.STDOUT if verbose else subprocess.DEVNULL,
+                    )
                     if config.cache and not check_cache_exists_project(project):
                         cache_project(project, work_location)
                 else:
@@ -107,7 +112,10 @@ def checkout_project(
                 LOGGER.info(
                     f"Resetting git at {work_location} to {project.fixed_commit_id}"
                 )
-                subprocess.run(["git", "reset", "--hard", project.fixed_commit_id])
+                subprocess.run(
+                    ["git", "reset", "--hard", project.fixed_commit_id],
+                    stdout=subprocess.STDOUT if verbose else subprocess.DEVNULL,
+                )
 
                 LOGGER.info(f"Creating tmp location at {tmp_location}")
                 os.makedirs(tmp_location, exist_ok=True)
@@ -145,8 +153,14 @@ def checkout_project(
                         )
 
                 LOGGER.info(f"Checkout buggy commit id {project.buggy_commit_id}")
-                subprocess.run(["git", "reset", "--hard", project.buggy_commit_id])
-                subprocess.run(["git", "clean", "-f", "-d"])
+                subprocess.run(
+                    ["git", "reset", "--hard", project.buggy_commit_id],
+                    stdout=subprocess.STDOUT if verbose else subprocess.DEVNULL,
+                )
+                subprocess.run(
+                    ["git", "clean", "-f", "-d"],
+                    stdout=subprocess.STDOUT if verbose else subprocess.DEVNULL,
+                )
 
                 LOGGER.info(f"Copying required files from {tmp_location}")
 
@@ -181,7 +195,7 @@ def checkout_project(
         # Move information about bug to clone project folder
         project.write_bug_info(work_location / INFO_FILE)
 
-        LOGGER.info(f"Copying resources for {project.project_name}_{project.bug_id}")
+        LOGGER.info(f"Copying resources for {project.get_identifier()}")
         with importlib.resources.path(
             getattr(getattr(resources, project.project_name), f"bug_{project.bug_id}"),
             "requirements.txt",
@@ -256,15 +270,22 @@ def checkout_project(
 
 
 def compile_project(
-    work_dir: Path,
+    work_dir_or_project: Union[Path, Project] = None,
     recompile: bool = False,
     force: bool = False,
     report: CompileReport = None,
+    verbose: bool = False,
 ) -> CompileReport:
     if report is None:
         report = CompileReport()
     config = load_config()
     current_dir = Path.cwd()
+    if work_dir_or_project is None:
+        work_dir = current_dir
+    elif isinstance(work_dir_or_project, Project):
+        work_dir = DEFAULT_WORK_DIR / work_dir_or_project.get_identifier()
+    else:
+        work_dir = work_dir_or_project
     try:
         project, t4p_info, t4p_requirements, t4p_setup = __get_project__(work_dir)
         report.project = project
@@ -289,6 +310,7 @@ def compile_project(
             LOGGER.info("Installing requirements")
             subprocess.check_call(
                 ["python", "-m", "pip", "install", "-r", t4p_requirements],
+                stdout=subprocess.STDOUT if verbose else subprocess.DEVNULL,
                 env=environ,
             )
 
@@ -297,6 +319,7 @@ def compile_project(
             if test_requirements.exists():
                 subprocess.check_call(
                     ["python", "-m", "pip", "install", "-r", test_requirements],
+                    stdout=subprocess.STDOUT if verbose else subprocess.DEVNULL,
                     env=environ,
                 )
 
@@ -305,7 +328,12 @@ def compile_project(
             with open(t4p_setup, "r") as setup_file:
                 for line in setup_file:
                     if line:
-                        subprocess.check_call(line, shell=True, env=environ)
+                        subprocess.check_call(
+                            line,
+                            shell=True,
+                            env=environ,
+                            stdout=subprocess.STDOUT if verbose else subprocess.DEVNULL,
+                        )
 
         if config.cache:
             cache_venv(project, work_dir)
@@ -404,8 +432,8 @@ def info_project(
 
 
 def test_project(
-    work_dir: Path,
-    single_test: str = None,
+    work_dir_or_project: Union[Path, Project] = None,
+    single_test: Union[List[str], str] = None,
     all_tests: bool = False,
     xml_output: Path = None,
     coverage: bool = False,
@@ -414,6 +442,12 @@ def test_project(
     if report is None:
         report = TestReport()
     current_dir = Path.cwd()
+    if work_dir_or_project is None:
+        work_dir = current_dir
+    elif isinstance(work_dir_or_project, Project):
+        work_dir = DEFAULT_WORK_DIR / work_dir_or_project.get_identifier()
+    else:
+        work_dir = work_dir_or_project
     try:
         project, _, _, _ = __get_project__(work_dir)
         report.project = project
@@ -424,14 +458,14 @@ def test_project(
 
         if project.buggy and project.test_status_buggy == projects.TestStatus.PASSING:
             LOGGER.warning(
-                f"The tests will pass on this buggy version {project.project_name}_{project.bug_id}"
+                f"The tests will pass on this buggy version {project.get_identifier()}"
             )
         elif (
             not project.buggy
             and project.test_status_fixed == projects.TestStatus.FAILING
         ):
             LOGGER.warning(
-                f"The tests will fail on this fixed version {project.project_name}_{project.bug_id}"
+                f"The tests will fail on this fixed version {project.get_identifier()}"
             )
 
         environ = __env_on__(project)
@@ -467,7 +501,10 @@ def test_project(
             LOGGER.info(f"Run relevant tests {project.test_cases}")
             command += project.test_cases
         elif single_test:
-            command.append(single_test)
+            if isinstance(single_test, str):
+                command.append(single_test)
+            else:
+                command += single_test
 
         LOGGER.info(f"Run tests with command {command}")
         output = subprocess.run(command, stdout=subprocess.PIPE, env=environ).stdout
@@ -497,7 +534,7 @@ def test_project(
             )
 
         if xml_output:
-            report.test_results = __get_test_results__(project, work_dir, xml_output)
+            report.results = __get_test_results__(project, work_dir, xml_output)
         LOGGER.info(f"Ran {report.total} tests")
         LOGGER.info(f"{report.passing} passed --- {report.failing} failed")
         report.successful = successful

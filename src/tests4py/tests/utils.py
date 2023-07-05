@@ -10,9 +10,9 @@ from tests4py.constants import Environment, HARNESS_FILE
 
 
 class TestResult(enum.Enum):
-    FAILING = 0
-    PASSING = 1
-    UNDEFINED = 2
+    FAILING = "FAILING"
+    PASSING = "PASSING"
+    UNDEFINED = "UNDEFINED"
 
 
 class API:

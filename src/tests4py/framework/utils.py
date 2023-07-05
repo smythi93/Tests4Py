@@ -248,7 +248,7 @@ def __replace_important_in_test_report__(s: str):
 
 def __get_test_results__(
     project: Project, working_directory: os.PathLike, report_file: os.PathLike
-):
+) -> List[Tuple[str, TestResult]]:
     test_results = list()
     is_unittest_ = project.testing_framework == TestingFramework.UNITTEST
     try:
@@ -297,7 +297,7 @@ def __get_test_results__(
                 )
             )
         ):
-            test_results.append((test, TestResult.FAILING))
+            test_results.append((test, TestResult.PASSING))
         else:
             test_results.append((test, TestResult.UNDEFINED))
     return test_results
