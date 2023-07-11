@@ -33,21 +33,21 @@ from tests4py.constants import (
     DEFAULT_WORK_DIR,
     DEFAULT_SUB_PATH_SYSTEMTESTS,
     DEFAULT_SUB_PATH_UNITTESTS,
+    PYENV,
 )
 from tests4py.framework.grammar import tests4py_grammar
 
 
 def check_pyenv():
     try:
-        _ = subprocess.check_output(["pyenv", "--version"])
-    except FileNotFoundError:
-        logging.error("Pyenv is not installed! Exiting.")
-        sys.exit(-1)
-
-    try:
         os.environ["PYENV_ROOT"]
     except KeyError:
         logging.error("Environment Variable PYENV_ROOT not set! Exiting.")
+        sys.exit(-1)
+    try:
+        _ = subprocess.check_output([PYENV, "--version"])
+    except FileNotFoundError:
+        logging.error("Pyenv is not installed! Exiting.")
         sys.exit(-1)
 
 

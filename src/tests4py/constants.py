@@ -1,4 +1,6 @@
+import os
 import re
+import sys
 from pathlib import Path
 from typing import Dict
 
@@ -62,3 +64,10 @@ VENV = "tests4py_venv"
 # ~~~~~~ TESTS ~~~~~~ #
 
 NEWLINE_TOKEN = "TESTS4PYNEWLINETOKEN"
+
+
+# ~~~~~~ TESTS ~~~~~~ #
+if "win" in sys.platform:
+    PYENV = os.path.join(os.environ["PYENV_HOME"], "bin", "pyenv")
+else:
+    PYENV = "pyenv"
