@@ -45,6 +45,7 @@ def check_pyenv():
         logging.error("Environment Variable PYENV_ROOT not set! Exiting.")
         sys.exit(-1)
     try:
+        print([PYENV, "--version"])
         _ = subprocess.check_output([PYENV, "--version"])
     except FileNotFoundError:
         logging.error("Pyenv is not installed! Exiting.")
