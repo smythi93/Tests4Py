@@ -67,7 +67,7 @@ NEWLINE_TOKEN = "TESTS4PYNEWLINETOKEN"
 
 
 # ~~~~~~ TESTS ~~~~~~ #
-if "win" in sys.platform:
+if sys.platform.startswith("win"):
     PYENV = os.path.join(os.environ["PYENV_HOME"], "bin", "pyenv.bat")
 else:
     PYENV = "pyenv"
