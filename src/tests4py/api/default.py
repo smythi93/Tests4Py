@@ -274,6 +274,7 @@ def compile_project(
     recompile: bool = False,
     force: bool = False,
     report: CompileReport = None,
+    sfl: bool = False,
     verbose: bool = False,
 ) -> CompileReport:
     if report is None:
@@ -305,7 +306,7 @@ def compile_project(
 
         if not env_exists:
             LOGGER.info("Installing utilities")
-            __update_env__(environ)
+            __update_env__(environ, sfl=sfl)
 
             LOGGER.info("Installing requirements")
             subprocess.check_call(

@@ -25,3 +25,8 @@ DEFAULT_EXCLUDES = [
     "licenses",
     "packaging",
 ]
+
+
+SFL = "sfl"
+INSTRUMENT = "instrument"
+EVENTS = "events"

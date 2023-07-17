@@ -36,6 +36,8 @@ from tests4py.constants import (
     PYENV,
 )
 from tests4py.framework.grammar import tests4py_grammar
+from tests4py.framework.sfl import tests4py_sfl_instrument, tests4py_sfl_events
+from tests4py.sfl.constants import SFL, INSTRUMENT, EVENTS, DEFAULT_EXCLUDES
 
 
 def check_pyenv():
@@ -98,13 +100,14 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
     info_parser = commands.add_parser(INFO, help="Get information of a project")
     # mutation_parser = commands.add_parser(MUTATION, help="Mutate a project")
     test_parser = commands.add_parser(TEST, help="Run tests on a project")
-    unittest_parser = commands.add_parser(UNITTEST, help="The unittest subcommand")
-    systemtest_parser = commands.add_parser(
-        SYSTEMTEST, help="The systemtest subcommand"
+    unittest_parser = commands.add_parser(UNITTEST, help="The unittest command")
+    systemtest_parser = commands.add_parser(SYSTEMTEST, help="The systemtest command")
+    config_parser = commands.add_parser(CONFIG, help="The config command")
+    cache_parser = commands.add_parser(CACHE, help="The cache command")
+    grammar_parser = commands.add_parser(GRAMMAR, help="The grammar command")
+    sfl_parser = commands.add_parser(
+        SFL, help="The sfl (statistical fault localization) command"
     )
-    config_parser = commands.add_parser(CONFIG, help="The config subcommand")
-    cache_parser = commands.add_parser(CACHE, help="The cache subcommand")
-    grammar_parser = commands.add_parser(GRAMMAR, help="The grammar subcommand")
 
     # Checkout
     checkout_parser.add_argument(
@@ -458,6 +461,62 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         help="Output the grammar to the given file (default: grammar.[py|json|g4])",
     )
 
+    # SFL
+    sfl_commands = sfl_parser.add_subparsers(
+        help="The subcommand of the systemtest to execute",
+        dest="subcommand",
+        required=True,
+    )
+    sfl_instrument = sfl_commands.add_parser(
+        INSTRUMENT, help="Instrument a project with SFLKit"
+    )
+    sfl_events = sfl_commands.add_parser(
+        EVENTS, help="Collect the sfl events by running the tests in the project"
+    )
+
+    sfl_instrument.add_argument(
+        "-w",
+        dest="work_dir",
+        default=None,
+        help="The working directory from which to instrument the project. "
+        "Default will be the current directory",
+    )
+    sfl_instrument.add_argument(
+        "-d",
+        dest="destination",
+        required=True,
+        help="The directory to instrument to",
+    )
+    sfl_instrument.add_argument(
+        "-e",
+        dest="events",
+        default=None,
+        help="The events that can be collected with the instrumentation. "
+        "Default will be all events possible with the current version of SFLKit",
+    )
+    sfl_instrument.add_argument(
+        "-x",
+        dest="excludes",
+        default=None,
+        help="The excluded files during the instrumentation. "
+        f"Default will {', '.join(DEFAULT_EXCLUDES)}",
+    )
+
+    sfl_events.add_argument(
+        "-w",
+        dest="work_dir",
+        default=None,
+        help="The working directory to collect events (the destination of the instrumentation). "
+        "Default will be the current directory",
+    )
+    sfl_events.add_argument(
+        "-o",
+        dest="output",
+        default=None,
+        help="The directory to output the event files. "
+        f"Default will be {os.path.join('events', '<project_name>', '<bug_id>')}",
+    )
+
     args = arguments.parse_args(args or sys.argv[1:])
 
     if args.command == CHECKOUT:
@@ -527,6 +586,23 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
             grammar_format=args.grammar_format,
             output=Path(args.output).absolute() if args.output else None,
         )
+    elif args.command == SFL:
+        if args.subcommand == INSTRUMENT:
+            report = tests4py_sfl_instrument(
+                work_dir=Path(args.work_dir).absolute() if args.work_dir else None,
+                dst=Path(args.destination).absolute() if args.destination else None,
+                events=args.events,
+                excludes=args.excludes,
+            )
+        elif args.subcommand == EVENTS:
+            report = tests4py_sfl_events(
+                work_dir=Path(args.work_dir).absolute() if args.work_dir else None,
+                output=Path(args.output).absolute() if args.output else None,
+            )
+        else:
+            raise NotImplementedError(
+                f"Subcommand {args.subcommand} not implemented for command {args.command}"
+            )
     else:
         raise NotImplementedError(f"Command {args.command} not implemented")
 

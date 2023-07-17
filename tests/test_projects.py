@@ -3,7 +3,12 @@ import unittest
 from parameterized import parameterized
 
 from tests4py import projects, framework
-from tests4py.constants import DEFAULT_WORK_DIR, INFO_FILE
+from tests4py.constants import (
+    DEFAULT_WORK_DIR,
+    INFO_FILE,
+    DEFAULT_SUB_PATH_SYSTEMTESTS,
+    DEFAULT_SUB_PATH_UNITTESTS,
+)
 from tests4py.projects import Project, load_bug_info
 from utils import BaseTest
 
@@ -23,7 +28,8 @@ class BaseProjectTests(BaseTest):
 
 class TestGenerationTests(BaseProjectTests):
     def setUp(self):
-        self.skipTest("Project tests seems to be off on github")
+        self.skipTest("Project tests seems to be off on github workflow")
+        pass
 
     def _assert_test_generation(self, name: str, project: Project, systemtest=True):
         report = framework.default.tests4py_checkout(
@@ -53,9 +59,9 @@ class TestGenerationTests(BaseProjectTests):
             (
                 work_dir
                 / (
-                    framework.constants.DEFAULT_SUB_PATH_SYSTEMTESTS
+                    DEFAULT_SUB_PATH_SYSTEMTESTS
                     if systemtest
-                    else framework.constants.DEFAULT_SUB_PATH_UNITTESTS
+                    else DEFAULT_SUB_PATH_UNITTESTS
                 )
             ).exists()
         )
