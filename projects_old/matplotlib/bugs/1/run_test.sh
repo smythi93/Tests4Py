@@ -1,1 +1,0 @@
-pytest lib/matplotlib/tests/test_bbox_tight.py::test_noop_tight_bbox

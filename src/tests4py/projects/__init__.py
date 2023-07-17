@@ -73,9 +73,13 @@ class Project:
             else python_version
         )
         self.python_fallback_version = (
-            darwin_python_version
-            if darwin_python_version is not None
-            else python_version
+            python_fallback_version
+            if python_fallback_version is not None
+            else (
+                darwin_python_version
+                if darwin_python_version is not None
+                else python_version
+            )
         )
         self.test_status_fixed = test_status_fixed
         self.test_status_buggy = test_status_buggy
@@ -97,6 +101,9 @@ class Project:
         with open(path, "w") as fp:
             config.write(fp)
 
+    def get_identifier(self):
+        return f"{self.project_name}_{self.bug_id}"
+
     def __str__(self):
         return self.__repr__()
 
@@ -107,7 +114,7 @@ class Project:
 def get_project(project_name: str, bug_id: int) -> Project:
     global bugs
     try:
-        bug = bugs[project_name]
+        bug = bugs[project_name.lower()]
     except KeyError:
         raise ValueError(f"Project {project_name} not found")
     try:
@@ -161,6 +168,7 @@ __all__ = [
     "Project",
     "get_number_of_bugs",
     "get_project_names",
+    "get_matching_projects",
     "load_bug_info",
     "ansible",
     "black",

@@ -1,2 +1,0 @@
-python -m unittest -q tests.test_downloadermiddleware_httpproxy.TestDefaultHeadersMiddleware.test_proxy_auth
-python -m unittest -q tests.test_downloadermiddleware_httpproxy.TestDefaultHeadersMiddleware.test_proxy_auth_empty_passwd

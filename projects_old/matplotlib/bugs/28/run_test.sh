@@ -1,1 +1,0 @@
-pytest lib/matplotlib/tests/test_axes.py::test_log_scales_invalid

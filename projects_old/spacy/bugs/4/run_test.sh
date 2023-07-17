@@ -1,1 +1,0 @@
-py.test spacy/tests/regression/test_issue4665.py::test_issue4665

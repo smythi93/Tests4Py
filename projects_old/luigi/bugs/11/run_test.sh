@@ -1,1 +1,0 @@
-pytest test/scheduler_api_test.py::SchedulerApiTest::test_batch_ignore_items_not_ready

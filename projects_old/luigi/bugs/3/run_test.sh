@@ -1,1 +1,0 @@
-pytest test/parameter_test.py::TestSerializeTupleParameter::testSerialize

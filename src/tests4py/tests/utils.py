@@ -1,19 +1,18 @@
 import enum
 import os
 import subprocess
-import traceback
 from abc import abstractmethod
 from os import PathLike
 from pathlib import Path
-from typing import List, Tuple, Collection
+from typing import List, Tuple, Collection, Union, Any, Dict
 
-from tests4py.framework.constants import Environment, HARNESS_FILE
+from tests4py.constants import Environment, HARNESS_FILE
 
 
 class TestResult(enum.Enum):
-    FAILING = 0
-    PASSING = 1
-    UNDEFINED = 2
+    FAILING = "FAILING"
+    PASSING = "PASSING"
+    UNDEFINED = "UNDEFINED"
 
 
 class API:
@@ -21,8 +20,40 @@ class API:
         self.default_timeout = default_timeout
 
     @abstractmethod
-    def run(self, system_test_path: PathLike, environ: Environment) -> TestResult:
-        return NotImplemented
+    def oracle(self, args: Any) -> TestResult:
+        raise NotImplementedError()
+
+    def get_test_arguments(self, system_test_path: PathLike) -> List[str]:
+        with open(system_test_path, "r") as fp:
+            test = fp.read()
+        return test.split("\n") if test else []
+
+    # noinspection PyBroadException
+    def execute(self, system_test_path: PathLike, environ: Environment) -> Any:
+        try:
+            process = subprocess.run(
+                ["python", HARNESS_FILE] + self.get_test_arguments(system_test_path),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=self.default_timeout,
+                env=environ,
+            )
+            return process
+        except subprocess.TimeoutExpired:
+            return None
+        except Exception:
+            return None
+
+    def run(self, system_test_path: PathLike, environ: Environment):
+        try:
+            return system_test_path, self.oracle(
+                self.execute(system_test_path, environ)
+            )
+        finally:
+            self.clean_up()
+
+    def clean_up(self):
+        pass
 
     def runs(
         self, system_tests_path: PathLike, environ: Environment
@@ -36,7 +67,7 @@ class API:
         for dir_path, _, files in os.walk(system_tests_path):
             for file in files:
                 path = Path(dir_path, file)
-                tests.append((path, self.run(path, environ)))
+                tests.append(self.run(path, environ))
         return tests
 
 
@@ -59,44 +90,26 @@ class ExpectOutputAPI(API):
         self.is_or = is_or
         super().__init__(default_timeout=default_timeout)
 
-    # noinspection PyBroadException
-    def run(self, system_test_path: PathLike, environ: Environment) -> TestResult:
-        try:
-            with open(system_test_path, "r") as fp:
-                test = fp.read()
-            if test:
-                test = test.split("\n")
-            else:
-                test = []
-            process = subprocess.run(
-                ["python", HARNESS_FILE] + test,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                timeout=self.default_timeout,
-                env=environ,
-            )
-            if self.no_check or process.returncode:
-                if (any if self.is_or else all)(
-                    map(
-                        (
-                            process.stdout if self.is_stdout else process.stderr
-                        ).__contains__,
-                        [self.expected]
-                        if isinstance(self.expected, bytes)
-                        else self.expected,
-                    )
-                ):
-                    return TestResult.PASSING if self.expect_in else TestResult.FAILING
-                elif self.no_check:
-                    return TestResult.FAILING if self.expect_in else TestResult.PASSING
-                else:
-                    return TestResult.UNDEFINED
-            else:
-                return TestResult.PASSING
-        except subprocess.TimeoutExpired:
+    def oracle(self, args: Any) -> TestResult:
+        process = args
+        if process is None:
             return TestResult.UNDEFINED
-        except Exception:
-            return TestResult.UNDEFINED
+        if self.no_check or process.returncode:
+            if (any if self.is_or else all)(
+                map(
+                    (process.stdout if self.is_stdout else process.stderr).__contains__,
+                    [self.expected]
+                    if isinstance(self.expected, bytes)
+                    else self.expected,
+                )
+            ):
+                return TestResult.PASSING if self.expect_in else TestResult.FAILING
+            elif self.no_check:
+                return TestResult.FAILING if self.expect_in else TestResult.PASSING
+            else:
+                return TestResult.UNDEFINED
+        else:
+            return TestResult.PASSING
 
 
 class ExpectErrAPI(ExpectOutputAPI):

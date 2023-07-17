@@ -1,1 +1,0 @@
-py.test spacy/tests/pipeline/test_tagger.py::test_tagger_warns_no_lemma_lookups

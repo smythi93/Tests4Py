@@ -1,1 +1,0 @@
-python -m unittest -q tornado.test.websocket_test.WebSocketTest.test_nodelay

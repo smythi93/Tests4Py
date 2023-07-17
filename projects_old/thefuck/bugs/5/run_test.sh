@@ -1,1 +1,0 @@
-pytest tests/rules/test_git_push.py::test_match_bitbucket

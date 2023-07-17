@@ -1,1 +1,0 @@
-pytest test/scheduler_test.py::SchedulerWorkerTest::test_get_pending_tasks_with_many_done_tasks

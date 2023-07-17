@@ -1,1 +1,0 @@
-pytest test/units/cli/test_galaxy.py::test_collection_install_with_url

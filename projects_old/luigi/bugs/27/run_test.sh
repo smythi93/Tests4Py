@@ -1,2 +1,0 @@
-pytest test/parameter_test.py::TestParamWithDefaultFromConfig::testCommandLineWithDefault
-pytest test/parameter_test.py::TestParamWithDefaultFromConfig::testCommandLineNoDefault

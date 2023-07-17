@@ -1,1 +1,0 @@
-pytest test/units/modules/packaging/os/test_redhat_subscription.py::test_redhat_subscribtion

@@ -21,7 +21,7 @@ class Antlr4NonTerminal(Antlr4AST):
 
 class Antlr4Terminal(Antlr4AST):
     def __repr__(self):
-        return f"'{self.symbol}'"
+        return repr(self.symbol)
 
     def __init__(self, symbol: str):
         self.symbol = symbol

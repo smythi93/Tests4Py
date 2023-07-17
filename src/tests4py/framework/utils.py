@@ -3,10 +3,11 @@ import logging
 import os
 import shutil
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
+from xml.etree import ElementTree
 
 from tests4py import projects
-from tests4py.framework.constants import (
+from tests4py.constants import (
     INFO_FILE,
     REQUIREMENTS_FILE,
     SETUP_FILE,
@@ -22,6 +23,8 @@ from tests4py.framework.constants import (
     CONFIG,
     GLOBAL_GIT,
     VENV,
+    GRAMMAR,
+    NEWLINE_TOKEN,
 )
 from tests4py.framework.logger import LOGGER
 from tests4py.projects import (
@@ -43,7 +46,9 @@ from tests4py.projects import (
     tornado,
     tqdm,
     youtubedl,
+    TestingFramework,
 )
+from tests4py.tests.utils import TestResult
 
 
 class Report:
@@ -53,11 +58,34 @@ class Report:
         self.successful: Optional[bool] = None
         self.raised: Optional[BaseException] = None
 
+    def to_dict(self):
+        dictionary = {
+            "command": self.command,
+        }
+        if self.subcommand:
+            dictionary["subcommand"] = self.subcommand
+        dictionary["successful"] = self.successful
+        if not self.successful and self.raised:
+            dictionary["raised"] = getattr(self.raised, "message", repr(self.raised))
+        return dictionary
+
+    def __repr__(self):
+        return json.dumps(self.to_dict(), indent=4)
+
+    def __str__(self):
+        return self.__repr__()
+
 
 class ProjectReport(Report):
     def __init__(self, command: str, subcommand: str = None):
         self.project: Optional[Project] = None
         super().__init__(command, subcommand=subcommand)
+
+    def to_dict(self):
+        dictionary = super().to_dict()
+        if self.project:
+            dictionary["project"] = f"{self.project.project_name}_{self.project.bug_id}"
+        return dictionary
 
 
 class CheckoutReport(ProjectReport):
@@ -75,6 +103,12 @@ class InfoReport(ProjectReport):
         super().__init__(INFO)
         self.example = False
 
+    def to_dict(self):
+        dictionary = super().to_dict()
+        if self.example:
+            dictionary["project"] = self.project.project_name
+        return dictionary
+
 
 class TestingReport(ProjectReport):
     def __init__(self, command: str, subcommand: str = None):
@@ -87,6 +121,7 @@ class TestingReport(ProjectReport):
 class TestReport(TestingReport):
     def __init__(self):
         super().__init__(TEST)
+        self.results: Optional[List[Tuple[str, TestResult]]] = None
 
 
 class CacheReport(Report):
@@ -99,6 +134,11 @@ class CacheReport(Report):
 class ConfigReport(Report):
     def __init__(self):
         super().__init__(CONFIG)
+
+
+class GrammarReport(ProjectReport):
+    def __init__(self):
+        super().__init__(GRAMMAR)
 
 
 class GenerateReport(TestingReport):
@@ -138,10 +178,10 @@ def __get_project__(work_dir: Path) -> Tuple[Project, Path, Path, Path]:
     tests4py_requirements = work_dir / REQUIREMENTS_FILE
     tests4py_setup = work_dir / SETUP_FILE
     if not tests4py_info.exists():
-        raise ValueError(f"No Tests4Py project found int {work_dir}, no tests4py_info")
+        raise ValueError(f"No Tests4Py project found in {work_dir}, no tests4py_info")
     elif not tests4py_requirements.exists():
         raise ValueError(
-            f"No Tests4Py project found int {work_dir}, no tests4py_requirements"
+            f"No Tests4Py project found in {work_dir}, no tests4py_requirements"
         )
 
     __setup__()
@@ -168,6 +208,99 @@ def __get_pytest_result__(
             passing = 0
         return True, failing + passing, failing, passing
     return False, None, None, None
+
+
+def __replace_important_in_test_report__(s: str):
+    important = False
+    result = ""
+    escaped = False
+    while s:
+        if not important:
+            if s.startswith('name="'):
+                result += 'name="'
+                s = s[6:]
+                important = True
+            elif s.startswith('classname="'):
+                result += 'classname="'
+                s = s[11:]
+                important = True
+            else:
+                result += s[0]
+                s = s[1:]
+        else:
+            if s[0] == "\n":
+                result += NEWLINE_TOKEN
+                s = s[1:]
+            elif s[0] == '"' and not escaped:
+                result += '"'
+                s = s[1:]
+                important = False
+            elif s[0] == "\\" and not escaped:
+                result += "\\"
+                s = s[1:]
+                escaped = True
+            else:
+                result += s[0]
+                s = s[1:]
+                escaped = False
+    return result
+
+
+def __get_test_results__(
+    project: Project, working_directory: os.PathLike, report_file: os.PathLike
+) -> List[Tuple[str, TestResult]]:
+    test_results = list()
+    is_unittest_ = project.testing_framework == TestingFramework.UNITTEST
+    try:
+        with open(report_file, "r") as fp:
+            s = fp.read()
+        tree = ElementTree.fromstring(__replace_important_in_test_report__(s))
+    except FileNotFoundError:
+        print("pytest did not generate file")
+        return test_results
+    except ElementTree.ParseError:
+        print("pytest produced empty file")
+        return test_results
+    for testcase in tree.findall(".//testcase"):
+        if is_unittest_:
+            test = (
+                testcase.get("classname").replace(NEWLINE_TOKEN, "\n")
+                + "."
+                + testcase.get("name").replace(NEWLINE_TOKEN, "\n")
+            )
+        else:
+            path = testcase.get("classname").replace(NEWLINE_TOKEN, "\n").split(".")
+            file = ""
+            classes = "::"
+            for i in range(1, len(path) + 1):
+                file = os.path.join(*path[:i]) + ".py"
+                if os.path.exists(os.path.join(working_directory, file)):
+                    if len(path[i:]) > 0:
+                        classes = "::" + "::".join(path[i:]) + "::"
+                    break
+            test = file + classes + testcase.get("name").replace(NEWLINE_TOKEN, "\n")
+        if testcase.find("failure") is not None or testcase.find("error") is not None:
+            test_results.append((test, TestResult.FAILING))
+        elif len(list(testcase)) == 0 or (
+            (
+                len(list(testcase)) == 1
+                and (
+                    testcase.find("system-out") is not None
+                    or testcase.find("system-err") is not None
+                )
+            )
+            or (
+                len(list(testcase)) == 2
+                and (
+                    testcase.find("system-out") is not None
+                    and testcase.find("system-err") is not None
+                )
+            )
+        ):
+            test_results.append((test, TestResult.PASSING))
+        else:
+            test_results.append((test, TestResult.UNDEFINED))
+    return test_results
 
 
 def __init_logger__(verbose=True):

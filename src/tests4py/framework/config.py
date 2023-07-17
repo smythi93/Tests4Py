@@ -10,6 +10,7 @@ def tests4py_config_set(name: str, value: bool):
         else:
             raise AttributeError(f"Config has no attribute {name}")
         config.write()
+        report.successful = True
     except BaseException as e:
         report.raised = e
         report.successful = False

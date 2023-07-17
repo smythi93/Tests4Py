@@ -1,1 +1,0 @@
-pytest test/server_test.py::MetricsHandlerTest::test_get
