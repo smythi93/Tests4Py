@@ -212,8 +212,11 @@ def register():
         python_path='',
         buggy_commit_id='6945b9e78f38284eb4e440b7badea2fc60b66c2f',
         fixed_commit_id='fad4ceb53404227f471af2f3544c4c14a5df4acb',
+        api=YoutubeDL13API(),
         test_file=[Path('test', 'test_utils.py')],
-        test_cases=['test.test_utils.TestUtil.test_urljoin']
+        test_cases=['test.test_utils.TestUtil.test_urljoin'],
+        unittests=YoutubeDL1UnittestGenerator(),
+        systemtests=YoutubeDL1SystemtestGenerator(),
     )
 
     YoutubeDL(
@@ -374,6 +377,12 @@ class YoutubeDL11API(YoutubeDLAPI):
     def contains(self, process: subprocess.CompletedProcess) -> bool:
         return (
             b"TypeError: expected string or bytes-like object" in process.stderr)
+
+
+class YoutubeDL13API(YoutubeDLAPI):
+    def contains(self, process: subprocess.CompletedProcess) -> bool:
+        return (
+            b"Input does not match the expected outcome!" in process.stderr)
 
 
 class YoutubeDLUnittestGenerator(UnittestGenerator, ABC):
