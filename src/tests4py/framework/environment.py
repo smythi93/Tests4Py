@@ -4,7 +4,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from tests4py.framework.constants import Environment, VERSION_PATTERN, VENV
+from tests4py.constants import Environment, VERSION_PATTERN, VENV, PYENV
 from tests4py.framework.logger import LOGGER
 from tests4py.projects import Project
 
@@ -16,14 +16,14 @@ def __install_version__(project: Project):
     else:
         v = project.python_version
     current_versions = (
-        subprocess.check_output(["pyenv", "versions", "--bare"])
+        subprocess.check_output([PYENV, "versions", "--bare"])
         .decode("utf-8")
         .splitlines()
     )
     if v not in current_versions:
         try:
             LOGGER.info(f"Try to install pyenv python {v}")
-            subprocess.check_call(["pyenv", "install", v])
+            subprocess.check_call([PYENV, "install", v])
             return v
         except subprocess.CalledProcessError:  #
             pass
@@ -65,7 +65,7 @@ def __install_version__(project: Project):
         v = f"{p}.{r}"
         LOGGER.info(f"Failed. Try to install fallback pyenv python {v}")
         try:
-            output = subprocess.check_output(["pyenv", "install", v]).decode("utf-8")
+            output = subprocess.check_output([PYENV, "install", v]).decode("utf-8")
             match = VERSION_PATTERN.search(output)
             if match:
                 v = match.group("v")
@@ -123,7 +123,6 @@ def __update_env__(environ: Environment):
 
 
 def __activate_venv__(work_dir: Path, environ: Environment) -> Environment:
-
     LOGGER.info("Activating virtual env")
 
     env_dir = work_dir / VENV

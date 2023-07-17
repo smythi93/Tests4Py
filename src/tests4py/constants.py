@@ -1,4 +1,6 @@
+import os
 import re
+import sys
 from pathlib import Path
 from typing import Dict
 
@@ -58,3 +60,14 @@ GLOBAL_GIT = "project"
 
 VERSION_PATTERN = re.compile(r"Installed Python-(?P<v>\d+.\d+.\d+)")
 VENV = "tests4py_venv"
+
+# ~~~~~~ TESTS ~~~~~~ #
+
+NEWLINE_TOKEN = "TESTS4PYNEWLINETOKEN"
+
+
+# ~~~~~~ TESTS ~~~~~~ #
+if sys.platform.startswith("win"):
+    PYENV = os.path.join(os.environ["PYENV_HOME"], "bin", "pyenv.bat")
+else:
+    PYENV = "pyenv"

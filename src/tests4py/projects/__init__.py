@@ -101,6 +101,9 @@ class Project:
         with open(path, "w") as fp:
             config.write(fp)
 
+    def get_identifier(self):
+        return f"{self.project_name}_{self.bug_id}"
+
     def __str__(self):
         return self.__repr__()
 
@@ -165,6 +168,7 @@ __all__ = [
     "Project",
     "get_number_of_bugs",
     "get_project_names",
+    "get_matching_projects",
     "load_bug_info",
     "ansible",
     "black",

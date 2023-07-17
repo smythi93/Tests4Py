@@ -5,7 +5,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-import tests4py.framework.constants
 from tests4py.framework import (
     unittest,
     systemtest,
@@ -18,12 +17,12 @@ from tests4py.framework.default import (
     tests4py_test,
     tests4py_info,
 )
-from tests4py.framework.constants import (
+from tests4py.constants import (
     CHECKOUT,
     COMPILE,
-    COVERAGE,
+    # COVERAGE,
     INFO,
-    MUTATION,
+    # MUTATION,
     TEST,
     UNITTEST,
     SYSTEMTEST,
@@ -32,21 +31,23 @@ from tests4py.framework.constants import (
     CACHE,
     GRAMMAR,
     DEFAULT_WORK_DIR,
+    DEFAULT_SUB_PATH_SYSTEMTESTS,
+    DEFAULT_SUB_PATH_UNITTESTS,
+    PYENV,
 )
 from tests4py.framework.grammar import tests4py_grammar
 
 
 def check_pyenv():
     try:
-        _ = subprocess.check_output(["pyenv", "--version"])
-    except FileNotFoundError:
-        logging.error("Pyenv is not installed! Exiting.")
-        sys.exit(-1)
-
-    try:
         os.environ["PYENV_ROOT"]
     except KeyError:
         logging.error("Environment Variable PYENV_ROOT not set! Exiting.")
+        sys.exit(-1)
+    try:
+        _ = subprocess.check_output([PYENV, "--version"])
+    except FileNotFoundError:
+        logging.error("Pyenv is not installed! Exiting.")
         sys.exit(-1)
 
 
@@ -91,11 +92,11 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
     )
     checkout_parser = commands.add_parser(CHECKOUT, help="Check out a project")
     compile_parser = commands.add_parser(COMPILE, help="Compile a project")
-    coverage_parser = commands.add_parser(
-        COVERAGE, help="Measure coverage of a project"
-    )
+    # coverage_parser = commands.add_parser(
+    #    COVERAGE, help="Measure coverage of a project"
+    # )
     info_parser = commands.add_parser(INFO, help="Get information of a project")
-    mutation_parser = commands.add_parser(MUTATION, help="Mutate a project")
+    # mutation_parser = commands.add_parser(MUTATION, help="Mutate a project")
     test_parser = commands.add_parser(TEST, help="Run tests on a project")
     unittest_parser = commands.add_parser(UNITTEST, help="The unittest subcommand")
     systemtest_parser = commands.add_parser(
@@ -177,37 +178,37 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
     )
 
     # Coverage
-    coverage_parser.add_argument(
-        "-w",
-        dest="work_dir",
-        required=True,
-        help="The working directory to run the test. Default will be the current directory",
-    )
-    coverage_parser.add_argument(
-        "-t",
-        dest="single_test",
-        default=None,
-        help="Run coverage from single test case by input. "
-        "Default will run coverage from test cases that relevant from bugs. "
-        "Format for pytest: <test_file_path>::<test_method>. "
-        "Format for unittest: <test_file_path_without.py>.<test_class>.<test_method> . "
-        "Use tests4py info to get the information about the project",
-    )
-    coverage_parser.add_argument(
-        "-a",
-        dest="all_tests",
-        default=False,
-        action="store_true",
-        help="Run coverage from all test cases in the project. "
-        "Default will run coverage from test cases that relevant from bugs",
-    )
-    coverage_parser.add_argument(
-        "-r",
-        dest="relevant_tests",
-        default=False,
-        action="store_true",
-        help="Run coverage from test cases that relevant from bugs (Default)",
-    )
+    # coverage_parser.add_argument(
+    #     "-w",
+    #     dest="work_dir",
+    #     required=True,
+    #     help="The working directory to run the test. Default will be the current directory",
+    # )
+    # coverage_parser.add_argument(
+    #     "-t",
+    #     dest="single_test",
+    #     default=None,
+    #     help="Run coverage from single test case by input. "
+    #     "Default will run coverage from test cases that relevant from bugs. "
+    #     "Format for pytest: <test_file_path>::<test_method>. "
+    #     "Format for unittest: <test_file_path_without.py>.<test_class>.<test_method> . "
+    #     "Use tests4py info to get the information about the project",
+    # )
+    # coverage_parser.add_argument(
+    #     "-a",
+    #     dest="all_tests",
+    #     default=False,
+    #     action="store_true",
+    #     help="Run coverage from all test cases in the project. "
+    #     "Default will run coverage from test cases that relevant from bugs",
+    # )
+    # coverage_parser.add_argument(
+    #     "-r",
+    #     dest="relevant_tests",
+    #     default=False,
+    #     action="store_true",
+    #     help="Run coverage from test cases that relevant from bugs (Default)",
+    # )
 
     # Info
     info_parser.add_argument(
@@ -225,33 +226,33 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
     )
 
     # Mutation
-    mutation_parser.add_argument(
-        "-w",
-        dest="work_dir",
-        required=True,
-        help="The working directory to run the test. Default will be the current directory",
-    )
-    mutation_parser.add_argument(
-        "-t",
-        dest="target",
-        default=None,
-        help="Target module or package to mutate. "
-        "Default will be run mutation from test case and target that relevant from bugs",
-    )
-    mutation_parser.add_argument(
-        "-u",
-        dest="unit_test",
-        default=None,
-        help="Test class, test method, module or package with unit tests. "
-        "Default will be run mutation from test case and target that relevant from bugs",
-    )
-    mutation_parser.add_argument(
-        "-r",
-        dest="relevant_tests",
-        default=False,
-        action="store_true",
-        help="Run mutation from test case and target that relevant from bugs (Default)",
-    )
+    # mutation_parser.add_argument(
+    #     "-w",
+    #     dest="work_dir",
+    #     required=True,
+    #     help="The working directory to run the test. Default will be the current directory",
+    # )
+    # mutation_parser.add_argument(
+    #     "-t",
+    #     dest="target",
+    #     default=None,
+    #     help="Target module or package to mutate. "
+    #     "Default will be run mutation from test case and target that relevant from bugs",
+    # )
+    # mutation_parser.add_argument(
+    #     "-u",
+    #     dest="unit_test",
+    #     default=None,
+    #     help="Test class, test method, module or package with unit tests. "
+    #     "Default will be run mutation from test case and target that relevant from bugs",
+    # )
+    # mutation_parser.add_argument(
+    #     "-r",
+    #     dest="relevant_tests",
+    #     default=False,
+    #     action="store_true",
+    #     help="Run mutation from test case and target that relevant from bugs (Default)",
+    # )
 
     # Test
     test_parser.add_argument(
@@ -264,9 +265,9 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         "-t",
         dest="single_test",
         default=None,
-        help="Run single test from input. Default will run the test case that relevant from bugs. "
+        help="Run single test from input. Default will run the test case that are relevant for the bugs. "
         "Format for pytest: <test_file_path>::<test_method>. "
-        "Format for unittest: <test_file_path_without.py>.<test_class>.<test_method> . "
+        "Format for unittest: <test_file_path_without.py>.<test_class>.<test_method>. "
         "Use tests4py info to get the information about the project",
     )
     test_parser.add_argument(
@@ -275,7 +276,7 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         default=False,
         action="store_true",
         help="Run all test case in the project. "
-        "Default will run the test case that relevant from bugs",
+        "Default will run the test case that are relevant for the bugs",
     )
     test_parser.add_argument(
         "-o", dest="output", default=None, help="Output test results to file"
@@ -311,9 +312,9 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
             help="The working directory to run the test. Default will be the current directory",
         )
         default = (
-            tests4py.framework.constants.DEFAULT_SUB_PATH_SYSTEMTESTS
+            DEFAULT_SUB_PATH_SYSTEMTESTS
             if is_systemtest
-            else tests4py.framework.constants.DEFAULT_SUB_PATH_UNITTESTS
+            else DEFAULT_SUB_PATH_UNITTESTS
         )
         generate.add_argument(
             "-p",
@@ -376,9 +377,9 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
             help="The working directory to run the test. Default will be the current directory",
         )
         default = (
-            tests4py.framework.constants.DEFAULT_SUB_PATH_SYSTEMTESTS
+            DEFAULT_SUB_PATH_SYSTEMTESTS
             if is_systemtest
-            else tests4py.framework.constants.DEFAULT_SUB_PATH_UNITTESTS
+            else DEFAULT_SUB_PATH_UNITTESTS
         )
         test.add_argument(
             "-p",

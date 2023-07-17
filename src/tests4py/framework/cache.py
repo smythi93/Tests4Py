@@ -1,5 +1,5 @@
 from tests4py import projects
-from tests4py.framework.constants import DEFAULT_WORK_DIR
+from tests4py.constants import DEFAULT_WORK_DIR
 from tests4py.framework.default import tests4py_checkout, tests4py_compile
 from tests4py.framework.utils import (
     CacheReport,

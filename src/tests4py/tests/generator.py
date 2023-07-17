@@ -6,7 +6,7 @@ from abc import abstractmethod
 from pathlib import Path
 from typing import List, Tuple
 
-from tests4py.framework.constants import DEFAULT_SYSTEMTESTS_DIVERSITY_PATH
+from tests4py.constants import DEFAULT_SYSTEMTESTS_DIVERSITY_PATH
 from tests4py.tests.utils import TestResult
 
 

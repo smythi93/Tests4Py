@@ -4,13 +4,14 @@ from abc import ABC
 import subprocess
 import traceback
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Any
 
 from fuzzingbook.Grammars import Grammar, srange, is_valid_grammar
 from isla.fuzzer import GrammarFuzzer
 
 from tests4py.grammars import python
 from tests4py.framework.constants import Environment, HARNESS_FILE
+from tests4py.constants import Environment
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult, ExpectErrAPI
@@ -314,6 +315,9 @@ class YoutubeDLAPI(API):
     def __init__(self, default_timeout: int = 5):
         super().__init__(default_timeout=default_timeout)
 
+    def oracle(self, args: Any) -> TestResult:
+        return TestResult.UNDEFINED
+
     def error_handling(self, process) -> bool:
         return process.returncode != 0 and process.returncode != 200
 
@@ -321,7 +325,7 @@ class YoutubeDLAPI(API):
         return False
 
     # noinspection PyBroadException
-    def run(self, system_test_path, environ: Environment) -> TestResult:
+    def execute(self, system_test_path, environ: Environment) -> TestResult:
         try:
             with open(system_test_path, "r") as fp:
                 test = fp.read()
@@ -352,6 +356,7 @@ class YoutubeDLAPI(API):
         except Exception as e:
             traceback.print_exception(e)
             return TestResult.UNDEFINED
+
 
 
 class YoutubeDL1API(YoutubeDLAPI):

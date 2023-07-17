@@ -6,13 +6,13 @@ import subprocess
 from abc import ABC
 from os import PathLike
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Any
 
 from fuzzingbook.Grammars import Grammar, is_valid_grammar, srange
 from isla.derivation_tree import DerivationTree
 from isla.fuzzer import GrammarFuzzer
 
-from tests4py.framework.constants import Environment, HARNESS_FILE
+from tests4py.constants import Environment, HARNESS_FILE
 from tests4py.grammars.utils import GrammarVisitor
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
@@ -244,7 +244,6 @@ def register():
         ],
         test_cases=["tests/test_jsonable_encoder.py::test_encode_model_with_config"],
     )
-    # TODO implement the 16 bugs of fastapi
 
 
 class FastAPI1API(ExpectErrAPI):
@@ -293,36 +292,17 @@ class FastAPIDefaultAPI(API, GrammarVisitor):
     def fallback_contains(self, process: subprocess.CompletedProcess) -> bool:
         return False
 
-    # noinspection PyBroadException
-    def run(self, system_test_path: PathLike, environ: Environment) -> TestResult:
-        try:
-            with open(system_test_path, "r") as fp:
-                test = fp.read()
-            if test:
-                self.visit_source(test)
-                test = test.split("\n")
-            else:
-                test = []
-            process = subprocess.run(
-                ["python", HARNESS_FILE] + test,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                timeout=self.default_timeout,
-                env=environ,
-            )
-            if self.condition(process) and self.contains(process):
+    def oracle(self, args: Any) -> TestResult:
+        process = args
+        if self.condition(process) and self.contains(process):
+            return TestResult.FAILING
+        else:
+            if self.fallback_condition(process) and self.fallback_contains(process):
                 return TestResult.FAILING
+            elif self.error_handling(process):
+                return TestResult.UNDEFINED
             else:
-                if self.fallback_condition(process) and self.fallback_contains(process):
-                    return TestResult.FAILING
-                elif self.error_handling(process):
-                    return TestResult.UNDEFINED
-                else:
-                    return TestResult.PASSING
-        except subprocess.TimeoutExpired:
-            return TestResult.UNDEFINED
-        except BaseException as e:
-            return TestResult.UNDEFINED
+                return TestResult.PASSING
 
     def error_handling(self, process) -> bool:
         return process.returncode != 0 and process.returncode != 200
@@ -532,7 +512,6 @@ class FastAPI1SystemtestGenerator(FastAPISystemtestGenerator, FastAPI1TestGenera
 
 
 class FastAPIDefaultSystemtestGenerator(FastAPISystemtestGenerator, ABC):
-
     GET = "get"
     POST = "post"
     WEBSOCKET = "websocket"

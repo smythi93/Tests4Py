@@ -3,7 +3,7 @@ import unittest
 from parameterized import parameterized
 
 from tests4py import projects, framework
-from tests4py.framework.constants import DEFAULT_WORK_DIR, INFO_FILE
+from tests4py.constants import DEFAULT_WORK_DIR, INFO_FILE
 from tests4py.projects import Project, load_bug_info
 from utils import BaseTest
 

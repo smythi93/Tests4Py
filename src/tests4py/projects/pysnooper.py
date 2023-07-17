@@ -61,7 +61,7 @@ def register():
     PySnooper(
         bug_id=1,
         python_version="3.8.1",
-        darwin_python_version="3.8.4",  # version 3.8.1-3 do not work on mac os
+        darwin_python_version="3.7.12",  # version 3.8.1-3 do not work on mac os
         python_path="",
         buggy_commit_id="e21a31162f4c54be693d8ca8260e42393b39abd3",
         fixed_commit_id="56f22f8ffe1c6b2be4d2cf3ad1987fdb66113da2",
@@ -72,7 +72,7 @@ def register():
     PySnooper(
         bug_id=2,
         python_version="3.8.1",
-        darwin_python_version="3.8.4",  # version 3.8.1-3 do not work on mac os
+        darwin_python_version="3.7.12",  # version 3.8.1-3 do not work on mac os
         python_path="",
         buggy_commit_id="e21a31162f4c54be693d8ca8260e42393b39abd3",
         fixed_commit_id="814abc34a098c1b98cb327105ac396f985d2413e",

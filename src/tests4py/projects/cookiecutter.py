@@ -1,3 +1,4 @@
+import abc
 import ast
 import os
 import random
@@ -10,13 +11,13 @@ from abc import abstractmethod, ABC
 from os import PathLike
 from pathlib import Path
 from subprocess import Popen
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict, Union, Any
 
 from fuzzingbook.Grammars import Grammar, srange, is_valid_grammar
 from isla.derivation_tree import DerivationTree
 from isla.fuzzer import GrammarFuzzer
 
-from tests4py.framework.constants import Environment
+from tests4py.constants import Environment
 from tests4py.grammars.utils import GrammarVisitor
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
@@ -125,7 +126,7 @@ def register():
     )
 
 
-class CookieCutterAPI(API, GrammarVisitor):
+class CookieCutterAPI(API, GrammarVisitor, abc.ABC):
     REPO_PATH = "tests4py_repo"
 
     def __init__(self, default_timeout: int = 5):
@@ -233,16 +234,23 @@ class CookieCutterAPI(API, GrammarVisitor):
     def _communicate(self, process: Popen) -> Tuple[bytes, bytes] | Tuple[str, str]:
         return process.communicate(20 * b"\n", self.default_timeout)
 
+    def get_test_arguments(self, system_test_path: PathLike) -> List[str]:
+        with open(system_test_path, "r") as fp:
+            content = fp.read()
+        self.visit_source(content)
+        self._setup()
+        if self.path:
+            for p in self.path:
+                shutil.rmtree(p, ignore_errors=True)
+
+    def oracle(self, args) -> TestResult:
+        process, args = args
+        stdout, stderr = args
+        return self._validate(process, stdout, stderr)
+
     # noinspection PyBroadException
-    def run(self, system_test_path: PathLike, environ: Environment) -> TestResult:
+    def execute(self, system_test_path: PathLike, environ: Environment) -> Any:
         try:
-            with open(system_test_path, "r") as fp:
-                content = fp.read()
-            self.visit_source(content)
-            self._setup()
-            if self.path:
-                for p in self.path:
-                    shutil.rmtree(p, ignore_errors=True)
             process = subprocess.Popen(
                 ["cookiecutter"] + self._get_command_parameters() + [self.REPO_PATH],
                 stdin=subprocess.PIPE,
@@ -250,17 +258,17 @@ class CookieCutterAPI(API, GrammarVisitor):
                 stderr=subprocess.PIPE,
                 env=environ,
             )
-            stdout, stderr = self._communicate(process)
-            return self._validate(process, stdout, stderr)
+            return process, self._communicate(process)
         except subprocess.TimeoutExpired:
-            return TestResult.UNDEFINED
+            return None
         except Exception:
-            return TestResult.UNDEFINED
-        finally:
-            if self.path:
-                for p in self.path:
-                    shutil.rmtree(p, ignore_errors=True)
-            shutil.rmtree(self.REPO_PATH, ignore_errors=True)
+            return None
+
+    def clean_up(self):
+        if self.path:
+            for p in self.path:
+                shutil.rmtree(p, ignore_errors=True)
+        shutil.rmtree(self.REPO_PATH, ignore_errors=True)
 
 
 class CookieCutter2API(CookieCutterAPI):

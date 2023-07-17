@@ -1,0 +1,6 @@
+include src/tests4py/projects/resources/*.txt
+include src/tests4py/projects/resources/*/*.txt
+include src/tests4py/projects/resources/*/*/requirements.txt
+include src/tests4py/projects/resources/*/*/fix.patch
+include src/tests4py/projects/resources/*/*/explanation.md
+include src/tests4py/projects/resources/*/*/setup.sh
