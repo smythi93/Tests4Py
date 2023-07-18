@@ -135,7 +135,10 @@ def __activate_venv__(work_dir: Path, environ: Environment) -> Environment:
     env_dir = work_dir / VENV
     environ["VIRTUAL_ENV"] = str(env_dir.absolute())
     environ["_OLD_VIRTUAL_PATH"] = environ["PATH"]
-    environ["PATH"] = f'{(env_dir / "bin").absolute()}:{environ["PATH"]}'
+    if sys.platform.startswith("win"):
+        environ["PATH"] = f'{(env_dir / "Scripts").absolute()}:{environ["PATH"]}'
+    else:
+        environ["PATH"] = f'{(env_dir / "bin").absolute()}:{environ["PATH"]}'
     if "PYTHONHOME" in environ:
         environ["_OLD_VIRTUAL_PYTHONHOME"] = environ["PYTHONHOME"]
         del environ["PYTHONHOME"]
