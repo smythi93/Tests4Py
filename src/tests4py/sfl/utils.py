@@ -3,6 +3,7 @@ from typing import List, Optional
 
 import sflkit
 from sflkit.events import EventType
+from sflkit.language.python.factory import python_lib
 
 from tests4py.api import compile_project
 from tests4py.framework.utils import ProjectReport

@@ -5,7 +5,7 @@ from typing import List, Union
 from sflkit.runners import PytestRunner
 
 from tests4py.constants import DEFAULT_WORK_DIR
-from tests4py.framework.environment import __env_on__, __activate_venv__, __update_env__
+from tests4py.framework.environment import __env_on__, __activate_venv__
 from tests4py.framework.utils import __get_project__
 from tests4py.projects import Project
 from tests4py.sfl.utils import (

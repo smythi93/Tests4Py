@@ -28,6 +28,7 @@ from tests4py.framework.environment import (
     __create_venv__,
     __activate_venv__,
     __update_env__,
+    __sflkit_env__,
 )
 from tests4py.framework.logger import LOGGER
 from tests4py.framework.utils import (
@@ -306,7 +307,7 @@ def compile_project(
 
         if not env_exists:
             LOGGER.info("Installing utilities")
-            __update_env__(environ, sfl=sfl)
+            __update_env__(environ)
 
             LOGGER.info("Installing requirements")
             subprocess.check_call(
@@ -338,6 +339,9 @@ def compile_project(
 
         if config.cache:
             cache_venv(project, work_dir)
+
+        if sfl:
+            __sflkit_env__(environ)
 
         LOGGER.info("Set compiled flag")
         project.compiled = True

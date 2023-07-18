@@ -105,7 +105,7 @@ def __env_on__(project: Project, skip=False) -> Environment:
     return environ
 
 
-def __update_env__(environ: Environment, sfl: bool = False):
+def __update_env__(environ: Environment):
     subprocess.check_call(
         ["python", "-m", "pip", "install", "--upgrade", "pip"], env=environ
     )
@@ -120,11 +120,13 @@ def __update_env__(environ: Environment, sfl: bool = False):
         ["python", "-m", "pip", "install", "--upgrade", "pytest"],
         env=environ,
     )
-    if sfl:
-        subprocess.check_call(
-            ["python", "-m", "pip", "install", "--upgrade", "sflkit"],
-            env=environ,
-        )
+
+
+def __sflkit_env__(environ: Environment):
+    subprocess.check_call(
+        ["python", "-m", "pip", "install", "sflkitlib==0.0.1"],
+        env=environ,
+    )
 
 
 def __activate_venv__(work_dir: Path, environ: Environment) -> Environment:

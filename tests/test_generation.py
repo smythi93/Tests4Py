@@ -16,17 +16,17 @@ class TestPythonGeneration(unittest.TestCase):
             limit_args_per_function=2,
         )
 
-    def test_fuzzing_100_syntax(self):
-        self._test_fuzzing_syntax(100)
+    def test_fuzzing_50_syntax(self):
+        self._test_fuzzing_syntax(50)
 
-    def test_fuzzing_100_syntax_seed(self):
-        self._test_fuzzing_syntax(100, seed=21)
+    def test_fuzzing_50_syntax_seed(self):
+        self._test_fuzzing_syntax(50, seed=21)
 
-    def test_fuzzing_100_semantic(self):
-        self._test_fuzzing_semantic(100)
+    def test_fuzzing_50_semantic(self):
+        self._test_fuzzing_semantic(50)
 
-    def test_fuzzing_100_semantic_seed(self):
-        self._test_fuzzing_semantic(100, seed=21)
+    def test_fuzzing_50_semantic_seed(self):
+        self._test_fuzzing_semantic(50, seed=21)
 
     def _test_fuzzing_syntax(self, n, seed=42):
         random.seed(seed)

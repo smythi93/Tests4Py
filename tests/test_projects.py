@@ -29,7 +29,7 @@ class BaseProjectTests(BaseTest):
 class TestGenerationTests(BaseProjectTests):
     def setUp(self):
         self.skipTest("Project tests seems to be off on github workflow")
-        pass
+        # pass
 
     def _assert_test_generation(self, name: str, project: Project, systemtest=True):
         report = framework.default.tests4py_checkout(
