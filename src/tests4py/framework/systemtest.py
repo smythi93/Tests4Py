@@ -1,9 +1,9 @@
+import json
 import logging
 import os
 from pathlib import Path
-from typing import Union, Tuple, Dict
+from typing import Union, Tuple, Dict, Optional
 
-from tests4py.framework import utils, environment
 from tests4py.constants import (
     DEFAULT_SUB_PATH_SYSTEMTESTS,
     SYSTEMTEST,
@@ -11,6 +11,7 @@ from tests4py.constants import (
     DEFAULT_SYSTEMTESTS_DIVERSITY_PATH,
     TEST,
 )
+from tests4py.framework import utils, environment
 from tests4py.framework.logger import LOGGER
 from tests4py.projects import Project
 from tests4py.tests.utils import TestResult
@@ -30,19 +31,22 @@ class SystemtestTestReport(utils.TestingReport):
             SYSTEMTEST,
             subcommand=TEST,
         )
+        self.results: Optional[Dict[str, Tuple[TestResult, str]]] = None
 
 
 def _get_system_runs(
     project: Project, path: os.PathLike, environ: Dict[str, str]
-) -> Tuple[int, int, int]:
+) -> Tuple[int, int, int, Dict[str, Tuple[TestResult, str]]]:
     total, passing, failing = 0, 0, 0
-    for _, result in project.api.runs(path, environ):
+    results: Dict[str, Tuple[TestResult, str]] = dict()
+    for test, result, feedback in project.api.runs(path, environ):
+        results[test] = (result, feedback)
         if TestResult.PASSING == result:
             passing += 1
         elif TestResult.FAILING == result:
             failing += 1
         total += 1
-    return total, passing, failing
+    return total, passing, failing, results
 
 
 def tests4py_generate(
@@ -120,9 +124,12 @@ def tests4py_generate(
             environ = environment.__env_on__(project)
             environ = environment.__activate_venv__(work_dir, environ)
 
-            _, report.verify_passing, report.verify_failing = _get_system_runs(
-                project, path, environ
-            )
+            (
+                _,
+                report.verify_passing,
+                report.verify_failing,
+                report.verify_results,
+            ) = _get_system_runs(project, path, environ)
             LOGGER.info(
                 f"Verify: {report.verify_passing} passed --- {report.verify_failing} failed"
             )
@@ -172,21 +179,18 @@ def tests4py_test(
         environ = environment.__activate_venv__(work_dir, environ)
 
         report.total, report.passing, report.failing = 0, 0, 0
+        report.results = dict()
 
         if path:
-            if path.is_dir():
-                report.total, report.passing, report.failing = _get_system_runs(
-                    project, path, environ
-                )
-            else:
-                report.total = 1
-                _, result = project.api.run(path, environ)
-                if TestResult.PASSING == result:
-                    report.passing = 1
-                elif TestResult.FAILING == result:
-                    report.failing = 1
+            (
+                report.total,
+                report.passing,
+                report.failing,
+                r,
+            ) = _get_system_runs(project, path, environ)
+            report.results.update(r)
         if diversity and (work_dir / DEFAULT_SYSTEMTESTS_DIVERSITY_PATH).exists():
-            t, p, f = _get_system_runs(
+            t, p, f, r = _get_system_runs(
                 project,
                 work_dir / DEFAULT_SYSTEMTESTS_DIVERSITY_PATH,
                 environ,
@@ -194,6 +198,10 @@ def tests4py_test(
             report.total += t
             report.passing += p
             report.failing += f
+            report.results.update(r)
+        if output:
+            with open(output, "w") as output_file:
+                json.dump(report.results, output_file)
         LOGGER.info(f"Ran {report.total} tests")
         LOGGER.info(f"{report.passing} passed --- {report.failing} failed")
         report.successful = True

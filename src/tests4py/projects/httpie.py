@@ -133,8 +133,8 @@ class HttpieAPI(API):
     def __init__(self, default_timeout: int = 5):
         super().__init__(default_timeout=default_timeout)
 
-    def oracle(self, args: Any) -> TestResult:
-        return TestResult.UNDEFINED
+    def oracle(self, args) -> Tuple[TestResult, str]:
+        return TestResult.UNDEFINED, ""
 
     def execute(self, system_test_path: PathLike, environ: Environment) -> Any:
         pass

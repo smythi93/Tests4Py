@@ -88,5 +88,5 @@ class TestGenerationTests(BaseProjectTests):
             filter(lambda p: p.unittests is not None, BaseProjectTests.PROJECTS),
         )
     )
-    def test_systemtest_generation(self, name: str, project: Project):
+    def test_unittest_generation(self, name: str, project: Project):
         self._assert_test_generation(name, project, systemtest=False)

@@ -1,6 +1,6 @@
 from os import PathLike
 from pathlib import Path
-from typing import List, Optional, Any
+from typing import List, Optional, Any, Tuple
 
 from tests4py.constants import Environment
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
@@ -283,8 +283,8 @@ class MatplotlibAPI(API):
     def __init__(self, default_timeout: int = 5):
         super().__init__(default_timeout=default_timeout)
 
-    def oracle(self, args: Any) -> TestResult:
-        return TestResult.UNDEFINED
+    def oracle(self, args) -> Tuple[TestResult, str]:
+        return TestResult.UNDEFINED, ""
 
     def execute(self, system_test_path: PathLike, environ: Environment) -> Any:
         pass

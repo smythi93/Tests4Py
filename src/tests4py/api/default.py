@@ -7,7 +7,6 @@ from typing import List, Union
 
 from tabulate import tabulate
 
-from tests4py import projects
 from tests4py.constants import (
     DEFAULT_WORK_DIR,
     FIX_FILES,
@@ -54,6 +53,8 @@ from tests4py.projects import (
     get_project_names,
     TestStatus,
     Project,
+    Status,
+    get_project,
 )
 
 
@@ -71,7 +72,7 @@ def checkout_project(
     try:
         report.project = project
 
-        check_further = project.status is projects.Status.OK
+        check_further = project.status is Status.OK
 
         work_location = work_dir / project.get_identifier()
         if update and work_location.exists():
@@ -378,12 +379,12 @@ def info_project(
             return report
         project_name = project_name.lower()
         if bug_id is None:
-            project = projects.get_project(project_name, 1)
+            project = get_project(project_name, 1)
             report.example = True
             report.project = project
             description = project.project_name
         else:
-            project = projects.get_project(project_name, bug_id)
+            project = get_project(project_name, bug_id)
             report.project = project
             description = f"{project.project_name} with bug id {project.bug_id}"
 
@@ -461,14 +462,11 @@ def test_project(
                 f"Project {project.project_name} at {work_dir} was not compiled"
             )
 
-        if project.buggy and project.test_status_buggy == projects.TestStatus.PASSING:
+        if project.buggy and project.test_status_buggy == TestStatus.PASSING:
             LOGGER.warning(
                 f"The tests will pass on this buggy version {project.get_identifier()}"
             )
-        elif (
-            not project.buggy
-            and project.test_status_fixed == projects.TestStatus.FAILING
-        ):
+        elif not project.buggy and project.test_status_fixed == TestStatus.FAILING:
             LOGGER.warning(
                 f"The tests will fail on this fixed version {project.get_identifier()}"
             )

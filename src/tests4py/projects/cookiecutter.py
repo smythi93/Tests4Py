@@ -11,7 +11,7 @@ from abc import abstractmethod, ABC
 from os import PathLike
 from pathlib import Path
 from subprocess import Popen
-from typing import List, Optional, Tuple, Dict, Union, Any
+from typing import List, Optional, Tuple, Any
 
 from fuzzingbook.Grammars import Grammar, srange, is_valid_grammar
 from isla.derivation_tree import DerivationTree
@@ -243,10 +243,10 @@ class CookieCutterAPI(API, GrammarVisitor, abc.ABC):
             for p in self.path:
                 shutil.rmtree(p, ignore_errors=True)
 
-    def oracle(self, args) -> TestResult:
+    def oracle(self, args) -> Tuple[TestResult, str]:
         process, args = args
         stdout, stderr = args
-        return self._validate(process, stdout, stderr)
+        return self._validate(process, stdout, stderr), ""
 
     # noinspection PyBroadException
     def execute(self, system_test_path: PathLike, environ: Environment) -> Any:

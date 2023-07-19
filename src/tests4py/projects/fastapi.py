@@ -4,15 +4,13 @@ import random
 import string
 import subprocess
 from abc import ABC
-from os import PathLike
 from pathlib import Path
-from typing import List, Optional, Tuple, Any
+from typing import List, Optional, Tuple
 
 from fuzzingbook.Grammars import Grammar, is_valid_grammar, srange
 from isla.derivation_tree import DerivationTree
 from isla.fuzzer import GrammarFuzzer
 
-from tests4py.constants import Environment, HARNESS_FILE
 from tests4py.grammars.utils import GrammarVisitor
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
@@ -292,17 +290,17 @@ class FastAPIDefaultAPI(API, GrammarVisitor):
     def fallback_contains(self, process: subprocess.CompletedProcess) -> bool:
         return False
 
-    def oracle(self, args: Any) -> TestResult:
+    def oracle(self, args) -> Tuple[TestResult, str]:
         process = args
         if self.condition(process) and self.contains(process):
-            return TestResult.FAILING
+            return TestResult.FAILING, ""
         else:
             if self.fallback_condition(process) and self.fallback_contains(process):
-                return TestResult.FAILING
+                return TestResult.FAILING, ""
             elif self.error_handling(process):
-                return TestResult.UNDEFINED
+                return TestResult.UNDEFINED, ""
             else:
-                return TestResult.PASSING
+                return TestResult.PASSING, ""
 
     def error_handling(self, process) -> bool:
         return process.returncode != 0 and process.returncode != 200

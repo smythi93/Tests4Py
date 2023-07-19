@@ -1,12 +1,14 @@
 import enum
 import os
 import subprocess
+import tempfile
 from abc import abstractmethod
 from os import PathLike
 from pathlib import Path
-from typing import List, Tuple, Collection, Union, Any, Dict
+from typing import List, Tuple, Collection, Any
 
 from tests4py.constants import Environment, HARNESS_FILE
+from tests4py.framework.logger import LOGGER
 
 
 class TestResult(enum.Enum):
@@ -44,9 +46,11 @@ class API:
         except Exception:
             return None
 
-    def run(self, system_test_path: PathLike, environ: Environment):
+    def run(
+        self, system_test_path: PathLike, environ: Environment
+    ) -> Tuple[PathLike, TestResult, str]:
         try:
-            return system_test_path, self.oracle(
+            return system_test_path, *self.oracle(
                 self.execute(system_test_path, environ)
             )
         finally:
@@ -56,18 +60,26 @@ class API:
         pass
 
     def runs(
-        self, system_tests_path: PathLike, environ: Environment
-    ) -> List[Tuple[PathLike, TestResult]]:
-        system_tests_path = Path(system_tests_path)
-        if not system_tests_path.exists():
-            raise ValueError(f"{system_tests_path} does not exist")
-        if not system_tests_path.is_dir():
-            raise ValueError(f"{system_tests_path} is not a directory")
+        self, system_tests: PathLike | str, environ: Environment
+    ) -> List[Tuple[PathLike | str, TestResult, str]]:
+        system_tests_path = Path(system_tests)
         tests = list()
-        for dir_path, _, files in os.walk(system_tests_path):
-            for file in files:
-                path = Path(dir_path, file)
-                tests.append(self.run(path, environ))
+        if not system_tests_path.exists():
+            LOGGER.info(
+                f"Path {system_tests_path} does not exist, try to execute it as test case"
+            )
+            with tempfile.NamedTemporaryFile() as tmp:
+                tmp.write(system_tests)
+                _, test_result, feedback = self.run(tmp, environ)
+                tests.append((system_tests, test_result, feedback))
+        elif not system_tests_path.is_dir():
+            LOGGER.info(f"Path {system_tests_path} is a file")
+            tests.append(self.run(system_tests_path, environ))
+        else:
+            for dir_path, _, files in os.walk(system_tests_path):
+                for file in files:
+                    path = Path(dir_path, file)
+                    tests.append(self.run(path, environ))
         return tests
 
 
@@ -90,26 +102,33 @@ class ExpectOutputAPI(API):
         self.is_or = is_or
         super().__init__(default_timeout=default_timeout)
 
-    def oracle(self, args: Any) -> TestResult:
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
         process = args
         if process is None:
-            return TestResult.UNDEFINED
+            return TestResult.UNDEFINED, "Cannot identify executed process"
+        feedback = process.stdout if self.is_stdout else process.stderr
         if self.no_check or process.returncode:
             if (any if self.is_or else all)(
                 map(
-                    (process.stdout if self.is_stdout else process.stderr).__contains__,
+                    feedback.__contains__,
                     [self.expected]
                     if isinstance(self.expected, bytes)
                     else self.expected,
                 )
             ):
-                return TestResult.PASSING if self.expect_in else TestResult.FAILING
+                return (
+                    TestResult.PASSING if self.expect_in else TestResult.FAILING,
+                    feedback,
+                )
             elif self.no_check:
-                return TestResult.FAILING if self.expect_in else TestResult.PASSING
+                return (
+                    TestResult.FAILING if self.expect_in else TestResult.PASSING,
+                    feedback,
+                )
             else:
-                return TestResult.UNDEFINED
+                return TestResult.UNDEFINED, feedback
         else:
-            return TestResult.PASSING
+            return TestResult.PASSING, feedback
 
 
 class ExpectErrAPI(ExpectOutputAPI):

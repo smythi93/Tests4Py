@@ -36,6 +36,7 @@ PATCH_FILE = "tests4py_fix.patch"
 HARNESS_FILE = "tests4py_harness.py"
 FIX_FILES = "tests4py_files.txt"
 EXPLANATION_FILE = "tests4py_explanation.md"
+TMP_FILE = "tests4py_tmp"
 
 # ~~ TEST PATTERN ~~ #
 
