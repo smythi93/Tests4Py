@@ -1,7 +1,8 @@
 import importlib.resources
+from typing import List
 
-from whatthepatch import parse_patch, exceptions
 from sflkit.analysis.suggestion import Location
+from whatthepatch import parse_patch, exceptions
 
 from tests4py.api.default import (
     checkout_project,
@@ -9,9 +10,6 @@ from tests4py.api.default import (
     test_project,
     info_project,
 )
-
-from typing import List
-
 from tests4py.framework.utils import __setup__
 from tests4py.projects import (
     get_number_of_bugs,
@@ -21,6 +19,14 @@ from tests4py.projects import (
 )
 
 __setup__()
+
+
+def load_projects():
+    for project in get_matching_projects():
+        globals()[project.get_identifier()] = project
+
+
+load_projects()
 
 
 def get_bugs(project_name: str) -> int:

@@ -20,7 +20,7 @@ class API:
         self.default_timeout = default_timeout
 
     @abstractmethod
-    def oracle(self, args: Any) -> TestResult:
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
         raise NotImplementedError()
 
     def get_test_arguments(self, system_test_path: PathLike) -> List[str]:

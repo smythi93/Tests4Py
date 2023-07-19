@@ -5,18 +5,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-from tests4py.framework import (
-    unittest,
-    systemtest,
-)
-from tests4py.framework.cache import tests4py_cache
-from tests4py.framework.config import tests4py_config_set
-from tests4py.framework.default import (
-    tests4py_checkout,
-    tests4py_compile,
-    tests4py_test,
-    tests4py_info,
-)
 from tests4py.constants import (
     CHECKOUT,
     COMPILE,
@@ -35,7 +23,20 @@ from tests4py.constants import (
     DEFAULT_SUB_PATH_UNITTESTS,
     PYENV,
 )
+from tests4py.framework import (
+    unittest,
+    systemtest,
+)
+from tests4py.framework.cache import tests4py_cache
+from tests4py.framework.config import tests4py_config_set
+from tests4py.framework.default import (
+    tests4py_checkout,
+    tests4py_compile,
+    tests4py_test,
+    tests4py_info,
+)
 from tests4py.framework.grammar import tests4py_grammar
+from tests4py.framework.logger import LOGGER
 from tests4py.framework.sfl import tests4py_sfl_instrument, tests4py_sfl_events
 from tests4py.sfl.constants import SFL, INSTRUMENT, EVENTS, DEFAULT_EXCLUDES
 
@@ -84,6 +85,14 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
 
     arguments.add_argument(
         "--report", dest="report", default=None, help="Output the report to a file"
+    )
+
+    arguments.add_argument(
+        "--debug",
+        dest="debug",
+        default=False,
+        action="store_true",
+        help="Activate debugging log",
     )
 
     # The subparsers
@@ -518,6 +527,9 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
     )
 
     args = arguments.parse_args(args or sys.argv[1:])
+
+    if args.debug:
+        LOGGER.setLevel(logging.DEBUG)
 
     if args.command == CHECKOUT:
         report = tests4py_checkout(

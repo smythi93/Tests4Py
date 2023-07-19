@@ -304,9 +304,7 @@ def __get_test_results__(
 
 
 def __init_logger__(verbose=True):
-    if verbose:
-        LOGGER.setLevel(logging.INFO)
-    else:
+    if not verbose:
         LOGGER.setLevel(logging.WARNING)
 
 

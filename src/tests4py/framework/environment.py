@@ -20,6 +20,7 @@ def __install_version__(project: Project):
         .decode("utf-8")
         .splitlines()
     )
+    LOGGER.debug(f"Versions: {current_versions}")
     if v not in current_versions:
         try:
             LOGGER.info(f"Try to install pyenv python {v}")
@@ -85,18 +86,26 @@ def __env_on__(project: Project, skip=False) -> Environment:
     environ = dict(os.environ)
     if skip:
         return environ
-
+    LOGGER.debug(f"Before: {environ}")
     v = __install_version__(project)
 
     environ[
         "PATH"
-    ] = f'{Path(os.environ["PYENV_ROOT"], "versions", v, "bin")}:{os.environ["PATH"]}'
+    ] = f'{Path(os.environ["PYENV_ROOT"], "versions", v, "bin")}:{environ["PATH"]}'
     LOGGER.info(f"Check for activated python version")
+    LOGGER.debug(f"Dir: {Path(os.environ['PYENV_ROOT'], 'versions', v, 'bin')}")
+    LOGGER.debug(f"Dir: {os.listdir(Path(os.environ['PYENV_ROOT'], 'versions'))}")
+    LOGGER.debug(f"Dir: {os.listdir(Path(os.environ['PYENV_ROOT'], 'versions', v))}")
+    LOGGER.debug(
+        f"Dir: {os.listdir(Path(os.environ['PYENV_ROOT'], 'versions', v, 'bin'))}"
+    )
+    LOGGER.debug(f"After: {environ}")
     output = (
         subprocess.check_output(["python", "--version"], env=environ)
         .decode("utf-8")
         .replace("\n", "")
     )
+    LOGGER.debug(f"Version: {output}")
     if v not in output:
         raise OSError(
             f"Python version {v} not set, because current version is {output}"
