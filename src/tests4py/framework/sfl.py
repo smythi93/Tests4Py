@@ -2,7 +2,7 @@ import csv
 from pathlib import Path
 from typing import List
 
-from sflkit.events import EventType
+from sflkitlib.events import EventType
 
 from tests4py import sfl
 from tests4py.framework.utils import __init_logger__

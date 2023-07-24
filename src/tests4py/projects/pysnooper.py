@@ -67,7 +67,10 @@ def register():
         python_path="",
         buggy_commit_id="e21a31162f4c54be693d8ca8260e42393b39abd3",
         fixed_commit_id="56f22f8ffe1c6b2be4d2cf3ad1987fdb66113da2",
-        test_file=[Path("tests", "test_chinese.py")],
+        test_file=[
+            Path("tests", "test_chinese.py"),
+            Path("tests", "test_pysnooper.py"),
+        ],
         test_cases=["tests/test_chinese.py::test_chinese"],
         loc=448,
         test_status_buggy=TestStatus.PASSING,

@@ -21,6 +21,7 @@ class Matplotlib(Project):
         unittests: Optional[UnittestGenerator] = None,
         systemtests: Optional[SystemtestGenerator] = None,
         api: Optional[API] = None,
+        loc: int = 0,
     ):
         super().__init__(
             bug_id=bug_id,
@@ -43,6 +44,7 @@ class Matplotlib(Project):
             systemtests=systemtests,
             api=api,
             grammar=None,
+            loc=loc,
         )  # TODO adjust parameters
 
 

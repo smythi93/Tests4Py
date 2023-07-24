@@ -31,6 +31,7 @@ class FastAPI(Project):
         systemtests: Optional[SystemtestGenerator] = None,
         api: Optional[API] = None,
         grammar: Grammar = None,
+        loc: int = 0,
     ):
         super().__init__(
             bug_id=bug_id,
@@ -53,6 +54,7 @@ class FastAPI(Project):
             systemtests=systemtests,
             api=api,
             grammar=grammar_request if grammar is None else grammar,
+            loc=loc,
         )  # TODO adjust parameters
 
 

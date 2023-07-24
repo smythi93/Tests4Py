@@ -40,6 +40,7 @@ class CookieCutter(Project):
         unittests: Optional[UnittestGenerator] = None,
         systemtests: Optional[SystemtestGenerator] = None,
         api: Optional[API] = None,
+        loc: int = 0,
     ):
         super().__init__(
             bug_id=bug_id,
@@ -62,6 +63,7 @@ class CookieCutter(Project):
             systemtests=systemtests,
             api=api,
             grammar=grammar,
+            loc=loc,
         )
 
 
@@ -81,6 +83,7 @@ def register():
             "tests/test_generate_context.py::test_generate_context_decodes_non_ascii_chars"
         ],
         test_status_buggy=TestStatus.PASSING,
+        loc=1136,
     )
     CookieCutter(
         bug_id=2,
@@ -97,6 +100,7 @@ def register():
         api=CookieCutter2API(),
         systemtests=CookieCutter2SystemtestGenerator(),
         unittests=CookieCutter2UnittestGenerator(),
+        loc=1110,
     )
     CookieCutter(
         bug_id=3,
@@ -110,6 +114,7 @@ def register():
         api=CookieCutter3API(),
         systemtests=CookieCutter3SystemtestGenerator(),
         unittests=CookieCutter3UnittestGenerator(),
+        loc=1100,
     )
     CookieCutter(
         bug_id=4,
@@ -123,6 +128,7 @@ def register():
         api=CookieCutter4API(),
         systemtests=CookieCutter4SystemtestGenerator(),
         unittests=CookieCutter4UnittestGenerator(),
+        loc=631,
     )
 
 

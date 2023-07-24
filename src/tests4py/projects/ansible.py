@@ -25,6 +25,7 @@ class Ansible(Project):
         unittests: Optional[UnittestGenerator] = None,
         systemtests: Optional[SystemtestGenerator] = None,
         api: Optional[API] = None,
+        loc: int = 0,
     ):
         super().__init__(
             bug_id=bug_id,
@@ -47,6 +48,7 @@ class Ansible(Project):
             systemtests=systemtests,
             api=api,
             grammar=None,
+            loc=loc,
         )  # TODO adjust parameters
 
 
@@ -66,6 +68,7 @@ def register():
             "test/units/galaxy/test_collection.py::test_verify_collections_no_version"
         ],
         test_status_buggy=TestStatus.PASSING,
+        loc=55990,
     )
     Ansible(
         bug_id=2,
@@ -80,6 +83,7 @@ def register():
             "test/units/utils/test_version.py::test_numeric",
         ],
         test_status_buggy=TestStatus.PASSING,
+        loc=55936,
     )
     Ansible(
         bug_id=3,
@@ -94,6 +98,7 @@ def register():
         test_cases=[
             "test/units/module_utils/test_distribution_version.py::test_distribution_version",
         ],
+        loc=55902,
     )
     Ansible(
         bug_id=4,
@@ -106,6 +111,7 @@ def register():
         test_cases=[
             "test/units/playbook/test_collectionsearch.py::test_collection_static_warning",
         ],
+        loc=55805,
     )
     Ansible(
         bug_id=5,
@@ -128,6 +134,7 @@ def register():
             "test/units/module_utils/common/validation/"
             "test_check_required_arguments.py::test_check_required_arguments_missing_multiple",
         ],
+        loc=55640,
     )
     Ansible(
         bug_id=6,
@@ -142,6 +149,7 @@ def register():
             "test/units/galaxy/test_collection_install.py::test_build_requirement_from_path_no_version",
             "test/units/galaxy/test_collection_install.py::test_add_collection_requirement_to_unknown_installed_version",
         ],
+        loc=55990,
     )
     Ansible(
         bug_id=7,
@@ -156,6 +164,7 @@ def register():
         test_cases=[
             "test/units/modules/network/eos/test_eos_vlans.py::TestEosVlansModule::test_eos_vlan_replaced",
         ],
+        loc=55990,
     )
     Ansible(
         bug_id=8,
@@ -168,6 +177,7 @@ def register():
         test_cases=[
             "test/units/plugins/shell/test_powershell.py::test_join_path_unc",
         ],
+        loc=55990,
     )
     Ansible(
         bug_id=9,
@@ -189,6 +199,7 @@ def register():
         test_cases=[
             "test/units/modules/packaging/os/test_redhat_subscription.py::test_redhat_subscribtion",
         ],
+        loc=55990,
     )
     Ansible(
         bug_id=10,
@@ -202,6 +213,7 @@ def register():
             "test/units/modules/system/test_pamd.py::PamdServiceTestCase::test_remove_first_rule",
             "test/units/modules/system/test_pamd.py::PamdServiceTestCase::test_remove_last_rule",
         ],
+        loc=55990,
     )
     Ansible(
         bug_id=11,
@@ -217,6 +229,7 @@ def register():
             "test/units/modules/network/ios/test_ios_banner.py::TestIosBannerModule::test_ios_banner_nochange",
             "test/units/modules/network/ios/test_ios_banner.py::TestIosBannerIos12Module::test_ios_banner_nochange",
         ],
+        loc=55990,
     )
     Ansible(
         bug_id=12,
@@ -229,6 +242,7 @@ def register():
         test_cases=[
             "test/units/plugins/lookup/test_env.py",
         ],
+        loc=55990,
     )
     Ansible(
         bug_id=13,
@@ -241,6 +255,7 @@ def register():
         test_cases=[
             "test/units/cli/test_galaxy.py::test_collection_install_with_url",
         ],
+        loc=55990,
     )
     Ansible(
         bug_id=14,
@@ -253,6 +268,7 @@ def register():
         test_cases=[
             "test/units/galaxy/test_api.py::test_get_role_versions_pagination",
         ],
+        loc=55990,
     )
     Ansible(
         bug_id=15,
@@ -267,6 +283,7 @@ def register():
         test_cases=[
             "test/units/modules/network/eos/test_eos_eapi.py::TestEosEapiModule::test_eos_eapi_vrf",
         ],
+        loc=55990,
     )
     Ansible(
         bug_id=16,
@@ -288,6 +305,7 @@ def register():
         test_cases=[
             "test/units/module_utils/facts/hardware/test_linux_get_cpu_info.py::test_get_cpu_info_missing_arch",
         ],
+        loc=55990,
     )
     Ansible(
         bug_id=17,
@@ -300,6 +318,7 @@ def register():
         test_cases=[
             "test/units/module_utils/facts/test_facts.py::TestFactsLinuxHardwareGetMountFacts::test_get_mount_facts",
         ],
+        loc=55990,
     )
     Ansible(
         bug_id=18,
@@ -314,6 +333,7 @@ def register():
         test_cases=[
             "test/units/module_utils/test_distribution_version.py::test_distribution_version",
         ],
+        loc=55990,
     )
 
 

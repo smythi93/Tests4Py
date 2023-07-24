@@ -26,6 +26,7 @@ class Httpie(Project):
         test_status_buggy: TestStatus = TestStatus.FAILING,
         unittests: Optional[UnittestGenerator] = None,
         systemtests: Optional[SystemtestGenerator] = None,
+        loc: int = 0,
     ):
         super().__init__(
             bug_id=bug_id,
@@ -48,6 +49,7 @@ class Httpie(Project):
             systemtests=systemtests,
             api=HttpieAPI(),
             grammar=grammar_request,
+            loc=loc,
         )
 
 
