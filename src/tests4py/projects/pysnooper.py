@@ -32,6 +32,7 @@ class PySnooper(Project):
         unittests: Optional[UnittestGenerator] = None,
         systemtests: Optional[SystemtestGenerator] = None,
         api: Optional[API] = None,
+        loc: int = 0,
     ):
         super().__init__(
             bug_id=bug_id,
@@ -54,6 +55,7 @@ class PySnooper(Project):
             systemtests=systemtests,
             api=api,
             grammar=grammar,
+            loc=loc,
         )
 
 
@@ -67,6 +69,7 @@ def register():
         fixed_commit_id="56f22f8ffe1c6b2be4d2cf3ad1987fdb66113da2",
         test_file=[Path("tests", "test_chinese.py")],
         test_cases=["tests/test_chinese.py::test_chinese"],
+        loc=448,
         test_status_buggy=TestStatus.PASSING,
     )
     PySnooper(
@@ -86,6 +89,7 @@ def register():
             "tests/test_pysnooper.py::test_custom_repr_single",
             "tests/test_pysnooper.py::test_custom_repr",
         ],
+        loc=463,
         api=PySnooperAPI(
             b"TypeError: __init__() got an unexpected keyword argument 'custom_repr'"
         ),
@@ -101,6 +105,7 @@ def register():
         fixed_commit_id="15555ed760000b049aff8fecc79d29339c1224c3",
         test_file=[Path("tests", "test_pysnooper.py")],
         test_cases=["tests/test_pysnooper.py::test_file_output"],
+        loc=222,
         api=PySnooperAPI(b"NameError: name 'output_path' is not defined"),
         unittests=PySnooper3UnittestGenerator(),
         systemtests=PySnooper3SystemtestGenerator(),

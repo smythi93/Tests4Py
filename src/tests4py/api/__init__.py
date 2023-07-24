@@ -38,6 +38,10 @@ def get_projects(project_name: str = None, bug_id: int = None) -> List[Project]:
     return get_matching_projects(project_name=project_name, bug_id=bug_id)
 
 
+def get_loc(project: Project):
+    return project.loc
+
+
 def get_faulty_lines(project: Project):
     locations = list()
     with importlib.resources.path(

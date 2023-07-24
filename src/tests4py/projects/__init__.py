@@ -51,6 +51,7 @@ class Project:
         systemtests: Optional[SystemtestGenerator] = None,
         api: Optional[API] = None,
         grammar: Optional[Grammar] = None,
+        loc: int = 0,
     ):
         if project_name not in bugs:
             bugs[project_name] = dict()
@@ -89,6 +90,7 @@ class Project:
         self.unittests = unittests
         self.api = api
         self.grammar = grammar
+        self.loc = loc
 
     def write_bug_info(self, path: Path):
         config = ConfigParser()
