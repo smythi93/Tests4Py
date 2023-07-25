@@ -1,0 +1,56 @@
+0,cookiecutter/__init__.py,5,2804
+5,cookiecutter/__init__.py,5,2805,__version__,140536160986672,gANYBQAAADEuNi4wcQAu,str
+0,cookiecutter/utils.py,6,996
+0,cookiecutter/utils.py,7,997
+0,cookiecutter/utils.py,8,998
+0,cookiecutter/utils.py,9,999
+0,cookiecutter/utils.py,10,1000
+0,cookiecutter/utils.py,11,1001
+0,cookiecutter/utils.py,12,1002
+0,cookiecutter/utils.py,14,1003
+0,cookiecutter/prompt.py,10,28
+0,cookiecutter/prompt.py,11,29
+0,cookiecutter/prompt.py,13,30
+0,cookiecutter/prompt.py,14,31
+0,cookiecutter/prompt.py,16,32
+0,cookiecutter/prompt.py,18,33
+0,cookiecutter/prompt.py,20,34
+0,cookiecutter/prompt.py,21,35
+0,cookiecutter/environment.py,5,2745
+0,cookiecutter/environment.py,7,2746
+0,cookiecutter/utils.py,16,1004
+6,cookiecutter/utils.py,16,1006,__name__,140536160984400
+6,cookiecutter/utils.py,16,1007,logging,140536177478832
+6,cookiecutter/utils.py,16,1008,logging.getLogger,140536177172352
+5,cookiecutter/utils.py,16,1005,logger,140536160508816,140536160508816,logging.Logger
+2,cookiecutter/prompt.py,61,65,5,read_user_choice
+5,cookiecutter/prompt.py,61,67,var_name,140536178899248,gANYAwAAAGZvb3EALg==,str
+5,cookiecutter/prompt.py,61,68,options,140536182261744,gANYCgAAAE5PVCBBIExJU1RxAC4=,str
+0,cookiecutter/prompt.py,71,69
+6,cookiecutter/prompt.py,71,72,options,140536182261744
+6,cookiecutter/prompt.py,71,73,list,140536206464768
+6,cookiecutter/prompt.py,71,74,isinstance,140536207448256
+7,cookiecutter/prompt.py,71,75,"isinstance(options, list)",0
+7,cookiecutter/prompt.py,71,76,"not isinstance(options, list)",1
+1,cookiecutter/prompt.py,71,70,2,3
+0,cookiecutter/prompt.py,72,77
+6,cookiecutter/prompt.py,72,78,TypeError,140536206443168
+4,cookiecutter/prompt.py,61,66,5,read_user_choice
+2,cookiecutter/prompt.py,61,65,5,read_user_choice
+5,cookiecutter/prompt.py,61,67,var_name,140536178899248,gANYAwAAAGZvb3EALg==,str
+5,cookiecutter/prompt.py,61,68,options,140536182257056,140536182257056,builtins.list
+0,cookiecutter/prompt.py,71,69
+6,cookiecutter/prompt.py,71,72,options,140536182257056
+6,cookiecutter/prompt.py,71,73,list,140536206464768
+6,cookiecutter/prompt.py,71,74,isinstance,140536207448256
+7,cookiecutter/prompt.py,71,75,"isinstance(options, list)",1
+7,cookiecutter/prompt.py,71,76,"not isinstance(options, list)",0
+1,cookiecutter/prompt.py,71,71,3,2
+0,cookiecutter/prompt.py,74,79
+6,cookiecutter/prompt.py,74,82,options,140536182257056
+7,cookiecutter/prompt.py,74,83,options,0
+7,cookiecutter/prompt.py,74,84,not options,1
+1,cookiecutter/prompt.py,74,80,4,5
+0,cookiecutter/prompt.py,75,85
+6,cookiecutter/prompt.py,75,86,ValueError,140536206426656
+4,cookiecutter/prompt.py,61,66,5,read_user_choice
