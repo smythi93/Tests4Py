@@ -58,7 +58,7 @@ class Ansible(Project):
 def register():
     Ansible(
         bug_id=1,
-        python_version="3.6.9",
+        python_version="3.6.15",
         darwin_python_version="3.6.15",
         python_path="ansible/build/lib/",
         buggy_commit_id="25c5388fdec9e56517a93feb5e8d485680946c25",
@@ -72,7 +72,7 @@ def register():
     )
     Ansible(
         bug_id=2,
-        python_version="3.6.9",
+        python_version="3.6.15",
         darwin_python_version="3.6.15",
         python_path="ansible/build/lib/",
         buggy_commit_id="de59b17c7f69d5cfb72479b71776cc8b97e29a6b",
@@ -87,7 +87,7 @@ def register():
     )
     Ansible(
         bug_id=3,
-        python_version="3.6.9",
+        python_version="3.6.15",
         darwin_python_version="3.6.15",
         python_path="ansible/build/lib/",
         buggy_commit_id="70219df9056ffb1e2766f572fbe71f7a1800c9f5",
@@ -102,7 +102,7 @@ def register():
     )
     Ansible(
         bug_id=4,
-        python_version="3.6.9",
+        python_version="3.6.15",
         darwin_python_version="3.6.15",
         python_path="ansible/build/lib/",
         buggy_commit_id="d91658ec0c8434c82c3ef98bfe9eb4e1027a43a3",
@@ -115,7 +115,7 @@ def register():
     )
     Ansible(
         bug_id=5,
-        python_version="3.6.9",
+        python_version="3.6.15",
         darwin_python_version="3.6.15",
         python_path="ansible/build/lib/",
         buggy_commit_id="2af76f16be8cf2239daaec4c2f31c3dcb4e3469e",
@@ -138,7 +138,7 @@ def register():
     )
     Ansible(
         bug_id=6,
-        python_version="3.6.9",
+        python_version="3.6.15",
         darwin_python_version="3.6.15",
         python_path="ansible/build/lib/",
         buggy_commit_id="90898132e456ee1993db99a1531379f1b98ee915",
@@ -153,7 +153,7 @@ def register():
     )
     Ansible(
         bug_id=7,
-        python_version="3.6.9",
+        python_version="3.6.15",
         darwin_python_version="3.6.15",
         python_path="ansible/build/lib/",
         buggy_commit_id="cd146b836e032df785ecd9eb711c6ef23c2228b8",
@@ -168,7 +168,7 @@ def register():
     )
     Ansible(
         bug_id=8,
-        python_version="3.6.9",
+        python_version="3.6.15",
         darwin_python_version="3.6.15",
         python_path="ansible/build/lib/",
         buggy_commit_id="81378b3e744cd0d13b33d18a4f8a38aeb8a6e97a",
@@ -181,7 +181,7 @@ def register():
     )
     Ansible(
         bug_id=9,
-        python_version="3.6.9",
+        python_version="3.6.15",
         darwin_python_version="3.6.15",
         python_path="ansible/build/lib/",
         buggy_commit_id="9276dd2007a73172ed99ab5a56cded4298d3cd2b",
@@ -203,7 +203,7 @@ def register():
     )
     Ansible(
         bug_id=10,
-        python_version="3.6.9",
+        python_version="3.6.15",
         darwin_python_version="3.6.15",
         python_path="ansible/build/lib/",
         buggy_commit_id="e368f788f71c338cd3f049d5d6bdc643a51c0514",
@@ -217,7 +217,7 @@ def register():
     )
     Ansible(
         bug_id=11,
-        python_version="3.6.9",
+        python_version="3.6.15",
         darwin_python_version="3.6.15",
         python_path="ansible/build/lib/",
         buggy_commit_id="da07b98b7a433493728ddb7ac7efbd20b8988776",
@@ -233,7 +233,7 @@ def register():
     )
     Ansible(
         bug_id=12,
-        python_version="3.6.9",
+        python_version="3.6.15",
         darwin_python_version="3.6.15",
         python_path="ansible/build/lib/",
         buggy_commit_id="05e2e1806162393d76542a75c2520c7d61c2d855",
@@ -246,7 +246,7 @@ def register():
     )
     Ansible(
         bug_id=13,
-        python_version="3.6.9",
+        python_version="3.6.15",
         darwin_python_version="3.6.15",
         python_path="ansible/build/lib/",
         buggy_commit_id="41472ee3878be215af8b933b2b04b4a72b9165ca",
@@ -259,7 +259,7 @@ def register():
     )
     Ansible(
         bug_id=14,
-        python_version="3.6.9",
+        python_version="3.6.15",
         darwin_python_version="3.6.15",
         python_path="ansible/build/lib/",
         buggy_commit_id="a1ab093ddbd32f1002cbf6d6f184c7d0041d890d",
@@ -272,7 +272,7 @@ def register():
     )
     Ansible(
         bug_id=15,
-        python_version="3.6.9",
+        python_version="3.6.15",
         darwin_python_version="3.6.15",
         python_path="ansible/build/lib/",
         buggy_commit_id="b1e8a6c1cbd2a668b462995487b819ef7dd8ba4b",
@@ -287,7 +287,7 @@ def register():
     )
     Ansible(
         bug_id=16,
-        python_version="3.6.9",
+        python_version="3.6.15",
         darwin_python_version="3.6.15",
         python_path="ansible/build/lib/",
         buggy_commit_id="2a9964ede8b2b77a62a005f6f5abc964b2819b0e",
@@ -309,7 +309,7 @@ def register():
     )
     Ansible(
         bug_id=17,
-        python_version="3.6.9",
+        python_version="3.6.15",
         darwin_python_version="3.6.15",
         python_path="ansible/build/lib/",
         buggy_commit_id="9cb47832d15c61884b30d70f9d4e0f816b064b05",
@@ -322,7 +322,7 @@ def register():
     )
     Ansible(
         bug_id=18,
-        python_version="3.6.9",
+        python_version="3.6.15",
         darwin_python_version="3.6.15",
         python_path="ansible/build/lib/",
         buggy_commit_id="70219df9056ffb1e2766f572fbe71f7a1800c9f5",

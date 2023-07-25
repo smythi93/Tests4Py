@@ -29,7 +29,7 @@ class TQDM(Project):
             github_url="https://github.com/tqdm/tqdm",
             status=Status.OK,
             cause="N.A.",
-            python_version="3.6.9",
+            python_version="3.6.15",
             python_path="",
             buggy_commit_id=buggy_commit_id,
             fixed_commit_id=fixed_commit_id,
