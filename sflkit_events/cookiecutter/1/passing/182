@@ -1,0 +1,36 @@
+0,cookiecutter/__init__.py,2,1688
+5,cookiecutter/__init__.py,2,1689,__version__,139756374787184,gANYBQAAADIuMC4wcQAu,str
+0,cookiecutter/utils.py,2,1364
+0,cookiecutter/utils.py,3,1365
+0,cookiecutter/utils.py,4,1366
+0,cookiecutter/utils.py,5,1367
+0,cookiecutter/utils.py,6,1368
+0,cookiecutter/utils.py,7,1369
+0,cookiecutter/utils.py,8,1370
+0,cookiecutter/utils.py,10,1371
+0,cookiecutter/prompt.py,2,972
+0,cookiecutter/prompt.py,3,973
+0,cookiecutter/prompt.py,5,974
+0,cookiecutter/prompt.py,6,975
+0,cookiecutter/prompt.py,8,976
+0,cookiecutter/environment.py,2,2236
+0,cookiecutter/environment.py,4,2237
+0,cookiecutter/prompt.py,9,977
+0,cookiecutter/utils.py,12,1372
+6,cookiecutter/utils.py,12,1374,__name__,139756374834752
+6,cookiecutter/utils.py,12,1375,logging,139756390825136
+6,cookiecutter/utils.py,12,1376,logging.getLogger,139756391042944
+5,cookiecutter/utils.py,12,1373,logger,139756374588944,139756374588944,logging.Logger
+2,cookiecutter/prompt.py,99,1090,29,read_user_dict
+5,cookiecutter/prompt.py,99,1092,var_name,139756417451184,gANYBAAAAG5hbWVxAC4=,str
+5,cookiecutter/prompt.py,99,1093,default_value,139756370390512,gANYBwAAAHJ1c3NlbGxxAC4=,str
+0,cookiecutter/prompt.py,107,1094
+6,cookiecutter/prompt.py,107,1097,default_value,139756370390512
+6,cookiecutter/prompt.py,107,1098,dict,139756416155712
+6,cookiecutter/prompt.py,107,1099,isinstance,139756417468608
+7,cookiecutter/prompt.py,107,1100,"isinstance(default_value, dict)",0
+7,cookiecutter/prompt.py,107,1101,"not isinstance(default_value, dict)",1
+1,cookiecutter/prompt.py,107,1095,80,81
+0,cookiecutter/prompt.py,108,1102
+6,cookiecutter/prompt.py,108,1103,TypeError,139756416123552
+4,cookiecutter/prompt.py,99,1091,29,read_user_dict
