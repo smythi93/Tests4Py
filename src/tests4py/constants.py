@@ -96,7 +96,10 @@ if check_pyenv(PYENV):
     PYENV_EXISTS = True
 else:
     if sys.platform.startswith("win"):
-        PYENV = (PYENV_ROOT / "bin" / "pyenv.bat").absolute()
+        if IS_POWER_SHELL:
+            PYENV = (PYENV_ROOT / "pyenv-win" / "bin" / "pyenv.ps1").absolute()
+        else:
+            PYENV = (PYENV_ROOT / "pyenv-win" / "bin" / "pyenv.bat").absolute()
     else:
         PYENV = (PYENV_ROOT / "bin" / "pyenv").absolute()
     PYENV_EXISTS = PYENV.exists()
