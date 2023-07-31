@@ -1,8 +1,11 @@
 import os
 import re
+import subprocess
 import sys
 from pathlib import Path
 from typing import Dict
+
+import psutil
 
 # ~~~~~~ TYPES ~~~~~~ #
 
@@ -66,8 +69,37 @@ VENV = "tests4py_venv"
 
 NEWLINE_TOKEN = "TESTS4PYNEWLINETOKEN"
 
-# ~~~~~~ TESTS ~~~~~~ #
+# ~~~~~~ PYENV ~~~~~~ #
+
+
+def check_pyenv(pyenv):
+    try:
+        _ = subprocess.check_output([pyenv, "--version"])
+    except FileNotFoundError:
+        return False
+    return True
+
+
+PYENV_ROOT = Path.home() / ".pyenv"
+
 if sys.platform.startswith("win"):
-    PYENV = os.path.join(os.environ["PYENV_HOME"], "bin", "pyenv.bat")
+    IS_POWER_SHELL = bool(
+        re.fullmatch(
+            "pwsh|pwsh.exe|powershell.exe", psutil.Process(os.getppid()).name()
+        )
+    )
 else:
-    PYENV = "pyenv"
+    IS_POWER_SHELL = False
+
+PYENV = "pyenv"
+if check_pyenv(PYENV):
+    PYENV_EXISTS = True
+else:
+    if sys.platform.startswith("win"):
+        PYENV = (PYENV_ROOT / "bin" / "pyenv.bat").absolute()
+    else:
+        PYENV = (PYENV_ROOT / "bin" / "pyenv").absolute()
+    PYENV_EXISTS = PYENV.exists()
+    PYENV = str(PYENV)
+
+os.environ["PYENV_ROOT"] = str(PYENV_ROOT)

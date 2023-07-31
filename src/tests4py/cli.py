@@ -1,10 +1,10 @@
 import argparse
 import logging
 import os
-import subprocess
 import sys
 from pathlib import Path
 
+from tests4py import __version__
 from tests4py.constants import (
     CHECKOUT,
     COMPILE,
@@ -21,7 +21,7 @@ from tests4py.constants import (
     DEFAULT_WORK_DIR,
     DEFAULT_SUB_PATH_SYSTEMTESTS,
     DEFAULT_SUB_PATH_UNITTESTS,
-    PYENV,
+    PYENV_EXISTS,
 )
 from tests4py.framework import (
     unittest,
@@ -35,23 +35,11 @@ from tests4py.framework.default import (
     tests4py_test,
     tests4py_info,
 )
+from tests4py.framework.environment import __install_pyenv__
 from tests4py.framework.grammar import tests4py_grammar
 from tests4py.framework.logger import LOGGER
 from tests4py.framework.sfl import tests4py_sfl_instrument, tests4py_sfl_events
 from tests4py.sfl.constants import SFL, INSTRUMENT, EVENTS, DEFAULT_EXCLUDES
-
-
-def check_pyenv():
-    try:
-        os.environ["PYENV_ROOT"]
-    except KeyError:
-        logging.error("Environment Variable PYENV_ROOT not set! Exiting.")
-        sys.exit(-1)
-    try:
-        _ = subprocess.check_output([PYENV, "--version"])
-    except FileNotFoundError:
-        logging.error("Pyenv is not installed! Exiting.")
-        sys.exit(-1)
 
 
 def str_to_bool(s):
@@ -70,14 +58,14 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
     if "-O" in sys.argv:
         sys.argv.remove("-O")
         os.execl(sys.executable, sys.executable, "-O", *sys.argv)
-        sys.exit(0)
 
     if stdout is not None:
         sys.stdout = stdout
     if stderr is not None:
         sys.stderr = stderr
 
-    check_pyenv()
+    if not PYENV_EXISTS:
+        __install_pyenv__()
 
     arguments = argparse.ArgumentParser(
         description="The access point to the tests4py framework"
@@ -94,6 +82,8 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         action="store_true",
         help="Activate debugging log",
     )
+
+    arguments.add_argument("--version", action="version", version=__version__)
 
     # The subparsers
     commands = arguments.add_subparsers(
