@@ -3,10 +3,10 @@ import re
 import unittest
 
 from fuzzingbook.Grammars import EXPR_GRAMMAR, Grammar, is_valid_grammar
-from isla.derivation_tree import DerivationTree
-from isla.parser import EarleyParser
+from fuzzingbook.Parser import EarleyParser
 
 from tests4py.grammars import antlr, python
+from tests4py.grammars.tree import DerivationTree
 from tests4py.grammars.utils import GrammarVisitor
 
 

@@ -4,9 +4,8 @@ import string
 from ast import *
 from typing import Optional, Union
 
-from fuzzingbook.GrammarFuzzer import GrammarFuzzer
+from fuzzingbook.GrammarFuzzer import GrammarFuzzer, DerivationTree
 from fuzzingbook.Grammars import Grammar, srange, is_valid_grammar
-from isla.derivation_tree import DerivationTree
 
 from tests4py.grammars.utils import GrammarVisitor, Generator
 

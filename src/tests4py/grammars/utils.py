@@ -3,12 +3,9 @@ from abc import ABC, abstractmethod
 from typing import Callable, Any
 
 from fuzzingbook.Grammars import Grammar
+from fuzzingbook.Parser import EarleyParser
 
-# noinspection PyPackageRequirements
-from isla.derivation_tree import DerivationTree
-
-# noinspection PyPackageRequirements
-from isla.parser import EarleyParser
+from tests4py.grammars.tree import DerivationTree
 
 ILLEGAL_CHARS = re.compile(r"[^A-Za-z0-9_]")
 

@@ -7,8 +7,8 @@ from abc import abstractmethod
 from pathlib import Path
 from typing import List, Optional, Tuple
 
+from fuzzingbook.GrammarFuzzer import GrammarFuzzer
 from fuzzingbook.Grammars import Grammar, srange, is_valid_grammar
-from isla.fuzzer import GrammarFuzzer
 
 from tests4py.grammars import python
 from tests4py.projects import Project, Status, TestingFramework, TestStatus

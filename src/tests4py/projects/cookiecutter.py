@@ -13,11 +13,11 @@ from pathlib import Path
 from subprocess import Popen
 from typing import List, Optional, Tuple, Any
 
+from fuzzingbook.GrammarFuzzer import GrammarFuzzer
 from fuzzingbook.Grammars import Grammar, srange, is_valid_grammar
-from isla.derivation_tree import DerivationTree
-from isla.fuzzer import GrammarFuzzer
 
 from tests4py.constants import Environment
+from tests4py.grammars.tree import DerivationTree
 from tests4py.grammars.utils import GrammarVisitor
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator

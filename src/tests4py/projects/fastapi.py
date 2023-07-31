@@ -7,10 +7,10 @@ from abc import ABC
 from pathlib import Path
 from typing import List, Optional, Tuple
 
+from fuzzingbook.GrammarFuzzer import GrammarFuzzer
 from fuzzingbook.Grammars import Grammar, is_valid_grammar, srange
-from isla.derivation_tree import DerivationTree
-from isla.fuzzer import GrammarFuzzer
 
+from tests4py.grammars.tree import DerivationTree
 from tests4py.grammars.utils import GrammarVisitor
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
