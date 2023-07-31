@@ -31,7 +31,7 @@ def __install_version__(project: Project):
     if v not in current_versions:
         try:
             LOGGER.info(f"Try to install pyenv python {v}")
-            subprocess.check_call([PYENV, "install", v])
+            subprocess.check_call([PYENV, "install", v], stdin=b"\n" * 10)
             return v
         except subprocess.CalledProcessError:  #
             pass
@@ -42,7 +42,8 @@ def __install_version__(project: Project):
                     f"Try to install pyenv python {project.python_fallback_version}"
                 )
                 subprocess.check_call(
-                    ["pyenv", "install", project.python_fallback_version]
+                    ["pyenv", "install", project.python_fallback_version],
+                    stdin=b"\n" * 10,
                 )
                 return v
             except subprocess.CalledProcessError:
@@ -73,7 +74,9 @@ def __install_version__(project: Project):
         v = f"{p}.{r}"
         LOGGER.info(f"Failed. Try to install fallback pyenv python {v}")
         try:
-            output = subprocess.check_output([PYENV, "install", v]).decode("utf-8")
+            output = subprocess.check_output(
+                [PYENV, "install", v], stdin=b"\n" * 10
+            ).decode("utf-8")
             match = VERSION_PATTERN.search(output)
             if match:
                 v = match.group("v")
@@ -115,16 +118,15 @@ def __env_on__(project: Project, skip=False) -> Environment:
     LOGGER.debug(f"Before: {environ}")
     v = __install_version__(project)
 
-    environ[
-        "PATH"
-    ] = f'{Path(os.environ["PYENV_ROOT"], "versions", v, "bin")}:{environ["PATH"]}'
+    python_root = PYENV_ROOT / "versions" / v
+    if not sys.platform.startswith("win"):
+        python_root /= "bin"
+
+    environ["PATH"] = f'{python_root}:{environ["PATH"]}'
     LOGGER.info(f"Check for activated python version")
-    LOGGER.debug(f"Dir: {Path(os.environ['PYENV_ROOT'], 'versions', v, 'bin')}")
-    LOGGER.debug(f"Dir: {os.listdir(Path(os.environ['PYENV_ROOT'], 'versions'))}")
-    LOGGER.debug(f"Dir: {os.listdir(Path(os.environ['PYENV_ROOT'], 'versions', v))}")
-    LOGGER.debug(
-        f"Dir: {os.listdir(Path(os.environ['PYENV_ROOT'], 'versions', v, 'bin'))}"
-    )
+    LOGGER.debug(f"Dir: {python_root}")
+    LOGGER.debug(f"Dir: {os.listdir(PYENV_ROOT / 'versions')}")
+    LOGGER.debug(f"Dir: {python_root}")
     LOGGER.debug(f"After: {environ}")
     output = (
         subprocess.check_output(["python", "--version"], env=environ)
