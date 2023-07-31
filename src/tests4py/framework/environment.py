@@ -165,11 +165,7 @@ def __env_on__(project: Project, skip=False) -> Environment:
     LOGGER.debug(f"Dir: {os.listdir(PYENV_ROOT / 'versions')}")
     LOGGER.debug(f"Dir: {python_root}")
     LOGGER.debug(f"After: {environ}")
-    output = (
-        subprocess.check_output([PYTHON, "--version"], env=environ)
-        .decode("utf-8")
-        .replace("\n", "")
-    )
+    output = __get_python_version__(environ)
     LOGGER.debug(f"Version: {output}")
     if v not in output:
         raise OSError(
@@ -177,6 +173,14 @@ def __env_on__(project: Project, skip=False) -> Environment:
         )
     LOGGER.info(f"Using pyenv python {v}")
     return environ
+
+
+def __get_python_version__(environ: Environment):
+    return (
+        subprocess.check_output([PYTHON, "--version"], env=environ)
+        .decode("utf-8")
+        .replace("\n", "")
+    )
 
 
 def __update_env__(environ: Environment):
@@ -220,6 +224,8 @@ def __activate_venv__(work_dir: Path, environ: Environment) -> Environment:
         environ["_OLD_VIRTUAL_PS1"] = environ["PS1"] if "PS1" in environ else ""
         environ["PS1"] = f'({VENV}) {environ["PS1"] if "PS1" in environ else ""}'
         environ["VIRTUAL_ENV_PROMPT"] = f"({VENV})"
+    output = __get_python_version__(environ)
+    LOGGER.debug(f"Venv version: {output}")
     return environ
 
 
