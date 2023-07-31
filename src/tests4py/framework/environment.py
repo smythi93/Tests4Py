@@ -120,10 +120,11 @@ def __env_on__(project: Project, skip=False) -> Environment:
 
     python_root = PYENV_ROOT / "versions" / v
     if sys.platform.startswith("win"):
-        python_root /= "bin"
-        environ["PATH"] = f'{python_root};{environ["PATH"]}'
+        sep = ";"
     else:
-        environ["PATH"] = f'{python_root}:{environ["PATH"]}'
+        python_root /= "bin"
+        sep = ":"
+    environ["PATH"] = f'{python_root}{sep}{environ["PATH"]}'
     LOGGER.info(f"Check for activated python version")
     LOGGER.debug(f"Dir: {python_root}")
     LOGGER.debug(f"Dir: {os.listdir(PYENV_ROOT / 'versions')}")
