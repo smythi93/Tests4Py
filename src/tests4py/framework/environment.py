@@ -1,3 +1,4 @@
+import importlib
 import os
 import shutil
 import subprocess
@@ -15,6 +16,11 @@ from tests4py.constants import (
 )
 from tests4py.framework.logger import LOGGER
 from tests4py.projects import Project
+
+DEFAULT_RUN = subprocess.run
+DEFAULT_CHECK_CALL = subprocess.check_call
+DEFAULT_CHECK_OUTPUT = subprocess.check_output
+DEFAULT_POPEN = subprocess.Popen
 
 
 def __install_version__(project: Project):
@@ -112,8 +118,36 @@ def __install_pyenv__() -> str:
         subprocess.check_call(["bash"], stdin=process)
 
 
+def activate_shell_run(*args, **kwargs):
+    kwargs["shell"] = True
+    return DEFAULT_RUN(*args, **kwargs)
+
+
+def activate_shell_check_call(*args, **kwargs):
+    kwargs["shell"] = True
+    return DEFAULT_CHECK_CALL(*args, **kwargs)
+
+
+def activate_shell_check_output(*args, **kwargs):
+    kwargs["shell"] = True
+    return DEFAULT_CHECK_OUTPUT(*args, **kwargs)
+
+
+class ActivateShellPopen(DEFAULT_POPEN):
+    def __init__(self, *args, **kwargs):
+        kwargs["shell"] = True
+        super().__init__(*args, **kwargs)
+
+
 def __env_on__(project: Project, skip=False) -> Environment:
-    environ = dict(os.environ)
+    if sys.platform.startswith("win"):
+        importlib.reload(subprocess)
+        subprocess.run = activate_shell_run
+        subprocess.check_call = activate_shell_check_call
+        subprocess.check_output = activate_shell_check_output
+        subprocess.Popen = ActivateShellPopen
+
+    environ = os.environ.copy()
     if skip:
         return environ
     LOGGER.debug(f"Before: {environ}")

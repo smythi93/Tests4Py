@@ -7,7 +7,7 @@ from os import PathLike
 from pathlib import Path
 from typing import List, Tuple, Collection, Any
 
-from tests4py.constants import Environment, HARNESS_FILE
+from tests4py.constants import Environment, HARNESS_FILE, PYTHON
 from tests4py.framework.logger import LOGGER
 
 
@@ -34,7 +34,7 @@ class API:
     def execute(self, system_test_path: PathLike, environ: Environment) -> Any:
         try:
             process = subprocess.run(
-                ["python", HARNESS_FILE] + self.get_test_arguments(system_test_path),
+                [PYTHON, HARNESS_FILE] + self.get_test_arguments(system_test_path),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 timeout=self.default_timeout,
