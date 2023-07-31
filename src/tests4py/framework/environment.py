@@ -107,7 +107,7 @@ def __install_pyenv__() -> str:
                 "git",
                 "clone",
                 "https://github.com/pyenv-win/pyenv-win.git",
-                str(PYENV_TMP),
+                PYENV_TMP,
             ]
         )
         shutil.rmtree(PYENV_ROOT, ignore_errors=True)
@@ -227,4 +227,4 @@ def __create_venv__(work_dir, environ):
     env_dir = work_dir / VENV
     shutil.rmtree(env_dir, ignore_errors=True)
     LOGGER.info("Creating virtual env")
-    subprocess.run([PYTHON, "-m", "venv", env_dir], env=environ)
+    subprocess.check_call([PYTHON, "-m", "venv", env_dir], env=environ)

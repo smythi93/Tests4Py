@@ -71,7 +71,7 @@ NEWLINE_TOKEN = "TESTS4PYNEWLINETOKEN"
 
 # ~~~~~~ PYENV ~~~~~~ #
 
-PYTHON = "python3"
+PYTHON = "python"
 
 
 def check_pyenv(pyenv):
