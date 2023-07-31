@@ -4,7 +4,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from tests4py.constants import Environment, VERSION_PATTERN, VENV, PYENV, IS_POWER_SHELL
+from tests4py.constants import Environment, VERSION_PATTERN, VENV, PYENV, PYENV_ROOT
 from tests4py.framework.logger import LOGGER
 from tests4py.projects import Project
 
@@ -89,7 +89,7 @@ def __install_pyenv__() -> str:
                 "git",
                 "clone",
                 "https://github.com/pyenv-win/pyenv-win.git",
-                os.path.join("$HOME" if IS_POWER_SHELL else "%USERPROFILE%", ".pyenv"),
+                str(PYENV_ROOT),
             ]
         )
     else:
