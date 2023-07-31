@@ -100,7 +100,7 @@ def __install_pyenv__() -> str:
             ]
         )
         shutil.rmtree(PYENV_ROOT, ignore_errors=True)
-        shutil.move(PYENV_TMP / "pyenv-win", PYENV_ROOT)
+        shutil.move(PYENV_TMP / "pyenv-win", PYENV_ROOT, copy_function=shutil.copytree)
         shutil.rmtree(PYENV_TMP, ignore_errors=True)
     else:
         process = subprocess.check_output(["curl", "https://pyenv.run"])
