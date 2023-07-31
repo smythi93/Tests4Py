@@ -91,6 +91,7 @@ def __install_version__(project: Project):
 
 def __install_pyenv__() -> str:
     if sys.platform.startswith("win"):
+        shutil.rmtree(PYENV_TMP, ignore_errors=True)
         subprocess.check_call(
             [
                 "git",
