@@ -96,7 +96,7 @@ def __install_pyenv__() -> str:
                 "git",
                 "clone",
                 "https://github.com/pyenv-win/pyenv-win.git",
-                PYENV_TMP,
+                str(PYENV_TMP),
             ]
         )
         shutil.rmtree(PYENV_ROOT, ignore_errors=True)
