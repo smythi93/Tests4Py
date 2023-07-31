@@ -4,7 +4,14 @@ import subprocess
 import sys
 from pathlib import Path
 
-from tests4py.constants import Environment, VERSION_PATTERN, VENV, PYENV, PYENV_ROOT
+from tests4py.constants import (
+    Environment,
+    VERSION_PATTERN,
+    VENV,
+    PYENV,
+    PYENV_ROOT,
+    PYENV_TMP,
+)
 from tests4py.framework.logger import LOGGER
 from tests4py.projects import Project
 
@@ -89,9 +96,12 @@ def __install_pyenv__() -> str:
                 "git",
                 "clone",
                 "https://github.com/pyenv-win/pyenv-win.git",
-                str(PYENV_ROOT),
+                PYENV_TMP,
             ]
         )
+        shutil.rmtree(PYENV_ROOT, ignore_errors=True)
+        shutil.move(PYENV_TMP / "pyenv-win", PYENV_ROOT)
+        shutil.rmtree(PYENV_TMP, ignore_errors=True)
     else:
         process = subprocess.check_output(["curl", "https://pyenv.run"])
         subprocess.check_call(["bash"], stdin=process)
