@@ -11,6 +11,7 @@ from tests4py.constants import (
     PYENV,
     PYENV_ROOT,
     PYENV_TMP,
+    PYTHON,
 )
 from tests4py.framework.logger import LOGGER
 from tests4py.projects import Project
@@ -131,7 +132,7 @@ def __env_on__(project: Project, skip=False) -> Environment:
     LOGGER.debug(f"Dir: {python_root}")
     LOGGER.debug(f"After: {environ}")
     output = (
-        subprocess.check_output(["python", "--version"], env=environ)
+        subprocess.check_output([PYTHON, "--version"], env=environ)
         .decode("utf-8")
         .replace("\n", "")
     )
@@ -146,24 +147,24 @@ def __env_on__(project: Project, skip=False) -> Environment:
 
 def __update_env__(environ: Environment):
     subprocess.check_call(
-        ["python", "-m", "pip", "install", "--upgrade", "pip"], env=environ
+        [PYTHON, "-m", "pip", "install", "--upgrade", "pip"], env=environ
     )
     subprocess.check_call(
-        ["python", "-m", "pip", "install", "--upgrade", "setuptools"],
+        [PYTHON, "-m", "pip", "install", "--upgrade", "setuptools"],
         env=environ,
     )
     subprocess.check_call(
-        ["python", "-m", "pip", "install", "--upgrade", "wheel"], env=environ
+        [PYTHON, "-m", "pip", "install", "--upgrade", "wheel"], env=environ
     )
     subprocess.check_call(
-        ["python", "-m", "pip", "install", "--upgrade", "pytest"],
+        [PYTHON, "-m", "pip", "install", "--upgrade", "pytest"],
         env=environ,
     )
 
 
 def __sflkit_env__(environ: Environment):
     subprocess.check_call(
-        ["python", "-m", "pip", "install", "sflkitlib==0.0.1"],
+        [PYTHON, "-m", "pip", "install", "sflkitlib==0.0.1"],
         env=environ,
     )
 
@@ -192,4 +193,4 @@ def __create_venv__(work_dir, environ):
     env_dir = work_dir / VENV
     shutil.rmtree(env_dir, ignore_errors=True)
     LOGGER.info("Creating virtual env")
-    subprocess.run(["python", "-m", "venv", env_dir], env=environ)
+    subprocess.run([PYTHON, "-m", "venv", env_dir], env=environ)

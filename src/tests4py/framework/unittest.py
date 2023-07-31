@@ -4,14 +4,15 @@ import subprocess
 from pathlib import Path
 from typing import Union
 
-from tests4py.framework import utils, environment
 from tests4py.constants import (
     DEFAULT_SUB_PATH_UNITTESTS,
     UNITTEST,
     GENERATE,
     TEST,
     DEFAULT_UNITTESTS_DIVERSITY_PATH,
+    PYTHON,
 )
+from tests4py.framework import utils, environment
 from tests4py.framework.logger import LOGGER
 from tests4py.projects import TestingFramework
 
@@ -116,7 +117,7 @@ def tests4py_generate(
             environ = environment.__env_on__(project)
             environ = environment.__activate_venv__(work_dir, environ)
 
-            command = ["python", "-m", TestingFramework.PYTEST.value, path]
+            command = [PYTHON, "-m", TestingFramework.PYTEST.value, path]
             output = subprocess.run(command, stdout=subprocess.PIPE, env=environ).stdout
             (
                 report.successful,
@@ -173,7 +174,7 @@ def tests4py_test(
         environ = environment.__env_on__(project)
         environ = environment.__activate_venv__(work_dir, environ)
 
-        command = ["python", "-m", TestingFramework.PYTEST.value]
+        command = [PYTHON, "-m", TestingFramework.PYTEST.value]
         if output:
             command.append(f"--junit-xml={output.absolute()}")
         if diversity and (work_dir / DEFAULT_UNITTESTS_DIVERSITY_PATH).exists():

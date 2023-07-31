@@ -22,6 +22,7 @@ from tests4py.constants import (
     UNITTEST_FAILED_PATTERN,
     GLOBAL_PROJECTS,
     PYENV_EXISTS,
+    PYTHON,
 )
 from tests4py.framework.environment import (
     __env_on__,
@@ -316,7 +317,7 @@ def compile_project(
 
             LOGGER.info("Installing requirements")
             subprocess.check_call(
-                ["python", "-m", "pip", "install", "-r", t4p_requirements],
+                [PYTHON, "-m", "pip", "install", "-r", t4p_requirements],
                 stdout=subprocess.STDOUT if verbose else subprocess.DEVNULL,
                 env=environ,
             )
@@ -325,7 +326,7 @@ def compile_project(
             test_requirements = Path("test_requirements.txt")
             if test_requirements.exists():
                 subprocess.check_call(
-                    ["python", "-m", "pip", "install", "-r", test_requirements],
+                    [PYTHON, "-m", "pip", "install", "-r", test_requirements],
                     stdout=subprocess.STDOUT if verbose else subprocess.DEVNULL,
                     env=environ,
                 )
@@ -478,11 +479,11 @@ def test_project(
         environ = __env_on__(project)
         environ = __activate_venv__(work_dir, environ)
 
-        command = ["python", "-m"]
+        command = [PYTHON, "-m"]
 
         if coverage:
             subprocess.run(
-                ["python", "-m", "pip", "install", "coverage"],
+                [PYTHON, "-m", "pip", "install", "coverage"],
                 env=environ,
             )
             command += ["coverage", "run", "-m"]
@@ -494,7 +495,7 @@ def test_project(
         elif project.testing_framework == TestingFramework.UNITTEST:
             if xml_output:
                 subprocess.run(
-                    ["python", "-m", "pip", "install", "unittest-xml-reporting"],
+                    [PYTHON, "-m", "pip", "install", "unittest-xml-reporting"],
                     env=environ,
                 )
                 command += ["xmlrunner", "--output-file", xml_output.absolute()]
