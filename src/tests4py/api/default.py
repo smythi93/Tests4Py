@@ -21,6 +21,7 @@ from tests4py.constants import (
     UNITTEST_TOTAL_PATTERN,
     UNITTEST_FAILED_PATTERN,
     GLOBAL_PROJECTS,
+    PYENV_EXISTS,
 )
 from tests4py.framework.environment import (
     __env_on__,
@@ -28,6 +29,7 @@ from tests4py.framework.environment import (
     __activate_venv__,
     __update_env__,
     __sflkit_env__,
+    __install_pyenv__,
 )
 from tests4py.framework.logger import LOGGER
 from tests4py.framework.utils import (
@@ -279,6 +281,8 @@ def compile_project(
     sfl: bool = False,
     verbose: bool = False,
 ) -> CompileReport:
+    if not PYENV_EXISTS:
+        __install_pyenv__()
     if report is None:
         report = CompileReport()
     config = load_config()

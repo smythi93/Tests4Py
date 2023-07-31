@@ -21,7 +21,6 @@ from tests4py.constants import (
     DEFAULT_WORK_DIR,
     DEFAULT_SUB_PATH_SYSTEMTESTS,
     DEFAULT_SUB_PATH_UNITTESTS,
-    PYENV_EXISTS,
 )
 from tests4py.framework import (
     unittest,
@@ -35,7 +34,6 @@ from tests4py.framework.default import (
     tests4py_test,
     tests4py_info,
 )
-from tests4py.framework.environment import __install_pyenv__
 from tests4py.framework.grammar import tests4py_grammar
 from tests4py.framework.logger import LOGGER
 from tests4py.framework.sfl import tests4py_sfl_instrument, tests4py_sfl_events
@@ -63,9 +61,6 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         sys.stdout = stdout
     if stderr is not None:
         sys.stderr = stderr
-
-    if not PYENV_EXISTS:
-        __install_pyenv__()
 
     arguments = argparse.ArgumentParser(
         description="The access point to the tests4py framework"
