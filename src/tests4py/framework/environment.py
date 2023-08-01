@@ -3,6 +3,7 @@ import os
 import shutil
 import subprocess
 import sys
+from io import BytesIO
 from pathlib import Path
 
 from tests4py.constants import (
@@ -23,6 +24,14 @@ DEFAULT_CHECK_OUTPUT = subprocess.check_output
 DEFAULT_POPEN = subprocess.Popen
 
 
+class _NewLineStream(BytesIO):
+    def read(self, __size: int = ...) -> bytes | None:
+        return b"\n"
+
+    def fileno(self) -> int:
+        return 0
+
+
 def __install_version__(project: Project):
     LOGGER.info(f"Checking for platform {sys.platform}")
     if sys.platform == "darwin":
@@ -38,7 +47,7 @@ def __install_version__(project: Project):
     if v not in current_versions:
         try:
             LOGGER.info(f"Try to install pyenv python {v}")
-            subprocess.check_call([PYENV, "install", v], stdin=b"\n" * 10)
+            subprocess.check_output([PYENV, "install", v], input=b"\n" * 10)
             return v
         except subprocess.CalledProcessError:  #
             pass
@@ -48,7 +57,7 @@ def __install_version__(project: Project):
                 LOGGER.info(
                     f"Try to install pyenv python {project.python_fallback_version}"
                 )
-                subprocess.check_call(
+                subprocess.check_output(
                     ["pyenv", "install", project.python_fallback_version],
                     stdin=b"\n" * 10,
                 )
@@ -116,6 +125,9 @@ def __install_pyenv__() -> str:
     else:
         process = subprocess.check_output(["curl", "https://pyenv.run"])
         subprocess.check_call(["bash"], stdin=process)
+
+
+# Windows stuff
 
 
 def activate_shell_run(*args, **kwargs):
