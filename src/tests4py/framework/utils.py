@@ -10,7 +10,6 @@ from tests4py import projects
 from tests4py.constants import (
     INFO_FILE,
     REQUIREMENTS_FILE,
-    SETUP_FILE,
     CHECKOUT,
     COMPILE,
     TEST,
@@ -169,14 +168,13 @@ def __setup__():
     youtubedl.register()
 
 
-def __get_project__(work_dir: Path) -> Tuple[Project, Path, Path, Path]:
+def __get_project__(work_dir: Path) -> Tuple[Project, Path, Path]:
     LOGGER.info(f"Entering dir {work_dir}")
     os.chdir(work_dir)
 
     LOGGER.info(f"Checking whether Tests4Py project")
     tests4py_info = work_dir / INFO_FILE
     tests4py_requirements = work_dir / REQUIREMENTS_FILE
-    tests4py_setup = work_dir / SETUP_FILE
     if not tests4py_info.exists():
         raise ValueError(f"No Tests4Py project found in {work_dir}, no tests4py_info")
     elif not tests4py_requirements.exists():
@@ -185,12 +183,7 @@ def __get_project__(work_dir: Path) -> Tuple[Project, Path, Path, Path]:
         )
 
     __setup__()
-    return (
-        projects.load_bug_info(tests4py_info),
-        tests4py_info,
-        tests4py_requirements,
-        tests4py_setup,
-    )
+    return (projects.load_bug_info(tests4py_info), tests4py_info, tests4py_requirements)
 
 
 def __get_pytest_result__(
@@ -309,8 +302,13 @@ def __init_logger__(verbose=True):
 
 
 class GlobalConfig:
-    def __init__(self, cache: bool = None):
+    def __init__(
+        self, cache: Optional[bool] = None, last_workdir: Optional[os.PathLike] = None
+    ):
         self.cache: bool = bool(cache)
+        self.last_workdir: os.PathLike = (
+            None if last_workdir is None else Path(last_workdir)
+        )
 
     @staticmethod
     def load():
@@ -320,7 +318,7 @@ class GlobalConfig:
 
     def write(self):
         with open(GLOBAL_CONFIG_FILE, "w") as fp:
-            json.dump(self.__dict__, fp)
+            json.dump(self.__dict__, fp, default=str)
 
 
 def load_config() -> GlobalConfig:
@@ -385,3 +383,10 @@ def cache_venv(project: Project, src: Path):
         dirs_exist_ok=True,
         copy_function=shutil.copy,
     )
+
+
+def get_correct_dir(current_dir: Path, config: GlobalConfig):
+    tests4py_info = current_dir / INFO_FILE
+    if not tests4py_info.exists() and config.last_workdir is not None:
+        return config.last_workdir
+    return current_dir

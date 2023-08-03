@@ -3,7 +3,7 @@ import os
 import shutil
 import subprocess
 from pathlib import Path
-from typing import List, Union
+from typing import List, Union, Optional
 
 from tabulate import tabulate
 
@@ -12,7 +12,6 @@ from tests4py.constants import (
     FIX_FILES,
     INFO_FILE,
     REQUIREMENTS_FILE,
-    SETUP_FILE,
     HARNESS_FILE,
     PATCH_FILE,
     EXPLANATION_FILE,
@@ -48,6 +47,7 @@ from tests4py.framework.utils import (
     copy_cached_env,
     cache_venv,
     __get_test_results__,
+    get_correct_dir,
 )
 from tests4py.projects import (
     resources,
@@ -66,7 +66,7 @@ def checkout_project(
     work_dir: Path = DEFAULT_WORK_DIR,
     update: bool = False,
     force: bool = False,
-    report: CheckoutReport = None,
+    report: Optional[CheckoutReport] = None,
     verbose: bool = False,
 ) -> CheckoutReport:
     if report is None:
@@ -79,7 +79,7 @@ def checkout_project(
 
         work_location = work_dir / project.get_identifier()
         if update and work_location.exists():
-            project_verify, _, _, _ = __get_project__(work_location)
+            project_verify, _, _ = __get_project__(work_location)
             version_verify = 1 - int(project_verify.buggy)
             compiled_verify = project_verify.compiled
         else:
@@ -209,12 +209,6 @@ def checkout_project(
                 shutil.copy(resource, work_location / REQUIREMENTS_FILE)
         with importlib.resources.path(
             getattr(getattr(resources, project.project_name), f"bug_{project.bug_id}"),
-            "setup.sh",
-        ) as resource:
-            if resource.exists():
-                shutil.copy(resource, work_location / SETUP_FILE)
-        with importlib.resources.path(
-            getattr(getattr(resources, project.project_name), f"bug_{project.bug_id}"),
             "harness.py",
         ) as resource:
             if resource.exists():
@@ -266,7 +260,8 @@ def checkout_project(
                 work_location / DEFAULT_SYSTEMTESTS_DIVERSITY_PATH,
                 grammar=project.grammar,
             )
-
+        config.last_workdir = work_location.absolute()
+        config.write()
         report.successful = True
     except BaseException as e:
         report.raised = e
@@ -275,10 +270,10 @@ def checkout_project(
 
 
 def compile_project(
-    work_dir_or_project: Union[Path, Project] = None,
+    work_dir_or_project: Optional[Union[Path, Project]] = None,
     recompile: bool = False,
     force: bool = False,
-    report: CompileReport = None,
+    report: Optional[CompileReport] = None,
     sfl: bool = False,
     verbose: bool = False,
 ) -> CompileReport:
@@ -289,13 +284,13 @@ def compile_project(
     config = load_config()
     current_dir = Path.cwd()
     if work_dir_or_project is None:
-        work_dir = current_dir
+        work_dir = get_correct_dir(current_dir, config)
     elif isinstance(work_dir_or_project, Project):
         work_dir = DEFAULT_WORK_DIR / work_dir_or_project.get_identifier()
     else:
         work_dir = work_dir_or_project
     try:
-        project, t4p_info, t4p_requirements, t4p_setup = __get_project__(work_dir)
+        project, t4p_info, t4p_requirements = __get_project__(work_dir)
         report.project = project
         if project.compiled and not recompile:
             LOGGER.info(f"{project} already compiled")
@@ -332,16 +327,12 @@ def compile_project(
                 )
 
         LOGGER.info("Run setup")
-        if t4p_setup.exists():
-            with open(t4p_setup, "r") as setup_file:
-                for line in setup_file:
-                    if line:
-                        subprocess.check_call(
-                            line,
-                            shell=True,
-                            env=environ,
-                            stdout=subprocess.STDOUT if verbose else subprocess.DEVNULL,
-                        )
+        for command in project.setup:
+            subprocess.check_call(
+                command,
+                env=environ,
+                stdout=subprocess.STDOUT if verbose else subprocess.DEVNULL,
+            )
 
         if config.cache:
             cache_venv(project, work_dir)
@@ -363,7 +354,9 @@ def compile_project(
 
 
 def info_project(
-    project_name: str = None, bug_id: int = None, report: InfoReport = None
+    project_name: Optional[str] = None,
+    bug_id: Optional[int] = None,
+    report: Optional[InfoReport] = None,
 ):
     if report is None:
         report = InfoReport()
@@ -443,24 +436,25 @@ def info_project(
 
 
 def test_project(
-    work_dir_or_project: Union[Path, Project] = None,
-    single_test: Union[List[str], str] = None,
+    work_dir_or_project: Optional[Union[Path, Project]] = None,
+    single_test: Optional[Union[List[str], str]] = None,
     all_tests: bool = False,
-    xml_output: Path = None,
+    xml_output: Optional[Path] = None,
     coverage: bool = False,
-    report: TestReport = None,
+    report: Optional[TestReport] = None,
 ) -> TestReport:
     if report is None:
         report = TestReport()
     current_dir = Path.cwd()
     if work_dir_or_project is None:
-        work_dir = current_dir
+        config = load_config()
+        work_dir = get_correct_dir(current_dir, config)
     elif isinstance(work_dir_or_project, Project):
         work_dir = DEFAULT_WORK_DIR / work_dir_or_project.get_identifier()
     else:
         work_dir = work_dir_or_project
     try:
-        project, _, _, _ = __get_project__(work_dir)
+        project, _, _ = __get_project__(work_dir)
         report.project = project
         if not project.compiled:
             raise ValueError(
@@ -513,6 +507,8 @@ def test_project(
                 command.append(single_test)
             else:
                 command += single_test
+        elif all_tests and project.test_base:
+            command.append(project.test_base)
 
         LOGGER.info(f"Run tests with command {command}")
         output = subprocess.run(command, stdout=subprocess.PIPE, env=environ).stdout

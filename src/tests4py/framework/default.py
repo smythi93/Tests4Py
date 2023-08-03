@@ -64,12 +64,7 @@ def tests4py_compile(
 ) -> CompileReport:
     report = CompileReport()
     __init_logger__(verbose=verbose)
-
-    if work_dir is None:
-        work_dir = Path.cwd()
     try:
-        if not work_dir.exists():
-            raise IOError(f"{work_dir} does not exist")
         api.compile_project(work_dir, recompile=recompile, force=force, report=report)
     except BaseException as e:
         report.raised = e
@@ -97,9 +92,6 @@ def tests4py_test(
 ) -> TestReport:
     report = TestReport()
     __init_logger__(verbose=verbose)
-
-    if work_dir is None:
-        work_dir = Path.cwd()
     try:
         api.test_project(
             work_dir,

@@ -1,7 +1,8 @@
 import enum
+import os
 from configparser import ConfigParser
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Sequence
 
 from fuzzingbook.Grammars import Grammar
 
@@ -51,6 +52,8 @@ class Project:
         systemtests: Optional[SystemtestGenerator] = None,
         api: Optional[API] = None,
         grammar: Optional[Grammar] = None,
+        setup: Optional[Sequence[List[str | os.PathLike] | str]] = None,
+        test_base: Optional[os.PathLike] = None,
         loc: int = 0,
     ):
         if project_name not in bugs:
@@ -90,7 +93,9 @@ class Project:
         self.unittests = unittests
         self.api = api
         self.grammar = grammar
+        self.setup = list() if setup is None else setup
         self.loc = loc
+        self.test_base = test_base
 
     def write_bug_info(self, path: Path):
         config = ConfigParser()

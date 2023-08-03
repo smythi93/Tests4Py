@@ -71,7 +71,7 @@ def tests4py_generate(
 
     current_dir = Path.cwd()
     try:
-        project, _, _, _ = utils.__get_project__(work_dir)
+        project, _, _ = utils.__get_project__(work_dir)
         report.project = project
 
         if project.systemtests is None:
@@ -160,7 +160,7 @@ def tests4py_test(
 
     current_dir = Path.cwd()
     try:
-        project, _, _, _ = utils.__get_project__(work_dir)
+        project, _, _ = utils.__get_project__(work_dir)
         report.project = project
 
         if project.systemtests is None:
