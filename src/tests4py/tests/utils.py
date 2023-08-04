@@ -1,3 +1,4 @@
+import abc
 import enum
 import os
 import subprocess
@@ -81,6 +82,27 @@ class API:
                     path = Path(dir_path, file)
                     tests.append(self.run(path, environ))
         return tests
+
+
+class CLIAPI(API, abc.ABC):
+    def __init__(self, cli: List[str], default_timeout=5):
+        super().__init__(default_timeout=default_timeout)
+        self.cli = cli
+
+    def execute(self, system_test_path: PathLike, environ: Environment) -> Any:
+        try:
+            process = subprocess.run(
+                self.cli + self.get_test_arguments(system_test_path),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=self.default_timeout,
+                env=environ,
+            )
+            return process
+        except subprocess.TimeoutExpired:
+            return None
+        except Exception:
+            return None
 
 
 class ExpectOutputAPI(API):

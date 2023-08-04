@@ -185,6 +185,7 @@ __all__ = [
     "keras",
     "luigi",
     "matplotlib",
+    "middle",
     "pandas",
     "pysnooper",
     "sanic",

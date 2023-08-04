@@ -1,0 +1,13 @@
+diff --git a/src/middle/__init__.py b/src/middle/__init__.py
+index e5cfd6b..dee1b72 100644
+--- a/src/middle/__init__.py
++++ b/src/middle/__init__.py
+@@ -3,7 +3,7 @@ def middle(x, y, z):
+         if x < y:
+             return y
+         elif x < z:
+-            return y
++            return x
+     else:
+         if x > y:
+             return y

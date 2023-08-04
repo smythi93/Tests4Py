@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return "-otest1.log"
+        return "4\n2\n5"
 
     def test_diversity_2(self):
-        return "-otest2.log\n-d1"
+        return "64\n63\n125"
 
     def test_diversity_3(self):
-        return "-otest3.log\n-vx"
+        return "-3\n-45\n12"
 
     def test_diversity_4(self):
-        return "-otest4.log\n-vx,y"
+        return "2\n1\n3"
 
     def test_diversity_5(self):
-        return "-otest5.log\n-vw\n-d2"
+        return "0\n-1\n1"
 
     def test_diversity_6(self):
-        return "-otest6.log\n-ptest"
+        return "1\n0\n64"
 
     def test_diversity_7(self):
-        return "-otest7.log\n-d1\n-ptest"
+        return "5\n4\n6"
 
     def test_diversity_8(self):
-        return "-otest8.log\n-vx\n-ptest"
+        return "0\n-1000\n1000"
 
     def test_diversity_9(self):
-        return "-otest9.log\n-d1\n-vw,x,y,z"
+        return "9\n8\n10"
 
     def test_diversity_10(self):
-        return "-otest10.log\n-d1\n-ptest\n-vx,z"
+        return "-5\n-6\n-4"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return ""
+        return "2\n4\n5"
 
     def test_diversity_2(self):
-        return "-o\n-d1"
+        return "63\n125\n64"
 
     def test_diversity_3(self):
-        return "-vx"
+        return "12\n-3\n-45"
 
     def test_diversity_4(self):
-        return "-o\n-vx,y"
+        return "2\n3\n1"
 
     def test_diversity_5(self):
-        return "-vw\n-d2"
+        return "0\n1\n-1"
 
     def test_diversity_6(self):
-        return "-o\n-ptest"
+        return "0\n1\n64"
 
     def test_diversity_7(self):
-        return "-d1\n-ptest"
+        return "4\n6\n5"
 
     def test_diversity_8(self):
-        return "-o\n-vx\n-ptest"
+        return "-1000\n0\n1000"
 
     def test_diversity_9(self):
-        return "-d1\n-vw,x,y,z"
+        return "9\n10\n8"
 
     def test_diversity_10(self):
-        return "-o\n-d1\n-ptest\n-vx,z"
+        return "-4\n-5\n-6"

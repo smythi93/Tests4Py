@@ -46,6 +46,7 @@ from tests4py.projects import (
     tqdm,
     youtubedl,
     TestingFramework,
+    middle,
 )
 from tests4py.tests.utils import TestResult
 
@@ -156,6 +157,7 @@ def __setup__():
     httpie.register()
     keras.register()
     luigi.register()
+    middle.register()
     matplotlib.register()
     pandas.register()
     pysnooper.register()
