@@ -179,6 +179,7 @@ __all__ = [
     "load_bug_info",
     "ansible",
     "black",
+    "calculator",
     "cookiecutter",
     "fastapi",
     "httpie",

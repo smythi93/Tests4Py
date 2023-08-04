@@ -1,0 +1,10 @@
+diff --git a/src/expression/expr/arithmetic.py b/src/expression/expr/arithmetic.py
+index d903dcb..60200c9 100644
+--- a/src/expression/expr/arithmetic.py
++++ b/src/expression/expr/arithmetic.py
+@@ -30,6 +30,7 @@ class Mul(Binary):
+ class Div(Binary):
+     def evaluate(self):
+         l, r = self.left.evaluate(), self.right.evaluate()
++        assert r != 0
+         return l / r

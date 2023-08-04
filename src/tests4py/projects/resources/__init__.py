@@ -1,7 +1,9 @@
 from tests4py.projects.resources import (
     ansible,
     black,
+    calculator,
     cookiecutter,
+    expression,
     fastapi,
     httpie,
     keras,
@@ -23,7 +25,9 @@ from tests4py.projects.resources import (
 __all__ = [
     "ansible",
     "black",
+    "calculator",
     "cookiecutter",
+    "expression",
     "fastapi",
     "httpie",
     "keras",

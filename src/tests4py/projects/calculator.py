@@ -10,7 +10,7 @@ from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API
 
 
-class Markup(Project):
+class Calculator(Project):
     def __init__(
         self,
         bug_id: int,
@@ -27,8 +27,8 @@ class Markup(Project):
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name="markup",
-            github_url="https://github.com/smythi93/markup",
+            project_name="calculator",
+            github_url="https://github.com/smythi93/calculator",
             status=Status.OK,
             cause="N.A.",
             python_version="3.10.9",
@@ -50,25 +50,18 @@ class Markup(Project):
 
 
 def register():
-    Markup(
+    Calculator(
         bug_id=1,
-        buggy_commit_id="edce326b0518e08a1f296f8704bf97f4688be3d1",
-        fixed_commit_id="638fdb1cf9f27136629b9240efbed08626f905fd",
+        buggy_commit_id="5d7f01c5497940b7415db22864100d90c575300f",
+        fixed_commit_id="063d988682e407ad25cd94854f1b4d5e3dc282f8",
         test_file=[
-            Path("tests", "test_markup.py"),
-        ],
-        test_cases=[os.path.join("tests", "test_markup.py") + "::test_quoted_abc"],
-    )
-    Markup(
-        bug_id=2,
-        buggy_commit_id="809eefd11860c0dd5c9b4911c1a8cf17e9e63624",
-        fixed_commit_id="4a9dd7d2230ee361dfbfc7f53eb9e7db8ecaed42",
-        test_file=[
-            Path("tests", "test_markup.py"),
+            Path("tests", "test_calc.py"),
         ],
         test_cases=[
-            os.path.join("tests", "test_markup.py") + "::test_abc",
-            os.path.join("tests", "test_markup.py") + "::test_quoted_abc",
+            os.path.join("tests", "test_calc.py") + "::TestCalc::test_main_sqrt_0",
+            os.path.join("tests", "test_calc.py") + "::TestCalc::test_main_sqrt_neg",
+            os.path.join("tests", "test_calc.py") + "::TestCalc::test_sqrt_0",
+            os.path.join("tests", "test_calc.py") + "::TestCalc::test_sqrt_neg",
         ],
     )
 

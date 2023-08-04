@@ -10,7 +10,7 @@ from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API
 
 
-class Markup(Project):
+class Expression(Project):
     def __init__(
         self,
         bug_id: int,
@@ -27,8 +27,8 @@ class Markup(Project):
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name="markup",
-            github_url="https://github.com/smythi93/markup",
+            project_name="expression",
+            github_url="https://github.com/smythi93/expression",
             status=Status.OK,
             cause="N.A.",
             python_version="3.10.9",
@@ -50,25 +50,18 @@ class Markup(Project):
 
 
 def register():
-    Markup(
+    Expression(
         bug_id=1,
-        buggy_commit_id="edce326b0518e08a1f296f8704bf97f4688be3d1",
-        fixed_commit_id="638fdb1cf9f27136629b9240efbed08626f905fd",
+        buggy_commit_id="7b08a1dd737bd47c9be47258d2cd63bb7de72c47",
+        fixed_commit_id="10356a6d3768db2ff7749408b7f3d12a773a18a9",
         test_file=[
-            Path("tests", "test_markup.py"),
-        ],
-        test_cases=[os.path.join("tests", "test_markup.py") + "::test_quoted_abc"],
-    )
-    Markup(
-        bug_id=2,
-        buggy_commit_id="809eefd11860c0dd5c9b4911c1a8cf17e9e63624",
-        fixed_commit_id="4a9dd7d2230ee361dfbfc7f53eb9e7db8ecaed42",
-        test_file=[
-            Path("tests", "test_markup.py"),
+            Path("tests", "test_evaluate.py"),
+            Path("tests", "test_expression.py"),
         ],
         test_cases=[
-            os.path.join("tests", "test_markup.py") + "::test_abc",
-            os.path.join("tests", "test_markup.py") + "::test_quoted_abc",
+            os.path.join("tests", "test_evaluate.py")
+            + "::TestEvaluate::test_eval_div_error",
+            os.path.join("tests", "test_expression.py") + "::TestExpr::test_div_error",
         ],
     )
 

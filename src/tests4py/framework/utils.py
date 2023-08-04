@@ -48,6 +48,8 @@ from tests4py.projects import (
     TestingFramework,
     middle,
     markup,
+    calculator,
+    expression,
 )
 from tests4py.tests.utils import TestResult
 
@@ -153,7 +155,9 @@ def __setup__():
     LOGGER.info("Loading projects")
     ansible.register()
     black.register()
+    calculator.register()
     cookiecutter.register()
+    expression.register()
     fastapi.register()
     httpie.register()
     keras.register()
@@ -187,7 +191,7 @@ def __get_project__(work_dir: Path) -> Tuple[Project, Path, Path]:
         )
 
     __setup__()
-    return (projects.load_bug_info(tests4py_info), tests4py_info, tests4py_requirements)
+    return projects.load_bug_info(tests4py_info), tests4py_info, tests4py_requirements
 
 
 def __get_pytest_result__(
