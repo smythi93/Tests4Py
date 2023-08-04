@@ -184,6 +184,7 @@ __all__ = [
     "httpie",
     "keras",
     "luigi",
+    "markup",
     "matplotlib",
     "middle",
     "pandas",

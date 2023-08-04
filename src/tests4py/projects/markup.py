@@ -32,8 +32,8 @@ class Middle(Project):
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name="middle",
-            github_url="https://github.com/smythi93/middle",
+            project_name="markup",
+            github_url="https://github.com/smythi93/markup",
             status=Status.OK,
             cause="N.A.",
             python_version="3.10.9",
@@ -57,27 +57,23 @@ class Middle(Project):
 def register():
     Middle(
         bug_id=1,
-        buggy_commit_id="15350ede14501997656f2fd49bd5b9af2c8d2582",
-        fixed_commit_id="c0e7b35b1fba9320fe40fe143c89f6b4c7c8979d",
+        buggy_commit_id="edce326b0518e08a1f296f8704bf97f4688be3d1",
+        fixed_commit_id="638fdb1cf9f27136629b9240efbed08626f905fd",
         test_file=[
-            Path("tests", "test_middle.py"),
+            Path("tests", "test_markup.py"),
         ],
-        test_cases=[
-            os.path.join("tests", "test_middle.py") + "::TestMiddle::test_middle_213"
-        ],
-        unittests=MiddleUnittestGenerator(),
-        systemtests=MiddleSystemtestGenerator(),
-        api=Middle1API(),
+        test_cases=[os.path.join("tests", "test_markup.py") + "::test_quoted_abc"],
     )
     Middle(
         bug_id=2,
-        buggy_commit_id="eed99fa2741bd28744231dfcac0ea34679532bf9",
-        fixed_commit_id="029cb8beb7bfc0f2853dfa9504dcdfcc753b051e",
+        buggy_commit_id="809eefd11860c0dd5c9b4911c1a8cf17e9e63624",
+        fixed_commit_id="4a9dd7d2230ee361dfbfc7f53eb9e7db8ecaed42",
         test_file=[
-            Path("tests", "test_middle.py"),
+            Path("tests", "test_markup.py"),
         ],
         test_cases=[
-            os.path.join("tests", "test_middle.py") + "::TestMiddle::test_middle_213",
+            os.path.join("tests", "test_markup.py") + "::test_abc",
+            os.path.join("tests", "test_markup.py") + "::test_quoted_abc",
         ],
     )
 

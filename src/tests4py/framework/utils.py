@@ -47,6 +47,7 @@ from tests4py.projects import (
     youtubedl,
     TestingFramework,
     middle,
+    markup,
 )
 from tests4py.tests.utils import TestResult
 
@@ -157,8 +158,9 @@ def __setup__():
     httpie.register()
     keras.register()
     luigi.register()
-    middle.register()
+    markup.register()
     matplotlib.register()
+    middle.register()
     pandas.register()
     pysnooper.register()
     sanic.register()

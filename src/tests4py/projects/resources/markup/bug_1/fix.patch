@@ -1,0 +1,13 @@
+diff --git a/src/markup/__init__.py b/src/markup/__init__.py
+index 6b119a6..b18a241 100644
+--- a/src/markup/__init__.py
++++ b/src/markup/__init__.py
+@@ -8,7 +8,7 @@ def remove_html_markup(s):
+             tag = True
+         elif c == ">" and not quote:
+             tag = False
+-        elif c == '"' or c == "'" and tag:
++        elif (c == '"' or c == "'") and tag:  # <-- FIX
+             quote = not quote
+         elif not tag:
+             out = out + c
