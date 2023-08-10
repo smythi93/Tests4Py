@@ -67,7 +67,7 @@ def sflkit_get_events(
     else:
         work_dir = work_dir_or_project
     try:
-        project, _, _, _ = __get_project__(work_dir)
+        project, _, _ = __get_project__(work_dir)
         if output is None:
             output = get_events_path(project)
         report.project = project

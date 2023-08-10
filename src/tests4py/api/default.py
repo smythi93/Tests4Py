@@ -202,44 +202,50 @@ def checkout_project(
         project.write_bug_info(work_location / INFO_FILE)
 
         LOGGER.info(f"Copying resources for {project.get_identifier()}")
-        with importlib.resources.path(
-            getattr(getattr(resources, project.project_name), f"bug_{project.bug_id}"),
-            "requirements.txt",
+        project_resources = importlib.resources.files(
+            getattr(getattr(resources, project.project_name), f"bug_{project.bug_id}")
+        )
+        with importlib.resources.as_file(
+            project_resources.joinpath(
+                "requirements.txt",
+            )
         ) as resource:
             if resource.exists():
                 shutil.copy(resource, work_location / REQUIREMENTS_FILE)
-        with importlib.resources.path(
-            getattr(getattr(resources, project.project_name), f"bug_{project.bug_id}"),
-            "harness.py",
+        with importlib.resources.as_file(
+            project_resources.joinpath("harness.py"),
         ) as resource:
             if resource.exists():
                 shutil.copy(resource, work_location / HARNESS_FILE)
             else:
-                with importlib.resources.path(
-                    getattr(resources, project.project_name), "harness.py"
+                with importlib.resources.as_file(
+                    importlib.resources.files(
+                        getattr(resources, project.project_name)
+                    ).joinpath("harness.py")
                 ) as default_resource:
                     if default_resource.exists():
                         shutil.copy(default_resource, work_location / HARNESS_FILE)
 
-        with importlib.resources.path(
-            getattr(getattr(resources, project.project_name), f"bug_{project.bug_id}"),
-            "fix.patch",
+        with importlib.resources.as_file(
+            project_resources.joinpath(
+                "fix.patch",
+            )
         ) as resource:
             if resource.exists():
                 shutil.copy(resource, work_location / PATCH_FILE)
-        with importlib.resources.path(
-            getattr(getattr(resources, project.project_name), f"bug_{project.bug_id}"),
-            "explanation.md",
+        with importlib.resources.as_file(
+            project_resources.joinpath(
+                "explanation.md",
+            )
         ) as resource:
             if resource.exists():
                 shutil.copy(resource, work_location / EXPLANATION_FILE)
 
         if project.unittests:
-            with importlib.resources.path(
-                getattr(
-                    getattr(resources, project.project_name), f"bug_{project.bug_id}"
-                ),
-                "unittests.py",
+            with importlib.resources.as_file(
+                project_resources.joinpath(
+                    "unittests.py",
+                )
             ) as resource:
                 if resource.exists():
                     shutil.copy(

@@ -200,9 +200,6 @@ def __setup__():
 
 
 def __get_project__(work_dir: Path) -> Tuple[Project, Path, Path]:
-    LOGGER.info(f"Entering dir {work_dir}")
-    os.chdir(work_dir)
-
     LOGGER.info(f"Checking whether Tests4Py project")
     tests4py_info = work_dir / INFO_FILE
     tests4py_requirements = work_dir / REQUIREMENTS_FILE
