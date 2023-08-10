@@ -93,7 +93,7 @@ class ProjectReport(Report, abc.ABC):
         return dictionary
 
 
-class LocationReport(Report, abc.ABC):
+class LocationReport(ProjectReport, abc.ABC):
     def __init__(self, command: str, subcommand: str = None):
         super().__init__(command=command, subcommand=subcommand)
         self.location: Optional[os.PathLike] = None
