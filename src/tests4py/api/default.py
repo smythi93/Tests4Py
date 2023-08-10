@@ -78,6 +78,7 @@ def checkout_project(
         check_further = project.status is Status.OK
 
         work_location = work_dir / project.get_identifier()
+        report.location = work_location
         if update and work_location.exists():
             project_verify, _, _ = __get_project__(work_location)
             version_verify = 1 - int(project_verify.buggy)
@@ -289,6 +290,7 @@ def compile_project(
         work_dir = DEFAULT_WORK_DIR / work_dir_or_project.get_identifier()
     else:
         work_dir = work_dir_or_project
+    report.location = work_dir
     try:
         project, t4p_info, t4p_requirements = __get_project__(work_dir)
         report.project = project
@@ -305,6 +307,7 @@ def compile_project(
             env_exists = True
 
         environ = __activate_venv__(work_dir, environ)
+        report.env = environ
 
         if not env_exists:
             LOGGER.info("Installing utilities")
@@ -453,6 +456,7 @@ def test_project(
         work_dir = DEFAULT_WORK_DIR / work_dir_or_project.get_identifier()
     else:
         work_dir = work_dir_or_project
+    report.location = work_dir
     try:
         project, _, _ = __get_project__(work_dir)
         report.project = project

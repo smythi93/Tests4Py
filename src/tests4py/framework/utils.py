@@ -1,3 +1,4 @@
+import abc
 import json
 import logging
 import os
@@ -24,6 +25,7 @@ from tests4py.constants import (
     VENV,
     GRAMMAR,
     NEWLINE_TOKEN,
+    Environment,
 )
 from tests4py.framework.logger import LOGGER
 from tests4py.projects import (
@@ -54,7 +56,7 @@ from tests4py.projects import (
 from tests4py.tests.utils import TestResult
 
 
-class Report:
+class Report(abc.ABC):
     def __init__(self, command: str, subcommand: str = None):
         self.command: str = command
         self.subcommand: Optional[str] = subcommand
@@ -79,7 +81,7 @@ class Report:
         return self.__repr__()
 
 
-class ProjectReport(Report):
+class ProjectReport(Report, abc.ABC):
     def __init__(self, command: str, subcommand: str = None):
         self.project: Optional[Project] = None
         super().__init__(command, subcommand=subcommand)
@@ -91,14 +93,35 @@ class ProjectReport(Report):
         return dictionary
 
 
-class CheckoutReport(ProjectReport):
+class LocationReport(Report, abc.ABC):
+    def __init__(self, command: str, subcommand: str = None):
+        super().__init__(command=command, subcommand=subcommand)
+        self.location: Optional[os.PathLike] = None
+
+    def to_dict(self):
+        dictionary = super().to_dict()
+        if self.location:
+            dictionary["location"] = repr(self.location)
+        return dictionary
+
+
+class CheckoutReport(LocationReport):
     def __init__(self):
         super().__init__(CHECKOUT)
 
 
-class CompileReport(ProjectReport):
+class CompileReport(LocationReport):
     def __init__(self):
         super().__init__(COMPILE)
+        self.env: Optional[Environment] = None
+
+    def to_dict(self):
+        dictionary = super().to_dict()
+        if self.env:
+            dictionary["env"] = "\n".join(
+                f"{name}={value}" for name, value in self.env.items()
+            )
+        return dictionary
 
 
 class InfoReport(ProjectReport):
@@ -113,7 +136,7 @@ class InfoReport(ProjectReport):
         return dictionary
 
 
-class TestingReport(ProjectReport):
+class TestingReport(LocationReport, abc.ABC):
     def __init__(self, command: str, subcommand: str = None):
         self.total: Optional[int] = None
         self.passing: Optional[int] = None
