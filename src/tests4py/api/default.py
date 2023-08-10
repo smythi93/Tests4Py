@@ -110,17 +110,14 @@ def checkout_project(
             else:
                 raise AttributeError("Not status=OK")
 
-            current_dir = Path.cwd()
             try:
-                LOGGER.info(f"Entering dir {work_location}")
-                os.chdir(work_location)
-
                 LOGGER.info(
                     f"Resetting git at {work_location} to {project.fixed_commit_id}"
                 )
                 subprocess.run(
                     ["git", "reset", "--hard", project.fixed_commit_id],
                     stdout=subprocess.STDOUT if verbose else subprocess.DEVNULL,
+                    cwd=work_location,
                 )
 
                 LOGGER.info(f"Creating tmp location at {tmp_location}")
@@ -131,6 +128,7 @@ def checkout_project(
                     ["git", "show", "--name-only"],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
+                    cwd=work_location,
                 ).stdout.decode("utf-8")
                 change_file_all = list()
 
@@ -162,10 +160,12 @@ def checkout_project(
                 subprocess.run(
                     ["git", "reset", "--hard", project.buggy_commit_id],
                     stdout=subprocess.STDOUT if verbose else subprocess.DEVNULL,
+                    cwd=work_location,
                 )
                 subprocess.run(
                     ["git", "clean", "-f", "-d"],
                     stdout=subprocess.STDOUT if verbose else subprocess.DEVNULL,
+                    cwd=work_location,
                 )
 
                 LOGGER.info(f"Copying required files from {tmp_location}")
@@ -189,7 +189,6 @@ def checkout_project(
                             shutil.move(change_file_path, change_file)
             finally:
                 shutil.rmtree(tmp_location, ignore_errors=True)
-                os.chdir(current_dir)
 
             LOGGER.info(f"Create info file")
             with open(work_location / FIX_FILES, "w") as fp:
@@ -324,6 +323,7 @@ def compile_project(
                 [PYTHON, "-m", "pip", "install", "-r", t4p_requirements],
                 stdout=subprocess.STDOUT if verbose else subprocess.DEVNULL,
                 env=environ,
+                cwd=work_dir,
             )
 
             LOGGER.info("Checking and installing test requirements")
@@ -333,6 +333,7 @@ def compile_project(
                     [PYTHON, "-m", "pip", "install", "-r", test_requirements],
                     stdout=subprocess.STDOUT if verbose else subprocess.DEVNULL,
                     env=environ,
+                    cwd=work_dir,
                 )
 
         LOGGER.info("Run setup")
@@ -341,6 +342,7 @@ def compile_project(
                 command,
                 env=environ,
                 stdout=subprocess.STDOUT if verbose else subprocess.DEVNULL,
+                cwd=work_dir,
             )
 
         if config.cache:
@@ -357,8 +359,6 @@ def compile_project(
     except BaseException as e:
         report.raised = e
         report.successful = False
-    finally:
-        os.chdir(current_dir)
     return report
 
 
@@ -487,8 +487,7 @@ def test_project(
 
         if coverage:
             subprocess.run(
-                [PYTHON, "-m", "pip", "install", "coverage"],
-                env=environ,
+                [PYTHON, "-m", "pip", "install", "coverage"], env=environ, cwd=work_dir
             )
             command += ["coverage", "run", "-m"]
 
@@ -501,6 +500,7 @@ def test_project(
                 subprocess.run(
                     [PYTHON, "-m", "pip", "install", "unittest-xml-reporting"],
                     env=environ,
+                    cwd=work_dir,
                 )
                 command += ["xmlrunner", "--output-file", xml_output.absolute()]
             else:
@@ -521,7 +521,9 @@ def test_project(
             command.append(project.test_base)
 
         LOGGER.info(f"Run tests with command {command}")
-        output = subprocess.run(command, stdout=subprocess.PIPE, env=environ).stdout
+        output = subprocess.run(
+            command, stdout=subprocess.PIPE, env=environ, cwd=work_dir
+        ).stdout
         LOGGER.info(output.decode("utf-8"))
 
         successful = False
@@ -555,6 +557,4 @@ def test_project(
     except BaseException as e:
         report.raised = e
         report.successful = False
-    finally:
-        os.chdir(current_dir)
     return report
