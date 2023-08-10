@@ -79,6 +79,9 @@ def register():
         test_cases=[
             os.path.join("tests", "test_middle.py") + "::TestMiddle::test_middle_213",
         ],
+        unittests=MiddleUnittestGenerator(),
+        systemtests=MiddleSystemtestGenerator(),
+        api=Middle2API(),
     )
 
 
@@ -91,6 +94,22 @@ class Middle1API(CLIAPI):
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
         _, expected, _ = sorted(list(map(int, process.args[1:])))
+        result = int(process.stdout.decode("utf8"))
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class Middle2API(API):
+    def __init__(self, default_timeout=5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        _, expected, _ = sorted(list(map(int, process.args[2:])))
         result = int(process.stdout.decode("utf8"))
         if result == expected:
             return TestResult.PASSING, ""
@@ -195,6 +214,22 @@ class MiddleUnittestGenerator(
 
 
 class MiddleSystemtestGenerator(SystemtestGenerator, MiddleTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        x, y, z = self.generate_values(self.generate_int)
+        while not x < y < z:
+            x, y, z = self.generate_values(self.generate_int)
+        return f"{y}\n{x}\n{z}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        values = list(self.generate_values(self.generate_int))
+        while values[1] < values[0] < values[2]:
+            random.shuffle(values)
+        x, y, z = values
+        return f"{x}\n{y}\n{z}", TestResult.PASSING
+
+
+class Middle2SystemtestGenerator(SystemtestGenerator, MiddleTestGenerator):
+    # z>x>y fails - y>x=z might fail
     def generate_failing_test(self) -> Tuple[str, TestResult]:
         x, y, z = self.generate_values(self.generate_int)
         while not x < y < z:
