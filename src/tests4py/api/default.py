@@ -144,15 +144,15 @@ def checkout_project(
                                 )
 
                 for test_file in project.test_file:
-                    if test_file.is_dir():
+                    if (work_location / test_file).is_dir():
                         shutil.copytree(
-                            test_file,
+                            work_location / test_file,
                             tmp_location / str(test_file).replace(os.path.sep, "_"),
                             dirs_exist_ok=True,
                         )
                     else:
                         shutil.copy(
-                            test_file,
+                            work_location / test_file,
                             tmp_location / str(test_file).replace(os.path.sep, "_"),
                         )
 
@@ -173,9 +173,11 @@ def checkout_project(
                 for test_file in project.test_file:
                     dest = tmp_location / str(test_file).replace(os.path.sep, "_")
                     if dest.is_dir():
-                        shutil.copytree(dest, test_file, dirs_exist_ok=True)
+                        shutil.copytree(
+                            dest, work_location / test_file, dirs_exist_ok=True
+                        )
                     else:
-                        shutil.copy(dest, test_file)
+                        shutil.copy(dest, work_location / test_file)
 
                 patch_fix_all = list()
                 # Copy other change file from fixed to buggy if version is fixed commit
@@ -186,7 +188,7 @@ def checkout_project(
                     if change_file_path.exists():
                         patch_fix_all.append(change_file)
                         if not project.buggy:
-                            shutil.move(change_file_path, change_file)
+                            shutil.move(change_file_path, work_location / change_file)
             finally:
                 shutil.rmtree(tmp_location, ignore_errors=True)
 

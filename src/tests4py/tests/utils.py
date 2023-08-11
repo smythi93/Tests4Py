@@ -6,7 +6,7 @@ import tempfile
 from abc import abstractmethod
 from os import PathLike
 from pathlib import Path
-from typing import List, Tuple, Collection, Any
+from typing import List, Tuple, Collection, Any, Optional
 
 from tests4py.constants import Environment, HARNESS_FILE, PYTHON
 from tests4py.framework.logger import LOGGER
@@ -32,7 +32,12 @@ class API:
         return test.split("\n") if test else []
 
     # noinspection PyBroadException
-    def execute(self, system_test_path: PathLike, environ: Environment) -> Any:
+    def execute(
+        self,
+        system_test_path: PathLike,
+        environ: Environment,
+        work_dir: Optional[Path] = None,
+    ) -> Any:
         try:
             process = subprocess.run(
                 [PYTHON, HARNESS_FILE] + self.get_test_arguments(system_test_path),
@@ -40,6 +45,7 @@ class API:
                 stderr=subprocess.PIPE,
                 timeout=self.default_timeout,
                 env=environ,
+                cwd=Path.cwd() if work_dir is None else work_dir,
             )
             return process
         except subprocess.TimeoutExpired:
@@ -48,11 +54,14 @@ class API:
             return None
 
     def run(
-        self, system_test_path: PathLike, environ: Environment
+        self,
+        system_test_path: PathLike,
+        environ: Environment,
+        work_dir: Optional[Path] = None,
     ) -> Tuple[PathLike, TestResult, str]:
         try:
             return system_test_path, *self.oracle(
-                self.execute(system_test_path, environ)
+                self.execute(system_test_path, environ, work_dir=work_dir)
             )
         finally:
             self.clean_up()
@@ -61,26 +70,32 @@ class API:
         pass
 
     def runs(
-        self, system_tests: PathLike | str, environ: Environment
+        self,
+        system_tests: PathLike | str,
+        environ: Environment,
+        work_dir: Optional[Path] = None,
     ) -> List[Tuple[PathLike | str, TestResult, str]]:
         system_tests_path = Path(system_tests)
         tests = list()
         if not system_tests_path.exists():
             LOGGER.info(
-                f"Path {system_tests_path} does not exist, try to execute it as test case"
+                f"Path {repr(system_tests)} does not exist, try to execute it as test case"
             )
-            with tempfile.NamedTemporaryFile() as tmp:
+            with tempfile.NamedTemporaryFile(mode="w") as tmp:
                 tmp.write(system_tests)
-                _, test_result, feedback = self.run(tmp, environ)
+                tmp.flush()
+                _, test_result, feedback = self.run(
+                    tmp.name, environ, work_dir=work_dir
+                )
                 tests.append((system_tests, test_result, feedback))
         elif not system_tests_path.is_dir():
             LOGGER.info(f"Path {system_tests_path} is a file")
-            tests.append(self.run(system_tests_path, environ))
+            tests.append(self.run(system_tests_path, environ, work_dir=work_dir))
         else:
             for dir_path, _, files in os.walk(system_tests_path):
                 for file in files:
                     path = Path(dir_path, file)
-                    tests.append(self.run(path, environ))
+                    tests.append(self.run(path, environ, work_dir=work_dir))
         return tests
 
 
@@ -89,7 +104,12 @@ class CLIAPI(API, abc.ABC):
         super().__init__(default_timeout=default_timeout)
         self.cli = cli
 
-    def execute(self, system_test_path: PathLike, environ: Environment) -> Any:
+    def execute(
+        self,
+        system_test_path: PathLike,
+        environ: Environment,
+        work_dir: Optional[Path] = None,
+    ) -> Any:
         try:
             process = subprocess.run(
                 self.cli + self.get_test_arguments(system_test_path),
@@ -97,6 +117,7 @@ class CLIAPI(API, abc.ABC):
                 stderr=subprocess.PIPE,
                 timeout=self.default_timeout,
                 env=environ,
+                cwd=Path.cwd() if work_dir is None else work_dir,
             )
             return process
         except subprocess.TimeoutExpired:

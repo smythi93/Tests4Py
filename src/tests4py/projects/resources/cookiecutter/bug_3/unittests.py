@@ -1,6 +1,6 @@
 import unittest
-import click
 
+import click
 from cookiecutter.prompt import read_user_choice
 
 

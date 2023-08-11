@@ -8,11 +8,11 @@ class ParseError(ValueError):
     pass
 
 
-class DerivationTree:
+class ComplexDerivationTree:
     def __init__(
         self,
         value: str,
-        children: Optional[Sequence["DerivationTree"]] = None,
+        children: Optional[Sequence["ComplexDerivationTree"]] = None,
     ):
         self._value = value
         self._children = () if children is None else tuple(children)
@@ -20,7 +20,7 @@ class DerivationTree:
         self._len = len(self._children)
 
     @property
-    def children(self) -> Tuple["DerivationTree"]:
+    def children(self) -> Tuple["ComplexDerivationTree"]:
         return self._children
 
     @property
@@ -48,9 +48,11 @@ class DerivationTree:
             for child in reversed(children):
                 stack.append(child)
 
-        trees: List[DerivationTree] = []
+        trees: List[ComplexDerivationTree] = []
         for symbol, children in reversed(flat):
-            trees.append(DerivationTree(symbol, [trees.pop() for _ in range(children)]))
+            trees.append(
+                ComplexDerivationTree(symbol, [trees.pop() for _ in range(children)])
+            )
 
         if len(trees) != 1:
             raise ParseError("Not a parse tree")

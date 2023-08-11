@@ -4,8 +4,7 @@ from configparser import ConfigParser
 from pathlib import Path
 from typing import List, Optional, Sequence
 
-from fuzzingbook.Grammars import Grammar
-
+from tests4py.grammars.fuzzer import Grammar
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API
 

@@ -4,9 +4,8 @@ import string
 from ast import *
 from typing import Optional, Union
 
-from fuzzingbook.GrammarFuzzer import GrammarFuzzer, DerivationTree
-from fuzzingbook.Grammars import Grammar, srange, is_valid_grammar
-
+from tests4py.grammars.fuzzer import GrammarFuzzer, Grammar, srange, is_valid_grammar
+from tests4py.grammars.tree import ComplexDerivationTree
 from tests4py.grammars.utils import GrammarVisitor, Generator
 
 
@@ -16,28 +15,28 @@ class PythonVisitor(GrammarVisitor):
 
 # noinspection PyMethodMayBeStatic,PyUnusedLocal
 class ToASTVisitor(PythonVisitor):
-    def generic_visit(self, node: DerivationTree) -> AST:
+    def generic_visit(self, node: ComplexDerivationTree) -> AST:
         return self.visit(node.children[0])
 
-    def visit_Module(self, node: DerivationTree) -> Module:
+    def visit_Module(self, node: ComplexDerivationTree) -> Module:
         return Module(
             body=self.visit(node.children[1]),
             type_ignores=self.visit(node.children[3]),
         )
 
-    def visit_Interactive(self, node: DerivationTree) -> Interactive:
+    def visit_Interactive(self, node: ComplexDerivationTree) -> Interactive:
         return Interactive(body=self.visit(node.children[1]))
 
-    def visit_Expression(self, node: DerivationTree) -> Expression:
+    def visit_Expression(self, node: ComplexDerivationTree) -> Expression:
         return Expression(body=self.visit(node.children[1]))
 
-    def visit_FunctionType(self, node: DerivationTree) -> FunctionType:
+    def visit_FunctionType(self, node: ComplexDerivationTree) -> FunctionType:
         return FunctionType(
             argtypes=self.visit(node.children[1]),
             returns=self.visit(node.children[3]),
         )
 
-    def visit_FunctionDef(self, node: DerivationTree) -> FunctionDef:
+    def visit_FunctionDef(self, node: ComplexDerivationTree) -> FunctionDef:
         return FunctionDef(
             name=self.visit(node.children[1]),
             args=self.visit(node.children[3]),
@@ -48,7 +47,7 @@ class ToASTVisitor(PythonVisitor):
             lineno=0,
         )
 
-    def visit_AsyncFunctionDef(self, node: DerivationTree) -> AsyncFunctionDef:
+    def visit_AsyncFunctionDef(self, node: ComplexDerivationTree) -> AsyncFunctionDef:
         return AsyncFunctionDef(
             name=self.visit(node.children[1]),
             args=self.visit(node.children[3]),
@@ -59,7 +58,7 @@ class ToASTVisitor(PythonVisitor):
             lineno=0,
         )
 
-    def visit_ClassDef(self, node: DerivationTree) -> ClassDef:
+    def visit_ClassDef(self, node: ComplexDerivationTree) -> ClassDef:
         return ClassDef(
             name=self.visit(node.children[1]),
             bases=self.visit(node.children[3]),
@@ -68,17 +67,17 @@ class ToASTVisitor(PythonVisitor):
             decorator_list=self.visit(node.children[9]),
         )
 
-    def visit_Return(self, node: DerivationTree) -> Return:
+    def visit_Return(self, node: ComplexDerivationTree) -> Return:
         return Return(
             value=self.visit(node.children[1]),
         )
 
-    def visit_Delete(self, node: DerivationTree) -> Delete:
+    def visit_Delete(self, node: ComplexDerivationTree) -> Delete:
         return Delete(
             targets=self.visit(node.children[1]),
         )
 
-    def visit_Assign(self, node: DerivationTree) -> Assign:
+    def visit_Assign(self, node: ComplexDerivationTree) -> Assign:
         return Assign(
             targets=self.visit(node.children[1]),
             value=self.visit(node.children[3]),
@@ -86,14 +85,14 @@ class ToASTVisitor(PythonVisitor):
             lineno=0,
         )
 
-    def visit_AugAssign(self, node: DerivationTree) -> AugAssign:
+    def visit_AugAssign(self, node: ComplexDerivationTree) -> AugAssign:
         return AugAssign(
             target=self.visit(node.children[1]),
             op=self.visit(node.children[3]),
             value=self.visit(node.children[5]),
         )
 
-    def visit_AnnAssign(self, node: DerivationTree) -> AnnAssign:
+    def visit_AnnAssign(self, node: ComplexDerivationTree) -> AnnAssign:
         return AnnAssign(
             target=self.visit(node.children[1]),
             annotation=self.visit(node.children[3]),
@@ -101,7 +100,7 @@ class ToASTVisitor(PythonVisitor):
             simple=self.visit(node.children[7]),
         )
 
-    def visit_For(self, node: DerivationTree) -> For:
+    def visit_For(self, node: ComplexDerivationTree) -> For:
         return For(
             target=self.visit(node.children[1]),
             iter=self.visit(node.children[3]),
@@ -111,7 +110,7 @@ class ToASTVisitor(PythonVisitor):
             lineno=0,
         )
 
-    def visit_AsyncFor(self, node: DerivationTree) -> AsyncFor:
+    def visit_AsyncFor(self, node: ComplexDerivationTree) -> AsyncFor:
         return AsyncFor(
             target=self.visit(node.children[1]),
             iter=self.visit(node.children[3]),
@@ -121,21 +120,21 @@ class ToASTVisitor(PythonVisitor):
             lineno=0,
         )
 
-    def visit_While(self, node: DerivationTree) -> While:
+    def visit_While(self, node: ComplexDerivationTree) -> While:
         return While(
             test=self.visit(node.children[1]),
             body=self.visit(node.children[3]),
             orelse=self.visit(node.children[5]),
         )
 
-    def visit_If(self, node: DerivationTree) -> If:
+    def visit_If(self, node: ComplexDerivationTree) -> If:
         return If(
             test=self.visit(node.children[1]),
             body=self.visit(node.children[3]),
             orelse=self.visit(node.children[5]),
         )
 
-    def visit_With(self, node: DerivationTree) -> With:
+    def visit_With(self, node: ComplexDerivationTree) -> With:
         return With(
             items=self.visit(node.children[1]),
             body=self.visit(node.children[3]),
@@ -143,7 +142,7 @@ class ToASTVisitor(PythonVisitor):
             lineno=0,
         )
 
-    def visit_AsyncWith(self, node: DerivationTree) -> AsyncWith:
+    def visit_AsyncWith(self, node: ComplexDerivationTree) -> AsyncWith:
         return AsyncWith(
             items=self.visit(node.children[1]),
             body=self.visit(node.children[3]),
@@ -151,19 +150,19 @@ class ToASTVisitor(PythonVisitor):
             lineno=0,
         )
 
-    def visit_Match(self, node: DerivationTree) -> Match:
+    def visit_Match(self, node: ComplexDerivationTree) -> Match:
         return Match(
             subject=self.visit(node.children[1]),
             cases=self.visit(node.children[3]),
         )
 
-    def visit_Raise(self, node: DerivationTree) -> Raise:
+    def visit_Raise(self, node: ComplexDerivationTree) -> Raise:
         return Raise(
             exc=self.visit(node.children[1]),
             cause=self.visit(node.children[3]),
         )
 
-    def visit_Try(self, node: DerivationTree) -> Try:
+    def visit_Try(self, node: ComplexDerivationTree) -> Try:
         return Try(
             body=self.visit(node.children[1]),
             handlers=self.visit(node.children[3]),
@@ -179,296 +178,296 @@ class ToASTVisitor(PythonVisitor):
     #         finalbody=self.visit(node.children[7]),
     #     )
 
-    def visit_Assert(self, node: DerivationTree) -> Assert:
+    def visit_Assert(self, node: ComplexDerivationTree) -> Assert:
         return Assert(
             test=self.visit(node.children[1]),
             msg=self.visit(node.children[3]),
         )
 
-    def visit_Import(self, node: DerivationTree) -> Import:
+    def visit_Import(self, node: ComplexDerivationTree) -> Import:
         return Import(
             names=self.visit(node.children[1]),
         )
 
-    def visit_ImportFrom(self, node: DerivationTree) -> ImportFrom:
+    def visit_ImportFrom(self, node: ComplexDerivationTree) -> ImportFrom:
         return ImportFrom(
             module=self.visit(node.children[1]),
             names=self.visit(node.children[3]),
             level=self.visit(node.children[5]),
         )
 
-    def visit_Global(self, node: DerivationTree) -> Global:
+    def visit_Global(self, node: ComplexDerivationTree) -> Global:
         return Global(
             names=self.visit(node.children[1]),
         )
 
-    def visit_Nonlocal(self, node: DerivationTree) -> Nonlocal:
+    def visit_Nonlocal(self, node: ComplexDerivationTree) -> Nonlocal:
         return Nonlocal(
             names=self.visit(node.children[1]),
         )
 
-    def visit_Expr(self, node: DerivationTree) -> Expr:
+    def visit_Expr(self, node: ComplexDerivationTree) -> Expr:
         return Expr(
             value=self.visit(node.children[1]),
         )
 
-    def visit_Pass(self, node: DerivationTree) -> Pass:
+    def visit_Pass(self, node: ComplexDerivationTree) -> Pass:
         return Pass()
 
-    def visit_Break(self, node: DerivationTree) -> Break:
+    def visit_Break(self, node: ComplexDerivationTree) -> Break:
         return Break()
 
-    def visit_Continue(self, node: DerivationTree) -> Continue:
+    def visit_Continue(self, node: ComplexDerivationTree) -> Continue:
         return Continue()
 
-    def visit_BoolOp(self, node: DerivationTree) -> BoolOp:
+    def visit_BoolOp(self, node: ComplexDerivationTree) -> BoolOp:
         return BoolOp(
             op=self.visit(node.children[1]),
             values=self.visit(node.children[3]),
         )
 
-    def visit_NamedExpr(self, node: DerivationTree) -> NamedExpr:
+    def visit_NamedExpr(self, node: ComplexDerivationTree) -> NamedExpr:
         return NamedExpr(
             target=self.visit(node.children[1]),
             value=self.visit(node.children[3]),
         )
 
-    def visit_BinOp(self, node: DerivationTree) -> BinOp:
+    def visit_BinOp(self, node: ComplexDerivationTree) -> BinOp:
         return BinOp(
             left=self.visit(node.children[1]),
             op=self.visit(node.children[3]),
             right=self.visit(node.children[5]),
         )
 
-    def visit_UnaryOp(self, node: DerivationTree) -> UnaryOp:
+    def visit_UnaryOp(self, node: ComplexDerivationTree) -> UnaryOp:
         return UnaryOp(
             op=self.visit(node.children[1]),
             operand=self.visit(node.children[3]),
         )
 
-    def visit_Lambda(self, node: DerivationTree) -> Lambda:
+    def visit_Lambda(self, node: ComplexDerivationTree) -> Lambda:
         return Lambda(
             args=self.visit(node.children[1]),
             body=self.visit(node.children[3]),
         )
 
-    def visit_IfExp(self, node: DerivationTree) -> IfExp:
+    def visit_IfExp(self, node: ComplexDerivationTree) -> IfExp:
         return IfExp(
             test=self.visit(node.children[1]),
             body=self.visit(node.children[3]),
             orelse=self.visit(node.children[5]),
         )
 
-    def visit_Dict(self, node: DerivationTree) -> Dict:
+    def visit_Dict(self, node: ComplexDerivationTree) -> Dict:
         return Dict(
             keys=self.visit(node.children[1]),
             values=self.visit(node.children[3]),
         )
 
-    def visit_Set(self, node: DerivationTree) -> Set:
+    def visit_Set(self, node: ComplexDerivationTree) -> Set:
         return Set(
             elts=self.visit(node.children[1]),
         )
 
-    def visit_ListComp(self, node: DerivationTree) -> ListComp:
+    def visit_ListComp(self, node: ComplexDerivationTree) -> ListComp:
         return ListComp(
             elt=self.visit(node.children[1]),
             generators=self.visit(node.children[3]),
         )
 
-    def visit_SetComp(self, node: DerivationTree) -> SetComp:
+    def visit_SetComp(self, node: ComplexDerivationTree) -> SetComp:
         return SetComp(
             elt=self.visit(node.children[1]),
             generators=self.visit(node.children[3]),
         )
 
-    def visit_DictComp(self, node: DerivationTree) -> DictComp:
+    def visit_DictComp(self, node: ComplexDerivationTree) -> DictComp:
         return DictComp(
             key=self.visit(node.children[1]),
             value=self.visit(node.children[3]),
             generators=self.visit(node.children[5]),
         )
 
-    def visit_GeneratorExp(self, node: DerivationTree) -> GeneratorExp:
+    def visit_GeneratorExp(self, node: ComplexDerivationTree) -> GeneratorExp:
         return GeneratorExp(
             elt=self.visit(node.children[1]),
             generators=self.visit(node.children[3]),
         )
 
-    def visit_Await(self, node: DerivationTree) -> Await:
+    def visit_Await(self, node: ComplexDerivationTree) -> Await:
         return Await(
             value=self.visit(node.children[1]),
         )
 
-    def visit_Yield(self, node: DerivationTree) -> Yield:
+    def visit_Yield(self, node: ComplexDerivationTree) -> Yield:
         return Yield(
             value=self.visit(node.children[1]),
         )
 
-    def visit_YieldFrom(self, node: DerivationTree) -> YieldFrom:
+    def visit_YieldFrom(self, node: ComplexDerivationTree) -> YieldFrom:
         return YieldFrom(
             value=self.visit(node.children[1]),
         )
 
-    def visit_Compare(self, node: DerivationTree) -> Compare:
+    def visit_Compare(self, node: ComplexDerivationTree) -> Compare:
         return Compare(
             left=self.visit(node.children[1]),
             ops=self.visit(node.children[3]),
             comparators=self.visit(node.children[5]),
         )
 
-    def visit_Call(self, node: DerivationTree) -> Call:
+    def visit_Call(self, node: ComplexDerivationTree) -> Call:
         return Call(
             func=self.visit(node.children[1]),
             args=self.visit(node.children[3]),
             keywords=self.visit(node.children[5]),
         )
 
-    def visit_FormattedValue(self, node: DerivationTree) -> FormattedValue:
+    def visit_FormattedValue(self, node: ComplexDerivationTree) -> FormattedValue:
         return FormattedValue(
             value=self.visit(node.children[1]),
             conversion=self.visit(node.children[3]),
             format_spec=self.visit(node.children[5]),
         )
 
-    def visit_JoinedStr(self, node: DerivationTree) -> JoinedStr:
+    def visit_JoinedStr(self, node: ComplexDerivationTree) -> JoinedStr:
         return JoinedStr(
             values=self.visit(node.children[1]),
         )
 
-    def visit_Constant(self, node: DerivationTree) -> Constant:
+    def visit_Constant(self, node: ComplexDerivationTree) -> Constant:
         return Constant(
             value=self.visit(node.children[1]),
             kind=self.visit(node.children[3]),
         )
 
-    def visit_Attribute(self, node: DerivationTree) -> Attribute:
+    def visit_Attribute(self, node: ComplexDerivationTree) -> Attribute:
         return Attribute(
             value=self.visit(node.children[1]),
             attr=self.visit(node.children[3]),
         )
 
-    def visit_Subscript(self, node: DerivationTree) -> Subscript:
+    def visit_Subscript(self, node: ComplexDerivationTree) -> Subscript:
         return Subscript(
             value=self.visit(node.children[1]),
             slice=self.visit(node.children[3]),
         )
 
-    def visit_Starred(self, node: DerivationTree) -> Starred:
+    def visit_Starred(self, node: ComplexDerivationTree) -> Starred:
         return Starred(
             value=self.visit(node.children[1]),
         )
 
-    def visit_Name(self, node: DerivationTree) -> Name:
+    def visit_Name(self, node: ComplexDerivationTree) -> Name:
         return Name(
             id=self.visit(node.children[1]),
         )
 
-    def visit_List(self, node: DerivationTree) -> List:
+    def visit_List(self, node: ComplexDerivationTree) -> List:
         return List(
             elts=self.visit(node.children[1]),
         )
 
-    def visit_Tuple(self, node: DerivationTree) -> Tuple:
+    def visit_Tuple(self, node: ComplexDerivationTree) -> Tuple:
         return Tuple(
             elts=self.visit(node.children[1]),
         )
 
-    def visit_Slice(self, node: DerivationTree) -> Slice:
+    def visit_Slice(self, node: ComplexDerivationTree) -> Slice:
         return Slice(
             lower=self.visit(node.children[1]),
             upper=self.visit(node.children[3]),
             step=self.visit(node.children[5]),
         )
 
-    def visit_And(self, node: DerivationTree) -> And:
+    def visit_And(self, node: ComplexDerivationTree) -> And:
         return And()
 
-    def visit_Or(self, node: DerivationTree) -> Or:
+    def visit_Or(self, node: ComplexDerivationTree) -> Or:
         return Or()
 
-    def visit_Add(self, node: DerivationTree) -> Add:
+    def visit_Add(self, node: ComplexDerivationTree) -> Add:
         return Add()
 
-    def visit_Sub(self, node: DerivationTree) -> Sub:
+    def visit_Sub(self, node: ComplexDerivationTree) -> Sub:
         return Sub()
 
-    def visit_Mult(self, node: DerivationTree) -> Mult:
+    def visit_Mult(self, node: ComplexDerivationTree) -> Mult:
         return Mult()
 
-    def visit_MatMult(self, node: DerivationTree) -> MatMult:
+    def visit_MatMult(self, node: ComplexDerivationTree) -> MatMult:
         return MatMult()
 
-    def visit_Div(self, node: DerivationTree) -> Div:
+    def visit_Div(self, node: ComplexDerivationTree) -> Div:
         return Div()
 
-    def visit_Mod(self, node: DerivationTree) -> Mod:
+    def visit_Mod(self, node: ComplexDerivationTree) -> Mod:
         return Mod()
 
-    def visit_Pow(self, node: DerivationTree) -> Pow:
+    def visit_Pow(self, node: ComplexDerivationTree) -> Pow:
         return Pow()
 
-    def visit_LShift(self, node: DerivationTree) -> LShift:
+    def visit_LShift(self, node: ComplexDerivationTree) -> LShift:
         return LShift()
 
-    def visit_RShift(self, node: DerivationTree) -> RShift:
+    def visit_RShift(self, node: ComplexDerivationTree) -> RShift:
         return RShift()
 
-    def visit_BitOr(self, node: DerivationTree) -> BitOr:
+    def visit_BitOr(self, node: ComplexDerivationTree) -> BitOr:
         return BitOr()
 
-    def visit_BitXor(self, node: DerivationTree) -> BitXor:
+    def visit_BitXor(self, node: ComplexDerivationTree) -> BitXor:
         return BitXor()
 
-    def visit_BitAnd(self, node: DerivationTree) -> BitAnd:
+    def visit_BitAnd(self, node: ComplexDerivationTree) -> BitAnd:
         return BitAnd()
 
-    def visit_FloorDiv(self, node: DerivationTree) -> FloorDiv:
+    def visit_FloorDiv(self, node: ComplexDerivationTree) -> FloorDiv:
         return FloorDiv()
 
-    def visit_Invert(self, node: DerivationTree) -> Invert:
+    def visit_Invert(self, node: ComplexDerivationTree) -> Invert:
         return Invert()
 
-    def visit_Not(self, node: DerivationTree) -> Not:
+    def visit_Not(self, node: ComplexDerivationTree) -> Not:
         return Not()
 
-    def visit_UAdd(self, node: DerivationTree) -> UAdd:
+    def visit_UAdd(self, node: ComplexDerivationTree) -> UAdd:
         return UAdd()
 
-    def visit_USub(self, node: DerivationTree) -> USub:
+    def visit_USub(self, node: ComplexDerivationTree) -> USub:
         return USub()
 
-    def visit_Eq(self, node: DerivationTree) -> Eq:
+    def visit_Eq(self, node: ComplexDerivationTree) -> Eq:
         return Eq()
 
-    def visit_NotEq(self, node: DerivationTree) -> NotEq:
+    def visit_NotEq(self, node: ComplexDerivationTree) -> NotEq:
         return NotEq()
 
-    def visit_Lt(self, node: DerivationTree) -> Lt:
+    def visit_Lt(self, node: ComplexDerivationTree) -> Lt:
         return Lt()
 
-    def visit_LtE(self, node: DerivationTree) -> LtE:
+    def visit_LtE(self, node: ComplexDerivationTree) -> LtE:
         return LtE()
 
-    def visit_Gt(self, node: DerivationTree) -> Gt:
+    def visit_Gt(self, node: ComplexDerivationTree) -> Gt:
         return Gt()
 
-    def visit_GtE(self, node: DerivationTree) -> GtE:
+    def visit_GtE(self, node: ComplexDerivationTree) -> GtE:
         return GtE()
 
-    def visit_Is(self, node: DerivationTree) -> Is:
+    def visit_Is(self, node: ComplexDerivationTree) -> Is:
         return Is()
 
-    def visit_IsNot(self, node: DerivationTree) -> IsNot:
+    def visit_IsNot(self, node: ComplexDerivationTree) -> IsNot:
         return IsNot()
 
-    def visit_In(self, node: DerivationTree) -> In:
+    def visit_In(self, node: ComplexDerivationTree) -> In:
         return In()
 
-    def visit_NotIn(self, node: DerivationTree) -> NotIn:
+    def visit_NotIn(self, node: ComplexDerivationTree) -> NotIn:
         return NotIn()
 
-    def visit_comprehension(self, node: DerivationTree) -> comprehension:
+    def visit_comprehension(self, node: ComplexDerivationTree) -> comprehension:
         return comprehension(
             target=self.visit(node.children[1]),
             iter=self.visit(node.children[3]),
@@ -476,14 +475,14 @@ class ToASTVisitor(PythonVisitor):
             is_async=self.visit(node.children[7]),
         )
 
-    def visit_ExceptHandler(self, node: DerivationTree) -> ExceptHandler:
+    def visit_ExceptHandler(self, node: ComplexDerivationTree) -> ExceptHandler:
         return ExceptHandler(
             type=self.visit(node.children[1]),
             name=self.visit(node.children[3]),
             body=self.visit(node.children[5]),
         )
 
-    def visit_arguments(self, node: DerivationTree) -> arguments:
+    def visit_arguments(self, node: ComplexDerivationTree) -> arguments:
         return arguments(
             posonlyargs=self.visit(node.children[1]),
             args=self.visit(node.children[3]),
@@ -494,61 +493,61 @@ class ToASTVisitor(PythonVisitor):
             defaults=self.visit(node.children[13]),
         )
 
-    def visit_arg(self, node: DerivationTree) -> arg:
+    def visit_arg(self, node: ComplexDerivationTree) -> arg:
         return arg(
             arg=self.visit(node.children[1]),
             annotation=self.visit(node.children[3]),
             type_comment=self.visit(node.children[5]),
         )
 
-    def visit_keyword(self, node: DerivationTree) -> keyword:
+    def visit_keyword(self, node: ComplexDerivationTree) -> keyword:
         return keyword(
             arg=self.visit(node.children[1]),
             value=self.visit(node.children[3]),
         )
 
-    def visit_alias(self, node: DerivationTree) -> alias:
+    def visit_alias(self, node: ComplexDerivationTree) -> alias:
         return alias(
             name=self.visit(node.children[1]),
             asname=self.visit(node.children[3]),
         )
 
-    def visit_withitem(self, node: DerivationTree) -> withitem:
+    def visit_withitem(self, node: ComplexDerivationTree) -> withitem:
         return withitem(
             context_expr=self.visit(node.children[1]),
             optional_vars=self.visit(node.children[3]),
         )
 
-    def visit_match_case(self, node: DerivationTree) -> match_case:
+    def visit_match_case(self, node: ComplexDerivationTree) -> match_case:
         return match_case(
             pattern=self.visit(node.children[1]),
             guard=self.visit(node.children[3]),
             body=self.visit(node.children[5]),
         )
 
-    def visit_MatchValue(self, node: DerivationTree) -> MatchValue:
+    def visit_MatchValue(self, node: ComplexDerivationTree) -> MatchValue:
         return MatchValue(
             value=self.visit(node.children[1]),
         )
 
-    def visit_MatchSingleton(self, node: DerivationTree) -> MatchSingleton:
+    def visit_MatchSingleton(self, node: ComplexDerivationTree) -> MatchSingleton:
         return MatchSingleton(
             value=self.visit(node.children[1]),
         )
 
-    def visit_MatchSequence(self, node: DerivationTree) -> MatchSequence:
+    def visit_MatchSequence(self, node: ComplexDerivationTree) -> MatchSequence:
         return MatchSequence(
             patterns=self.visit(node.children[1]),
         )
 
-    def visit_MatchMapping(self, node: DerivationTree) -> MatchMapping:
+    def visit_MatchMapping(self, node: ComplexDerivationTree) -> MatchMapping:
         return MatchMapping(
             keys=self.visit(node.children[1]),
             patterns=self.visit(node.children[3]),
             rest=self.visit(node.children[5]),
         )
 
-    def visit_MatchClass(self, node: DerivationTree) -> MatchClass:
+    def visit_MatchClass(self, node: ComplexDerivationTree) -> MatchClass:
         return MatchClass(
             cls=self.visit(node.children[1]),
             patterns=self.visit(node.children[3]),
@@ -556,149 +555,149 @@ class ToASTVisitor(PythonVisitor):
             kwd_patterns=self.visit(node.children[7]),
         )
 
-    def visit_MatchStar(self, node: DerivationTree) -> MatchStar:
+    def visit_MatchStar(self, node: ComplexDerivationTree) -> MatchStar:
         return MatchStar(
             name=self.visit(node.children[1]),
         )
 
-    def visit_MatchAs(self, node: DerivationTree) -> MatchAs:
+    def visit_MatchAs(self, node: ComplexDerivationTree) -> MatchAs:
         return MatchAs(
             pattern=self.visit(node.children[1]),
             name=self.visit(node.children[3]),
         )
 
-    def visit_MatchOr(self, node: DerivationTree) -> MatchOr:
+    def visit_MatchOr(self, node: ComplexDerivationTree) -> MatchOr:
         return MatchOr(
             patterns=self.visit(node.children[1]),
         )
 
-    def visit_TypeIgnore(self, node: DerivationTree) -> TypeIgnore:
+    def visit_TypeIgnore(self, node: ComplexDerivationTree) -> TypeIgnore:
         return TypeIgnore(
             lineno=self.visit(node.children[1]),
             tag=self.visit(node.children[3]),
         )
 
-    def visit_list(self, node: DerivationTree) -> list:
+    def visit_list(self, node: ComplexDerivationTree) -> list:
         if len(node.children) > 1:
             return self.visit(node.children[1])
         else:
             return list()
 
-    def visit_elts(self, node: DerivationTree) -> list:
+    def visit_elts(self, node: ComplexDerivationTree) -> list:
         if len(node.children) == 1:
             return [self.visit(node.children[0])]
         else:
             return self.visit(node.children[0]) + [self.visit(node.children[2])]
 
-    def visit_stmt_list(self, node: DerivationTree) -> list:
+    def visit_stmt_list(self, node: ComplexDerivationTree) -> list:
         return self.visit_list(node)
 
-    def visit_stmts(self, node: DerivationTree) -> list:
+    def visit_stmts(self, node: ComplexDerivationTree) -> list:
         return self.visit_elts(node)
 
-    def visit_expr_list(self, node: DerivationTree) -> list:
+    def visit_expr_list(self, node: ComplexDerivationTree) -> list:
         return self.visit_list(node)
 
-    def visit_exprs(self, node: DerivationTree) -> list:
+    def visit_exprs(self, node: ComplexDerivationTree) -> list:
         return self.visit_elts(node)
 
-    def visit_type_ignore_list(self, node: DerivationTree) -> list:
+    def visit_type_ignore_list(self, node: ComplexDerivationTree) -> list:
         return self.visit_list(node)
 
-    def visit_type_ignores(self, node: DerivationTree) -> list:
+    def visit_type_ignores(self, node: ComplexDerivationTree) -> list:
         return self.visit_elts(node)
 
-    def visit_keyword_list(self, node: DerivationTree) -> list:
+    def visit_keyword_list(self, node: ComplexDerivationTree) -> list:
         return self.visit_list(node)
 
-    def visit_keywords(self, node: DerivationTree) -> list:
+    def visit_keywords(self, node: ComplexDerivationTree) -> list:
         return self.visit_elts(node)
 
-    def visit_withitem_list(self, node: DerivationTree) -> list:
+    def visit_withitem_list(self, node: ComplexDerivationTree) -> list:
         return self.visit_list(node)
 
-    def visit_withitems(self, node: DerivationTree) -> list:
+    def visit_withitems(self, node: ComplexDerivationTree) -> list:
         return self.visit_elts(node)
 
-    def visit_match_case_list(self, node: DerivationTree) -> list:
+    def visit_match_case_list(self, node: ComplexDerivationTree) -> list:
         return self.visit_list(node)
 
-    def visit_match_cases(self, node: DerivationTree) -> list:
+    def visit_match_cases(self, node: ComplexDerivationTree) -> list:
         return self.visit_elts(node)
 
-    def visit_excepthandler_list(self, node: DerivationTree) -> list:
+    def visit_excepthandler_list(self, node: ComplexDerivationTree) -> list:
         return self.visit_list(node)
 
-    def visit_excepthandlers(self, node: DerivationTree) -> list:
+    def visit_excepthandlers(self, node: ComplexDerivationTree) -> list:
         return self.visit_elts(node)
 
-    def visit_alias_list(self, node: DerivationTree) -> list:
+    def visit_alias_list(self, node: ComplexDerivationTree) -> list:
         return self.visit_list(node)
 
-    def visit_aliases(self, node: DerivationTree) -> list:
+    def visit_aliases(self, node: ComplexDerivationTree) -> list:
         return self.visit_elts(node)
 
-    def visit_identifier_list(self, node: DerivationTree) -> list:
+    def visit_identifier_list(self, node: ComplexDerivationTree) -> list:
         return self.visit_list(node)
 
-    def visit_identifiers(self, node: DerivationTree) -> list:
+    def visit_identifiers(self, node: ComplexDerivationTree) -> list:
         return self.visit_elts(node)
 
-    def visit_comprehension_list(self, node: DerivationTree) -> list:
+    def visit_comprehension_list(self, node: ComplexDerivationTree) -> list:
         return self.visit_list(node)
 
-    def visit_comprehensions(self, node: DerivationTree) -> list:
+    def visit_comprehensions(self, node: ComplexDerivationTree) -> list:
         return self.visit_elts(node)
 
-    def visit_cmpop_list(self, node: DerivationTree) -> list:
+    def visit_cmpop_list(self, node: ComplexDerivationTree) -> list:
         return self.visit_list(node)
 
-    def visit_cmpops(self, node: DerivationTree) -> list:
+    def visit_cmpops(self, node: ComplexDerivationTree) -> list:
         return self.visit_elts(node)
 
-    def visit_arg_list(self, node: DerivationTree) -> list:
+    def visit_arg_list(self, node: ComplexDerivationTree) -> list:
         return self.visit_list(node)
 
-    def visit_args(self, node: DerivationTree) -> list:
+    def visit_args(self, node: ComplexDerivationTree) -> list:
         return self.visit_elts(node)
 
-    def visit_pattern_list(self, node: DerivationTree) -> list:
+    def visit_pattern_list(self, node: ComplexDerivationTree) -> list:
         return self.visit_list(node)
 
-    def visit_patterns(self, node: DerivationTree) -> list:
+    def visit_patterns(self, node: ComplexDerivationTree) -> list:
         return self.visit_elts(node)
 
-    def visit_optional(self, node: DerivationTree) -> Optional[AST]:
+    def visit_optional(self, node: ComplexDerivationTree) -> Optional[AST]:
         if node.children:
             return self.visit(node.children[0])
         else:
             return None
 
-    def visit_optional_expr(self, node: DerivationTree) -> Optional[AST]:
+    def visit_optional_expr(self, node: ComplexDerivationTree) -> Optional[AST]:
         return self.visit_optional(node)
 
-    def visit_optional_string(self, node: DerivationTree) -> Optional[AST]:
+    def visit_optional_string(self, node: ComplexDerivationTree) -> Optional[AST]:
         return self.visit_optional(node)
 
-    def visit_optional_identifier(self, node: DerivationTree) -> Optional[AST]:
+    def visit_optional_identifier(self, node: ComplexDerivationTree) -> Optional[AST]:
         return self.visit_optional(node)
 
-    def visit_optional_int(self, node: DerivationTree) -> Optional[AST]:
+    def visit_optional_int(self, node: ComplexDerivationTree) -> Optional[AST]:
         return self.visit_optional(node)
 
-    def visit_optional_arg(self, node: DerivationTree) -> Optional[AST]:
+    def visit_optional_arg(self, node: ComplexDerivationTree) -> Optional[AST]:
         return self.visit_optional(node)
 
-    def visit_optional_pattern(self, node: DerivationTree) -> Optional[AST]:
+    def visit_optional_pattern(self, node: ComplexDerivationTree) -> Optional[AST]:
         return self.visit_optional(node)
 
-    def visit_int(self, node: DerivationTree) -> int:
+    def visit_int(self, node: ComplexDerivationTree) -> int:
         return int(node.to_string())
 
-    def visit_string(self, node: DerivationTree) -> str:
+    def visit_string(self, node: ComplexDerivationTree) -> str:
         return node.children[0].to_string()
 
-    def visit_identifier(self, node: DerivationTree) -> str:
+    def visit_identifier(self, node: ComplexDerivationTree) -> str:
         return node.to_string()
 
 

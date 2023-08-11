@@ -1,11 +1,10 @@
 import json
 import os
 
-from fuzzingbook import Grammars
-
 import tests4py.constants
 import tests4py.framework.default
 from tests4py import framework
+from tests4py.grammars.fuzzer import is_valid_grammar
 from tests4py.projects import load_bug_info
 from utils import BaseTest
 
@@ -231,6 +230,44 @@ class CommandTests(BaseTest):
         self.assertEqual(0, report.failing)
         self.assertEqual(20, report.passing)
 
+    def test_systemtest_test_buggy_middle_1_direct(self):
+        report = tests4py.framework.default.tests4py_checkout("middle", 1, fixed=False)
+        if report.raised:
+            raise report.raised
+        work_dir = tests4py.constants.DEFAULT_WORK_DIR / "middle_1"
+        project = load_bug_info(work_dir / tests4py.constants.INFO_FILE)
+        self.assertFalse(project.compiled)
+        report = tests4py.framework.default.tests4py_compile(work_dir)
+        if report.raised:
+            raise report.raised
+        project = load_bug_info(work_dir / tests4py.constants.INFO_FILE)
+        self.assertTrue(project.compiled)
+        report = framework.systemtest.tests4py_test(work_dir, path_or_str="2\n1\n3")
+        if report.raised:
+            raise report.raised
+        self.assertEqual(1, report.total)
+        self.assertEqual(1, report.failing)
+        self.assertEqual(0, report.passing)
+
+    def test_systemtest_test_fixed_middle_1_direct(self):
+        report = tests4py.framework.default.tests4py_checkout("middle", 1, fixed=True)
+        if report.raised:
+            raise report.raised
+        work_dir = tests4py.constants.DEFAULT_WORK_DIR / "middle_1"
+        project = load_bug_info(work_dir / tests4py.constants.INFO_FILE)
+        self.assertFalse(project.compiled)
+        report = tests4py.framework.default.tests4py_compile(work_dir)
+        if report.raised:
+            raise report.raised
+        project = load_bug_info(work_dir / tests4py.constants.INFO_FILE)
+        self.assertTrue(project.compiled)
+        report = framework.systemtest.tests4py_test(work_dir, path_or_str="2\n1\n3")
+        if report.raised:
+            raise report.raised
+        self.assertEqual(1, report.total)
+        self.assertEqual(0, report.failing)
+        self.assertEqual(1, report.passing)
+
     def test_unittest_generate_buggy_pysnooper_3(self):
         report = tests4py.framework.default.tests4py_checkout(
             "pysnooper", 3, fixed=False
@@ -324,7 +361,7 @@ class CommandTests(BaseTest):
         self.assertEqual(3, report.passing)
         report = framework.systemtest.tests4py_test(
             work_dir,
-            path=work_dir / tests4py.constants.DEFAULT_SUB_PATH_SYSTEMTESTS,
+            path_or_str=work_dir / tests4py.constants.DEFAULT_SUB_PATH_SYSTEMTESTS,
             diversity=False,
         )
         if report.raised:
@@ -358,7 +395,7 @@ class CommandTests(BaseTest):
         self.assertEqual(3, report.passing)
         report = framework.systemtest.tests4py_test(
             work_dir,
-            path=work_dir / tests4py.constants.DEFAULT_SUB_PATH_SYSTEMTESTS,
+            path_or_str=work_dir / tests4py.constants.DEFAULT_SUB_PATH_SYSTEMTESTS,
             diversity=False,
         )
         if report.raised:
@@ -374,7 +411,7 @@ class CommandTests(BaseTest):
         )
         with open(file, "r") as fp:
             exec(fp.read())
-        self.assertTrue(Grammars.is_valid_grammar(locals()["grammar"]))
+        self.assertTrue(is_valid_grammar(locals()["grammar"]))
         if os.path.exists(file):
             os.remove(file)
 
@@ -385,7 +422,7 @@ class CommandTests(BaseTest):
         )
         with open(file, "r") as fp:
             grammar = json.load(fp)
-        self.assertTrue(Grammars.is_valid_grammar(grammar))
+        self.assertTrue(is_valid_grammar(grammar))
         if os.path.exists(file):
             os.remove(file)
 

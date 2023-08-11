@@ -35,11 +35,14 @@ class SystemtestTestReport(utils.TestingReport):
 
 
 def _get_system_runs(
-    project: Project, path: os.PathLike, environ: Dict[str, str]
+    project: Project,
+    path: os.PathLike,
+    environ: Dict[str, str],
+    work_dir: Optional[Path] = None,
 ) -> Tuple[int, int, int, Dict[str, Tuple[TestResult, str]]]:
     total, passing, failing = 0, 0, 0
     results: Dict[str, Tuple[TestResult, str]] = dict()
-    for test, result, feedback in project.api.runs(path, environ):
+    for test, result, feedback in project.api.runs(path, environ, work_dir=work_dir):
         results[test] = (result, feedback)
         if TestResult.PASSING == result:
             passing += 1
@@ -144,8 +147,8 @@ def tests4py_generate(
 
 def tests4py_test(
     work_dir: Path = None,
-    path: Path = None,
-    diversity: bool = True,
+    path_or_str: Path | str = None,
+    diversity: bool = False,
     output: Path = None,
     verbose=True,
 ) -> SystemtestTestReport:
@@ -168,11 +171,11 @@ def tests4py_test(
                 f"Systemtest testing is not enabled for {project.project_name}_{project.bug_id}"
             )
 
-        if path is None and not diversity:
-            path = work_dir / DEFAULT_SUB_PATH_SYSTEMTESTS
-        if path and not path.exists():
+        if path_or_str is None and not diversity:
+            path_or_str = work_dir / DEFAULT_SUB_PATH_SYSTEMTESTS
+        if path_or_str and isinstance(path_or_str, Path) and not path_or_str.exists():
             raise ValueError(
-                f"Running of systemtests is not possible because {path} does not exist"
+                f"Running of systemtests is not possible because {path_or_str} does not exist"
             )
 
         environ = environment.__env_on__(project)
@@ -181,19 +184,20 @@ def tests4py_test(
         report.total, report.passing, report.failing = 0, 0, 0
         report.results = dict()
 
-        if path:
+        if path_or_str:
             (
                 report.total,
                 report.passing,
                 report.failing,
                 r,
-            ) = _get_system_runs(project, path, environ)
+            ) = _get_system_runs(project, path_or_str, environ, work_dir=work_dir)
             report.results.update(r)
         if diversity and (work_dir / DEFAULT_SYSTEMTESTS_DIVERSITY_PATH).exists():
             t, p, f, r = _get_system_runs(
                 project,
                 work_dir / DEFAULT_SYSTEMTESTS_DIVERSITY_PATH,
                 environ,
+                work_dir=work_dir,
             )
             report.total += t
             report.passing += p

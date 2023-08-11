@@ -174,39 +174,6 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         help="If set the command won't use any cached version, even if the global cache flag is set",
     )
 
-    # Coverage
-    # coverage_parser.add_argument(
-    #     "-w",
-    #     dest="work_dir",
-    #     required=True,
-    #     help="The working directory to run the test. Default will be the current directory",
-    # )
-    # coverage_parser.add_argument(
-    #     "-t",
-    #     dest="single_test",
-    #     default=None,
-    #     help="Run coverage from single test case by input. "
-    #     "Default will run coverage from test cases that relevant from bugs. "
-    #     "Format for pytest: <test_file_path>::<test_method>. "
-    #     "Format for unittest: <test_file_path_without.py>.<test_class>.<test_method> . "
-    #     "Use tests4py info to get the information about the project",
-    # )
-    # coverage_parser.add_argument(
-    #     "-a",
-    #     dest="all_tests",
-    #     default=False,
-    #     action="store_true",
-    #     help="Run coverage from all test cases in the project. "
-    #     "Default will run coverage from test cases that relevant from bugs",
-    # )
-    # coverage_parser.add_argument(
-    #     "-r",
-    #     dest="relevant_tests",
-    #     default=False,
-    #     action="store_true",
-    #     help="Run coverage from test cases that relevant from bugs (Default)",
-    # )
-
     # Info
     info_parser.add_argument(
         "-p",
@@ -551,7 +518,7 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         if args.subcommand == TEST:
             report = command.tests4py_test(
                 work_dir=Path(args.work_dir).absolute() if args.work_dir else None,
-                path=Path(args.path).absolute() if args.path else None,
+                path_or_str=Path(args.path).absolute() if args.path else None,
                 diversity=args.diversity,
                 output=Path(args.output).absolute() if args.output else None,
             )

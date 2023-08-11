@@ -34,7 +34,7 @@ def sflkit_instrument(
     else:
         work_dir = work_dir_or_project
     try:
-        project, _, _, _ = __get_project__(work_dir)
+        project, _, _ = __get_project__(work_dir)
         report.project = project
         instrument(
             create_config(

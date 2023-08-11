@@ -2,9 +2,8 @@ import os
 from pathlib import Path
 from typing import List, Optional
 
-from fuzzingbook.Grammars import Grammar, is_valid_grammar
-
 from tests4py.constants import PYTHON
+from tests4py.grammars.fuzzer import Grammar, is_valid_grammar
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API

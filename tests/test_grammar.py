@@ -2,12 +2,26 @@ import ast
 import re
 import unittest
 
-from fuzzingbook.Grammars import EXPR_GRAMMAR, Grammar, is_valid_grammar
-from fuzzingbook.Parser import EarleyParser
-
 from tests4py.grammars import antlr, python
-from tests4py.grammars.tree import DerivationTree
+from tests4py.grammars.fuzzer import Grammar, is_valid_grammar
+from tests4py.grammars.parser import EarleyParser
+from tests4py.grammars.tree import ComplexDerivationTree
 from tests4py.grammars.utils import GrammarVisitor
+
+EXPR_GRAMMAR: Grammar = {
+    "<start>": ["<expr>"],
+    "<expr>": ["<term> + <expr>", "<term> - <expr>", "<term>"],
+    "<term>": ["<factor> * <term>", "<factor> / <term>", "<factor>"],
+    "<factor>": [
+        "+<factor>",
+        "-<factor>",
+        "(<expr>)",
+        "<integer>.<integer>",
+        "<integer>",
+    ],
+    "<integer>": ["<digit><integer>", "<digit>"],
+    "<digit>": ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+}
 
 
 class ExprVisitor(GrammarVisitor):
@@ -25,14 +39,14 @@ class TestVisitor(unittest.TestCase):
         for tree in parser.parse(expr):
             break
         self.assertIsNotNone(tree)
-        tree = DerivationTree.from_parse_tree(tree)
+        tree = ComplexDerivationTree.from_parse_tree(tree)
 
         class TermVisitor(ExprVisitor):
             def __init__(self, grammar: Grammar):
                 super().__init__(grammar)
                 self.term_correct = False
 
-            def visit_term(self, node: DerivationTree):
+            def visit_term(self, node: ComplexDerivationTree):
                 if node.children[1].value == " / ":
                     self.term_correct = True
 
@@ -378,7 +392,7 @@ class TestPython(unittest.TestCase):
         grammar_source = python.ToGrammarVisitor().visit(tree)
         for derivation_tree in EarleyParser(python.GRAMMAR).parse(grammar_source):
             new_tree = python.ToASTVisitor(python.GRAMMAR).visit(
-                DerivationTree.from_parse_tree(derivation_tree)
+                ComplexDerivationTree.from_parse_tree(derivation_tree)
             )
             self.assertEqual(
                 WHITESPACES.sub("", ast.unparse(tree)),

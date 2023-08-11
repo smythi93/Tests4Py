@@ -13,11 +13,9 @@ from pathlib import Path
 from subprocess import Popen
 from typing import List, Optional, Tuple, Any
 
-from fuzzingbook.GrammarFuzzer import GrammarFuzzer
-from fuzzingbook.Grammars import Grammar, srange, is_valid_grammar
-
 from tests4py.constants import Environment
-from tests4py.grammars.tree import DerivationTree
+from tests4py.grammars.fuzzer import GrammarFuzzer, Grammar, srange, is_valid_grammar
+from tests4py.grammars.tree import ComplexDerivationTree
 from tests4py.grammars.utils import GrammarVisitor
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
@@ -145,7 +143,7 @@ class CookieCutterAPI(API, GrammarVisitor, abc.ABC):
         self.pre_hook_crash = False
         self.post_hook_crash = False
 
-    def visit_hooks(self, node: DerivationTree):
+    def visit_hooks(self, node: ComplexDerivationTree):
         self.pre_hooks = []
         self.post_hooks = []
         self.pre_hook_crash = False
@@ -153,12 +151,12 @@ class CookieCutterAPI(API, GrammarVisitor, abc.ABC):
         for children in node.children:
             self.visit(children)
 
-    def visit_config(self, node: DerivationTree):
+    def visit_config(self, node: ComplexDerivationTree):
         self.config = node.to_string()
         for child in node.children:
             self.visit(child)
 
-    def visit_repo_name(self, node: DerivationTree):
+    def visit_repo_name(self, node: ComplexDerivationTree):
         self.path = list(
             map(lambda x: x.replace('"', ""), node.children[1].to_string().split(","))
         )
@@ -171,12 +169,12 @@ class CookieCutterAPI(API, GrammarVisitor, abc.ABC):
             else:
                 self.post_hook_crash = True
 
-    def visit_pre_hook(self, node: DerivationTree):
+    def visit_pre_hook(self, node: ComplexDerivationTree):
         hook = node.children[1].to_string()
         self._set_hook_crash(hook)
         self.pre_hooks.append(hook)
 
-    def visit_post_hook(self, node: DerivationTree):
+    def visit_post_hook(self, node: ComplexDerivationTree):
         hook = node.children[1].to_string()
         self._set_hook_crash(hook, pre=False)
         self.post_hooks.append(hook)

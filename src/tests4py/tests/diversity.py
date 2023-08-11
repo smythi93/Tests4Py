@@ -3,8 +3,8 @@ import unittest
 from abc import abstractmethod, ABC
 from pathlib import Path
 
-from fuzzingbook.Grammars import Grammar
-from fuzzingbook.Parser import EarleyParser
+from tests4py.grammars.fuzzer import Grammar
+from tests4py.grammars.parser import EarleyParser
 
 
 class DiversityTest:

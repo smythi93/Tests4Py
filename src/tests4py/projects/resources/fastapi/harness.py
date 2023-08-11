@@ -1,8 +1,7 @@
 import argparse
 import sys
-from typing import List
-
 from decimal import Decimal
+from typing import List
 
 # noinspection PyUnresolvedReferences
 from fastapi import APIRouter, Depends, FastAPI, Form
