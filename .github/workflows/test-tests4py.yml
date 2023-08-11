@@ -22,7 +22,7 @@ jobs:
     - name: setup pyenv
       uses: "gabrielfalcao/pyenv-action@v13"
       with:
-        default: 3.11.4
+        default: 3.11.1
     - name: Install dependencies
       run: |
         sudo apt-get update && sudo apt-get install -y python3-dev
