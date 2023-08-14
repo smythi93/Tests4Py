@@ -72,7 +72,6 @@ def tests4py_generate(
     if work_dir is None:
         work_dir = Path.cwd()
 
-    current_dir = Path.cwd()
     try:
         project, _, _ = utils.__get_project__(work_dir)
         report.project = project
@@ -140,8 +139,6 @@ def tests4py_generate(
     except BaseException as e:
         report.raised = e
         report.successful = False
-    finally:
-        os.chdir(current_dir)
     return report
 
 
@@ -161,7 +158,6 @@ def tests4py_test(
     if work_dir is None:
         work_dir = Path.cwd()
 
-    current_dir = Path.cwd()
     try:
         project, _, _ = utils.__get_project__(work_dir)
         report.project = project
@@ -212,6 +208,4 @@ def tests4py_test(
     except BaseException as e:
         report.raised = e
         report.successful = False
-    finally:
-        os.chdir(current_dir)
     return report

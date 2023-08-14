@@ -132,11 +132,17 @@ class CommandTests(BaseTest):
         self.assertTrue(project.compiled)
 
     def test_test_pysnooper_3(self):
-        tests4py.framework.default.tests4py_checkout("pysnooper", 3, fixed=False)
+        report = tests4py.framework.default.tests4py_checkout(
+            "pysnooper", 3, fixed=False
+        )
+        if report.raised:
+            raise report.raised
         work_dir = tests4py.constants.DEFAULT_WORK_DIR / "pysnooper_3"
         project = load_bug_info(work_dir / tests4py.constants.INFO_FILE)
         self.assertFalse(project.compiled)
-        tests4py.framework.default.tests4py_compile(work_dir)
+        report = tests4py.framework.default.tests4py_compile(work_dir)
+        if report.raised:
+            raise report.raised
         project = load_bug_info(work_dir / tests4py.constants.INFO_FILE)
         self.assertTrue(project.compiled)
         report = tests4py.framework.default.tests4py_test(work_dir)

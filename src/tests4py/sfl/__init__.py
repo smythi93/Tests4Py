@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from typing import List, Union
 
@@ -59,9 +58,8 @@ def sflkit_get_events(
 ):
     if report is None:
         report = SFLEventsReport()
-    current_dir = Path.cwd()
     if work_dir_or_project is None:
-        work_dir = current_dir
+        work_dir = Path.cwd()
     elif isinstance(work_dir_or_project, Project):
         work_dir = DEFAULT_WORK_DIR / work_dir_or_project.get_identifier()
     else:
@@ -78,6 +76,4 @@ def sflkit_get_events(
     except BaseException as e:
         report.raised = e
         report.successful = False
-    finally:
-        os.chdir(current_dir)
     return report
