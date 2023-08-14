@@ -81,13 +81,8 @@ def checkout_project(
         report.location = work_location
         if update and work_location.exists():
             project_verify, _, _ = __get_project__(work_location)
-            version_verify = 1 - int(project_verify.buggy)
-            compiled_verify = project_verify.compiled
+            project.compiled = project_verify.compiled
         else:
-            version_verify = int(project.buggy)
-            compiled_verify = False
-
-        if version_verify != 1 - int(project.buggy):
             tmp_location = (work_dir / f"tmp_{project.project_name}").absolute()
 
             if check_further:
@@ -195,9 +190,6 @@ def checkout_project(
             LOGGER.info(f"Create info file")
             with open(work_location / FIX_FILES, "w") as fp:
                 fp.write(";".join(patch_fix_all))
-
-        else:
-            project.compiled = compiled_verify
 
         # Move information about bug to clone project folder
         project.write_bug_info(work_location / INFO_FILE)
