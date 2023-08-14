@@ -1,0 +1,35 @@
+# Original Buggy Code
+
+def remove_html_markup(s):
+    out = ""
+    quote = False
+    tag = True
+
+    for c in s:
+        if c == "<" and not quote:
+            tag = True
+        elif c == ">" and not quote:
+            tag = False
+        elif c == '"' or c == "'" and tag:
+            quote = not quote
+        elif not tag:
+            out = out + c
+
+    return out
+
+# Fixed Version of the Code
+
+def remove_html_markup(s):
+    tag = True
+    quote = False  # Initialize quote variable
+    out = ""       # Initialize out variable
+
+    for c in s:
+        if c == ">" and not quote:
+            tag = False
+        elif (c == '"' or c == "'") and tag:  # <-- Fixed
+            quote = not quote
+        elif not tag:
+            out = out + c
+
+    return out

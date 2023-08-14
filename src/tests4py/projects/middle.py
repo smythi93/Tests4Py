@@ -228,22 +228,6 @@ class MiddleSystemtestGenerator(SystemtestGenerator, MiddleTestGenerator):
         return f"{x}\n{y}\n{z}", TestResult.PASSING
 
 
-class Middle2SystemtestGenerator(SystemtestGenerator, MiddleTestGenerator):
-    # z>x>y fails - y>x=z might fail
-    def generate_failing_test(self) -> Tuple[str, TestResult]:
-        x, y, z = self.generate_values(self.generate_int)
-        while not x < y < z:
-            x, y, z = self.generate_values(self.generate_int)
-        return f"{y}\n{x}\n{z}", TestResult.FAILING
-
-    def generate_passing_test(self) -> Tuple[str, TestResult]:
-        values = list(self.generate_values(self.generate_int))
-        while values[1] < values[0] < values[2]:
-            random.shuffle(values)
-        x, y, z = values
-        return f"{x}\n{y}\n{z}", TestResult.PASSING
-
-
 grammar: Grammar = {
     "<start>": ["<int>\n<int>\n<int>"],
     "<int>": ["<nonzero><digits>", "-<nonzero><digits>", "0", "-0"],
