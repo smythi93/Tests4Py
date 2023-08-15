@@ -37,7 +37,7 @@ class PySnooper(Project):
             status=Status.OK,
             cause="N.A.",
             python_version="3.8.1",
-            darwin_python_version="3.8.10",
+            darwin_python_version="3.8.16",
             python_path="",
             buggy_commit_id=buggy_commit_id,
             fixed_commit_id=fixed_commit_id,
