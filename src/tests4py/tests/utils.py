@@ -29,7 +29,10 @@ class API:
     def get_test_arguments(self, system_test_path: PathLike) -> List[str]:
         with open(system_test_path, "r") as fp:
             test = fp.read()
-        return test.split("\n") if test else []
+        parts = test.split("\n")
+        if parts and parts[-1] == '':
+            parts.pop()
+        return parts if parts else []
 
     # noinspection PyBroadException
     def execute(
