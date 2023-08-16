@@ -76,6 +76,19 @@ def register():
         systemtests=YoutubeDLSystemtestGenerator(),
     )
 
+    YoutubeDL(
+        bug_id=43,
+        buggy_commit_id='cecaaf3f58ad9f544dbb79af1e565d9353fa2b2d',
+        fixed_commit_id='d6c7a367e88096bb17e323954002c084477fe908',
+        test_file=[Path('test', 'test_utils.py')],
+        test_cases=['test.test_utils.TestUtil.test_url_basename'],
+        api=YoutubeDLAPI(
+            b"Input does not match the expected outcome!"
+        ),
+        # unittests=YoutubeDL1UnittestGenerator(),
+        systemtests=YoutubeDLSystemtestGenerator(),
+    )
+
 
 class YoutubeDLAPI(ExpectErrAPI):
     pass
