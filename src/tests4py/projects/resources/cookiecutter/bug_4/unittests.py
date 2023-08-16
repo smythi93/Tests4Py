@@ -1,11 +1,11 @@
 import os.path
+import shutil
 import sys
 import unittest
-import shutil
 from abc import ABC
 
-from cookiecutter import hooks
 from cookiecutter import exceptions
+from cookiecutter import hooks
 
 
 class DefaultTests(unittest.TestCase, ABC):

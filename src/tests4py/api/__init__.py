@@ -44,9 +44,13 @@ def get_loc(project: Project):
 
 def get_faulty_lines(project: Project):
     locations = list()
-    with importlib.resources.path(
-        getattr(getattr(resources, project.project_name), f"bug_{project.bug_id}"),
-        "fix.patch",
+    project_resources = importlib.resources.files(
+        getattr(getattr(resources, project.project_name), f"bug_{project.bug_id}")
+    )
+    with importlib.resources.as_file(
+        project_resources.joinpath(
+            "fix.patch",
+        )
     ) as resource:
         try:
             with open(resource, "r") as fp:

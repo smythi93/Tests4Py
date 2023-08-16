@@ -2,10 +2,9 @@ import re
 from abc import ABC, abstractmethod
 from typing import Callable, Any
 
-from fuzzingbook.Grammars import Grammar
-from fuzzingbook.Parser import EarleyParser
-
-from tests4py.grammars.tree import DerivationTree
+from tests4py.grammars.fuzzer import Grammar
+from tests4py.grammars.parser import EarleyParser
+from tests4py.grammars.tree import ComplexDerivationTree
 
 ILLEGAL_CHARS = re.compile(r"[^A-Za-z0-9_]")
 
@@ -17,7 +16,7 @@ class GrammarVisitor(ABC):
 
     def visit_source(self, source: str):
         for tree in self.parser.parse(source):
-            return self.visit(DerivationTree.from_parse_tree(tree))
+            return self.visit(ComplexDerivationTree.from_parse_tree(tree))
         else:
             raise SyntaxError(
                 f'"{source}" is not parsable with the grammar {self.grammar}'
@@ -27,13 +26,13 @@ class GrammarVisitor(ABC):
     def get_name(value: str):
         return ILLEGAL_CHARS.sub("", value)
 
-    def generic_visit(self, node: DerivationTree) -> Any:
+    def generic_visit(self, node: ComplexDerivationTree) -> Any:
         for child in node.children:
             self.visit(child)
 
-    def visit(self, node: DerivationTree) -> Any:
+    def visit(self, node: ComplexDerivationTree) -> Any:
         method = "visit_" + self.get_name(node.value)
-        visitor: Callable[[DerivationTree], None] = getattr(
+        visitor: Callable[[ComplexDerivationTree], None] = getattr(
             self, method, self.generic_visit
         )
         return visitor(node)

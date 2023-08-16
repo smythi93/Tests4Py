@@ -1,8 +1,7 @@
 from os import PathLike
 from typing import List, Union, Any, Callable
 
-from fuzzingbook.Grammars import Grammar, RE_NONTERMINAL, is_nonterminal
-
+from tests4py.grammars.fuzzer import Grammar, is_nonterminal, RE_NONTERMINAL
 from tests4py.grammars.utils import GrammarVisitor
 
 
@@ -87,6 +86,7 @@ class TerminalFinder(Antlr4Visitor):
         self.terminal_symbols = list()
         self.non_terminal_symbol_found = False
 
+    # noinspection PyUnusedLocal
     def visit_Antlr4NonTerminal(self, node: Antlr4NonTerminal):
         self.non_terminal_symbol_found = True
 

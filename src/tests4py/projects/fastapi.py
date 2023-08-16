@@ -7,10 +7,8 @@ from abc import ABC
 from pathlib import Path
 from typing import List, Optional, Tuple
 
-from fuzzingbook.GrammarFuzzer import GrammarFuzzer
-from fuzzingbook.Grammars import Grammar, is_valid_grammar, srange
-
-from tests4py.grammars.tree import DerivationTree
+from tests4py.grammars.fuzzer import Grammar, GrammarFuzzer, srange, is_valid_grammar
+from tests4py.grammars.tree import ComplexDerivationTree
 from tests4py.grammars.utils import GrammarVisitor
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
@@ -261,23 +259,25 @@ class FastAPIDefaultAPI(API, GrammarVisitor):
         self.alias = False
         self.override = False
 
-    def visit_options(self, node: DerivationTree):
+    def visit_options(self, node: ComplexDerivationTree):
         self.path = None
         self.mode = None
         self.alias = False
         self.override = False
         self.generic_visit(node)
 
-    def visit_alias(self, node: DerivationTree):
+    # noinspection PyUnusedLocal
+    def visit_alias(self, node: ComplexDerivationTree):
         self.alias = True
 
-    def visit_override(self, node: DerivationTree):
+    # noinspection PyUnusedLocal
+    def visit_override(self, node: ComplexDerivationTree):
         self.override = True
 
-    def visit_url(self, node: DerivationTree):
+    def visit_url(self, node: ComplexDerivationTree):
         self.path = node.children[1].to_string()
 
-    def visit_mode(self, node: DerivationTree):
+    def visit_mode(self, node: ComplexDerivationTree):
         self.mode = node.children[1].to_string()
 
     def condition(self, process: subprocess.CompletedProcess) -> bool:

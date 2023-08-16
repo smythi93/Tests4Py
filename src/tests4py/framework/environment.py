@@ -3,7 +3,6 @@ import os
 import shutil
 import subprocess
 import sys
-from io import BytesIO
 from pathlib import Path
 
 from tests4py.constants import (
@@ -22,14 +21,6 @@ DEFAULT_RUN = subprocess.run
 DEFAULT_CHECK_CALL = subprocess.check_call
 DEFAULT_CHECK_OUTPUT = subprocess.check_output
 DEFAULT_POPEN = subprocess.Popen
-
-
-class _NewLineStream(BytesIO):
-    def read(self, __size: int = ...) -> bytes | None:
-        return b"\n"
-
-    def fileno(self) -> int:
-        return 0
 
 
 def __install_version__(project: Project):

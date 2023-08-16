@@ -1,5 +1,4 @@
 import logging
-import os
 import subprocess
 from pathlib import Path
 from typing import Union
@@ -57,7 +56,6 @@ def tests4py_generate(
     if work_dir is None:
         work_dir = Path.cwd()
 
-    current_dir = Path.cwd()
     try:
         project, _, _ = utils.__get_project__(work_dir)
         report.project = project
@@ -118,7 +116,9 @@ def tests4py_generate(
             environ = environment.__activate_venv__(work_dir, environ)
 
             command = [PYTHON, "-m", TestingFramework.PYTEST.value, path]
-            output = subprocess.run(command, stdout=subprocess.PIPE, env=environ).stdout
+            output = subprocess.run(
+                command, stdout=subprocess.PIPE, env=environ, cwd=work_dir
+            ).stdout
             (
                 report.successful,
                 _,
@@ -133,8 +133,6 @@ def tests4py_generate(
     except BaseException as e:
         report.raised = e
         report.successful = False
-    finally:
-        os.chdir(current_dir)
     return report
 
 
@@ -181,7 +179,9 @@ def tests4py_test(
             command.append(work_dir / DEFAULT_UNITTESTS_DIVERSITY_PATH)
         if path:
             command.append(path)
-        output = subprocess.run(command, stdout=subprocess.PIPE, env=environ).stdout
+        output = subprocess.run(
+            command, stdout=subprocess.PIPE, env=environ, cwd=work_dir
+        ).stdout
         (
             report.successful,
             report.total,
@@ -193,6 +193,4 @@ def tests4py_test(
     except BaseException as e:
         report.raised = e
         report.successful = False
-    finally:
-        os.chdir(current_dir)
     return report
