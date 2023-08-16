@@ -73,7 +73,7 @@ def register():
             b"Input does not match the expected outcome!"
         ),
         # unittests=YoutubeDL1UnittestGenerator(),
-        # systemtests=YoutubeDL1SystemtestGenerator(),
+        systemtests=YoutubeDLSystemtestGenerator(),
     )
 
 
@@ -81,5 +81,5 @@ class YoutubeDLAPI(ExpectErrAPI):
     pass
 
 
-class YoutubeDLSystemtestGenerator:
+class YoutubeDLSystemtestGenerator(SystemtestGenerator):
     pass
