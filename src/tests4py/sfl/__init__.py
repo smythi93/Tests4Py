@@ -5,7 +5,7 @@ from sflkit.runners import PytestRunner
 
 from tests4py.constants import DEFAULT_WORK_DIR
 from tests4py.framework.environment import __env_on__, __activate_venv__
-from tests4py.framework.utils import __get_project__
+from tests4py.framework.utils import load_project
 from tests4py.projects import Project
 from tests4py.sfl.utils import (
     instrument,
@@ -33,7 +33,7 @@ def sflkit_instrument(
     else:
         work_dir = work_dir_or_project
     try:
-        project, _, _ = __get_project__(work_dir)
+        project, _, _ = load_project(work_dir)
         report.project = project
         instrument(
             create_config(
@@ -65,7 +65,7 @@ def sflkit_get_events(
     else:
         work_dir = work_dir_or_project
     try:
-        project, _, _ = __get_project__(work_dir)
+        project, _, _ = load_project(work_dir)
         if output is None:
             output = get_events_path(project)
         report.project = project

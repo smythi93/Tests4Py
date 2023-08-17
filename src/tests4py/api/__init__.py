@@ -10,7 +10,7 @@ from tests4py.api.default import (
     test_project,
     info_project,
 )
-from tests4py.framework.utils import __setup__
+from tests4py.framework.utils import setup
 from tests4py.projects import (
     get_number_of_bugs,
     Project,
@@ -18,7 +18,7 @@ from tests4py.projects import (
     resources,
 )
 
-__setup__()
+setup()
 
 
 def load_projects():

@@ -14,7 +14,7 @@ from utils import BaseTest
 
 
 def _get_projects():
-    framework.utils.__setup__()
+    framework.utils.setup()
     return [
         project
         for project_name in projects.bugs.values()

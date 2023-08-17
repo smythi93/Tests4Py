@@ -1,18 +1,14 @@
 from pathlib import Path
 
 from tests4py import projects, api
+from tests4py.api.report import CheckoutReport, CompileReport, InfoReport, TestReport
 from tests4py.constants import (
     DEFAULT_WORK_DIR,
 )
-from tests4py.framework.logger import LOGGER
 from tests4py.framework.utils import (
-    CheckoutReport,
-    __setup__,
-    CompileReport,
-    TestReport,
-    __init_logger__,
-    InfoReport,
+    setup,
 )
+from tests4py.logger import LOGGER, init_logger
 
 
 def tests4py_checkout(
@@ -25,7 +21,7 @@ def tests4py_checkout(
     verbose=True,
 ) -> CheckoutReport:
     report = CheckoutReport()
-    __init_logger__(verbose=verbose)
+    init_logger(verbose=verbose)
 
     try:
         if not project_name:
@@ -42,7 +38,7 @@ def tests4py_checkout(
         LOGGER.info(f"FIXED: {fixed}")
         LOGGER.info(f"WORK_DIR: {work_dir}")
 
-        __setup__()
+        setup()
 
         project = projects.get_project(project_name, bug_id)
         if not fixed:
@@ -63,7 +59,7 @@ def tests4py_compile(
     verbose: bool = True,
 ) -> CompileReport:
     report = CompileReport()
-    __init_logger__(verbose=verbose)
+    init_logger(verbose=verbose)
     try:
         api.compile_project(work_dir, recompile=recompile, force=force, report=report)
     except BaseException as e:
@@ -91,7 +87,7 @@ def tests4py_test(
     verbose=True,
 ) -> TestReport:
     report = TestReport()
-    __init_logger__(verbose=verbose)
+    init_logger(verbose=verbose)
     try:
         api.test_project(
             work_dir,

@@ -1,20 +1,20 @@
 from tests4py import projects
+from tests4py.api.report import CacheReport
 from tests4py.constants import DEFAULT_WORK_DIR
 from tests4py.framework.default import tests4py_checkout, tests4py_compile
 from tests4py.framework.utils import (
-    CacheReport,
-    __setup__,
-    __init_logger__,
+    setup,
 )
+from tests4py.logger import init_logger
 
 
 def tests4py_cache(
     project_name: str = None, bug_id: int = None, force: bool = False, verbose=True
 ) -> CacheReport:
     report = CacheReport()
-    __init_logger__(verbose=verbose)
+    init_logger(verbose=verbose)
     try:
-        __setup__()
+        setup()
         project_list = projects.get_matching_projects(project_name, bug_id)
         for project in project_list:
             checkout_report = tests4py_checkout(

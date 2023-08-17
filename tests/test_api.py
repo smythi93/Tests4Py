@@ -3,7 +3,7 @@ import os.path
 from sflkit.analysis.suggestion import Location
 
 from tests4py.api import get_faulty_lines, get_projects
-from tests4py.framework.utils import __setup__
+from tests4py.framework.utils import setup
 from utils import BaseTest
 
 
@@ -11,7 +11,7 @@ class CommandTests(BaseTest):
     @classmethod
     def setUpClass(cls) -> None:
         super().setUpClass()
-        __setup__()
+        setup()
 
     def test_faulty_lines_3(self):
         faulty_lines = get_faulty_lines(get_projects("pysnooper", 3)[0])

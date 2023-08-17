@@ -4,34 +4,15 @@ import os
 from pathlib import Path
 from typing import Union, Tuple, Dict, Optional
 
+from tests4py.api.report import SystemtestGenerateReport, SystemtestTestReport
 from tests4py.constants import (
     DEFAULT_SUB_PATH_SYSTEMTESTS,
-    SYSTEMTEST,
-    GENERATE,
     DEFAULT_SYSTEMTESTS_DIVERSITY_PATH,
-    TEST,
 )
 from tests4py.framework import utils, environment
-from tests4py.framework.logger import LOGGER
+from tests4py.logger import LOGGER
 from tests4py.projects import Project
 from tests4py.tests.utils import TestResult
-
-
-class SystemtestGenerateReport(utils.GenerateReport):
-    def __init__(self):
-        super().__init__(
-            SYSTEMTEST,
-            subcommand=GENERATE,
-        )
-
-
-class SystemtestTestReport(utils.TestingReport):
-    def __init__(self):
-        super().__init__(
-            SYSTEMTEST,
-            subcommand=TEST,
-        )
-        self.results: Optional[Dict[str, Tuple[TestResult, str]]] = None
 
 
 def _get_system_runs(
@@ -73,7 +54,7 @@ def tests4py_generate(
         work_dir = Path.cwd()
 
     try:
-        project, _, _ = utils.__get_project__(work_dir)
+        project, _, _ = utils.load_project(work_dir)
         report.project = project
 
         if project.systemtests is None:
@@ -159,7 +140,7 @@ def tests4py_test(
         work_dir = Path.cwd()
 
     try:
-        project, _, _ = utils.__get_project__(work_dir)
+        project, _, _ = utils.load_project(work_dir)
         report.project = project
 
         if project.systemtests is None:

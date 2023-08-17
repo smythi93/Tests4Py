@@ -13,7 +13,7 @@ from pathlib import Path
 from subprocess import Popen
 from typing import List, Optional, Tuple, Any
 
-from tests4py.constants import Environment
+from tests4py.constants import Environment, PYTHON
 from tests4py.grammars.fuzzer import GrammarFuzzer, Grammar, srange, is_valid_grammar
 from tests4py.grammars.tree import ComplexDerivationTree
 from tests4py.grammars.utils import GrammarVisitor
@@ -62,6 +62,7 @@ class CookieCutter(Project):
             api=api,
             grammar=grammar,
             loc=loc,
+            setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
         )
 
 
@@ -253,7 +254,12 @@ class CookieCutterAPI(API, GrammarVisitor, abc.ABC):
         return self._validate(process, stdout, stderr), ""
 
     # noinspection PyBroadException
-    def execute(self, system_test_path: PathLike, environ: Environment) -> Any:
+    def execute(
+        self,
+        system_test_path: PathLike,
+        environ: Environment,
+        work_dir: Optional[Path] = None,
+    ) -> Any:
         try:
             process = subprocess.Popen(
                 ["cookiecutter"] + self._get_command_parameters() + [self.REPO_PATH],
@@ -261,6 +267,7 @@ class CookieCutterAPI(API, GrammarVisitor, abc.ABC):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 env=environ,
+                cwd=Path.cwd() if work_dir is None else work_dir,
             )
             return process, self._communicate(process)
         except subprocess.TimeoutExpired:
@@ -654,7 +661,7 @@ def tearDown(self) -> None:
         return ast.List(
             elts=[
                 ast.Constant(value=f"{'pre' if is_pre else 'post'}_{n}")
-                for i in range(n)
+                for _ in range(n)
             ]
         )
 
@@ -908,7 +915,8 @@ def tearDown(self) -> None:
             ),
         ]
 
-    def _check_exit_code(self, exits):
+    @staticmethod
+    def _check_exit_code(exits):
         return exits and all(map(bool, exits))
 
     def _generate_test(

@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import List, Tuple, Collection, Any, Optional
 
 from tests4py.constants import Environment, HARNESS_FILE, PYTHON
-from tests4py.framework.logger import LOGGER
+from tests4py.logger import LOGGER
 
 
 class TestResult(enum.Enum):

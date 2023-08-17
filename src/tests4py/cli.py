@@ -35,7 +35,7 @@ from tests4py.framework.default import (
     tests4py_info,
 )
 from tests4py.framework.grammar import tests4py_grammar
-from tests4py.framework.logger import LOGGER
+from tests4py.logger import LOGGER
 from tests4py.framework.sfl import tests4py_sfl_instrument, tests4py_sfl_events
 from tests4py.sfl.constants import SFL, INSTRUMENT, EVENTS, DEFAULT_EXCLUDES
 

@@ -1,4 +1,5 @@
-from tests4py.framework.utils import load_config, ConfigReport
+from tests4py.api.config import load_config
+from tests4py.api.report import ConfigReport
 
 
 def tests4py_config_set(name: str, value: bool):
