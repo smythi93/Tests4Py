@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from typing import Callable
 
 from tests4py.constants import (
     Environment,
@@ -122,24 +123,38 @@ def __install_pyenv__() -> str:
 # Windows stuff
 
 
-def activate_shell_run(*args, **kwargs):
+def set_shell(call: Callable, *args, **kwargs):
     kwargs["shell"] = True
-    return DEFAULT_RUN(*args, **kwargs)
+    if "args" in kwargs:
+        if not isinstance(kwargs["args"], (str, bytes, os.PathLike)):
+            kwargs["args"] = subprocess.list2cmdline(kwargs["args"])
+    elif len(args) > 0:
+        if not isinstance(args[0], (str, bytes, os.PathLike)):
+            args = tuple([subprocess.list2cmdline(args[0])] + list(args[1:]))
+    return call(*args, **kwargs)
+
+
+def activate_shell_run(*args, **kwargs):
+    return set_shell(DEFAULT_RUN, *args, **kwargs)
 
 
 def activate_shell_check_call(*args, **kwargs):
-    kwargs["shell"] = True
-    return DEFAULT_CHECK_CALL(*args, **kwargs)
+    return set_shell(DEFAULT_CHECK_CALL, *args, **kwargs)
 
 
 def activate_shell_check_output(*args, **kwargs):
-    kwargs["shell"] = True
-    return DEFAULT_CHECK_OUTPUT(*args, **kwargs)
+    return set_shell(DEFAULT_CHECK_OUTPUT, *args, **kwargs)
 
 
 class ActivateShellPopen(DEFAULT_POPEN):
     def __init__(self, *args, **kwargs):
         kwargs["shell"] = True
+        if "args" in kwargs:
+            if not isinstance(kwargs["args"], (str, bytes, os.PathLike)):
+                kwargs["args"] = subprocess.list2cmdline(kwargs["args"])
+        elif len(args) > 0:
+            if not isinstance(args[0], (str, bytes, os.PathLike)):
+                args = tuple([subprocess.list2cmdline(args[0])] + list(args[1:]))
         super().__init__(*args, **kwargs)
 
 
@@ -147,6 +162,7 @@ def __env_on__(project: Project, skip=False) -> Environment:
     if sys.platform.startswith("win") or (
         sys.platform.startswith("darwin") and platform.processor().startswith("arm")
     ):
+        LOGGER.debug("Activate chell for subprocess")
         importlib.reload(subprocess)
         subprocess.run = activate_shell_run
         subprocess.check_call = activate_shell_check_call
