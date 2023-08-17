@@ -143,6 +143,7 @@ class CookieCutterAPI(API, GrammarVisitor, abc.ABC):
         self.path = []
         self.pre_hook_crash = False
         self.post_hook_crash = False
+        self.repo_path = self.REPO_PATH
 
     def visit_hooks(self, node: ComplexDerivationTree):
         self.pre_hooks = []
@@ -199,18 +200,18 @@ class CookieCutterAPI(API, GrammarVisitor, abc.ABC):
                         fp.write(f'echo "{v}"\n')
 
     def _setup(self):
-        if os.path.exists(self.REPO_PATH):
-            if os.path.isdir(self.REPO_PATH):
-                shutil.rmtree(self.REPO_PATH, ignore_errors=True)
+        if os.path.exists(self.repo_path):
+            if os.path.isdir(self.repo_path):
+                shutil.rmtree(self.repo_path, ignore_errors=True)
             else:
-                os.remove(self.REPO_PATH)
+                os.remove(self.repo_path)
 
-        os.makedirs(self.REPO_PATH)
+        os.makedirs(self.repo_path)
 
-        with open(os.path.join(self.REPO_PATH, "cookiecutter.json"), "w") as fp:
+        with open(os.path.join(self.repo_path, "cookiecutter.json"), "w") as fp:
             fp.write(self.config)
 
-        repo_path = os.path.join(self.REPO_PATH, "{{cookiecutter.repo_name}}")
+        repo_path = os.path.join(self.repo_path, "{{cookiecutter.repo_name}}")
         os.makedirs(repo_path)
 
         with open(os.path.join(repo_path, "README.rst"), "w") as fp:
@@ -221,7 +222,7 @@ class CookieCutterAPI(API, GrammarVisitor, abc.ABC):
             )
 
         if self.pre_hooks or self.post_hooks:
-            hooks_path = os.path.join(self.REPO_PATH, "hooks")
+            hooks_path = os.path.join(self.repo_path, "hooks")
             os.makedirs(hooks_path)
             if self.pre_hooks:
                 self._write_hook(hooks_path, self.pre_hooks, "pre_gen_project")
@@ -240,15 +241,21 @@ class CookieCutterAPI(API, GrammarVisitor, abc.ABC):
         return process.communicate(20 * b"\n", self.default_timeout)
 
     def get_test_arguments(self, system_test_path: PathLike) -> List[str]:
+        return []
+
+    def _build_test(self, system_test_path: PathLike, work_dir: Path):
         with open(system_test_path, "r") as fp:
             content = fp.read()
         self.visit_source(content)
         self._setup()
+        self.path = [work_dir / path for path in self.path]
         if self.path:
             for p in self.path:
                 shutil.rmtree(p, ignore_errors=True)
 
     def oracle(self, args) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "timeout or exception triggered"
         process, args = args
         stdout, stderr = args
         return self._validate(process, stdout, stderr), ""
@@ -261,13 +268,16 @@ class CookieCutterAPI(API, GrammarVisitor, abc.ABC):
         work_dir: Optional[Path] = None,
     ) -> Any:
         try:
+            work_dir = Path.cwd() if work_dir is None else work_dir
+            self.repo_path = work_dir / self.REPO_PATH
+            self._build_test(system_test_path, work_dir)
             process = subprocess.Popen(
-                ["cookiecutter"] + self._get_command_parameters() + [self.REPO_PATH],
+                ["cookiecutter"] + self._get_command_parameters() + [self.repo_path],
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 env=environ,
-                cwd=Path.cwd() if work_dir is None else work_dir,
+                cwd=work_dir,
             )
             return process, self._communicate(process)
         except subprocess.TimeoutExpired:
@@ -279,7 +289,7 @@ class CookieCutterAPI(API, GrammarVisitor, abc.ABC):
         if self.path:
             for p in self.path:
                 shutil.rmtree(p, ignore_errors=True)
-        shutil.rmtree(self.REPO_PATH, ignore_errors=True)
+        shutil.rmtree(self.repo_path, ignore_errors=True)
 
 
 class CookieCutter2API(CookieCutterAPI):
