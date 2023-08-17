@@ -52,7 +52,7 @@ def __install_version__(project: Project):
                 )
                 subprocess.check_output(
                     ["pyenv", "install", project.python_fallback_version],
-                    stdin=b"\n" * 10,
+                    input=b"\n" * 10,
                 )
                 return v
             except subprocess.CalledProcessError:
@@ -84,7 +84,7 @@ def __install_version__(project: Project):
         LOGGER.info(f"Failed. Try to install fallback pyenv python {v}")
         try:
             output = subprocess.check_output(
-                [PYENV, "install", v], stdin=b"\n" * 10
+                [PYENV, "install", v], input=b"\n" * 10
             ).decode("utf-8")
             match = VERSION_PATTERN.search(output)
             if match:
