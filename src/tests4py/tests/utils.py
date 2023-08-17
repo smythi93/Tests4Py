@@ -80,7 +80,7 @@ class API:
     ) -> List[Tuple[PathLike | str, TestResult, str]]:
         system_tests_path = Path(system_tests)
         tests = list()
-        if not system_tests_path.exists():
+        if len(str(system_tests_path)) > 265 or not system_tests_path.exists():
             LOGGER.info(
                 f"Path {repr(system_tests)} does not exist, try to execute it as test case"
             )
