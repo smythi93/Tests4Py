@@ -29,7 +29,10 @@ class API:
     def get_test_arguments(self, system_test_path: PathLike) -> List[str]:
         with open(system_test_path, "r") as fp:
             test = fp.read()
-        return test.split("\n") if test else []
+        parts = test.split("\n")
+        if parts and parts[-1] == '':
+            parts.pop()
+        return parts if parts else []
 
     # noinspection PyBroadException
     def execute(
@@ -77,7 +80,7 @@ class API:
     ) -> List[Tuple[PathLike | str, TestResult, str]]:
         system_tests_path = Path(system_tests)
         tests = list()
-        if not system_tests_path.exists():
+        if len(str(system_tests_path)) > 256 or not system_tests_path.exists():
             LOGGER.info(
                 f"Path {repr(system_tests)} does not exist, try to execute it as test case"
             )
