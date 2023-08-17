@@ -3,37 +3,15 @@ import subprocess
 from pathlib import Path
 from typing import Union
 
+from tests4py.api.report import UnittestGenerateReport, UnittestTestReport
 from tests4py.constants import (
     DEFAULT_SUB_PATH_UNITTESTS,
-    UNITTEST,
-    GENERATE,
-    TEST,
     DEFAULT_UNITTESTS_DIVERSITY_PATH,
     PYTHON,
 )
 from tests4py.framework import utils, environment
-from tests4py.framework.logger import LOGGER
+from tests4py.logger import LOGGER
 from tests4py.projects import TestingFramework
-
-
-class UnittestGenerateReport(utils.GenerateReport):
-    """ """
-
-    def __init__(self):
-        super().__init__(
-            UNITTEST,
-            subcommand=GENERATE,
-        )
-
-
-class UnittestTestReport(utils.TestingReport):
-    """ """
-
-    def __init__(self):
-        super().__init__(
-            UNITTEST,
-            subcommand=TEST,
-        )
 
 
 def tests4py_generate(
@@ -57,7 +35,7 @@ def tests4py_generate(
         work_dir = Path.cwd()
 
     try:
-        project, _, _ = utils.__get_project__(work_dir)
+        project, _, _ = utils.load_project(work_dir)
         report.project = project
 
         if project.unittests is None:
@@ -124,7 +102,7 @@ def tests4py_generate(
                 _,
                 report.verify_failing,
                 report.verify_passing,
-            ) = utils.__get_pytest_result__(output)
+            ) = utils.get_pytest_result(output)
             LOGGER.info(
                 f"Verify: {report.verify_passing} passed --- {report.verify_failing} failed"
             )
@@ -154,7 +132,7 @@ def tests4py_test(
 
     current_dir = Path.cwd()
     try:
-        project, _, _ = utils.__get_project__(work_dir)
+        project, _, _ = utils.load_project(work_dir)
         report.project = project
 
         if project.unittests is None:
@@ -187,7 +165,7 @@ def tests4py_test(
             report.total,
             report.failing,
             report.passing,
-        ) = utils.__get_pytest_result__(output)
+        ) = utils.get_pytest_result(output)
         LOGGER.info(f"Ran {report.total} tests")
         LOGGER.info(f"{report.passing} passed --- {report.failing} failed")
     except BaseException as e:

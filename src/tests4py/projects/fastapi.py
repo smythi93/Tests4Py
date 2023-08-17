@@ -7,6 +7,7 @@ from abc import ABC
 from pathlib import Path
 from typing import List, Optional, Tuple
 
+from tests4py.constants import PYTHON
 from tests4py.grammars.fuzzer import Grammar, GrammarFuzzer, srange, is_valid_grammar
 from tests4py.grammars.tree import ComplexDerivationTree
 from tests4py.grammars.utils import GrammarVisitor
@@ -53,6 +54,7 @@ class FastAPI(Project):
             api=api,
             grammar=grammar_request if grammar is None else grammar,
             loc=loc,
+            setup=[[PYTHON, "-m", "pip", "install", "."]],
         )  # TODO adjust parameters
 
 

@@ -14,7 +14,7 @@ from tests4py.constants import (
     PYENV_TMP,
     PYTHON,
 )
-from tests4py.framework.logger import LOGGER
+from tests4py.logger import LOGGER
 from tests4py.projects import Project
 
 DEFAULT_RUN = subprocess.run

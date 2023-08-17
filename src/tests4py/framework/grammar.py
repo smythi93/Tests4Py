@@ -4,9 +4,10 @@ from os import PathLike
 from pathlib import Path
 
 from tests4py import projects
-from tests4py.framework.logger import LOGGER
-from tests4py.framework.utils import __setup__, GrammarReport
+from tests4py.api.report import GrammarReport
+from tests4py.framework.utils import setup
 from tests4py.grammars import antlr
+from tests4py.logger import LOGGER
 
 
 def tests4py_grammar(
@@ -17,7 +18,7 @@ def tests4py_grammar(
 ):
     report = GrammarReport()
     try:
-        __setup__()
+        setup()
         project_name = project_name.lower()
         LOGGER.info("Getting grammar for:")
         LOGGER.info(f"PROJECT_NAME: {project_name}")
