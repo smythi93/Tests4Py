@@ -1,5 +1,6 @@
 import importlib
 import os
+import platform
 import shutil
 import subprocess
 import sys
@@ -143,7 +144,9 @@ class ActivateShellPopen(DEFAULT_POPEN):
 
 
 def __env_on__(project: Project, skip=False) -> Environment:
-    if sys.platform.startswith("win"):
+    if sys.platform.startswith("win") or (
+        sys.platform.startswith("darwin") and platform.processor().startswith("arm")
+    ):
         importlib.reload(subprocess)
         subprocess.run = activate_shell_run
         subprocess.check_call = activate_shell_check_call
