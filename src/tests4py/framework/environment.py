@@ -125,12 +125,6 @@ def __install_pyenv__() -> str:
 
 def set_shell(call: Callable, *args, **kwargs):
     kwargs["shell"] = True
-    if "args" in kwargs:
-        if not isinstance(kwargs["args"], (str, bytes, os.PathLike)):
-            kwargs["args"] = subprocess.list2cmdline(kwargs["args"])
-    elif len(args) > 0:
-        if not isinstance(args[0], (str, bytes, os.PathLike)):
-            args = tuple([subprocess.list2cmdline(args[0])] + list(args[1:]))
     return call(*args, **kwargs)
 
 
@@ -149,12 +143,6 @@ def activate_shell_check_output(*args, **kwargs):
 class ActivateShellPopen(DEFAULT_POPEN):
     def __init__(self, *args, **kwargs):
         kwargs["shell"] = True
-        if "args" in kwargs:
-            if not isinstance(kwargs["args"], (str, bytes, os.PathLike)):
-                kwargs["args"] = subprocess.list2cmdline(kwargs["args"])
-        elif len(args) > 0:
-            if not isinstance(args[0], (str, bytes, os.PathLike)):
-                args = tuple([subprocess.list2cmdline(args[0])] + list(args[1:]))
         super().__init__(*args, **kwargs)
 
 
