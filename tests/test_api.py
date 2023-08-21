@@ -2,8 +2,7 @@ import os.path
 
 from sflkit.analysis.suggestion import Location
 
-from tests4py.api import get_faulty_lines, get_projects
-from tests4py.framework.utils import setup
+from tests4py.api import get_faulty_lines, get_projects, setup
 from utils import BaseTest
 
 

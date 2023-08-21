@@ -2,10 +2,10 @@ from pathlib import Path
 from typing import List, Union
 
 from sflkit.runners import PytestRunner
+from tests4py.framework.environment import env_on, activate_venv
 
+from tests4py.api.utils import load_project
 from tests4py.constants import DEFAULT_WORK_DIR
-from tests4py.framework.environment import __env_on__, __activate_venv__
-from tests4py.framework.utils import load_project
 from tests4py.projects import Project
 from tests4py.sfl.utils import (
     instrument,
@@ -69,8 +69,8 @@ def sflkit_get_events(
         if output is None:
             output = get_events_path(project)
         report.project = project
-        environ = __env_on__(project)
-        environ = __activate_venv__(work_dir, environ)
+        environ = env_on(project)
+        environ = activate_venv(work_dir, environ)
         PytestRunner().run(directory=work_dir, output=output, environ=environ)
         report.successful = True
     except BaseException as e:

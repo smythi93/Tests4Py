@@ -4,8 +4,8 @@ from os import PathLike
 from pathlib import Path
 
 from tests4py import projects
+from tests4py.api import setup
 from tests4py.api.report import GrammarReport
-from tests4py.framework.utils import setup
 from tests4py.grammars import antlr
 from tests4py.logger import LOGGER
 

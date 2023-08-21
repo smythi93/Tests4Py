@@ -25,7 +25,7 @@ DEFAULT_CHECK_OUTPUT = subprocess.check_output
 DEFAULT_POPEN = subprocess.Popen
 
 
-def __install_version__(project: Project):
+def install_version(project: Project):
     LOGGER.info(f"Checking for platform {sys.platform}")
     if sys.platform == "darwin":
         v = project.darwin_python_version
@@ -101,7 +101,7 @@ def __install_version__(project: Project):
         return v
 
 
-def __install_pyenv__() -> str:
+def install_pyenv() -> str:
     if sys.platform.startswith("win"):
         shutil.rmtree(PYENV_TMP, ignore_errors=True)
         subprocess.check_call(
@@ -146,7 +146,7 @@ class ActivateShellPopen(DEFAULT_POPEN):
         super().__init__(*args, **kwargs)
 
 
-def __env_on__(project: Project, skip=False) -> Environment:
+def env_on(project: Project, skip=False) -> Environment:
     if sys.platform.startswith("win") or (
         sys.platform.startswith("darwin") and platform.processor().startswith("arm")
     ):
@@ -161,7 +161,7 @@ def __env_on__(project: Project, skip=False) -> Environment:
     if skip:
         return environ
     LOGGER.debug(f"Before: {environ}")
-    v = __install_version__(project)
+    v = install_version(project)
 
     python_root = PYENV_ROOT / "versions" / v
     if sys.platform.startswith("win"):
@@ -175,7 +175,7 @@ def __env_on__(project: Project, skip=False) -> Environment:
     LOGGER.debug(f"Dir: {os.listdir(PYENV_ROOT / 'versions')}")
     LOGGER.debug(f"Dir: {python_root}")
     LOGGER.debug(f"After: {environ}")
-    output = __get_python_version__(environ)
+    output = get_python_version(environ)
     LOGGER.debug(f"Version: {output}")
     if v not in output:
         raise OSError(
@@ -185,7 +185,7 @@ def __env_on__(project: Project, skip=False) -> Environment:
     return environ
 
 
-def __get_python_version__(environ: Environment):
+def get_python_version(environ: Environment):
     return (
         subprocess.check_output([PYTHON, "--version"], env=environ)
         .decode("utf-8")
@@ -193,7 +193,7 @@ def __get_python_version__(environ: Environment):
     )
 
 
-def __update_env__(environ: Environment):
+def update_env(environ: Environment):
     subprocess.check_call(
         [PYTHON, "-m", "pip", "install", "--upgrade", "pip"], env=environ
     )
@@ -210,14 +210,14 @@ def __update_env__(environ: Environment):
     )
 
 
-def __sflkit_env__(environ: Environment):
+def sflkit_env(environ: Environment):
     subprocess.check_call(
         [PYTHON, "-m", "pip", "install", "sflkitlib==0.0.1"],
         env=environ,
     )
 
 
-def __activate_venv__(work_dir: Path, environ: Environment) -> Environment:
+def activate_venv(work_dir: Path, environ: Environment) -> Environment:
     LOGGER.info("Activating virtual env")
 
     env_dir = work_dir / VENV
@@ -234,12 +234,12 @@ def __activate_venv__(work_dir: Path, environ: Environment) -> Environment:
         environ["_OLD_VIRTUAL_PS1"] = environ["PS1"] if "PS1" in environ else ""
         environ["PS1"] = f'({VENV}) {environ["PS1"] if "PS1" in environ else ""}'
         environ["VIRTUAL_ENV_PROMPT"] = f"({VENV})"
-    output = __get_python_version__(environ)
+    output = get_python_version(environ)
     LOGGER.debug(f"Venv version: {output}")
     return environ
 
 
-def __create_venv__(work_dir, environ):
+def create_venv(work_dir, environ):
     env_dir = work_dir / VENV
     shutil.rmtree(env_dir, ignore_errors=True)
     LOGGER.info("Creating virtual env")

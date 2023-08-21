@@ -1,9 +1,34 @@
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional, Union, Tuple
 
+from tests4py import projects
 from tests4py.api.config import load_config, GlobalConfig
-from tests4py.constants import DEFAULT_WORK_DIR, INFO_FILE
-from tests4py.projects import Project
+from tests4py.constants import DEFAULT_WORK_DIR, INFO_FILE, REQUIREMENTS_FILE
+from tests4py.logger import LOGGER
+from tests4py.projects import (
+    Project,
+    ansible,
+    black,
+    calculator,
+    cookiecutter,
+    expression,
+    fastapi,
+    httpie,
+    keras,
+    luigi,
+    markup,
+    matplotlib,
+    middle,
+    pandas,
+    pysnooper,
+    sanic,
+    scrapy,
+    spacy,
+    thefuck,
+    tornado,
+    tqdm,
+    youtubedl,
+)
 
 
 def get_work_dir(work_dir_or_project: Optional[Union[Path, Project]] = None):
@@ -24,3 +49,43 @@ def get_correct_dir(config: GlobalConfig):
     elif config.last_workdir is not None:
         return config.last_workdir
     raise OSError("Cannot identify Tests4Py project in cwd or cached directory")
+
+
+def setup():
+    LOGGER.info("Loading projects")
+    ansible.register()
+    black.register()
+    calculator.register()
+    cookiecutter.register()
+    expression.register()
+    fastapi.register()
+    httpie.register()
+    keras.register()
+    luigi.register()
+    markup.register()
+    matplotlib.register()
+    middle.register()
+    pandas.register()
+    pysnooper.register()
+    sanic.register()
+    scrapy.register()
+    spacy.register()
+    thefuck.register()
+    tornado.register()
+    tqdm.register()
+    youtubedl.register()
+
+
+def load_project(work_dir: Path) -> Tuple[Project, Path, Path]:
+    LOGGER.info(f"Checking whether Tests4Py project")
+    tests4py_info = work_dir / INFO_FILE
+    tests4py_requirements = work_dir / REQUIREMENTS_FILE
+    if not tests4py_info.exists():
+        raise ValueError(f"No Tests4Py project found in {work_dir}, no tests4py_info")
+    elif not tests4py_requirements.exists():
+        raise ValueError(
+            f"No Tests4Py project found in {work_dir}, no tests4py_requirements"
+        )
+
+    setup()
+    return projects.load_bug_info(tests4py_info), tests4py_info, tests4py_requirements

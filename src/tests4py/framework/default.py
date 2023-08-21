@@ -1,12 +1,10 @@
 from pathlib import Path
 
 from tests4py import projects, api
+from tests4py.api import setup
 from tests4py.api.report import CheckoutReport, CompileReport, InfoReport, TestReport
 from tests4py.constants import (
     DEFAULT_WORK_DIR,
-)
-from tests4py.framework.utils import (
-    setup,
 )
 from tests4py.logger import LOGGER, init_logger
 

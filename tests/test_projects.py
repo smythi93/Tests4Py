@@ -2,6 +2,7 @@ import unittest
 
 from parameterized import parameterized
 
+import tests4py.api.utils
 from tests4py import projects, framework
 from tests4py.constants import (
     DEFAULT_WORK_DIR,
@@ -14,7 +15,7 @@ from utils import BaseTest
 
 
 def _get_projects():
-    framework.utils.setup()
+    tests4py.api.utils.setup()
     return [
         project
         for project_name in projects.bugs.values()

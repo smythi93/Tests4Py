@@ -17,7 +17,8 @@ from tests4py.api.cache import (
 )
 from tests4py.api.config import load_config
 from tests4py.api.report import CheckoutReport, CompileReport, InfoReport, TestReport
-from tests4py.api.utils import get_work_dir
+from tests4py.api.test import get_pytest_result, get_test_results
+from tests4py.api.utils import get_work_dir, load_project
 from tests4py.constants import (
     DEFAULT_WORK_DIR,
     FIX_FILES,
@@ -34,18 +35,13 @@ from tests4py.constants import (
     PYENV_EXISTS,
     PYTHON,
 )
-from tests4py.framework.environment import (
-    __env_on__,
-    __create_venv__,
-    __activate_venv__,
-    __update_env__,
-    __sflkit_env__,
-    __install_pyenv__,
-)
-from tests4py.framework.utils import (
-    load_project,
-    get_pytest_result,
-    get_test_results,
+from tests4py.environment import (
+    env_on,
+    create_venv,
+    activate_venv,
+    update_env,
+    sflkit_env,
+    install_pyenv,
 )
 from tests4py.logger import LOGGER
 from tests4py.projects import (
@@ -277,7 +273,7 @@ def compile_project(
     verbose: bool = False,
 ) -> CompileReport:
     if not PYENV_EXISTS:
-        __install_pyenv__()
+        install_pyenv()
     if report is None:
         report = CompileReport()
     config = load_config()
@@ -290,20 +286,20 @@ def compile_project(
             LOGGER.info(f"{project} already compiled")
             report.successful = True
             return report
-        environ = __env_on__(project)
+        environ = env_on(project)
         if force or not config.cache or not check_cache_exists_env(project):
-            __create_venv__(work_dir, environ)
+            create_venv(work_dir, environ)
             env_exists = False
         else:
             copy_cached_env(project, work_dir)
             env_exists = True
 
-        environ = __activate_venv__(work_dir, environ)
+        environ = activate_venv(work_dir, environ)
         report.env = environ
 
         if not env_exists:
             LOGGER.info("Installing utilities")
-            __update_env__(environ)
+            update_env(environ)
 
             LOGGER.info("Installing requirements")
             subprocess.check_call(
@@ -336,7 +332,7 @@ def compile_project(
             cache_venv(project, work_dir)
 
         if sfl:
-            __sflkit_env__(environ)
+            sflkit_env(environ)
 
         LOGGER.info("Set compiled flag")
         project.compiled = True
@@ -460,8 +456,8 @@ def test_project(
                 f"The tests will fail on this fixed version {project.get_identifier()}"
             )
 
-        environ = __env_on__(project)
-        environ = __activate_venv__(work_dir, environ)
+        environ = env_on(project)
+        environ = activate_venv(work_dir, environ)
 
         command = [PYTHON, "-m"]
 
