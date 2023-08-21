@@ -2,10 +2,10 @@ from pathlib import Path
 from typing import List, Union
 
 from sflkit.runners import PytestRunner
-from tests4py.framework.environment import env_on, activate_venv
 
 from tests4py.api.utils import load_project
 from tests4py.constants import DEFAULT_WORK_DIR
+from tests4py.environment import env_on, activate_venv
 from tests4py.projects import Project
 from tests4py.sfl.utils import (
     instrument,
