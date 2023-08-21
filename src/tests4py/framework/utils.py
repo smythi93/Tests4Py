@@ -4,7 +4,6 @@ from typing import Optional, Tuple, List
 from xml.etree import ElementTree
 
 from tests4py import projects
-from tests4py.api.config import GlobalConfig
 from tests4py.constants import (
     INFO_FILE,
     REQUIREMENTS_FILE,
@@ -188,10 +187,3 @@ def get_test_results(
         else:
             test_results.append((test, TestResult.UNDEFINED))
     return test_results
-
-
-def get_correct_dir(current_dir: Path, config: GlobalConfig):
-    tests4py_info = current_dir / INFO_FILE
-    if not tests4py_info.exists() and config.last_workdir is not None:
-        return config.last_workdir
-    return current_dir

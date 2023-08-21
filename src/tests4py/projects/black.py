@@ -1,9 +1,7 @@
 import abc
-from os import PathLike
 from pathlib import Path
 from typing import List, Optional, Any, Tuple
 
-from tests4py.constants import Environment
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
@@ -350,6 +348,3 @@ class BlackAPI(API, abc.ABC):
 
     def oracle(self, args: Any) -> Tuple[TestResult, str]:
         return TestResult.UNDEFINED, ""
-
-    def execute(self, system_test_path: PathLike, environ: Environment) -> Any:
-        return

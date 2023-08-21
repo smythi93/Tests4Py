@@ -1673,6 +1673,3 @@ class PandasAPI(API):
 
     def oracle(self, args) -> Tuple[TestResult, str]:
         return TestResult.UNDEFINED, ""
-
-    def execute(self, system_test_path: PathLike, environ: Environment) -> Any:
-        pass

@@ -262,15 +262,12 @@ class CookieCutterAPI(API, GrammarVisitor, abc.ABC):
 
     # noinspection PyBroadException
     def execute(
-        self,
-        system_test_path: PathLike,
-        environ: Environment,
-        work_dir: Optional[Path] = None,
+        self, args: PathLike, environ: Environment, work_dir: Optional[Path] = None
     ) -> Any:
         try:
             work_dir = Path.cwd() if work_dir is None else work_dir
             self.repo_path = work_dir / self.REPO_PATH
-            self._build_test(system_test_path, work_dir)
+            self._build_test(args, work_dir)
             process = subprocess.Popen(
                 ["cookiecutter"] + self._get_command_parameters() + [self.repo_path],
                 stdin=subprocess.PIPE,

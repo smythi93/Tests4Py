@@ -6,7 +6,7 @@ import tempfile
 from abc import abstractmethod
 from os import PathLike
 from pathlib import Path
-from typing import List, Tuple, Collection, Any, Optional
+from typing import List, Tuple, Collection, Any, Optional, Sequence
 
 from tests4py.constants import Environment, HARNESS_FILE, PYTHON
 from tests4py.logger import LOGGER
@@ -30,22 +30,23 @@ class API:
         with open(system_test_path, "r") as fp:
             test = fp.read()
         parts = test.split("\n")
-        if parts and parts[-1] == '':
+        if parts and parts[-1] == "":
             parts.pop()
         return parts if parts else []
 
     # noinspection PyBroadException
     def execute(
         self,
-        system_test_path: PathLike,
+        args: Sequence[str],
         environ: Environment,
         work_dir: Optional[Path] = None,
+        pipe: bool = True,
     ) -> Any:
         try:
             process = subprocess.run(
-                [PYTHON, HARNESS_FILE] + self.get_test_arguments(system_test_path),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                [PYTHON, HARNESS_FILE] + list(args),
+                stdout=subprocess.PIPE if pipe else None,
+                stderr=subprocess.PIPE if pipe else None,
                 timeout=self.default_timeout,
                 env=environ,
                 cwd=Path.cwd() if work_dir is None else work_dir,
@@ -56,7 +57,7 @@ class API:
         except Exception:
             return None
 
-    def run(
+    def test(
         self,
         system_test_path: PathLike,
         environ: Environment,
@@ -64,7 +65,11 @@ class API:
     ) -> Tuple[PathLike, TestResult, str]:
         try:
             return system_test_path, *self.oracle(
-                self.execute(system_test_path, environ, work_dir=work_dir)
+                self.execute(
+                    self.get_test_arguments(system_test_path),
+                    environ,
+                    work_dir=work_dir,
+                )
             )
         finally:
             self.clean_up()
@@ -72,7 +77,31 @@ class API:
     def clean_up(self):
         pass
 
-    def runs(
+    def run(
+        self,
+        args_or_path: Sequence[str] | PathLike,
+        environ: Environment,
+        invoke_oracle: bool = False,
+        work_dir: Optional[Path] = None,
+    ) -> Tuple[TestResult, str]:
+        if isinstance(args_or_path, Sequence):
+            args = args_or_path
+        else:
+            system_tests_path = Path(args_or_path)
+            if (
+                len(args_or_path) > 256
+                or not system_tests_path.exists()
+                or system_tests_path.is_dir()
+            ):
+                raise ValueError(f"{system_tests_path} does not exist or is not a file")
+            args = self.get_test_arguments(args_or_path)
+        if invoke_oracle:
+            return self.oracle(self.execute(args, environ, work_dir=work_dir))
+        else:
+            self.execute(args, environ, work_dir=work_dir, pipe=False)
+        return TestResult.UNDEFINED, ""
+
+    def tests(
         self,
         system_tests: PathLike | str,
         environ: Environment,
@@ -87,18 +116,18 @@ class API:
             with tempfile.NamedTemporaryFile(mode="w") as tmp:
                 tmp.write(system_tests)
                 tmp.flush()
-                _, test_result, feedback = self.run(
+                _, test_result, feedback = self.test(
                     tmp.name, environ, work_dir=work_dir
                 )
                 tests.append((system_tests, test_result, feedback))
         elif not system_tests_path.is_dir():
             LOGGER.info(f"Path {system_tests_path} is a file")
-            tests.append(self.run(system_tests_path, environ, work_dir=work_dir))
+            tests.append(self.test(system_tests_path, environ, work_dir=work_dir))
         else:
             for dir_path, _, files in os.walk(system_tests_path):
                 for file in files:
                     path = Path(dir_path, file)
-                    tests.append(self.run(path, environ, work_dir=work_dir))
+                    tests.append(self.test(path, environ, work_dir=work_dir))
         return tests
 
 
@@ -109,15 +138,16 @@ class CLIAPI(API, abc.ABC):
 
     def execute(
         self,
-        system_test_path: PathLike,
+        args: Sequence[str],
         environ: Environment,
         work_dir: Optional[Path] = None,
+        pipe: bool = True,
     ) -> Any:
         try:
             process = subprocess.run(
-                self.cli + self.get_test_arguments(system_test_path),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                self.cli + list(args),
+                stdout=subprocess.PIPE if pipe else None,
+                stderr=subprocess.PIPE if pipe else None,
                 timeout=self.default_timeout,
                 env=environ,
                 cwd=Path.cwd() if work_dir is None else work_dir,

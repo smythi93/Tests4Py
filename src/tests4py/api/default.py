@@ -17,6 +17,7 @@ from tests4py.api.cache import (
 )
 from tests4py.api.config import load_config
 from tests4py.api.report import CheckoutReport, CompileReport, InfoReport, TestReport
+from tests4py.api.utils import get_work_dir
 from tests4py.constants import (
     DEFAULT_WORK_DIR,
     FIX_FILES,
@@ -45,7 +46,6 @@ from tests4py.framework.utils import (
     load_project,
     get_pytest_result,
     get_test_results,
-    get_correct_dir,
 )
 from tests4py.logger import LOGGER
 from tests4py.projects import (
@@ -281,13 +281,7 @@ def compile_project(
     if report is None:
         report = CompileReport()
     config = load_config()
-    current_dir = Path.cwd()
-    if work_dir_or_project is None:
-        work_dir = get_correct_dir(current_dir, config)
-    elif isinstance(work_dir_or_project, Project):
-        work_dir = DEFAULT_WORK_DIR / work_dir_or_project.get_identifier()
-    else:
-        work_dir = work_dir_or_project
+    work_dir = get_work_dir(work_dir_or_project)
     report.location = work_dir
     try:
         project, t4p_info, t4p_requirements = load_project(work_dir)
@@ -447,14 +441,7 @@ def test_project(
 ) -> TestReport:
     if report is None:
         report = TestReport()
-    current_dir = Path.cwd()
-    if work_dir_or_project is None:
-        config = load_config()
-        work_dir = get_correct_dir(current_dir, config)
-    elif isinstance(work_dir_or_project, Project):
-        work_dir = DEFAULT_WORK_DIR / work_dir_or_project.get_identifier()
-    else:
-        work_dir = work_dir_or_project
+    work_dir = get_work_dir(work_dir_or_project)
     report.location = work_dir
     try:
         project, _, _ = load_project(work_dir)

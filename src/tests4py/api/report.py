@@ -15,6 +15,7 @@ from tests4py.constants import (
     SYSTEMTEST,
     GENERATE,
     UNITTEST,
+    RUN,
 )
 from tests4py.projects import Project
 from tests4py.tests.utils import TestResult
@@ -100,12 +101,40 @@ class InfoReport(ProjectReport):
         return dictionary
 
 
+class RunReport(LocationReport):
+    def __init__(self):
+        self.input: Optional[str] = None
+        self.test_result: Optional[TestResult] = None
+        self.feedback: Optional[str] = None
+        super().__init__(RUN)
+
+    def to_dict(self):
+        dictionary = super().to_dict()
+        if self.input:
+            dictionary["input"] = self.input
+        if self.test_result:
+            dictionary["test_result"] = self.test_result
+        if self.feedback:
+            dictionary["feedback"] = self.feedback
+        return dictionary
+
+
 class TestingReport(LocationReport, abc.ABC):
     def __init__(self, command: str, subcommand: str = None):
         self.total: Optional[int] = None
         self.passing: Optional[int] = None
         self.failing: Optional[int] = None
         super().__init__(command, subcommand=subcommand)
+
+    def to_dict(self):
+        dictionary = super().to_dict()
+        if self.total:
+            dictionary["total"] = self.total
+        if self.passing:
+            dictionary["passing"] = self.passing
+        if self.failing:
+            dictionary["failing"] = self.failing
+        return dictionary
 
 
 class TestReport(TestingReport):

@@ -14,6 +14,7 @@ from tests4py.constants import (
     TEST,
     UNITTEST,
     SYSTEMTEST,
+    RUN,
     GENERATE,
     CONFIG,
     CACHE,
@@ -35,8 +36,8 @@ from tests4py.framework.default import (
     tests4py_info,
 )
 from tests4py.framework.grammar import tests4py_grammar
-from tests4py.logger import LOGGER
 from tests4py.framework.sfl import tests4py_sfl_instrument, tests4py_sfl_events
+from tests4py.logger import LOGGER
 from tests4py.sfl.constants import SFL, INSTRUMENT, EVENTS, DEFAULT_EXCLUDES
 
 
@@ -102,6 +103,7 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
     sfl_parser = commands.add_parser(
         SFL, help="The sfl (statistical fault localization) command"
     )
+    run_parser = commands.add_parser(RUN, help="The run command")
 
     # Checkout
     checkout_parser.add_argument(
@@ -478,6 +480,26 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         f"Default will be {os.path.join('events', '<project_name>', '<bug_id>')}",
     )
 
+    # Run
+    run_parser.add_argument(
+        "-w",
+        dest="work_dir",
+        default=None,
+        help="The working directory to run the input. Default will be the current directory or last cached directory",
+    )
+    run_parser.add_argument(
+        "-o",
+        dest="invoke_oracle",
+        default=False,
+        action="store_true",
+        help=f"Invoke the oracle to produce the result, if the input would be a test",
+    )
+    run_parser.add_argument(
+        "test",
+        nargs="+",
+        help=f"The path or string of the input",
+    )
+
     args = arguments.parse_args(args or sys.argv[1:])
 
     if args.debug:
@@ -567,6 +589,12 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
             raise NotImplementedError(
                 f"Subcommand {args.subcommand} not implemented for command {args.command}"
             )
+    elif args.command == RUN:
+        report = systemtest.tests4py_run(
+            work_dir=Path(args.work_dir).absolute() if args.work_dir else None,
+            inputs=args.test,
+            invoke_oracle=args.invoke_oracle,
+        )
     else:
         raise NotImplementedError(f"Command {args.command} not implemented")
 

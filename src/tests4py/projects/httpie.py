@@ -1,10 +1,8 @@
 import abc
 import string
-from os import PathLike
 from pathlib import Path
-from typing import List, Optional, Tuple, Any
+from typing import List, Optional, Tuple
 
-from tests4py.constants import Environment
 from tests4py.grammars.fuzzer import Grammar, srange, is_valid_grammar
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
@@ -136,9 +134,6 @@ class HttpieAPI(API):
 
     def oracle(self, args) -> Tuple[TestResult, str]:
         return TestResult.UNDEFINED, ""
-
-    def execute(self, system_test_path: PathLike, environ: Environment) -> Any:
-        pass
 
 
 class HttpieSystemtestGenerator(SystemtestGenerator, abc.ABC):
