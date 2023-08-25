@@ -3,6 +3,7 @@ This is directly taken from:
 https://www.fuzzingbook.org/html/Parser.html
 """
 import itertools
+import random
 import re
 from typing import List, Tuple, Iterable, Generator, Dict, Collection
 
@@ -211,7 +212,12 @@ class EarleyParser(Parser):
         self.chart: List = []  # for type checking
 
     def chart_parse(self, words, start):
-        alt = tuple(*self.c_grammar[start])
+        alt = self.c_grammar[start]
+        if len(alt) > 1:
+            alt = (start,)
+            start = f"<parser_access_{random.randbytes(32).hex()}>"
+        else:
+            alt = tuple(*self.c_grammar[start])
         chart = [Column(i, tok) for i, tok in enumerate([None, *words])]
         chart[0].add(State(start, alt, 0, chart[0]))
         return self.fill_chart(chart)
