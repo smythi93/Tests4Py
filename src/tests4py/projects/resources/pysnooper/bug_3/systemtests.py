@@ -6,31 +6,31 @@ class TestsFailing(FailingSystemtests):
         return "-otest1.log"
 
     def test_diversity_2(self):
-        return "-otest2.log\n-d1"
+        return "-otest2.log -d1"
 
     def test_diversity_3(self):
-        return "-otest3.log\n-vx"
+        return "-otest3.log -vx"
 
     def test_diversity_4(self):
-        return "-otest4.log\n-vx,y"
+        return "-otest4.log -vx,y"
 
     def test_diversity_5(self):
-        return "-otest5.log\n-vw\n-d2"
+        return "-otest5.log -vw -d2"
 
     def test_diversity_6(self):
-        return "-otest6.log\n-ptest"
+        return "-otest6.log -ptest"
 
     def test_diversity_7(self):
-        return "-otest7.log\n-d1\n-ptest"
+        return "-otest7.log -d1 -ptest"
 
     def test_diversity_8(self):
-        return "-otest8.log\n-vx\n-ptest"
+        return "-otest8.log -vx -ptest"
 
     def test_diversity_9(self):
-        return "-otest9.log\n-d1\n-vw,x,y,z"
+        return "-otest9.log -d1 -vw,x,y,z"
 
     def test_diversity_10(self):
-        return "-otest10.log\n-d1\n-ptest\n-vx,z"
+        return "-otest10.log -d1 -ptest -vx,z"
 
 
 class TestsPassing(PassingSystemtests):
@@ -38,28 +38,28 @@ class TestsPassing(PassingSystemtests):
         return ""
 
     def test_diversity_2(self):
-        return "-o\n-d1"
+        return "-o -d1"
 
     def test_diversity_3(self):
         return "-vx"
 
     def test_diversity_4(self):
-        return "-o\n-vx,y"
+        return "-o -vx,y"
 
     def test_diversity_5(self):
-        return "-vw\n-d2"
+        return "-vw -d2"
 
     def test_diversity_6(self):
-        return "-o\n-ptest"
+        return "-o -ptest"
 
     def test_diversity_7(self):
-        return "-d1\n-ptest"
+        return "-d1 -ptest"
 
     def test_diversity_8(self):
-        return "-o\n-vx\n-ptest"
+        return "-o -vx -ptest"
 
     def test_diversity_9(self):
-        return "-d1\n-vw,x,y,z"
+        return "-d1 -vw,x,y,z"
 
     def test_diversity_10(self):
-        return "-o\n-d1\n-ptest\n-vx,z"
+        return "-o -d1 -ptest -vx,z"

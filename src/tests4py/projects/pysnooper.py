@@ -9,6 +9,13 @@ from typing import List, Optional, Tuple
 
 from tests4py.constants import PYTHON
 from tests4py.grammars import python
+from tests4py.grammars.default import (
+    CLI_GRAMMAR,
+    get_possible_options,
+    STRING_ASCII,
+    NUMBER,
+    clean_up,
+)
 from tests4py.grammars.fuzzer import GrammarFuzzer, Grammar, srange, is_valid_grammar
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
@@ -197,7 +204,7 @@ class PySnooperSystemtestGenerator(SystemtestGenerator):
         super().__init__()
         self.variables_fuzzer = GrammarFuzzer(grammar, start_symbol="<variable_list>")
         self.predicate_fuzzer = GrammarFuzzer(grammar, start_symbol="<predicate_list>")
-        self.str_fuzzer = GrammarFuzzer(grammar, start_symbol="<str>")
+        self.str_fuzzer = GrammarFuzzer(grammar, start_symbol="<string_ascii>")
 
     def _generate_parameters(
         self, required: List[str], parameters: List[str], output_prob=0.5
@@ -238,12 +245,12 @@ class PySnooperSystemtestGenerator(SystemtestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
         params = self._get_failing_params()
         random.shuffle(params)
-        return "\n".join(params), TestResult.FAILING
+        return " ".join(params), TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
         params = self._get_passing_params()
         random.shuffle(params)
-        return "\n".join(params), TestResult.PASSING
+        return " ".join(params), TestResult.PASSING
 
 
 class PySnooper2UnittestGenerator(PySnooperUnittestGenerator):
@@ -367,45 +374,47 @@ class PySnooper3SystemtestGenerator(PySnooperSystemtestGenerator):
         )
 
 
-grammar: Grammar = {
-    "<start>": ["<options>"],
-    "<options>": ["", "<option_list>"],
-    "<option_list>": ["<option>", "<option_list>\n<option>"],
-    "<option>": [
-        "<output>",
-        "<variables>",
-        "<depth>",
-        "<prefix>",
-        "<watch>",
-        "<custom_repr>",
-        "<overwrite>",
-        "<thread_info>",
-    ],
-    "<output>": ["-o", "-o<path>"],
-    "<variables>": ["-v<variable_list>"],
-    "<depth>": ["-d<int>"],
-    "<prefix>": ["-p<str>"],
-    "<watch>": ["-w<variable_list>"],
-    "<custom_repr>": ["-c<predicate_list>"],
-    "<overwrite>": ["-O"],
-    "<thread_info>": ["-T"],
-    "<path>": ["<location>", "<location>.<str>"],
-    "<location>": ["<str>", os.path.join("<path>", "<str>")],
-    "<variable_list>": ["<variable>", "<variable_list>,<variable>"],
-    "<variable>": ["<name>", "<variable>.<name>"],
-    "<name>": ["<letter><chars>"],
-    "<chars>": ["", "<chars><char>"],
-    "<letter>": srange(string.ascii_letters),
-    "<digit>": srange(string.digits),
-    "<char>": ["<letter>", "<digit>", "_"],
-    "<int>": ["<nonzero><digits>", "0"],
-    "<digits>": ["", "<digits><digit>"],
-    "<nonzero>": ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
-    "<str>": ["<char><chars>"],
-    "<predicate_list>": ["<predicate>", "<predicate_list>,<predicate>"],
-    "<predicate>": ["<p_function>=<t_function>"],
-    "<p_function>": ["int", "str", "float", "bool"],
-    "<t_function>": ["repr", "str", "int"],
-}
+grammar: Grammar = clean_up(
+    dict(
+        CLI_GRAMMAR,
+        **{
+            "<start>": ["<options>"],
+            "<flag>": [
+                "-<overwrite>",
+                "-<thread_info>",
+            ],
+            "<op>": [
+                "-<output>",
+                "-<variables>",
+                "-<depth>",
+                "-<prefix>",
+                "-<watch>",
+                "-<custom_repr>",
+            ],
+            "<output>": ["-o"] + get_possible_options("o", "<path>"),
+            "<variables>": get_possible_options("v", "<variable_list>"),
+            "<depth>": get_possible_options("d", "<number>"),
+            "<prefix>": get_possible_options("p", "<string_ascii>"),
+            "<watch>": get_possible_options("w", "<variable_list>"),
+            "<custom_repr>": get_possible_options("c", "<predicate_list>"),
+            "<overwrite>": ["O"],
+            "<thread_info>": ["T"],
+            "<path>": ["<location>", "<location>.<string_ascii>"],
+            "<location>": ["<string_ascii>", os.path.join("<path>", "<string_ascii>")],
+            "<variable_list>": ["<variable>", "<variable_list>,<variable>"],
+            "<variable>": ["<name>", "<variable>.<name>"],
+            "<name>": ["<letter><chars>"],
+            "<chars>": ["", "<chars><char>"],
+            "<letter>": srange(string.ascii_letters),
+            "<char>": ["<letter>", "<digit>", "_"],
+            "<predicate_list>": ["<predicate>", "<predicate_list>,<predicate>"],
+            "<predicate>": ["<p_function>=<t_function>"],
+            "<p_function>": ["int", "str", "float", "bool"],
+            "<t_function>": ["repr", "str", "int"],
+        },
+        **STRING_ASCII,
+        **NUMBER,
+    )
+)
 
 assert is_valid_grammar(grammar)

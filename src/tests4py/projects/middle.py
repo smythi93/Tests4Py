@@ -8,7 +8,8 @@ from typing import List, Optional, Tuple, Any, Callable
 
 from tests4py.constants import PYTHON
 from tests4py.grammars import python
-from tests4py.grammars.fuzzer import Grammar, srange, is_valid_grammar
+from tests4py.grammars.default import clean_up, CLI_GRAMMAR, INTEGER
+from tests4py.grammars.fuzzer import Grammar, is_valid_grammar
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult, CLIAPI
@@ -208,13 +209,17 @@ class MiddleSystemtestGenerator(SystemtestGenerator, MiddleTestGenerator):
         return f"{x}\n{y}\n{z}", TestResult.PASSING
 
 
-grammar: Grammar = {
-    "<start>": ["<int>\n<int>\n<int>"],
-    "<int>": ["<nonzero><digits>", "-<nonzero><digits>", "0", "-0"],
-    "<digit>": srange(string.digits),
-    "<digits>": ["", "<digits><digit>"],
-    "<nonzero>": ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
-}
+grammar: Grammar = clean_up(
+    dict(
+        CLI_GRAMMAR,
+        **{
+            "<start>": ["<arg> <arg> <arg>"],
+            "<escaped>": ["<integer>"],
+            "<unescaped>": ["<integer>"],
+        },
+        **INTEGER,
+    )
+)
 
 
 assert is_valid_grammar(grammar)

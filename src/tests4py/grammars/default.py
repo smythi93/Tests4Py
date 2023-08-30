@@ -1,9 +1,19 @@
 import string
 from typing import List
 
-from tests4py.grammars.fuzzer import srange, Grammar, crange, is_valid_grammar
+from tests4py.grammars.fuzzer import (
+    srange,
+    Grammar,
+    crange,
+    is_valid_grammar,
+    def_used_nonterminals,
+    START_SYMBOL,
+    unreachable_nonterminals,
+    reachable_nonterminals,
+)
 
 PRINTABLE = srange(string.printable)
+ASCII = srange(string.ascii_letters + string.digits + "_")
 PRINTABLE_ESCAPED = srange(string.printable.replace('"', "")) + ['\\"']
 PRINTABLE_CLI = srange(string.printable.replace('"', "").replace("-", ""))
 PRINTABLE_WITHOUT_WS = srange(string.digits + string.ascii_letters + string.punctuation)
@@ -25,6 +35,7 @@ def get_string_rule(possible_chars: List[str], suffix: str = ""):
 STRING: Grammar = get_string_rule(PRINTABLE_WITHOUT_WS)
 STRING_WS: Grammar = get_string_rule(PRINTABLE, suffix="_ws")
 STRING_WS_ESCAPED: Grammar = get_string_rule(PRINTABLE_ESCAPED, suffix="_ws_escaped")
+STRING_ASCII: Grammar = get_string_rule(ASCII, suffix="_ascii")
 NUMBER: Grammar = {
     "<number>": ["0", "<non_zero><digits>"],
     "<non_zero>": NON_ZERO_DIGITS,
@@ -38,6 +49,14 @@ FLOAT: Grammar = dict(
 )
 
 
+def get_possible_options(option: str, arg: str) -> List[str]:
+    return [
+        f"{option}{arg}",
+        f"{option} {arg}",
+        f"{option}={arg}",
+    ]
+
+
 CLI_GRAMMAR = dict(
     {
         "<start>": ["<options> <args>", "<options>", "<args>"],
@@ -47,33 +66,18 @@ CLI_GRAMMAR = dict(
         "<arg_list>": ["<arg>", "<arg> <arg_list>"],
         "<arg>": [
             "<unescaped>",
-            '"<string_ws_escaped>"',
+            '"<escaped>"',
         ],
         "<unescaped>": ["<unescaped_start><string>"],
+        "<escaped>": ["<string_ws_escaped>"],
         "<unescaped_start>": srange(PRINTABLE_CLI),
         "<option>": [
             "<flag>",
             "<op>",
         ],
-        "<flag>": ["-<short_flag>", "--<long_flag>"],
-        "<op>": [
-            "-<short_op> <arg>",
-            "-<short_op>=<arg>",
-            "--<long_op> <arg>",
-            "--<long_op>=<arg>",
-        ],
-        "<short_flag>": [
-            "<unescaped>",
-        ],
-        "<long_flag>": [
-            "<unescaped>",
-        ],
-        "<short_op>": [
-            "<unescaped>",
-        ],
-        "<long_op>": [
-            "<unescaped>",
-        ],
+        "<flag>": ["-<unescaped>", "--<unescaped>"],
+        "<op>": get_possible_options("-<unescaped>", "<arg>")
+        + get_possible_options("--<unescaped>", "<arg>"),
     },
     **STRING,
     **STRING_WS_ESCAPED,
@@ -86,3 +90,23 @@ assert is_valid_grammar(NUMBER, "<number>")
 assert is_valid_grammar(INTEGER, "<integer>")
 assert is_valid_grammar(FLOAT, "<float>")
 assert is_valid_grammar(CLI_GRAMMAR)
+
+
+def clean_up(grammar: Grammar, start_symbol: str = START_SYMBOL):
+    defined_nonterminals, used_nonterminals = def_used_nonterminals(
+        grammar, start_symbol
+    )
+    if defined_nonterminals is None or used_nonterminals is None:
+        raise ValueError("Cannot find defined nonterminals or used nonterminals")
+    if START_SYMBOL in grammar:
+        used_nonterminals.add(START_SYMBOL)
+    for unused_nonterminal in defined_nonterminals - used_nonterminals:
+        del grammar[unused_nonterminal]
+
+    unreachable = unreachable_nonterminals(grammar, start_symbol)
+    if START_SYMBOL in grammar:
+        unreachable -= reachable_nonterminals(grammar, START_SYMBOL)
+    for unreachable_nonterminal in unreachable:
+        del grammar[unreachable_nonterminal]
+
+    return grammar

@@ -11,12 +11,13 @@ from abc import abstractmethod, ABC
 from os import PathLike
 from pathlib import Path
 from subprocess import Popen
-from typing import List, Optional, Tuple, Any
+from typing import List, Optional, Tuple, Any, Sequence
 
 from tests4py.constants import Environment, PYTHON
 from tests4py.grammars.fuzzer import GrammarFuzzer, Grammar, srange, is_valid_grammar
 from tests4py.grammars.tree import ComplexDerivationTree
 from tests4py.grammars.utils import GrammarVisitor
+from tests4py.logger import LOGGER
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
@@ -79,7 +80,8 @@ def register():
             Path("tests", "test-generate-context", "non_ascii.json"),
         ],
         test_cases=[
-            "tests/test_generate_context.py::test_generate_context_decodes_non_ascii_chars"
+            os.path.join("tests", "test_generate_context.py")
+            + "`::test_generate_context_decodes_non_ascii_chars"
         ],
         test_status_buggy=TestStatus.PASSING,
         loc=1136,
@@ -93,8 +95,9 @@ def register():
         fixed_commit_id="90434ff4ea4477941444f1e83313beb414838535",
         test_file=[Path("tests", "test_hooks.py")],
         test_cases=[
-            "tests/test_hooks.py::TestFindHooks::test_find_hook",
-            "tests/test_hooks.py::TestExternalHooks::test_run_hook",
+            os.path.join("tests", "test_hooks.py") + "::TestFindHooks::test_find_hook",
+            os.path.join("tests", "test_hooks.py")
+            + "::TestExternalHooks::test_run_hook",
         ],
         api=CookieCutter2API(),
         systemtests=CookieCutter2SystemtestGenerator(),
@@ -109,7 +112,9 @@ def register():
         buggy_commit_id="5c282f020a8db7e5e7c4e7b51b010556ca31fb7f",
         fixed_commit_id="7129d474206761a6156925db78eee4b62a0e3944",
         test_file=[Path("tests", "test_read_user_choice.py")],
-        test_cases=["tests/test_read_user_choice.py::test_click_invocation"],
+        test_cases=[
+            os.path.join("tests", "test_read_user_choice.py") + ":test_click_invocation"
+        ],
         api=CookieCutter3API(),
         systemtests=CookieCutter3SystemtestGenerator(),
         unittests=CookieCutter3UnittestGenerator(),
@@ -123,7 +128,10 @@ def register():
         buggy_commit_id="9568ab6ecd2d6836646006c59473c4a4ac0dee04",
         fixed_commit_id="457a1a4e862aab4102b644ff1d2b2e2b5a766b3c",
         test_file=[Path("tests", "test_hooks.py")],
-        test_cases=["tests/test_hooks.py::TestExternalHooks::test_run_failing_hook"],
+        test_cases=[
+            os.path.join("tests", "test_hooks.py")
+            + "::TestExternalHooks::test_run_failing_hook"
+        ],
         api=CookieCutter4API(),
         systemtests=CookieCutter4SystemtestGenerator(),
         unittests=CookieCutter4UnittestGenerator(),
@@ -144,6 +152,7 @@ class CookieCutterAPI(API, GrammarVisitor, abc.ABC):
         self.pre_hook_crash = False
         self.post_hook_crash = False
         self.repo_path = self.REPO_PATH
+        self.parsed = False
 
     def visit_hooks(self, node: ComplexDerivationTree):
         self.pre_hooks = []
@@ -241,12 +250,17 @@ class CookieCutterAPI(API, GrammarVisitor, abc.ABC):
         return process.communicate(20 * b"\n", self.default_timeout)
 
     def get_test_arguments(self, system_test_path: PathLike) -> List[str]:
-        return []
+        return self._get_command_parameters() + [self.repo_path]
 
     def _build_test(self, system_test_path: PathLike, work_dir: Path):
         with open(system_test_path, "r") as fp:
             content = fp.read()
-        self.visit_source(content)
+        try:
+            self.visit_source(content)
+            self.parsed = True
+        except SyntaxError:
+            LOGGER.error(f"Cannot parse contents of {system_test_path}")
+            self.parsed = False
         self._setup()
         self.path = [work_dir / path for path in self.path]
         if self.path:
@@ -256,23 +270,29 @@ class CookieCutterAPI(API, GrammarVisitor, abc.ABC):
     def oracle(self, args) -> Tuple[TestResult, str]:
         if args is None:
             return TestResult.UNDEFINED, "timeout or exception triggered"
+        if not self.parsed:
+            return TestResult.UNDEFINED, "cannot parse arguments"
         process, args = args
         stdout, stderr = args
         return self._validate(process, stdout, stderr), ""
 
     # noinspection PyBroadException
     def execute(
-        self, args: PathLike, environ: Environment, work_dir: Optional[Path] = None
+        self,
+        args: Sequence[str],
+        environ: Environment,
+        work_dir: Optional[Path] = None,
+        pipe: bool = True,
     ) -> Any:
         try:
             work_dir = Path.cwd() if work_dir is None else work_dir
             self.repo_path = work_dir / self.REPO_PATH
             self._build_test(args, work_dir)
             process = subprocess.Popen(
-                ["cookiecutter"] + self._get_command_parameters() + [self.repo_path],
+                ["cookiecutter"] + args,
                 stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                stdout=subprocess.PIPE if pipe else None,
+                stderr=subprocess.PIPE if pipe else None,
                 env=environ,
                 cwd=work_dir,
             )
@@ -1040,10 +1060,8 @@ grammar: Grammar = {
     "<day>": [
         "0<nonzero>",
         "<nonzero>",
-        "10",
-        "1<nonzero>",
-        "20",
-        "2<nonzero>",
+        "1<digit>",
+        "2<digit>",
         "30",
         "31",
     ],
