@@ -1,4 +1,5 @@
 import abc
+import os
 import string
 from pathlib import Path
 from typing import List, Optional, Tuple
@@ -61,7 +62,9 @@ def register():
             Path("tests", "test_downloads.py"),
         ],
         test_cases=[
-            "tests/test_downloads.py::TestDownloadUtils::test_unique_filename",
+            os.path.join(
+                "tests", "test_downloads.py::TestDownloadUtils::test_unique_filename"
+            ),
         ],
         # systemtests=Httpie1SystemtestGenerator(),
         # unittests=Httpie1UnittestGenerator(),
@@ -76,7 +79,9 @@ def register():
             Path("tests", "test_redirects.py"),
         ],
         test_cases=[
-            "tests/test_redirects.py::TestRedirects::test_max_redirects",
+            os.path.join(
+                "tests", "test_redirects.py::TestRedirects::test_max_redirects"
+            ),
         ],
         # systemtests=Httpie2SystemtestGenerator(),
         # unittests=Httpie2UnittestGenerator(),
@@ -91,7 +96,9 @@ def register():
             Path("tests", "test_sessions.py"),
         ],
         test_cases=[
-            "tests/test_sessions.py::TestSession::test_download_in_session",
+            os.path.join(
+                "tests", "test_sessions.py::TestSession::test_download_in_session"
+            ),
         ],
         # systemtests=Httpie3SystemtestGenerator(),
         # unittests=Httpie3UnittestGenerator(),
@@ -106,7 +113,7 @@ def register():
             Path("tests", "test_regressions.py"),
         ],
         test_cases=[
-            "tests/test_regressions.py::test_Host_header_overwrite",
+            os.path.join("tests", "test_regressions.py::test_Host_header_overwrite"),
         ],
         # systemtests=Httpie4SystemtestGenerator(),
         # unittests=Httpie4UnittestGenerator(),
@@ -121,7 +128,7 @@ def register():
             Path("tests", "tests.py"),
         ],
         test_cases=[
-            "tests/tests.py::TestItemParsing::test_escape_longsep",
+            os.path.join("tests", "tests.py::TestItemParsing::test_escape_longsep"),
         ],
         # systemtests=Httpie5SystemtestGenerator(),
         # unittests=Httpie5UnittestGenerator(),

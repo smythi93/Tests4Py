@@ -182,9 +182,7 @@ def register():
         fixed_commit_id="06eb4219345a77d23484528c9d164eb8d2097fec",
         test_file=[Path("tests", "test_skip_defaults.py")],
         test_cases=["tests/test_skip_defaults.py::test_return_defaults"],
-        api=FastAPI10API(),
-        # systemtests=FastAPI10SystemtestGenerator(),
-        # unittests=FastAPI10UnittestGenerator(),
+        test_status_buggy=TestStatus.WRONG,
     )
     FastAPI(
         bug_id=11,
