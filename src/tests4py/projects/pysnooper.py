@@ -391,7 +391,7 @@ grammar: Grammar = clean_up(
                 "-<watch>",
                 "-<custom_repr>",
             ],
-            "<output>": ["-o"] + get_possible_options("o", "<path>"),
+            "<output>": ["o"] + get_possible_options("o", "<path>"),
             "<variables>": get_possible_options("v", "<variable_list>"),
             "<depth>": get_possible_options("d", "<number>"),
             "<prefix>": get_possible_options("p", "<str_ascii>"),
