@@ -1,4 +1,5 @@
 import ast
+import os.path
 import queue
 import random
 import string
@@ -144,7 +145,10 @@ def register():
         fixed_commit_id="19c77e35bdde33aeec1eb2cfa680f95016492b69",
         test_file=[Path("tests", "test_multi_body_errors.py")],
         test_cases=[
-            "tests/test_multi_body_errors.py::test_jsonable_encoder_requiring_error"
+            os.path.join(
+                "tests",
+                "test_multi_body_errors.py::test_jsonable_encoder_requiring_error",
+            )
         ],
         api=FastAPI7API(),
         systemtests=FastAPI7SystemtestGenerator(),
@@ -169,8 +173,8 @@ def register():
             "tests/test_request_body_parameters_media_type.py::test_openapi_schema"
         ],
         api=FastAPI9API(),
-        systemtests=FastAPI9SystemtestGenerator(),
-        unittests=FastAPI9UnittestGenerator(),
+        # systemtests=FastAPI9SystemtestGenerator(),
+        # unittests=FastAPI9UnittestGenerator(),
     )
     FastAPI(
         bug_id=10,
@@ -179,8 +183,8 @@ def register():
         test_file=[Path("tests", "test_skip_defaults.py")],
         test_cases=["tests/test_skip_defaults.py::test_return_defaults"],
         api=FastAPI10API(),
-        systemtests=FastAPI10SystemtestGenerator(),
-        unittests=FastAPI10UnittestGenerator(),
+        # systemtests=FastAPI10SystemtestGenerator(),
+        # unittests=FastAPI10UnittestGenerator(),
     )
     FastAPI(
         bug_id=11,

@@ -59,8 +59,12 @@ def register():
         fixed_commit_id="343ffaa18b63c92e182b16c3ad84b8d81ca4df69",
         test_file=[Path("test", "units", "galaxy", "test_collection.py")],
         test_cases=[
-            os.path.join("test", "units", "galaxy", "test_collection.py")
-            + "::test_verify_collections_no_version"
+            os.path.join(
+                "test",
+                "units",
+                "galaxy",
+                "test_collection.py::test_verify_collections_no_version",
+            ),
         ],
         test_status_buggy=TestStatus.PASSING,
         loc=55990,
@@ -71,9 +75,8 @@ def register():
         fixed_commit_id="5b9418c06ca6d51507468124250bb58046886be6",
         test_file=[Path("test", "units", "utils", "test_version.py")],
         test_cases=[
-            os.path.join("test", "units", "utils", "test_version.py") + "::test_alpha",
-            os.path.join("test", "units", "utils", "test_version.py")
-            + "::test_numeric",
+            os.path.join("test", "units", "utils", "test_version.py::test_alpha"),
+            os.path.join("test", "units", "utils", "test_version.py::test_numeric"),
         ],
         test_status_buggy=TestStatus.PASSING,
         loc=55936,
@@ -87,9 +90,11 @@ def register():
         ],
         test_cases=[
             os.path.join(
-                "test", "units", "module_utils", "test_distribution_version.py"
-            )
-            + "::test_distribution_version",
+                "test",
+                "units",
+                "module_utils",
+                "test_distribution_version.py::test_distribution_version",
+            ),
         ],
         loc=55902,
     )
@@ -99,8 +104,12 @@ def register():
         fixed_commit_id="18a66e291dad71128a32d662aa808213acefe0e9",
         test_file=[Path("test", "units", "playbook", "test_collectionsearch.py")],
         test_cases=[
-            os.path.join("test", "units", "playbook", "test_collectionsearch.py")
-            + "::test_collection_static_warning",
+            os.path.join(
+                "test",
+                "units",
+                "playbook",
+                "test_collectionsearch.py::test_collection_static_warning",
+            ),
         ],
         loc=55805,
     )
@@ -125,9 +134,8 @@ def register():
                 "module_utils",
                 "common",
                 "validation",
-                "test_check_required_arguments.py",
-            )
-            + "::test_check_required_arguments_missing_multiple",
+                "test_check_required_arguments.py::test_check_required_arguments_missing_multiple",
+            ),
         ],
         loc=55640,
     )
@@ -137,12 +145,24 @@ def register():
         fixed_commit_id="4881af2e7e0506ada0225fd764e874e20569d5b2",
         test_file=[Path("test", "units", "galaxy", "test_collection_install.py")],
         test_cases=[
-            os.path.join("test", "units", "galaxy", "test_collection_install.py")
-            + "::test_build_requirement_from_path_with_manifest",
-            os.path.join("test", "units", "galaxy", "test_collection_install.py")
-            + "::test_build_requirement_from_path_no_version",
-            os.path.join("test", "units", "galaxy", "test_collection_install.py")
-            + "::test_add_collection_requirement_to_unknown_installed_version",
+            os.path.join(
+                "test",
+                "units",
+                "galaxy",
+                "test_collection_install.py::test_build_requirement_from_path_with_manifest",
+            ),
+            os.path.join(
+                "test",
+                "units",
+                "galaxy",
+                "test_collection_install.py::test_build_requirement_from_path_no_version",
+            ),
+            os.path.join(
+                "test",
+                "units",
+                "galaxy",
+                "test_collection_install.py::test_add_collection_requirement_to_unknown_installed_version",
+            ),
         ],
         loc=55990,
     )
@@ -155,9 +175,13 @@ def register():
         ],
         test_cases=[
             os.path.join(
-                "test", "units", "modules", "network", "eos", "test_eos_vlans.py"
-            )
-            + "::TestEosVlansModule::test_eos_vlan_replaced",
+                "test",
+                "units",
+                "modules",
+                "network",
+                "eos",
+                "test_eos_vlans.py::TestEosVlansModule::test_eos_vlan_replaced",
+            ),
         ],
         loc=55990,
     )
@@ -167,8 +191,13 @@ def register():
         fixed_commit_id="fc7980af9a42676913b4054163570ee438b82e9c",
         test_file=[Path("test", "units", "plugins", "shell", "test_powershell.py")],
         test_cases=[
-            os.path.join("test", "units", "plugins", "shell", "test_powershell.py")
-            + "::test_join_path_unc",
+            os.path.join(
+                "test",
+                "units",
+                "plugins",
+                "shell",
+                "test_powershell.py::test_join_path_unc",
+            ),
         ],
         loc=55990,
     )
@@ -193,9 +222,8 @@ def register():
                 "modules",
                 "packaging",
                 "os",
-                "test_redhat_subscription.py",
-            )
-            + "::test_redhat_subscribtion",
+                "test_redhat_subscription.py::test_redhat_subscribtion",
+            ),
         ],
         loc=55990,
     )
@@ -205,10 +233,20 @@ def register():
         fixed_commit_id="a4b59d021368285490f7cda50c11ac4f7a8030b5",
         test_file=[Path("test", "units", "modules", "system", "test_pamd.py")],
         test_cases=[
-            os.path.join("test", "units", "modules", "system", "test_pamd.py")
-            + "::PamdServiceTestCase::test_remove_first_rule",
-            os.path.join("test", "units", "modules", "system", "test_pamd.py")
-            + "::PamdServiceTestCase::test_remove_last_rule",
+            os.path.join(
+                "test",
+                "units",
+                "modules",
+                "system",
+                "test_pamd.py::PamdServiceTestCase::test_remove_first_rule",
+            ),
+            os.path.join(
+                "test",
+                "units",
+                "modules",
+                "system",
+                "test_pamd.py::PamdServiceTestCase::test_remove_last_rule",
+            ),
         ],
         loc=55990,
     )
@@ -221,13 +259,21 @@ def register():
         ],
         test_cases=[
             os.path.join(
-                "test", "units", "modules", "network", "ios", "test_ios_banner.py"
-            )
-            + "::TestIosBannerModule::test_ios_banner_nochange",
+                "test",
+                "units",
+                "modules",
+                "network",
+                "ios",
+                "test_ios_banner.py::TestIosBannerModule::test_ios_banner_nochange",
+            ),
             os.path.join(
-                "test", "units", "modules", "network", "ios", "test_ios_banner.py"
-            )
-            + "::TestIosBannerIos12Module::test_ios_banner_nochange",
+                "test",
+                "units",
+                "modules",
+                "network",
+                "ios",
+                "test_ios_banner.py::TestIosBannerIos12Module::test_ios_banner_nochange",
+            ),
         ],
         loc=55990,
     )
@@ -247,8 +293,12 @@ def register():
         fixed_commit_id="694ef5660d45fcb97c9beea5b2750f6eadcf5e93",
         test_file=[Path("test", "units", "cli", "test_galaxy.py")],
         test_cases=[
-            os.path.join("test", "units", "cli", "test_galaxy.py")
-            + "::test_collection_install_with_url",
+            os.path.join(
+                "test",
+                "units",
+                "cli",
+                "test_galaxy.py::test_collection_install_with_url",
+            ),
         ],
         loc=55990,
     )
@@ -258,8 +308,12 @@ def register():
         fixed_commit_id="7acae62fa849481b2a5e2e2d56961c5e1dcea96c",
         test_file=[Path("test", "units", "galaxy", "test_api.py")],
         test_cases=[
-            os.path.join("test", "units", "galaxy", "test_api.py")
-            + "::test_get_role_versions_pagination",
+            os.path.join(
+                "test",
+                "units",
+                "galaxy",
+                "test_api.py::test_get_role_versions_pagination",
+            ),
         ],
         loc=55990,
     )
@@ -272,9 +326,13 @@ def register():
         ],
         test_cases=[
             os.path.join(
-                "test", "units", "modules", "network", "eos", "test_eos_eapi.py"
-            )
-            + "::TestEosEapiModule::test_eos_eapi_vrf",
+                "test",
+                "units",
+                "modules",
+                "network",
+                "eos",
+                "test_eos_eapi.py::TestEosEapiModule::test_eos_eapi_vrf",
+            ),
         ],
         loc=55990,
     )
@@ -299,9 +357,8 @@ def register():
                 "module_utils",
                 "facts",
                 "hardware",
-                "test_linux_get_cpu_info.py",
-            )
-            + "::test_get_cpu_info_missing_arch",
+                "test_linux_get_cpu_info.py::test_get_cpu_info_missing_arch",
+            ),
         ],
         loc=55990,
     )
@@ -311,8 +368,13 @@ def register():
         fixed_commit_id="b38cb37728df76e0529243bdce694b18ca0e1163",
         test_file=[Path("test", "units", "module_utils", "facts", "test_facts.py")],
         test_cases=[
-            os.path.join("test", "units", "module_utils", "facts", "test_facts.py")
-            + "::TestFactsLinuxHardwareGetMountFacts::test_get_mount_facts",
+            os.path.join(
+                "test",
+                "units",
+                "module_utils",
+                "facts",
+                "test_facts.py::TestFactsLinuxHardwareGetMountFacts::test_get_mount_facts",
+            ),
         ],
         loc=55990,
     )
@@ -325,9 +387,11 @@ def register():
         ],
         test_cases=[
             os.path.join(
-                "test", "units", "module_utils", "test_distribution_version.py"
-            )
-            + "::test_distribution_version",
+                "test",
+                "units",
+                "module_utils",
+                "test_distribution_version.py::test_distribution_version",
+            ),
         ],
         loc=55990,
     )

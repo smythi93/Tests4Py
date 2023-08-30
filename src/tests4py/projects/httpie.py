@@ -63,8 +63,8 @@ def register():
         test_cases=[
             "tests/test_downloads.py::TestDownloadUtils::test_unique_filename",
         ],
-        systemtests=Httpie1SystemtestGenerator(),
-        unittests=Httpie1UnittestGenerator(),
+        # systemtests=Httpie1SystemtestGenerator(),
+        # unittests=Httpie1UnittestGenerator(),
     )
     Httpie(
         bug_id=2,
@@ -78,8 +78,8 @@ def register():
         test_cases=[
             "tests/test_redirects.py::TestRedirects::test_max_redirects",
         ],
-        systemtests=Httpie2SystemtestGenerator(),
-        unittests=Httpie2UnittestGenerator(),
+        # systemtests=Httpie2SystemtestGenerator(),
+        # unittests=Httpie2UnittestGenerator(),
     )
     Httpie(
         bug_id=3,
@@ -93,8 +93,8 @@ def register():
         test_cases=[
             "tests/test_sessions.py::TestSession::test_download_in_session",
         ],
-        systemtests=Httpie3SystemtestGenerator(),
-        unittests=Httpie3UnittestGenerator(),
+        # systemtests=Httpie3SystemtestGenerator(),
+        # unittests=Httpie3UnittestGenerator(),
     )
     Httpie(
         bug_id=4,
@@ -108,8 +108,8 @@ def register():
         test_cases=[
             "tests/test_regressions.py::test_Host_header_overwrite",
         ],
-        systemtests=Httpie4SystemtestGenerator(),
-        unittests=Httpie4UnittestGenerator(),
+        # systemtests=Httpie4SystemtestGenerator(),
+        # unittests=Httpie4UnittestGenerator(),
     )
     Httpie(
         bug_id=5,
@@ -123,8 +123,8 @@ def register():
         test_cases=[
             "tests/tests.py::TestItemParsing::test_escape_longsep",
         ],
-        systemtests=Httpie5SystemtestGenerator(),
-        unittests=Httpie5UnittestGenerator(),
+        # systemtests=Httpie5SystemtestGenerator(),
+        # unittests=Httpie5UnittestGenerator(),
     )
 
 
