@@ -23,11 +23,13 @@ NON_ZERO_DIGITS = crange("1", "9")
 
 def get_string_rule(possible_chars: List[str], suffix: str = ""):
     string_rule = f"<string{suffix}>"
+    string_not_empty_rule = f"<str{suffix}>"
     chars_rule = f"<chars{suffix}>"
     char_rule = f"<char{suffix}>"
     return {
-        string_rule: [chars_rule],
-        chars_rule: ["", char_rule + chars_rule],
+        string_rule: ["", string_not_empty_rule],
+        string_not_empty_rule: [chars_rule],
+        chars_rule: [char_rule, char_rule + chars_rule],
         char_rule: possible_chars,
     }
 

@@ -204,7 +204,7 @@ class PySnooperSystemtestGenerator(SystemtestGenerator):
         super().__init__()
         self.variables_fuzzer = GrammarFuzzer(grammar, start_symbol="<variable_list>")
         self.predicate_fuzzer = GrammarFuzzer(grammar, start_symbol="<predicate_list>")
-        self.str_fuzzer = GrammarFuzzer(grammar, start_symbol="<string_ascii>")
+        self.str_fuzzer = GrammarFuzzer(grammar, start_symbol="<str_ascii>")
 
     def _generate_parameters(
         self, required: List[str], parameters: List[str], output_prob=0.5
@@ -394,13 +394,13 @@ grammar: Grammar = clean_up(
             "<output>": ["-o"] + get_possible_options("o", "<path>"),
             "<variables>": get_possible_options("v", "<variable_list>"),
             "<depth>": get_possible_options("d", "<number>"),
-            "<prefix>": get_possible_options("p", "<string_ascii>"),
+            "<prefix>": get_possible_options("p", "<str_ascii>"),
             "<watch>": get_possible_options("w", "<variable_list>"),
             "<custom_repr>": get_possible_options("c", "<predicate_list>"),
             "<overwrite>": ["O"],
             "<thread_info>": ["T"],
-            "<path>": ["<location>", "<location>.<string_ascii>"],
-            "<location>": ["<string_ascii>", os.path.join("<path>", "<string_ascii>")],
+            "<path>": ["<location>", "<location>.<str_ascii>"],
+            "<location>": ["<str_ascii>", os.path.join("<path>", "<str_ascii>")],
             "<variable_list>": ["<variable>", "<variable_list>,<variable>"],
             "<variable>": ["<name>", "<variable>.<name>"],
             "<name>": ["<letter><chars>"],
