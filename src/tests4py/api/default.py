@@ -200,6 +200,14 @@ def checkout_project(
         ) as resource:
             if resource.exists():
                 shutil.copy(resource, work_location / REQUIREMENTS_FILE)
+            else:
+                with importlib.resources.as_file(
+                    importlib.resources.files(
+                        getattr(resources, project.project_name)
+                    ).joinpath("requirements.txt")
+                ) as default_resource:
+                    if default_resource.exists():
+                        shutil.copy(default_resource, work_location / REQUIREMENTS_FILE)
         with importlib.resources.as_file(
             project_resources.joinpath("harness.py"),
         ) as resource:

@@ -1,7 +1,7 @@
 from pathlib import Path
-from pathlib import Path
 from typing import List, Optional, Tuple
 
+from tests4py.constants import PYTHON
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
@@ -44,6 +44,7 @@ class Luigi(Project):
             api=api,
             grammar=None,
             loc=loc,
+            setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
         )  # TODO adjust parameters
 
 
@@ -240,6 +241,15 @@ def register():
         test_file=[Path("test", "scheduler_test.py")],
         test_cases=[
             "test/scheduler_test.py::SchedulerTest::test_worker_prune_after_init"
+        ],
+    )
+    Luigi(
+        bug_id=23,
+        buggy_commit_id="c707253572deb795a900c3e07d21eee591a55fca",
+        fixed_commit_id="dc41727f4de88f86f4e77aa45be51eff4ee6b3be",
+        test_file=[Path("test", "worker_external_task_test.py")],
+        test_cases=[
+            "test/worker_external_task_test.py::WorkerExternalTaskTest::test_external_dependency_completes_later"
         ],
     )
     Luigi(
