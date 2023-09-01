@@ -25,7 +25,7 @@ class Matplotlib(Project):
         super().__init__(
             bug_id=bug_id,
             project_name="matplotlib",
-            github_url="=https://github.com/matplotlib/matplotlib",
+            github_url="https://github.com/matplotlib/matplotlib",
             status=Status.OK,
             cause="N.A.",
             python_version="3.8.4",
