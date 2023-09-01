@@ -71,7 +71,12 @@ def sflkit_get_events(
         report.project = project
         environ = env_on(project)
         environ = activate_venv(work_dir, environ)
-        PytestRunner().run(directory=work_dir, output=output, environ=environ)
+        PytestRunner().run(
+            directory=work_dir,
+            output=output,
+            base=project.test_base,
+            environ=environ,
+        )
         report.successful = True
     except BaseException as e:
         report.raised = e

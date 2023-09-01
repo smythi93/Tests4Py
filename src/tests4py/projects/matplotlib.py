@@ -42,6 +42,7 @@ class Matplotlib(Project):
             api=api,
             grammar=None,
             loc=loc,
+            test_base=Path("lib", "matplotlib", "tests"),
         )  # TODO adjust parameters
 
 

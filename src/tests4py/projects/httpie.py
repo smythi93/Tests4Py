@@ -22,6 +22,7 @@ class Httpie(Project):
         test_status_buggy: TestStatus = TestStatus.FAILING,
         unittests: Optional[UnittestGenerator] = None,
         systemtests: Optional[SystemtestGenerator] = None,
+        test_base: Optional[os.PathLike] = None,
         loc: int = 0,
     ):
         super().__init__(
@@ -43,6 +44,7 @@ class Httpie(Project):
             systemtests=systemtests,
             api=HttpieAPI(),
             grammar=grammar_request,
+            test_base=test_base,
             loc=loc,
         )
 
@@ -116,6 +118,7 @@ def register():
         test_cases=[
             os.path.join("tests", "tests.py::TestItemParsing::test_escape_longsep"),
         ],
+        test_base=Path("tests", "tests.py"),
         # systemtests=Httpie5SystemtestGenerator(),
         # unittests=Httpie5UnittestGenerator(),
     )
