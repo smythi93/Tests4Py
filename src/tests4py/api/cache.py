@@ -56,3 +56,17 @@ def cache_venv(project: Project, src: Path):
         dirs_exist_ok=True,
         copy_function=shutil.copy,
     )
+
+
+def clear_project(project: Project):
+    shutil.rmtree(
+        GLOBAL_PROJECTS / project.project_name / GLOBAL_GIT,
+        ignore_errors=True,
+    )
+
+
+def clear_venv(project: Project):
+    shutil.rmtree(
+        GLOBAL_PROJECTS / project.project_name / f"venv_{project.bug_id}",
+        ignore_errors=True,
+    )

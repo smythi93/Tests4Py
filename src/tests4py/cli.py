@@ -22,12 +22,13 @@ from tests4py.constants import (
     DEFAULT_WORK_DIR,
     DEFAULT_SUB_PATH_SYSTEMTESTS,
     DEFAULT_SUB_PATH_UNITTESTS,
+    CLEAR,
 )
 from tests4py.framework import (
     unittest,
     systemtest,
 )
-from tests4py.framework.cache import tests4py_cache
+from tests4py.framework.cache import tests4py_cache, tests4py_clear
 from tests4py.framework.config import tests4py_config_set
 from tests4py.framework.default import (
     tests4py_checkout,
@@ -99,6 +100,7 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
     systemtest_parser = commands.add_parser(SYSTEMTEST, help="The systemtest command")
     config_parser = commands.add_parser(CONFIG, help="The config command")
     cache_parser = commands.add_parser(CACHE, help="The cache command")
+    clear_parser = commands.add_parser(CLEAR, help="The clear command")
     grammar_parser = commands.add_parser(GRAMMAR, help="The grammar command")
     sfl_parser = commands.add_parser(
         SFL, help="The sfl (statistical fault localization) command"
@@ -397,6 +399,30 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         help="If set the command won't use any cached version, even if the global cache flag is set",
     )
 
+    # Clear
+    clear_parser.add_argument(
+        "-p",
+        dest="project_name",
+        required=True,
+        help="The name of the project which should be cleared from the cache. "
+        "If no bug id is provided the git repository gets cleared from the cache ",
+    )
+    clear_parser.add_argument(
+        "-i",
+        dest="bug_id",
+        type=int,
+        default=None,
+        help="The id of a bug from the project in tests4py to clear from the cache. "
+        "If this argument is provided, the cached virtual environment is cleared",
+    )
+    clear_parser.add_argument(
+        "-a",
+        dest="all",
+        default=False,
+        action="store_true",
+        help="If set the command will clear both the git project and the virtual environment from the cache",
+    )
+
     # Grammar
     grammar_parser.add_argument(
         "-p",
@@ -564,6 +590,12 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
     elif args.command == CACHE:
         report = tests4py_cache(
             project_name=args.project_name, bug_id=args.bug_id, force=args.force
+        )
+    elif args.command == CLEAR:
+        report = tests4py_clear(
+            project_name=args.project_name,
+            bug_id=args.bug_id,
+            project_and_venv=args.all,
         )
     elif args.command == GRAMMAR:
         report = tests4py_grammar(

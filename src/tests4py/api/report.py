@@ -16,6 +16,7 @@ from tests4py.constants import (
     GENERATE,
     UNITTEST,
     RUN,
+    CLEAR,
 )
 from tests4py.projects import Project
 from tests4py.tests.utils import TestResult
@@ -148,6 +149,11 @@ class CacheReport(Report):
         super().__init__(CACHE)
         self.checkout_reports = dict()
         self.compile_reports = dict()
+
+
+class ClearReport(ProjectReport):
+    def __init__(self):
+        super().__init__(CLEAR)
 
 
 class ConfigReport(Report):

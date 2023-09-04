@@ -43,6 +43,9 @@ class Matplotlib(Project):
             grammar=None,
             loc=loc,
             test_base=Path("lib", "matplotlib", "tests"),
+            setup=[
+                ["python", "-m", "pip", "install", "-ve", "."],
+            ],
         )  # TODO adjust parameters
 
 
@@ -51,7 +54,9 @@ def register():
         bug_id=1,
         buggy_commit_id="c404d1f716e8aaefd4d7371ff49673e9c1f7f07c",
         fixed_commit_id="5324adaec6a7fd3d78dea7b28451d5f6e95392a6",
-        test_file=[Path("lib", "matplotlib", "tests", "test_bbox_tight.py")],
+        test_file=[
+            Path("lib", "matplotlib", "tests", "test_bbox_tight.py"),
+        ],
         test_cases=[
             os.path.join(
                 "lib", "matplotlib", "tests", "test_bbox_tight.py::test_noop_tight_bbox"
