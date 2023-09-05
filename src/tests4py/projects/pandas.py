@@ -1,11 +1,11 @@
-from os import PathLike
 from pathlib import Path
-from typing import List, Optional, Any, Tuple
+from typing import List, Optional, Tuple
 
-from tests4py.constants import Environment
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
+
+PROJECT_MAME = "pandas"
 
 
 class Pandas(Project):
@@ -25,7 +25,7 @@ class Pandas(Project):
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name="pandas",
+            project_name=PROJECT_MAME,
             github_url="https://github.com/pandas-dev/pandas",
             status=Status.OK,
             cause="N.A.",

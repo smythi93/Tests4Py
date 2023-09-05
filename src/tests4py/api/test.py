@@ -2,7 +2,8 @@ import json
 import os
 import subprocess
 from pathlib import Path
-from typing import Optional, Union, Dict, Tuple, Sequence
+from typing import Optional, Union, Dict, Tuple, Sequence, List
+from xml.etree import ElementTree
 
 from tests4py.api.report import (
     SystemtestGenerateReport,
@@ -11,16 +12,17 @@ from tests4py.api.report import (
     UnittestTestReport,
     RunReport,
 )
-from tests4py.api.utils import get_work_dir
+from tests4py.api.utils import get_work_dir, load_project
 from tests4py.constants import (
     DEFAULT_SUB_PATH_SYSTEMTESTS,
     DEFAULT_SYSTEMTESTS_DIVERSITY_PATH,
     DEFAULT_SUB_PATH_UNITTESTS,
     PYTHON,
     DEFAULT_UNITTESTS_DIVERSITY_PATH,
+    PYTEST_PATTERN,
+    NEWLINE_TOKEN,
 )
-from tests4py.framework.environment import __env_on__, __activate_venv__
-from tests4py.framework.utils import load_project, get_pytest_result
+from tests4py.environment import env_on, activate_venv
 from tests4py.logger import LOGGER
 from tests4py.projects import Project, TestingFramework
 from tests4py.tests.utils import TestResult
@@ -49,8 +51,8 @@ def run_project(
                 f"Required input path or str to run {project.project_name}_{project.bug_id}"
             )
         report.input = str(args_or_path)
-        environ = __env_on__(project)
-        environ = __activate_venv__(work_dir, environ)
+        environ = env_on(project)
+        environ = activate_venv(work_dir, environ)
         result, feedback = project.api.run(
             args_or_path, environ, work_dir=work_dir, invoke_oracle=invoke_oracle
         )
@@ -150,8 +152,8 @@ def system_generate_project(
         report.failing = result.failing
         report.total = n
         if verify:
-            environ = __env_on__(project)
-            environ = __activate_venv__(work_dir, environ)
+            environ = env_on(project)
+            environ = activate_venv(work_dir, environ)
 
             (
                 _,
@@ -197,8 +199,8 @@ def system_test_project(
                 f"Running of systemtests is not possible because {path_or_str} does not exist"
             )
 
-        environ = __env_on__(project)
-        environ = __activate_venv__(work_dir, environ)
+        environ = env_on(project)
+        environ = activate_venv(work_dir, environ)
 
         report.total, report.passing, report.failing = 0, 0, 0
         report.results = dict()
@@ -306,8 +308,8 @@ def unit_generate_project(
         report.failing = result.failing
         report.total = n
         if verify:
-            environ = __env_on__(project)
-            environ = __activate_venv__(work_dir, environ)
+            environ = env_on(project)
+            environ = activate_venv(work_dir, environ)
 
             command = [PYTHON, "-m", TestingFramework.PYTEST.value, path]
             output = subprocess.run(
@@ -357,8 +359,8 @@ def unit_test_project(
                 f"Running of unittest is not possible because {path} is a directory"
             )
 
-        environ = __env_on__(project)
-        environ = __activate_venv__(work_dir, environ)
+        environ = env_on(project)
+        environ = activate_venv(work_dir, environ)
 
         command = [PYTHON, "-m", TestingFramework.PYTEST.value]
         if output:
@@ -382,3 +384,113 @@ def unit_test_project(
         report.raised = e
         report.successful = False
     return report
+
+
+def get_pytest_result(
+    output: bytes,
+) -> tuple[bool, Optional[int], Optional[int], Optional[int]]:
+    match = PYTEST_PATTERN.search(output)
+    if match:
+        if match.group("f"):
+            failing = int(match.group("f"))
+        else:
+            failing = 0
+        if match.group("p"):
+            passing = int(match.group("p"))
+        else:
+            passing = 0
+        return True, failing + passing, failing, passing
+    return False, None, None, None
+
+
+def replace_important_in_test_report(s: str):
+    important = False
+    result = ""
+    escaped = False
+    while s:
+        if not important:
+            if s.startswith('name="'):
+                result += 'name="'
+                s = s[6:]
+                important = True
+            elif s.startswith('classname="'):
+                result += 'classname="'
+                s = s[11:]
+                important = True
+            else:
+                result += s[0]
+                s = s[1:]
+        else:
+            if s[0] == "\n":
+                result += NEWLINE_TOKEN
+                s = s[1:]
+            elif s[0] == '"' and not escaped:
+                result += '"'
+                s = s[1:]
+                important = False
+            elif s[0] == "\\" and not escaped:
+                result += "\\"
+                s = s[1:]
+                escaped = True
+            else:
+                result += s[0]
+                s = s[1:]
+                escaped = False
+    return result
+
+
+def get_test_results(
+    project: Project, working_directory: os.PathLike, report_file: os.PathLike
+) -> List[Tuple[str, TestResult]]:
+    test_results = list()
+    is_unittest_ = project.testing_framework == TestingFramework.UNITTEST
+    try:
+        with open(report_file, "r") as fp:
+            s = fp.read()
+        tree = ElementTree.fromstring(replace_important_in_test_report(s))
+    except FileNotFoundError:
+        print("pytest did not generate file")
+        return test_results
+    except ElementTree.ParseError:
+        print("pytest produced empty file")
+        return test_results
+    for testcase in tree.findall(".//testcase"):
+        if is_unittest_:
+            test = (
+                testcase.get("classname").replace(NEWLINE_TOKEN, "\n")
+                + "."
+                + testcase.get("name").replace(NEWLINE_TOKEN, "\n")
+            )
+        else:
+            path = testcase.get("classname").replace(NEWLINE_TOKEN, "\n").split(".")
+            file = ""
+            classes = "::"
+            for i in range(1, len(path) + 1):
+                file = os.path.join(*path[:i]) + ".py"
+                if os.path.exists(os.path.join(working_directory, file)):
+                    if len(path[i:]) > 0:
+                        classes = "::" + "::".join(path[i:]) + "::"
+                    break
+            test = file + classes + testcase.get("name").replace(NEWLINE_TOKEN, "\n")
+        if testcase.find("failure") is not None or testcase.find("error") is not None:
+            test_results.append((test, TestResult.FAILING))
+        elif len(list(testcase)) == 0 or (
+            (
+                len(list(testcase)) == 1
+                and (
+                    testcase.find("system-out") is not None
+                    or testcase.find("system-err") is not None
+                )
+            )
+            or (
+                len(list(testcase)) == 2
+                and (
+                    testcase.find("system-out") is not None
+                    and testcase.find("system-err") is not None
+                )
+            )
+        ):
+            test_results.append((test, TestResult.PASSING))
+        else:
+            test_results.append((test, TestResult.UNDEFINED))
+    return test_results

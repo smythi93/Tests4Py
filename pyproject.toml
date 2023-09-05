@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tests4py"
-version = "0.0.3"
+version = "0.0.4"
 authors = [
     { name = "Marius Smytzek", email = "marius.smytzek@cispa.de" },
     { name = "Martin Eberlein", email = "ebermart@informatik.hu-berlin.de" },
@@ -24,10 +24,29 @@ classifiers = [
     "Topic :: Scientific/Engineering",
     "Topic :: Software Development :: Testing"
 ]
+dependencies = [
+    "tabulate>=0.9.0",
+    "sflkit>=0.2.11",
+    "sflkitlib>=0.0.1",
+    "whatthepatch>=1.0.5",
+    "psutil>=5.9.5"
+]
 
 [project.urls]
 "Homepage" = "https://github.com/smythi93/Tests4Py"
 "Bug Tracker" = "https://github.com/smythi93/Tests4Py/issues"
+
+[project.scripts]
+t4p = "tests4py.cli:main"
+
+[project.optional-dependencies]
+test = [
+    "pytest>=7.2.2",
+    "pytest-cov>=4.1.0",
+    "pytest-html>=3.2.0",
+    "pytest-rerunfailures>=11.1.2",
+    "parameterized>=0.8.1"
+]
 
 [tool.black]
 line-length = 88

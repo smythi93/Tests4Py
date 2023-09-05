@@ -1,6 +1,5 @@
 import csv
 from pathlib import Path
-from typing import List
 
 from sflkitlib.events import EventType
 
@@ -13,7 +12,6 @@ def tests4py_sfl_instrument(
     work_dir: Path,
     dst: Path,
     events: str = None,
-    excludes: List[str] = None,
     verbose: bool = True,
 ):
     report = SFLInstrumentReport()
@@ -37,7 +35,6 @@ def tests4py_sfl_instrument(
             )
             if events
             else None,
-            excludes=list(csv.reader([excludes]))[0] if excludes else None,
             report=report,
         )
     except BaseException as e:

@@ -17,7 +17,7 @@ from tests4py.api.test import (
     unit_generate_project,
     unit_test_project,
 )
-from tests4py.framework.utils import setup
+from tests4py.api.utils import setup
 from tests4py.projects import (
     get_number_of_bugs,
     Project,

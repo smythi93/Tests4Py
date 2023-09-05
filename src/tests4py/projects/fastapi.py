@@ -1,4 +1,5 @@
 import ast
+import os.path
 import queue
 import random
 import string
@@ -14,6 +15,8 @@ from tests4py.grammars.utils import GrammarVisitor
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, ExpectErrAPI, TestResult
+
+PROJECT_MAME = "fastapi"
 
 
 class FastAPI(Project):
@@ -34,7 +37,7 @@ class FastAPI(Project):
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name="fastapi",
+            project_name=PROJECT_MAME,
             github_url="https://github.com/tiangolo/fastapi",
             status=Status.OK,
             cause="N.A.",
@@ -55,6 +58,7 @@ class FastAPI(Project):
             grammar=grammar_request if grammar is None else grammar,
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "."]],
+            included_files=[PROJECT_MAME],
         )  # TODO adjust parameters
 
 
@@ -144,7 +148,10 @@ def register():
         fixed_commit_id="19c77e35bdde33aeec1eb2cfa680f95016492b69",
         test_file=[Path("tests", "test_multi_body_errors.py")],
         test_cases=[
-            "tests/test_multi_body_errors.py::test_jsonable_encoder_requiring_error"
+            os.path.join(
+                "tests",
+                "test_multi_body_errors.py::test_jsonable_encoder_requiring_error",
+            )
         ],
         api=FastAPI7API(),
         systemtests=FastAPI7SystemtestGenerator(),
@@ -169,8 +176,8 @@ def register():
             "tests/test_request_body_parameters_media_type.py::test_openapi_schema"
         ],
         api=FastAPI9API(),
-        systemtests=FastAPI9SystemtestGenerator(),
-        unittests=FastAPI9UnittestGenerator(),
+        # systemtests=FastAPI9SystemtestGenerator(),
+        # unittests=FastAPI9UnittestGenerator(),
     )
     FastAPI(
         bug_id=10,
@@ -178,9 +185,7 @@ def register():
         fixed_commit_id="06eb4219345a77d23484528c9d164eb8d2097fec",
         test_file=[Path("tests", "test_skip_defaults.py")],
         test_cases=["tests/test_skip_defaults.py::test_return_defaults"],
-        api=FastAPI10API(),
-        systemtests=FastAPI10SystemtestGenerator(),
-        unittests=FastAPI10UnittestGenerator(),
+        test_status_buggy=TestStatus.WRONG,
     )
     FastAPI(
         bug_id=11,

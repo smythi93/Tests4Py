@@ -1,6 +1,7 @@
 import abc
 import enum
 import os
+import shlex
 import subprocess
 import tempfile
 from abc import abstractmethod
@@ -29,7 +30,7 @@ class API:
     def get_test_arguments(self, system_test_path: PathLike) -> List[str]:
         with open(system_test_path, "r") as fp:
             test = fp.read()
-        parts = test.split("\n")
+        parts = shlex.split(test)
         if parts and parts[-1] == "":
             parts.pop()
         return parts if parts else []

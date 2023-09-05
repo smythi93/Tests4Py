@@ -8,6 +8,8 @@ from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API
 
+PROJECT_MAME = "calculator"
+
 
 class Calculator(Project):
     def __init__(
@@ -26,7 +28,7 @@ class Calculator(Project):
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name="calculator",
+            project_name=PROJECT_MAME,
             github_url="https://github.com/smythi93/calculator",
             status=Status.OK,
             cause="N.A.",
@@ -45,6 +47,7 @@ class Calculator(Project):
             grammar=grammar,
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "."]],
+            included_files=[os.path.join("src", "calc")],
         )
 
 

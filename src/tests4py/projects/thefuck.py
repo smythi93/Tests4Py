@@ -1,10 +1,11 @@
 from pathlib import Path
-from pathlib import Path
 from typing import List, Optional, Tuple
 
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
+
+PROJECT_MAME = "thefuck"
 
 
 class TheFuck(Project):
@@ -24,7 +25,7 @@ class TheFuck(Project):
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name="thefuck",
+            project_name=PROJECT_MAME,
             github_url="https://github.com/nvbn/thefuck",
             status=Status.OK,
             cause="N.A.",

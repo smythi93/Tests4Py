@@ -1,8 +1,18 @@
 import ast
 import re
 import unittest
+from typing import List
 
 from tests4py.grammars import antlr, python
+from tests4py.grammars.default import (
+    NUMBER,
+    INTEGER,
+    FLOAT,
+    STRING,
+    STRING_WS_ESCAPED,
+    STRING_WS,
+    CLI_GRAMMAR,
+)
 from tests4py.grammars.fuzzer import Grammar, is_valid_grammar
 from tests4py.grammars.parser import EarleyParser
 from tests4py.grammars.tree import ComplexDerivationTree
@@ -439,3 +449,153 @@ class TestPython(unittest.TestCase):
 
     def test_translation_3(self):
         self._test_translation(PYTHON_PROGRAM_3)
+
+
+class TestDefaultGrammar(unittest.TestCase):
+    def __test_parse__(
+        self, grammar: Grammar, start: str, members: List[str], no_members: List[str]
+    ):
+        parser = EarleyParser(grammar, start_symbol=start)
+        for word in members:
+            tree = None
+            for tree in parser.parse(word):
+                break
+            self.assertIsNotNone(tree, f"Cannot parse {word}")
+        for word in no_members:
+            try:
+                tree = None
+                for tree in parser.parse(word):
+                    break
+            except SyntaxError as e:
+                pass
+            else:
+                self.fail(f"Can parse {word}: {tree}")
+
+    def test_numbers(self):
+        self.__test_parse__(
+            NUMBER,
+            "<number>",
+            ["1", "0", "31635473145237"],
+            [
+                "-0",
+                "-49251865",
+                "1.0",
+                "-0.0000004",
+                "a",
+                "ab24",
+                "abasg#",
+                "abd ",
+                "65&a\n asd",
+                '46542 \\"asd' 'a"b',
+            ],
+        )
+
+    def test_integer(self):
+        self.__test_parse__(
+            INTEGER,
+            "<integer>",
+            ["1", "-0", "0", "-49251865", "31635473145237"],
+            [
+                "1.0",
+                "-0.0000004",
+                "a",
+                "ab24",
+                "abasg#",
+                "abd ",
+                "65&a\n asd",
+                '46542 \\"asd' 'a"b',
+            ],
+        )
+
+    def test_float(self):
+        self.__test_parse__(
+            FLOAT,
+            "<float>",
+            ["1", "-0", "0", "-49251865", "31635473145237", "1.0", "-0.0000004"],
+            ["a", "ab24", "abasg#", "abd ", "65&a\n asd", '46542 \\"asd' 'a"b'],
+        )
+
+    def test_string(self):
+        self.__test_parse__(
+            STRING,
+            "<string>",
+            [
+                "1",
+                "-0",
+                "0",
+                "-49251865",
+                "31635473145237",
+                "1.0",
+                "-0.0000004",
+                "a",
+                "ab24",
+                "abasg#",
+            ],
+            ["abd ", "65&a\n asd", '46542 \\"asd' 'a"b'],
+        )
+
+    def test_string_ws_escaped(self):
+        self.__test_parse__(
+            STRING_WS_ESCAPED,
+            "<string_ws_escaped>",
+            [
+                "1",
+                "-0",
+                "0",
+                "-49251865",
+                "31635473145237",
+                "1.0",
+                "-0.0000004",
+                "a",
+                "ab24",
+                "abasg#",
+                "abd ",
+                "65&a\n asd",
+                '46542 \\"asd',
+            ],
+            ['a"b'],
+        )
+
+    def test_string_ws(self):
+        self.__test_parse__(
+            STRING_WS,
+            "<string_ws>",
+            [
+                "1",
+                "-0",
+                "0",
+                "-49251865",
+                "31635473145237",
+                "1.0",
+                "-0.0000004",
+                "a",
+                "ab24",
+                "abasg#",
+                "abd ",
+                "65&a\n asd",
+                '46542 \\"asd' 'a"b',
+            ],
+            [],
+        )
+
+    def test_cli(self):
+        self.__test_parse__(
+            CLI_GRAMMAR,
+            "<start>",
+            ["-a", "-a abc -b -c def abcdef", '-a "a b"', '"\\"This is a test\\""'],
+            ["a -b c", '""This is a test""'],
+        )
+
+    def test_parser(self):
+        self.__test_parse__(
+            {
+                "<s>": ["<a><a>", "<a>"],
+                "<a>": ["a"],
+            },
+            "<s>",
+            [
+                "a",
+                "aa",
+            ],
+            ["", "aaa"],
+        )

@@ -24,6 +24,7 @@ DEFAULT_EXCLUDES = [
     "changelogs",
     "licenses",
     "packaging",
+    "setupext.py",
 ]
 
 
