@@ -59,6 +59,7 @@ class PySnooper(Project):
             grammar=grammar,
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "."]],
+            included_files=[self.project_name],
         )
 
 

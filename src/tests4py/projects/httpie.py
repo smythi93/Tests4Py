@@ -46,6 +46,7 @@ class Httpie(Project):
             grammar=grammar_request,
             test_base=test_base,
             loc=loc,
+            included_files=[self.project_name],
         )
 
 

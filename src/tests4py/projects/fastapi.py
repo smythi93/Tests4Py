@@ -56,6 +56,7 @@ class FastAPI(Project):
             grammar=grammar_request if grammar is None else grammar,
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "."]],
+            included_files=[self.project_name],
         )  # TODO adjust parameters
 
 

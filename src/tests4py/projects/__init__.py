@@ -54,6 +54,8 @@ class Project:
         setup: Optional[Sequence[List[str | os.PathLike] | str]] = None,
         test_base: Optional[os.PathLike] = None,
         loc: int = 0,
+        included_files: Optional[List[str]] = None,
+        excluded_files: Optional[List[str]] = None,
     ):
         if project_name not in bugs:
             bugs[project_name] = dict()
@@ -93,6 +95,8 @@ class Project:
         self.api = api
         self.grammar = grammar
         self.setup = list() if setup is None else setup
+        self.included_files = list() if included_files is None else included_files
+        self.excluded_files = list() if excluded_files is None else excluded_files
         self.loc = loc
         self.test_base = test_base
 

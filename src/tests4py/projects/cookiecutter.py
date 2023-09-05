@@ -64,6 +64,7 @@ class CookieCutter(Project):
             grammar=grammar,
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
+            included_files=[self.project_name],
         )
 
 

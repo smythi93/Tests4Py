@@ -44,13 +44,19 @@ def create_config(
     dst: Path,
     events: List[str] = None,
     metrics: List[str] = None,
-    excludes: List[str] = None,
 ):
     if events is None:
         events = [event.name for event in EventType]
     if metrics is None:
         metrics = []
-    if excludes is None:
+    if project.included_files:
+        includes = project.included_files
+        excludes = project.excluded_files
+    elif project.excluded_files:
+        includes = list()
+        excludes = project.excluded_files
+    else:
+        includes = list()
         excludes = DEFAULT_EXCLUDES
     return sflkit.Config.create(
         path=str(src),
@@ -60,6 +66,7 @@ def create_config(
         passing=str(get_events_path(project=project, passing=True)),
         failing=str(get_events_path(project=project, passing=False)),
         working=str(dst),
+        include='"' + '","'.join(includes) + '"',
         exclude='"' + '","'.join(excludes) + '"',
     )
 

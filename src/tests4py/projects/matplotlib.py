@@ -46,6 +46,8 @@ class Matplotlib(Project):
             setup=[
                 ["python", "-m", "pip", "install", "-ve", "."],
             ],
+            included_files=[os.path.join("lib", self.project_name)],
+            excluded_files=[os.path.join("lib", self.project_name, "tests")],
         )  # TODO adjust parameters
 
 

@@ -42,6 +42,7 @@ class Keras(Project):
             api=api,
             grammar=None,
             loc=loc,
+            included_files=[self.project_name],
         )  # TODO adjust parameters
 
 

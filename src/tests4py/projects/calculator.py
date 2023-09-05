@@ -45,6 +45,7 @@ class Calculator(Project):
             grammar=grammar,
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "."]],
+            included_files=[os.path.join("src", "calc")],
         )
 
 
