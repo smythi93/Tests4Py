@@ -6,6 +6,7 @@ import tests4py.framework.default
 from tests4py import framework
 from tests4py.grammars.fuzzer import is_valid_grammar
 from tests4py.projects import load_bug_info
+from tests4py.tests.utils import TestResult
 from utils import BaseTest
 
 
@@ -441,3 +442,45 @@ class CommandTests(BaseTest):
         self.assertTrue(os.path.exists(file))
         if os.path.exists(file):
             os.remove(file)
+
+    def test_run_middle_1(self):
+        report = tests4py.framework.default.tests4py_checkout("middle", 1, fixed=False)
+        if report.raised:
+            raise report.raised
+        work_dir = tests4py.constants.DEFAULT_WORK_DIR / "middle_1"
+        project = load_bug_info(work_dir / tests4py.constants.INFO_FILE)
+        self.assertFalse(project.compiled)
+        report = tests4py.framework.default.tests4py_compile(work_dir)
+        if report.raised:
+            raise report.raised
+        project = load_bug_info(work_dir / tests4py.constants.INFO_FILE)
+        self.assertTrue(project.compiled)
+        report = framework.systemtest.tests4py_run(work_dir, inputs=["2", "1", "3"])
+        if report.raised:
+            raise report.raised
+        self.assertEqual(str(["2", "1", "3"]), report.input)
+        report = framework.systemtest.tests4py_run(
+            work_dir, inputs=["2", "1", "3"], invoke_oracle=True
+        )
+        if report.raised:
+            raise report.raised
+        self.assertEqual(TestResult.FAILING, report.test_result)
+
+    def test_run_middle_2(self):
+        report = tests4py.framework.default.tests4py_checkout("middle", 2, fixed=False)
+        if report.raised:
+            raise report.raised
+        work_dir = tests4py.constants.DEFAULT_WORK_DIR / "middle_2"
+        project = load_bug_info(work_dir / tests4py.constants.INFO_FILE)
+        self.assertFalse(project.compiled)
+        report = tests4py.framework.default.tests4py_compile(work_dir)
+        if report.raised:
+            raise report.raised
+        project = load_bug_info(work_dir / tests4py.constants.INFO_FILE)
+        self.assertTrue(project.compiled)
+        report = framework.systemtest.tests4py_run(
+            work_dir, inputs=["2", "1", "3"], invoke_oracle=True
+        )
+        if report.raised:
+            raise report.raised
+        self.assertEqual(TestResult.FAILING, report.test_result)

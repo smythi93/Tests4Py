@@ -1,9 +1,11 @@
 import importlib
 import os
+import platform
 import shutil
 import subprocess
 import sys
 from pathlib import Path
+from typing import Callable
 
 from tests4py.constants import (
     Environment,
@@ -14,7 +16,7 @@ from tests4py.constants import (
     PYENV_TMP,
     PYTHON,
 )
-from tests4py.framework.logger import LOGGER
+from tests4py.logger import LOGGER
 from tests4py.projects import Project
 
 DEFAULT_RUN = subprocess.run
@@ -50,7 +52,7 @@ def __install_version__(project: Project):
                 )
                 subprocess.check_output(
                     ["pyenv", "install", project.python_fallback_version],
-                    stdin=b"\n" * 10,
+                    input=b"\n" * 10,
                 )
                 return v
             except subprocess.CalledProcessError:
@@ -82,7 +84,7 @@ def __install_version__(project: Project):
         LOGGER.info(f"Failed. Try to install fallback pyenv python {v}")
         try:
             output = subprocess.check_output(
-                [PYENV, "install", v], stdin=b"\n" * 10
+                [PYENV, "install", v], input=b"\n" * 10
             ).decode("utf-8")
             match = VERSION_PATTERN.search(output)
             if match:
@@ -121,19 +123,21 @@ def __install_pyenv__() -> str:
 # Windows stuff
 
 
-def activate_shell_run(*args, **kwargs):
+def set_shell(call: Callable, *args, **kwargs):
     kwargs["shell"] = True
-    return DEFAULT_RUN(*args, **kwargs)
+    return call(*args, **kwargs)
+
+
+def activate_shell_run(*args, **kwargs):
+    return set_shell(DEFAULT_RUN, *args, **kwargs)
 
 
 def activate_shell_check_call(*args, **kwargs):
-    kwargs["shell"] = True
-    return DEFAULT_CHECK_CALL(*args, **kwargs)
+    return set_shell(DEFAULT_CHECK_CALL, *args, **kwargs)
 
 
 def activate_shell_check_output(*args, **kwargs):
-    kwargs["shell"] = True
-    return DEFAULT_CHECK_OUTPUT(*args, **kwargs)
+    return set_shell(DEFAULT_CHECK_OUTPUT, *args, **kwargs)
 
 
 class ActivateShellPopen(DEFAULT_POPEN):
@@ -143,7 +147,10 @@ class ActivateShellPopen(DEFAULT_POPEN):
 
 
 def __env_on__(project: Project, skip=False) -> Environment:
-    if sys.platform.startswith("win"):
+    if sys.platform.startswith("win") or (
+        sys.platform.startswith("darwin") and platform.processor().startswith("arm")
+    ):
+        LOGGER.debug("Activate chell for subprocess")
         importlib.reload(subprocess)
         subprocess.run = activate_shell_run
         subprocess.check_call = activate_shell_check_call

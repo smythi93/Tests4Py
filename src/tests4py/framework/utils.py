@@ -1,8 +1,4 @@
-import abc
-import json
-import logging
 import os
-import shutil
 from pathlib import Path
 from typing import Optional, Tuple, List
 from xml.etree import ElementTree
@@ -11,23 +7,10 @@ from tests4py import projects
 from tests4py.constants import (
     INFO_FILE,
     REQUIREMENTS_FILE,
-    CHECKOUT,
-    COMPILE,
-    TEST,
     PYTEST_PATTERN,
-    INFO,
-    GLOBAL_CONFIG_FILE,
-    GLOBAL_CONFIGS,
-    GLOBAL_PROJECTS,
-    CACHE,
-    CONFIG,
-    GLOBAL_GIT,
-    VENV,
-    GRAMMAR,
     NEWLINE_TOKEN,
-    Environment,
 )
-from tests4py.framework.logger import LOGGER
+from tests4py.logger import LOGGER
 from tests4py.projects import (
     Project,
     ansible,
@@ -56,125 +39,7 @@ from tests4py.projects import (
 from tests4py.tests.utils import TestResult
 
 
-class Report(abc.ABC):
-    def __init__(self, command: str, subcommand: str = None):
-        self.command: str = command
-        self.subcommand: Optional[str] = subcommand
-        self.successful: Optional[bool] = None
-        self.raised: Optional[BaseException] = None
-
-    def to_dict(self):
-        dictionary = {
-            "command": self.command,
-        }
-        if self.subcommand:
-            dictionary["subcommand"] = self.subcommand
-        dictionary["successful"] = self.successful
-        if not self.successful and self.raised:
-            dictionary["raised"] = getattr(self.raised, "message", repr(self.raised))
-        return dictionary
-
-    def __repr__(self):
-        return json.dumps(self.to_dict(), indent=4)
-
-    def __str__(self):
-        return self.__repr__()
-
-
-class ProjectReport(Report, abc.ABC):
-    def __init__(self, command: str, subcommand: str = None):
-        self.project: Optional[Project] = None
-        super().__init__(command, subcommand=subcommand)
-
-    def to_dict(self):
-        dictionary = super().to_dict()
-        if self.project:
-            dictionary["project"] = f"{self.project.project_name}_{self.project.bug_id}"
-        return dictionary
-
-
-class LocationReport(ProjectReport, abc.ABC):
-    def __init__(self, command: str, subcommand: str = None):
-        super().__init__(command=command, subcommand=subcommand)
-        self.location: Optional[os.PathLike] = None
-
-    def to_dict(self):
-        dictionary = super().to_dict()
-        if self.location:
-            dictionary["location"] = repr(self.location)
-        return dictionary
-
-
-class CheckoutReport(LocationReport):
-    def __init__(self):
-        super().__init__(CHECKOUT)
-
-
-class CompileReport(LocationReport):
-    def __init__(self):
-        super().__init__(COMPILE)
-        self.env: Optional[Environment] = None
-
-    def to_dict(self):
-        dictionary = super().to_dict()
-        if self.env:
-            dictionary["env"] = "\n".join(
-                f"{name}={value}" for name, value in self.env.items()
-            )
-        return dictionary
-
-
-class InfoReport(ProjectReport):
-    def __init__(self):
-        super().__init__(INFO)
-        self.example = False
-
-    def to_dict(self):
-        dictionary = super().to_dict()
-        if self.example:
-            dictionary["project"] = self.project.project_name
-        return dictionary
-
-
-class TestingReport(LocationReport, abc.ABC):
-    def __init__(self, command: str, subcommand: str = None):
-        self.total: Optional[int] = None
-        self.passing: Optional[int] = None
-        self.failing: Optional[int] = None
-        super().__init__(command, subcommand=subcommand)
-
-
-class TestReport(TestingReport):
-    def __init__(self):
-        super().__init__(TEST)
-        self.results: Optional[List[Tuple[str, TestResult]]] = None
-
-
-class CacheReport(Report):
-    def __init__(self):
-        super().__init__(CACHE)
-        self.checkout_reports = dict()
-        self.compile_reports = dict()
-
-
-class ConfigReport(Report):
-    def __init__(self):
-        super().__init__(CONFIG)
-
-
-class GrammarReport(ProjectReport):
-    def __init__(self):
-        super().__init__(GRAMMAR)
-
-
-class GenerateReport(TestingReport):
-    def __init__(self, command: str, subcommand: str = None):
-        self.verify_passing: Optional[int] = None
-        self.verify_failing: Optional[int] = None
-        super().__init__(command, subcommand=subcommand)
-
-
-def __setup__():
+def setup():
     LOGGER.info("Loading projects")
     ansible.register()
     black.register()
@@ -199,7 +64,7 @@ def __setup__():
     youtubedl.register()
 
 
-def __get_project__(work_dir: Path) -> Tuple[Project, Path, Path]:
+def load_project(work_dir: Path) -> Tuple[Project, Path, Path]:
     LOGGER.info(f"Checking whether Tests4Py project")
     tests4py_info = work_dir / INFO_FILE
     tests4py_requirements = work_dir / REQUIREMENTS_FILE
@@ -210,11 +75,11 @@ def __get_project__(work_dir: Path) -> Tuple[Project, Path, Path]:
             f"No Tests4Py project found in {work_dir}, no tests4py_requirements"
         )
 
-    __setup__()
+    setup()
     return projects.load_bug_info(tests4py_info), tests4py_info, tests4py_requirements
 
 
-def __get_pytest_result__(
+def get_pytest_result(
     output: bytes,
 ) -> tuple[bool, Optional[int], Optional[int], Optional[int]]:
     match = PYTEST_PATTERN.search(output)
@@ -231,7 +96,7 @@ def __get_pytest_result__(
     return False, None, None, None
 
 
-def __replace_important_in_test_report__(s: str):
+def replace_important_in_test_report(s: str):
     important = False
     result = ""
     escaped = False
@@ -267,7 +132,7 @@ def __replace_important_in_test_report__(s: str):
     return result
 
 
-def __get_test_results__(
+def get_test_results(
     project: Project, working_directory: os.PathLike, report_file: os.PathLike
 ) -> List[Tuple[str, TestResult]]:
     test_results = list()
@@ -275,7 +140,7 @@ def __get_test_results__(
     try:
         with open(report_file, "r") as fp:
             s = fp.read()
-        tree = ElementTree.fromstring(__replace_important_in_test_report__(s))
+        tree = ElementTree.fromstring(replace_important_in_test_report(s))
     except FileNotFoundError:
         print("pytest did not generate file")
         return test_results
@@ -322,99 +187,3 @@ def __get_test_results__(
         else:
             test_results.append((test, TestResult.UNDEFINED))
     return test_results
-
-
-def __init_logger__(verbose=True):
-    if not verbose:
-        LOGGER.setLevel(logging.WARNING)
-
-
-class GlobalConfig:
-    def __init__(
-        self, cache: Optional[bool] = None, last_workdir: Optional[os.PathLike] = None
-    ):
-        self.cache: bool = bool(cache)
-        self.last_workdir: os.PathLike = (
-            None if last_workdir is None else Path(last_workdir)
-        )
-
-    @staticmethod
-    def load():
-        with open(GLOBAL_CONFIG_FILE, "r") as fp:
-            json_dict = json.loads(fp.read() or "{}")
-        return GlobalConfig(**json_dict)
-
-    def write(self):
-        with open(GLOBAL_CONFIG_FILE, "w") as fp:
-            json.dump(self.__dict__, fp, default=str)
-
-
-def load_config() -> GlobalConfig:
-    os.makedirs(GLOBAL_CONFIGS, exist_ok=True)
-    if os.path.exists(GLOBAL_CONFIG_FILE):
-        config = GlobalConfig.load()
-    else:
-        config = GlobalConfig()
-        config.write()
-    os.makedirs(GLOBAL_PROJECTS, exist_ok=True)
-    return config
-
-
-def check_cache_exists_project(project: Project):
-    return (GLOBAL_PROJECTS / project.project_name / GLOBAL_GIT).exists()
-
-
-def copy_cached_project(project: Project, dst: Path):
-    shutil.rmtree(dst, ignore_errors=True)
-    return shutil.copytree(
-        GLOBAL_PROJECTS / project.project_name / GLOBAL_GIT,
-        dst,
-        dirs_exist_ok=True,
-        copy_function=shutil.copy,
-    )
-
-
-def cache_project(project: Project, src: Path):
-    shutil.rmtree(
-        GLOBAL_PROJECTS / project.project_name / GLOBAL_GIT, ignore_errors=True
-    )
-    return shutil.copytree(
-        src,
-        GLOBAL_PROJECTS / project.project_name / GLOBAL_GIT,
-        dirs_exist_ok=True,
-        copy_function=shutil.copy,
-    )
-
-
-def check_cache_exists_env(project: Project):
-    return (GLOBAL_PROJECTS / project.project_name / f"venv_{project.bug_id}").exists()
-
-
-def copy_cached_env(project: Project, dst: Path):
-    shutil.rmtree(dst / VENV, ignore_errors=True)
-    return shutil.copytree(
-        GLOBAL_PROJECTS / project.project_name / f"venv_{project.bug_id}",
-        dst / VENV,
-        dirs_exist_ok=True,
-        copy_function=shutil.copy,
-    )
-
-
-def cache_venv(project: Project, src: Path):
-    shutil.rmtree(
-        GLOBAL_PROJECTS / project.project_name / f"venv_{project.bug_id}",
-        ignore_errors=True,
-    )
-    return shutil.copytree(
-        src / VENV,
-        GLOBAL_PROJECTS / project.project_name / f"venv_{project.bug_id}",
-        dirs_exist_ok=True,
-        copy_function=shutil.copy,
-    )
-
-
-def get_correct_dir(current_dir: Path, config: GlobalConfig):
-    tests4py_info = current_dir / INFO_FILE
-    if not tests4py_info.exists() and config.last_workdir is not None:
-        return config.last_workdir
-    return current_dir

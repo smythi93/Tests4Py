@@ -25,6 +25,7 @@ GENERATE = "generate"
 CACHE = "cache"
 CONFIG = "config"
 GRAMMAR = "grammar"
+RUN = "run"
 
 # ~~~~~~ FILES ~~~~~~ #
 

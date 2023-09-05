@@ -5,7 +5,7 @@ from typing import List
 from sflkitlib.events import EventType
 
 from tests4py import sfl
-from tests4py.framework.utils import __init_logger__
+from tests4py.logger import init_logger
 from tests4py.sfl import SFLInstrumentReport, SFLEventsReport
 
 
@@ -17,7 +17,7 @@ def tests4py_sfl_instrument(
     verbose: bool = True,
 ):
     report = SFLInstrumentReport()
-    __init_logger__(verbose=verbose)
+    init_logger(verbose=verbose)
 
     if work_dir is None:
         work_dir = Path.cwd()
@@ -50,7 +50,7 @@ def tests4py_sfl_events(
     work_dir: Path = None, output: Path = None, verbose: bool = True
 ):
     report = SFLEventsReport()
-    __init_logger__(verbose=verbose)
+    init_logger(verbose=verbose)
 
     if work_dir is None:
         work_dir = Path.cwd()

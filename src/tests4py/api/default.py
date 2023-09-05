@@ -7,6 +7,17 @@ from typing import List, Union, Optional
 
 from tabulate import tabulate
 
+from tests4py.api.cache import (
+    check_cache_exists_project,
+    copy_cached_project,
+    cache_project,
+    check_cache_exists_env,
+    copy_cached_env,
+    cache_venv,
+)
+from tests4py.api.config import load_config
+from tests4py.api.report import CheckoutReport, CompileReport, InfoReport, TestReport
+from tests4py.api.utils import get_work_dir
 from tests4py.constants import (
     DEFAULT_WORK_DIR,
     FIX_FILES,
@@ -31,24 +42,12 @@ from tests4py.framework.environment import (
     __sflkit_env__,
     __install_pyenv__,
 )
-from tests4py.framework.logger import LOGGER
 from tests4py.framework.utils import (
-    CheckoutReport,
-    __get_project__,
-    CompileReport,
-    TestReport,
-    __get_pytest_result__,
-    InfoReport,
-    load_config,
-    check_cache_exists_project,
-    copy_cached_project,
-    cache_project,
-    check_cache_exists_env,
-    copy_cached_env,
-    cache_venv,
-    __get_test_results__,
-    get_correct_dir,
+    load_project,
+    get_pytest_result,
+    get_test_results,
 )
+from tests4py.logger import LOGGER
 from tests4py.projects import (
     resources,
     TestingFramework,
@@ -80,7 +79,7 @@ def checkout_project(
         work_location = work_dir / project.get_identifier()
         report.location = work_location
         if update and work_location.exists():
-            project_verify, _, _ = __get_project__(work_location)
+            project_verify, _, _ = load_project(work_location)
             project.compiled = project_verify.compiled
         else:
             tmp_location = (work_dir / f"tmp_{project.project_name}").absolute()
@@ -282,16 +281,10 @@ def compile_project(
     if report is None:
         report = CompileReport()
     config = load_config()
-    current_dir = Path.cwd()
-    if work_dir_or_project is None:
-        work_dir = get_correct_dir(current_dir, config)
-    elif isinstance(work_dir_or_project, Project):
-        work_dir = DEFAULT_WORK_DIR / work_dir_or_project.get_identifier()
-    else:
-        work_dir = work_dir_or_project
+    work_dir = get_work_dir(work_dir_or_project)
     report.location = work_dir
     try:
-        project, t4p_info, t4p_requirements = __get_project__(work_dir)
+        project, t4p_info, t4p_requirements = load_project(work_dir)
         report.project = project
         if project.compiled and not recompile:
             LOGGER.info(f"{project} already compiled")
@@ -321,7 +314,7 @@ def compile_project(
             )
 
             LOGGER.info("Checking and installing test requirements")
-            test_requirements = Path("test_requirements.txt")
+            test_requirements = work_dir / "test_requirements.txt"
             if test_requirements.exists():
                 subprocess.check_call(
                     [PYTHON, "-m", "pip", "install", "-r", test_requirements],
@@ -448,17 +441,10 @@ def test_project(
 ) -> TestReport:
     if report is None:
         report = TestReport()
-    current_dir = Path.cwd()
-    if work_dir_or_project is None:
-        config = load_config()
-        work_dir = get_correct_dir(current_dir, config)
-    elif isinstance(work_dir_or_project, Project):
-        work_dir = DEFAULT_WORK_DIR / work_dir_or_project.get_identifier()
-    else:
-        work_dir = work_dir_or_project
+    work_dir = get_work_dir(work_dir_or_project)
     report.location = work_dir
     try:
-        project, _, _ = __get_project__(work_dir)
+        project, _, _ = load_project(work_dir)
         report.project = project
         if not project.compiled:
             raise ValueError(
@@ -527,7 +513,7 @@ def test_project(
                 report.total,
                 report.failing,
                 report.passing,
-            ) = __get_pytest_result__(output)
+            ) = get_pytest_result(output)
         elif project.testing_framework == TestingFramework.UNITTEST:
             number_match = UNITTEST_TOTAL_PATTERN.search(output)
             failed_match = UNITTEST_FAILED_PATTERN.search(output)
@@ -544,7 +530,7 @@ def test_project(
             )
 
         if xml_output:
-            report.results = __get_test_results__(project, work_dir, xml_output)
+            report.results = get_test_results(project, work_dir, xml_output)
         LOGGER.info(f"Ran {report.total} tests")
         LOGGER.info(f"{report.passing} passed --- {report.failing} failed")
         report.successful = successful

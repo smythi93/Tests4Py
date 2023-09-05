@@ -5,7 +5,7 @@ import sflkit
 from sflkitlib.events import EventType
 
 from tests4py.api import compile_project
-from tests4py.framework.utils import ProjectReport
+from tests4py.api.report import ProjectReport
 from tests4py.projects import Project
 from tests4py.sfl.constants import (
     EVENTS_PATH,
