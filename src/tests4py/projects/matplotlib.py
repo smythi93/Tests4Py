@@ -6,6 +6,8 @@ from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
 
+PROJECT_MAME = "matplotlib"
+
 
 class Matplotlib(Project):
     def __init__(
@@ -24,7 +26,7 @@ class Matplotlib(Project):
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name="matplotlib",
+            project_name=PROJECT_MAME,
             github_url="https://github.com/matplotlib/matplotlib",
             status=Status.OK,
             cause="N.A.",
@@ -46,8 +48,8 @@ class Matplotlib(Project):
             setup=[
                 ["python", "-m", "pip", "install", "-ve", "."],
             ],
-            included_files=[os.path.join("lib", self.project_name)],
-            excluded_files=[os.path.join("lib", self.project_name, "tests")],
+            included_files=[os.path.join("lib", PROJECT_MAME)],
+            excluded_files=[os.path.join("lib", PROJECT_MAME, "tests")],
         )  # TODO adjust parameters
 
 

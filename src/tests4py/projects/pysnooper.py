@@ -21,6 +21,8 @@ from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult, ExpectErrAPI
 
+PROJECT_MAME = "pysnooper"
+
 
 class PySnooper(Project):
     def __init__(
@@ -39,7 +41,7 @@ class PySnooper(Project):
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name="pysnooper",
+            project_name=PROJECT_MAME,
             github_url="https://github.com/cool-RR/PySnooper",
             status=Status.OK,
             cause="N.A.",
@@ -59,7 +61,7 @@ class PySnooper(Project):
             grammar=grammar,
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "."]],
-            included_files=[self.project_name],
+            included_files=[PROJECT_MAME],
         )
 
 

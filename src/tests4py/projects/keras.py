@@ -6,6 +6,8 @@ from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
 
+PROJECT_MAME = "keras"
+
 
 class Keras(Project):
     def __init__(
@@ -24,7 +26,7 @@ class Keras(Project):
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name="keras",
+            project_name=PROJECT_MAME,
             github_url="https://github.com/keras-team/keras",
             status=Status.OK,
             cause="N.A.",
@@ -42,7 +44,7 @@ class Keras(Project):
             api=api,
             grammar=None,
             loc=loc,
-            included_files=[self.project_name],
+            included_files=[PROJECT_MAME],
         )  # TODO adjust parameters
 
 

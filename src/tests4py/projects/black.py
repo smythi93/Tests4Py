@@ -6,6 +6,8 @@ from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
 
+PROJECT_MAME = "black"
+
 
 class Black(Project):
     def __init__(
@@ -26,7 +28,7 @@ class Black(Project):
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name="black",
+            project_name=PROJECT_MAME,
             github_url="https://github.com/psf/black",
             status=Status.OK,
             cause="N.A.",

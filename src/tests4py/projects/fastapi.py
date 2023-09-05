@@ -16,6 +16,8 @@ from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, ExpectErrAPI, TestResult
 
+PROJECT_MAME = "fastapi"
+
 
 class FastAPI(Project):
     def __init__(
@@ -35,7 +37,7 @@ class FastAPI(Project):
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name="fastapi",
+            project_name=PROJECT_MAME,
             github_url="https://github.com/tiangolo/fastapi",
             status=Status.OK,
             cause="N.A.",
@@ -56,7 +58,7 @@ class FastAPI(Project):
             grammar=grammar_request if grammar is None else grammar,
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "."]],
-            included_files=[self.project_name],
+            included_files=[PROJECT_MAME],
         )  # TODO adjust parameters
 
 

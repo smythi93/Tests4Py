@@ -14,6 +14,8 @@ from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult, CLIAPI
 
+PROJECT_MAME = "middle"
+
 
 class Middle(Project):
     def __init__(
@@ -32,7 +34,7 @@ class Middle(Project):
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name="middle",
+            project_name=PROJECT_MAME,
             github_url="https://github.com/smythi93/middle",
             status=Status.OK,
             cause="N.A.",
@@ -51,7 +53,7 @@ class Middle(Project):
             grammar=grammar,
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "."]],
-            included_files=[os.path.join("src", self.project_name)],
+            included_files=[os.path.join("src", PROJECT_MAME)],
         )
 
 

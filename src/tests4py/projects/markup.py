@@ -8,6 +8,8 @@ from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API
 
+PROJECT_MAME = "markup"
+
 
 class Markup(Project):
     def __init__(
@@ -26,7 +28,7 @@ class Markup(Project):
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name="markup",
+            project_name=PROJECT_MAME,
             github_url="https://github.com/smythi93/markup",
             status=Status.OK,
             cause="N.A.",
@@ -45,7 +47,7 @@ class Markup(Project):
             grammar=grammar,
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "."]],
-            included_files=[os.path.join("src", self.project_name)],
+            included_files=[os.path.join("src", PROJECT_MAME)],
         )
 
 
