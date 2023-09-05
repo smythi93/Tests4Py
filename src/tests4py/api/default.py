@@ -314,7 +314,6 @@ def compile_project(
                 [PYTHON, "-m", "pip", "install", "-r", t4p_requirements],
                 stdout=subprocess.STDOUT if verbose else subprocess.DEVNULL,
                 env=environ,
-                cwd=work_dir,
             )
 
             LOGGER.info("Checking and installing test requirements")
@@ -324,7 +323,6 @@ def compile_project(
                     [PYTHON, "-m", "pip", "install", "-r", test_requirements],
                     stdout=subprocess.STDOUT if verbose else subprocess.DEVNULL,
                     env=environ,
-                    cwd=work_dir,
                 )
 
         LOGGER.info("Run setup")
