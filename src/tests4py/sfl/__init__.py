@@ -20,7 +20,6 @@ def sflkit_instrument(
     work_dir_or_project: Project,
     dst: Path,
     events: List[str] = None,
-    excludes: List[str] = None,
     report: SFLInstrumentReport = None,
 ):
     if report is None:
@@ -41,7 +40,6 @@ def sflkit_instrument(
                 work_dir,
                 dst,
                 events=events,
-                excludes=excludes,
             ),
         )
         report.successful = True

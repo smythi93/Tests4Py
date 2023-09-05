@@ -39,7 +39,7 @@ from tests4py.framework.default import (
 from tests4py.framework.grammar import tests4py_grammar
 from tests4py.framework.sfl import tests4py_sfl_instrument, tests4py_sfl_events
 from tests4py.logger import LOGGER
-from tests4py.sfl.constants import SFL, INSTRUMENT, EVENTS, DEFAULT_EXCLUDES
+from tests4py.sfl.constants import SFL, INSTRUMENT, EVENTS
 
 
 def str_to_bool(s):
@@ -483,13 +483,6 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         help="The events that can be collected with the instrumentation. "
         "Default will be all events possible with the current version of SFLKit",
     )
-    sfl_instrument.add_argument(
-        "-x",
-        dest="excludes",
-        default=None,
-        help="The excluded files during the instrumentation. "
-        f"Default will {', '.join(DEFAULT_EXCLUDES)}",
-    )
 
     sfl_events.add_argument(
         "-w",
@@ -610,7 +603,6 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
                 work_dir=Path(args.work_dir).absolute() if args.work_dir else None,
                 dst=Path(args.destination).absolute() if args.destination else None,
                 events=args.events,
-                excludes=args.excludes,
             )
         elif args.subcommand == EVENTS:
             report = tests4py_sfl_events(
