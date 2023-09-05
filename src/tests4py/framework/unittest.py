@@ -39,7 +39,7 @@ def tests4py_generate(
 
 def tests4py_test(
     work_dir: Path = None,
-    path: Path = None,
+    path_or_str: Path = None,
     diversity: bool = True,
     output: Path = None,
     verbose=True,
@@ -49,7 +49,7 @@ def tests4py_test(
     try:
         api.unit_test_project(
             work_dir,
-            path=path,
+            path=path_or_str,
             diversity=diversity,
             output=output,
             report=report,
