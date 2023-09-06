@@ -239,7 +239,7 @@ class MarkupUnittestGenerator(
                 args=[
                     ast.Constant(value=expected),
                     ast.Call(
-                        func=ast.Name(id="markup"),
+                        func=ast.Name(id="remove_html_markup"),
                         args=[ast.Constant(value=result)],
                         keywords=[],
                     ),
@@ -252,7 +252,7 @@ class MarkupUnittestGenerator(
         return [
             ast.ImportFrom(
                 module="markup",
-                names=[ast.alias(name="markup")],
+                names=[ast.alias(name="remove_html_markup")],
                 level=0,
             )
         ]
