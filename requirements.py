@@ -8,7 +8,7 @@ def main():
     for p in os.listdir(root):
         project = root / p
         default_req = project / "requirements.txt"
-        if p != "__pycache__" and project.is_dir() and not default_req.exists():
+        if p != "__pycache__" and project.is_dir():
             reqs = dict()
             for b in os.listdir(project):
                 bug = project / b
@@ -32,19 +32,20 @@ def main():
                             with open(req, "w") as fp:
                                 fp.write(content)
                         reqs[b] = content
-            count = dict()
-            for r in reqs.values():
-                if r in count:
-                    count[r] += 1
-                else:
-                    count[r] = 1
-            r = max(count, key=count.get)
-            if count[r] > 1:
-                with open(default_req, "w") as fp:
-                    fp.write(r)
-                for b in reqs:
-                    if r == reqs[b]:
-                        os.remove(project / b / "requirements.txt")
+            if len(reqs) > 0:
+                count = dict()
+                for r in reqs.values():
+                    if r in count:
+                        count[r] += 1
+                    else:
+                        count[r] = 1
+                r = max(count, key=count.get)
+                if count[r] > 1:
+                    with open(default_req, "w") as fp:
+                        fp.write(r)
+                    for b in reqs:
+                        if r == reqs[b]:
+                            os.remove(project / b / "requirements.txt")
 
 
 if __name__ == "__main__":
