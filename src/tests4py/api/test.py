@@ -74,7 +74,7 @@ def _get_systemtest_runs(
     total, passing, failing = 0, 0, 0
     results: Dict[str, Tuple[TestResult, str]] = dict()
     for test, result, feedback in project.api.tests(path, environ, work_dir=work_dir):
-        results[test] = (result, feedback)
+        results[str(test)] = (result, feedback)
         if TestResult.PASSING == result:
             passing += 1
         elif TestResult.FAILING == result:
