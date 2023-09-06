@@ -1,7 +1,7 @@
 import sys
-from markup import markup
+from markup import remove_html_markup
 
 
 if __name__ == "__main__":
     assert len(sys.argv) == 2
-    print(markup((str, sys.argv[1:])))
+    print(remove_html_markup((str, sys.argv[0:])))

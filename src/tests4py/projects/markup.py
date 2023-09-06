@@ -6,11 +6,12 @@ import subprocess
 from pathlib import Path
 from typing import List, Optional, Tuple, Any, Callable
 
-from fuzzingbook.Grammars import Grammar, is_valid_grammar
+from tests4py.grammars.fuzzer import Grammar
+from tests4py.grammars.fuzzer import is_valid_grammar
 
 from tests4py.constants import PYTHON
 from tests4py.grammars import python
-from tests4py.grammars.fuzzer import crange, srange
+from tests4py.grammars.fuzzer import srange
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult, CLIAPI
@@ -82,18 +83,21 @@ def register():
             os.path.join("tests", "test_markup.py") + "::test_abc",
             os.path.join("tests", "test_markup.py") + "::test_quoted_abc",
         ],
+        unittests=MarkupUnittestGenerator(),
+        systemtests=MarkupSystemtestGenerator(),
+        api=Markup2API(),
     )
 
 
-class Markup1API(CLIAPI):
+class Markup1API(API):
     def __init__(self, default_timeout=5):
-        super().__init__(["markup"], default_timeout=default_timeout)
+        super().__init__(default_timeout=default_timeout)
 
     def oracle(self, args: Any) -> Tuple[TestResult, str]:
         if args is None:
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
-        expected = (str, process.args[1:])
+        expected = list(map(str, process.args[0:]))
         result = str(process.stdout.decode("utf8"))
         if result == expected:
             return TestResult.PASSING, ""
@@ -109,7 +113,7 @@ class Markup2API(CLIAPI):
         if args is None:
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
-        expected = (str, process.args[2:])
+        expected = (str, process.args[1:])
         result = str(process.stdout.decode("utf8"))
         if result == expected:
             return TestResult.PASSING, ""
@@ -119,24 +123,8 @@ class Markup2API(CLIAPI):
 
 class MarkupTestGenerator:
     @staticmethod
-    def remove_html_markup(s):
-        tag = False
-        quote = False
-        out = ""
-
-        for c in s:
-            if c == ">" and not quote:
-                tag = False
-            elif (c == '"' or c == "'") and tag:
-                quote = not quote
-            elif not tag:
-                out = out + c
-
-        return out
-
-    @staticmethod
-    def generate_values(producer: Callable) -> Tuple[Any]:
-        return tuple((producer()))
+    def generate_values(producer: Callable) -> Tuple[str]:
+        return str((producer()))
 
     @staticmethod
     def generate_random_string():
@@ -165,6 +153,15 @@ class MarkupTestGenerator:
             '"Fundamental"',
             '"Book"',
             '"Usage"',
+            "'Language'",
+            "'Code'",
+            "'Program'",
+            "'Syntax'",
+            "'Error'",
+            "'Project'",
+            "'Fundamental'",
+            "'Book'",
+            "'Usage'",
         ]
 
         l3 = [
@@ -218,9 +215,9 @@ class MarkupTestGenerator:
         first_tag, last_tag = html_markups[number]
         return first_tag, last_tag
 
-    def generate_html_example(self):
-        first_tag, last_tag = self.html_markup_generator()
-        return first_tag + self.generate_random_string() + last_tag
+    def generate_html_example(self) -> str:
+        generated_string = self.generate_random_string()
+        return generated_string
 
 
 class MarkupUnittestGenerator(
@@ -228,10 +225,8 @@ class MarkupUnittestGenerator(
 ):
     def generate_one(
         self,
-    ) -> Tuple[str]:
-        return self.generate_values(
-            self.generate_html_example,
-        )
+    ) -> str:
+        return self.generate_values(self.generate_html_example)
 
     @staticmethod
     def _get_assert(
@@ -263,81 +258,98 @@ class MarkupUnittestGenerator(
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        generated_value = self.generate_one()
+        without_tag = self.generate_one()
+        if without_tag.__contains__('"'):
+            without_tag = without_tag
+        else:
+            while not without_tag.__contains__('"'):
+                without_tag = self.generate_one()
+        first_tag, last_tag = self.html_markup_generator()
+        with_tag = first_tag + without_tag + last_tag
         test = self.get_empty_test()
-        test.body = self._get_assert(generated_value, generated_value)
+        test.body = self._get_assert(without_tag, with_tag)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        generated_value = self.generate_one()
-        markup = self.remove_html_markup(generated_value)
+        without_tag = self.generate_one()
+        if not without_tag.__contains__('"'):
+            without_tag = without_tag
+        else:
+            while without_tag.__contains__('"'):
+                without_tag = self.generate_one()
+        first_tag, last_tag = self.html_markup_generator()
+        with_tag = first_tag + without_tag + last_tag
         test = self.get_empty_test()
-        test.body = self._get_assert(markup, generated_value)
+        test.body = self._get_assert(without_tag, with_tag)
         return test, TestResult.PASSING
 
 
 class MarkupSystemtestGenerator(SystemtestGenerator, MarkupTestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        s = self.generate_values(self.generate_html_example())
-        ss = self.remove_html_markup(s)
-        if ss.startswith("<") or ss.endswith(">"):
-            return f"{ss}", TestResult.FAILING
+        without_tag = self.generate_html_example()
+        if without_tag.__contains__('"'):
+            without_tag = without_tag
+        else:
+            while not without_tag.__contains__('"'):
+                without_tag = self.generate_html_example()
+        first_tag, last_tag = self.html_markup_generator()
+        with_tag = first_tag + without_tag + last_tag
+        return f"{with_tag}", TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        s = self.generate_values(self.generate_html_example())
-        s = self.remove_html_markup(s)
-        return f"{s}", TestResult.PASSING
+        without_tag = self.generate_html_example()
+        if without_tag.__contains__("'") or not without_tag.__contains__('"'):
+            print("works")
+        else:
+            while not without_tag.__contains__("'"):
+                without_tag = self.generate_html_example()
+        first_tag, last_tag = self.html_markup_generator()
+        with_tag = first_tag + without_tag + last_tag
+        return f"{with_tag}", TestResult.PASSING
 
 
 grammar: Grammar = {
-    "<start>": ["<content>"],
-    "<xml>": ["<<opening>><content></<closing>>"],
-    "<opening>": ["<<id>>", "<id>", "<html-tree>"],
-    "<content>": ["<string>", "<xml>", "<string><content>", "<content><string>"],
-    "<string>": ["<letter>", "<letter><string>"],
-    "<letter>": crange("a", "z"),
-    "<closing>": ["</<id>>"],
-    "<attributes>": ["<attribute><attribute>", "<string>"],
-    "<attribute>": ["<id>", "<string>"],
-    "<id>": [
-        "<head>",
-        "<title>",
-        "<body>",
-        "<header>",
-        "<footer>",
-        "<article>",
-        "<section>",
-        "<p>",
-        "<div>",
-        "<span>",
-        "<img>",
-        "<aside>",
-        "<audio>",
-        "<canvas>",
-        "<datalist>",
-        "<details>",
-        "<embed>",
-        "<nav>",
-        "<search>",
-        "<output>",
-        "<progress>",
-        "<video>",
-        "<ul>",
-        "<ol>",
-        "<li>",
-        "<b>",
-        "<i>",
-        "<q>",
-        "<h1>",
-        "<h5>",
-        "<hr>",
+    "<start>": ["<html_>"],
+    "<html_>": ["<structure>", "<quoted_structure>", "<keys_>"],
+    "<quoted_structure>": ['"' "<structure>" '"'],
+    "<structure>": ["<opening><keys_><closing>"],
+    "<opening>": ["<" "<tag>" ">"],
+    "<closing>": ["</" "<tag>" ">"],
+    "<tag>": [
+        "head",
+        "title",
+        "body",
+        "header",
+        "footer",
+        "article",
+        "section",
+        "p",
+        "div",
+        "span",
+        "img",
+        "aside",
+        "audio",
+        "canvas",
+        "datalist",
+        "details",
+        "embed",
+        "nav",
+        "search",
+        "output",
+        "progress",
+        "video",
+        "ul",
+        "ol",
+        "li",
+        "b",
+        "i",
+        "q",
+        "h1",
+        "h5",
+        "hr",
     ],
+    "<keys_>": ["<key_><keys_>", "", " "],
+    "<key_>": srange(string.printable),
 }
-
-"""
-
-
-
-"""
 
 assert is_valid_grammar(grammar)
