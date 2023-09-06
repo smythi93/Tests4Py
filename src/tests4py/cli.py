@@ -394,9 +394,10 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
     cache_parser.add_argument(
         "-f",
         dest="force",
-        default=False,
-        action="store_true",
-        help="If set the command won't use any cached version, even if the global cache flag is set",
+        default=True,
+        action="store_false",
+        help="If set the command may use an existing version of the project. "
+        "WARNING: This could lead to unintended behavior, use with caution",
     )
 
     # Clear

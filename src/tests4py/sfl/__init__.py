@@ -1,11 +1,11 @@
 from pathlib import Path
-from typing import List, Union
+from typing import Union
 
 from sflkit.runners import PytestRunner
 
-from tests4py.api.utils import load_project
-from tests4py.constants import DEFAULT_WORK_DIR
+from tests4py.api.utils import load_project, get_work_dir
 from tests4py.environment import env_on, activate_venv
+from tests4py.logger import LOGGER
 from tests4py.projects import Project
 from tests4py.sfl.utils import (
     instrument,
@@ -13,26 +13,23 @@ from tests4py.sfl.utils import (
     SFLEventsReport,
     SFLInstrumentReport,
     get_events_path,
+    SFLAnalyzeReport,
+    analyze,
 )
 
 
 def sflkit_instrument(
     work_dir_or_project: Project,
     dst: Path,
-    events: List[str] = None,
+    events: str = None,
     report: SFLInstrumentReport = None,
 ):
-    if report is None:
-        report = SFLInstrumentReport()
-    current_dir = Path.cwd()
-    if work_dir_or_project is None:
-        work_dir = current_dir
-    elif isinstance(work_dir_or_project, Project):
-        work_dir = DEFAULT_WORK_DIR / work_dir_or_project.get_identifier()
-    else:
-        work_dir = work_dir_or_project
+    report = report or SFLInstrumentReport()
+    work_dir = get_work_dir(work_dir_or_project)
     try:
-        project, _, _ = load_project(work_dir)
+        if dst is None:
+            raise ValueError("Destination required for instrument")
+        project = load_project(work_dir, only_project=True)
         report.project = project
         instrument(
             create_config(
@@ -54,16 +51,10 @@ def sflkit_get_events(
     output: Path = None,
     report: SFLEventsReport = None,
 ):
-    if report is None:
-        report = SFLEventsReport()
-    if work_dir_or_project is None:
-        work_dir = Path.cwd()
-    elif isinstance(work_dir_or_project, Project):
-        work_dir = DEFAULT_WORK_DIR / work_dir_or_project.get_identifier()
-    else:
-        work_dir = work_dir_or_project
+    report = report or SFLEventsReport()
+    work_dir = get_work_dir(work_dir_or_project)
     try:
-        project, _, _ = load_project(work_dir)
+        project = load_project(work_dir, only_project=True)
         if output is None:
             output = get_events_path(project)
         report.project = project
@@ -75,6 +66,41 @@ def sflkit_get_events(
             base=project.test_base,
             environ=environ,
         )
+        report.successful = True
+    except BaseException as e:
+        report.raised = e
+        report.successful = False
+    return report
+
+
+def sflkit_analyze(
+    work_dir_or_project: Union[Path, Project] = None,
+    src: Path = None,
+    events_path: Path = None,
+    metrics: str = None,
+    predicates: str = None,
+    suggestions: bool = False,
+    report: SFLAnalyzeReport = None,
+):
+    report = report or SFLAnalyzeReport()
+    work_dir = get_work_dir(work_dir_or_project)
+    try:
+        project = load_project(work_dir, only_project=True)
+        report.project = project
+        analyzer = analyze(
+            create_config(
+                project,
+                src=src or work_dir,
+                dst=work_dir,
+                metrics=metrics,
+                predicates=predicates,
+                events_path=events_path,
+            )
+        )
+        report.analyzer = analyzer
+        if suggestions:
+            for i, s in enumerate(analyzer.get_sorted_suggestions(src)[:10], start=1):
+                LOGGER.info(f"Suggestion {i:>2}: {s}")
         report.successful = True
     except BaseException as e:
         report.raised = e

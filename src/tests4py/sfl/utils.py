@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 import sflkit
 from sflkitlib.events import EventType
@@ -13,6 +13,7 @@ from tests4py.sfl.constants import (
     SFL,
     INSTRUMENT,
     EVENTS,
+    ANALYZE,
 )
 
 
@@ -26,12 +27,20 @@ class SFLEventsReport(ProjectReport):
         super().__init__(command=SFL, subcommand=EVENTS)
 
 
-def get_events_path(project: Project, passing: Optional[bool] = None):
+class SFLAnalyzeReport(ProjectReport):
+    def __init__(self):
+        super().__init__(command=SFL, subcommand=ANALYZE)
+        self.analyzer: Optional[sflkit.Analyzer] = None
+
+
+def get_events_path(
+    project: Project, passing: Optional[bool] = None, events_path: Optional[Path] = None
+):
     if passing is None:
-        return EVENTS_PATH / project.project_name / str(project.bug_id)
+        return (events_path or EVENTS_PATH) / project.project_name / str(project.bug_id)
     else:
         return (
-            EVENTS_PATH
+            (events_path or EVENTS_PATH)
             / project.project_name
             / str(project.bug_id)
             / ("passing" if passing else "failing")
@@ -42,13 +51,11 @@ def create_config(
     project: Project,
     src: Path,
     dst: Path,
-    events: List[str] = None,
-    metrics: List[str] = None,
+    events: str = None,
+    metrics: str = None,
+    predicates: str = None,
+    events_path: Optional[Path] = None,
 ):
-    if events is None:
-        events = [event.name for event in EventType]
-    if metrics is None:
-        metrics = []
     if project.included_files:
         includes = project.included_files
         excludes = project.excluded_files
@@ -61,10 +68,15 @@ def create_config(
     return sflkit.Config.create(
         path=str(src),
         language="python",
-        events=",".join(events),
-        metrics=",".join(metrics),
-        passing=str(get_events_path(project=project, passing=True)),
-        failing=str(get_events_path(project=project, passing=False)),
+        events=events or ",".join([event.name for event in EventType]),
+        metrics=metrics or "",
+        predicates=predicates or "",
+        passing=str(
+            get_events_path(project=project, passing=True, events_path=events_path)
+        ),
+        failing=str(
+            get_events_path(project=project, passing=False, events_path=events_path)
+        ),
         working=str(dst),
         include='"' + '","'.join(includes) + '"',
         exclude='"' + '","'.join(excludes) + '"',
@@ -76,3 +88,9 @@ def instrument(config: sflkit.Config):
     report = compile_project(Path(config.instrument_working), sfl=True)
     if report.raised:
         raise report.raised
+
+
+def analyze(config: sflkit.Config) -> sflkit.Analyzer:
+    analyzer = sflkit.Analyzer(config.failing, config.passing, config.factory)
+    analyzer.analyze()
+    return analyzer

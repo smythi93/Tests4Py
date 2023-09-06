@@ -11,7 +11,7 @@ class GlobalConfig:
         self, cache: Optional[bool] = None, last_workdir: Optional[os.PathLike] = None
     ):
         self.cache: bool = bool(cache)
-        self.last_workdir: os.PathLike = (
+        self.last_workdir: Optional[Path] = (
             None if last_workdir is None else Path(last_workdir)
         )
 

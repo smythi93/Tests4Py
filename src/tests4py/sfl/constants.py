@@ -31,3 +31,4 @@ DEFAULT_EXCLUDES = [
 SFL = "sfl"
 INSTRUMENT = "instrument"
 EVENTS = "events"
+ANALYZE = "analyze"

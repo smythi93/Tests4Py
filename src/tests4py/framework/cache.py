@@ -3,14 +3,16 @@ from tests4py.api.cache import clear_project, clear_venv
 from tests4py.api.report import CacheReport, ClearReport
 from tests4py.constants import DEFAULT_WORK_DIR
 from tests4py.framework.default import tests4py_checkout, tests4py_compile
-from tests4py.logger import init_logger
+from tests4py.logger import init_logger, LOGGER
 
 
 def tests4py_cache(
-    project_name: str = None, bug_id: int = None, force: bool = False, verbose=True
+    project_name: str = None, bug_id: int = None, force: bool = True, verbose=True
 ) -> CacheReport:
     report = CacheReport()
     init_logger(verbose=verbose)
+    if not force:
+        LOGGER.warning("Deactivating a clean build may lead to unintended behavior.")
     try:
         project_list = projects.get_matching_projects(project_name, bug_id)
         for project in project_list:

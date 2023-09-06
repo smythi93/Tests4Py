@@ -75,7 +75,7 @@ def checkout_project(
         work_location = work_dir / project.get_identifier()
         report.location = work_location
         if update and work_location.exists():
-            project_verify, _, _ = load_project(work_location)
+            project_verify = load_project(work_location, only_project=True)
             project.compiled = project_verify.compiled
         else:
             tmp_location = (work_dir / f"tmp_{project.project_name}").absolute()
@@ -85,11 +85,13 @@ def checkout_project(
                     LOGGER.info(
                         f"Cloning {project.github_url} into {work_location}... "
                     )
+                    if work_location.exists():
+                        shutil.rmtree(work_location, ignore_errors=True)
                     subprocess.run(
                         ["git", "clone", project.github_url, work_location],
                         stdout=subprocess.STDOUT if verbose else subprocess.DEVNULL,
                     )
-                    if config.cache and not check_cache_exists_project(project):
+                    if config.cache:
                         cache_project(project, work_location)
                 else:
                     LOGGER.info(
@@ -282,8 +284,7 @@ def compile_project(
 ) -> CompileReport:
     if not PYENV_EXISTS:
         install_pyenv()
-    if report is None:
-        report = CompileReport()
+    report = report or CompileReport()
     config = load_config()
     work_dir = get_work_dir(work_dir_or_project)
     report.location = work_dir
@@ -314,7 +315,6 @@ def compile_project(
                 [PYTHON, "-m", "pip", "install", "-r", t4p_requirements],
                 stdout=subprocess.STDOUT if verbose else subprocess.DEVNULL,
                 env=environ,
-                cwd=work_dir,
             )
 
             LOGGER.info("Checking and installing test requirements")
@@ -324,7 +324,6 @@ def compile_project(
                     [PYTHON, "-m", "pip", "install", "-r", test_requirements],
                     stdout=subprocess.STDOUT if verbose else subprocess.DEVNULL,
                     env=environ,
-                    cwd=work_dir,
                 )
 
         LOGGER.info("Run setup")
@@ -358,8 +357,7 @@ def info_project(
     bug_id: Optional[int] = None,
     report: Optional[InfoReport] = None,
 ):
-    if report is None:
-        report = InfoReport()
+    report = report or InfoReport()
     try:
         if not project_name:
             print("The existing subjects in Tests4Py:")
@@ -448,7 +446,7 @@ def test_project(
     work_dir = get_work_dir(work_dir_or_project)
     report.location = work_dir
     try:
-        project, _, _ = load_project(work_dir)
+        project = load_project(work_dir, only_project=True)
         report.project = project
         if not project.compiled:
             raise ValueError(

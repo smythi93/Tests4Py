@@ -34,12 +34,10 @@ def run_project(
     invoke_oracle: bool = False,
     report: Optional[RunReport] = None,
 ):
-    if report is None:
-        report = RunReport()
-
+    report = report or RunReport()
     try:
         work_dir = get_work_dir(work_dir_or_project)
-        project, _, _ = load_project(work_dir)
+        project = load_project(work_dir, only_project=True)
         report.project = project
 
         if project.systemtests is None:
@@ -76,7 +74,7 @@ def _get_systemtest_runs(
     total, passing, failing = 0, 0, 0
     results: Dict[str, Tuple[TestResult, str]] = dict()
     for test, result, feedback in project.api.tests(path, environ, work_dir=work_dir):
-        results[test] = (result, feedback)
+        results[str(test)] = (result, feedback)
         if TestResult.PASSING == result:
             passing += 1
         elif TestResult.FAILING == result:
@@ -96,13 +94,12 @@ def system_generate_project(
     verify: bool = False,
     report: Optional[SystemtestGenerateReport] = None,
 ) -> SystemtestGenerateReport:
-    if report is None:
-        report = SystemtestGenerateReport()
+    report = report or SystemtestGenerateReport()
 
     work_dir = get_work_dir(work_dir_or_project)
 
     try:
-        project, _, _ = load_project(work_dir)
+        project = load_project(work_dir, only_project=True)
         report.project = project
 
         if project.systemtests is None:
@@ -160,7 +157,7 @@ def system_generate_project(
                 report.verify_passing,
                 report.verify_failing,
                 report.verify_results,
-            ) = _get_systemtest_runs(project, path, environ)
+            ) = _get_systemtest_runs(project, path, environ, work_dir=work_dir)
             LOGGER.info(
                 f"Verify: {report.verify_passing} passed --- {report.verify_failing} failed"
             )
@@ -184,7 +181,7 @@ def system_test_project(
     work_dir = get_work_dir(work_dir_or_project)
 
     try:
-        project, _, _ = load_project(work_dir)
+        project = load_project(work_dir, only_project=True)
         report.project = project
 
         if project.systemtests is None:
@@ -253,7 +250,7 @@ def unit_generate_project(
     work_dir = get_work_dir(work_dir_or_project)
 
     try:
-        project, _, _ = load_project(work_dir)
+        project = load_project(work_dir, only_project=True)
         report.project = project
 
         if project.unittests is None:
@@ -344,7 +341,7 @@ def unit_test_project(
     work_dir = get_work_dir(work_dir_or_project)
 
     try:
-        project, _, _ = load_project(work_dir)
+        project = load_project(work_dir, only_project=True)
         report.project = project
 
         if project.unittests is None:
