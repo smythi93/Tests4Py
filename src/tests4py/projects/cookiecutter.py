@@ -1006,7 +1006,7 @@ def tearDown(self) -> None:
 grammar: Grammar = {
     "<start>": ["<config><hooks>"],
     "<config>": ["{<pairs>}", "{}"],
-    "<hooks>": ["", "\n<hook_list>"],
+    "<hooks>": ["", "\n", "\n<hook_list>"],
     "<hook_list>": ["<hook>", "<hook_list>\n<hook>"],
     "<hook>": ["<pre_hook>", "<post_hook>"],
     "<pre_hook>": ["pre:<hook_content>"],
