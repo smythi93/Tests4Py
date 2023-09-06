@@ -76,7 +76,9 @@ def setup():
     youtubedl.register()
 
 
-def load_project(work_dir: Path) -> Tuple[Project, Path, Path]:
+def load_project(
+    work_dir: Path, only_project: bool = False
+) -> Project | Tuple[Project, Path, Path]:
     LOGGER.info(f"Checking whether Tests4Py project")
     tests4py_info = work_dir / INFO_FILE
     tests4py_requirements = work_dir / REQUIREMENTS_FILE
@@ -88,4 +90,6 @@ def load_project(work_dir: Path) -> Tuple[Project, Path, Path]:
         )
 
     setup()
+    if only_project:
+        return projects.load_bug_info(tests4py_info)
     return projects.load_bug_info(tests4py_info), tests4py_info, tests4py_requirements

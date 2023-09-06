@@ -3,6 +3,7 @@ from tests4py.framework import (
     config,
     default,
     grammar,
+    sfl,
     systemtest,
     unittest,
 )
@@ -12,6 +13,7 @@ __all__ = [
     "config",
     "default",
     "grammar",
+    "sfl",
     "systemtest",
     "unittest",
 ]

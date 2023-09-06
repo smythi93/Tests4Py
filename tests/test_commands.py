@@ -114,7 +114,7 @@ class CommandTests(BaseTest):
         self.assertEqual(3, report.passing)
         report = framework.unittest.tests4py_test(
             work_dir,
-            path=work_dir / DEFAULT_SUB_PATH_UNITTESTS,
+            path_or_str=work_dir / DEFAULT_SUB_PATH_UNITTESTS,
             diversity=False,
         )
         if report.raised:
@@ -264,6 +264,13 @@ class CommandTests(BaseTest):
         identifier = self.get_identifier(project_name, bug_id)
         git = GLOBAL_PROJECTS / project_name / GLOBAL_GIT
         venv = GLOBAL_PROJECTS / project_name / f"venv_{bug_id}"
+        report = framework.cache.tests4py_clear(
+            project_name, bug_id, project_and_venv=True
+        )
+        if report.raised:
+            raise report.raised
+        self.assertFalse(git.exists())
+        self.assertFalse(venv.exists())
         report = framework.cache.tests4py_cache(project_name, bug_id)
         if report.raised:
             raise report.raised
@@ -273,10 +280,3 @@ class CommandTests(BaseTest):
                 raise r[identifier].raised
         self.assertTrue(git.exists())
         self.assertTrue(venv.exists())
-        report = framework.cache.tests4py_clear(
-            project_name, bug_id, project_and_venv=True
-        )
-        if report.raised:
-            raise report.raised
-        self.assertFalse(git.exists())
-        self.assertFalse(venv.exists())

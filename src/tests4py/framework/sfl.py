@@ -1,11 +1,9 @@
-import csv
 from pathlib import Path
-
-from sflkitlib.events import EventType
 
 from tests4py import sfl
 from tests4py.logger import init_logger
 from tests4py.sfl import SFLInstrumentReport, SFLEventsReport
+from tests4py.sfl.utils import SFLAnalyzeReport
 
 
 def tests4py_sfl_instrument(
@@ -16,25 +14,11 @@ def tests4py_sfl_instrument(
 ):
     report = SFLInstrumentReport()
     init_logger(verbose=verbose)
-
-    if work_dir is None:
-        work_dir = Path.cwd()
-    if dst is None:
-        raise ValueError("Destination required for instrument")
     try:
-        if not work_dir.exists():
-            raise IOError(f"{work_dir} does not exist")
         sfl.sflkit_instrument(
             work_dir,
             dst=dst,
-            events=list(
-                map(
-                    lambda event: EventType[event.upper()],
-                    list(csv.reader([events]))[0],
-                )
-            )
-            if events
-            else None,
+            events=events,
             report=report,
         )
     except BaseException as e:
@@ -48,15 +32,37 @@ def tests4py_sfl_events(
 ):
     report = SFLEventsReport()
     init_logger(verbose=verbose)
-
-    if work_dir is None:
-        work_dir = Path.cwd()
     try:
-        if not work_dir.exists():
-            raise IOError(f"{work_dir} does not exist")
         sfl.sflkit_get_events(
             work_dir,
             output=output,
+            report=report,
+        )
+    except BaseException as e:
+        report.raised = e
+        report.successful = False
+    return report
+
+
+def tests4py_sfl_analyze(
+    work_dir: Path = None,
+    src: Path = None,
+    events_path: Path = None,
+    metrics: str = None,
+    predicates: str = None,
+    suggestions: bool = False,
+    verbose: bool = True,
+) -> SFLAnalyzeReport:
+    report = SFLAnalyzeReport()
+    init_logger(verbose=verbose)
+    try:
+        sfl.sflkit_analyze(
+            work_dir,
+            src=src,
+            events_path=events_path,
+            metrics=metrics,
+            predicates=predicates,
+            suggestions=suggestions,
             report=report,
         )
     except BaseException as e:
