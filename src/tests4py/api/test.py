@@ -168,6 +168,16 @@ def system_generate_project(
     return report
 
 
+def clean_results(
+    results: Dict[str, Tuple[TestResult, str]]
+) -> Dict[str, Tuple[str, str]]:
+    cleaned_results = dict()
+    for test in results:
+        result, feedback = results[test]
+        cleaned_results[test] = (result.name, feedback)
+    return cleaned_results
+
+
 def system_test_project(
     work_dir_or_project: Optional[Union[Path, Project]] = None,
     path_or_str: Path | str = None,
@@ -223,7 +233,7 @@ def system_test_project(
             report.results.update(r)
         if output:
             with open(output, "w") as output_file:
-                json.dump(report.results, output_file)
+                json.dump(clean_results(report.results), output_file)
         LOGGER.info(f"Ran {report.total} tests")
         LOGGER.info(f"{report.passing} passed --- {report.failing} failed")
         report.successful = True
