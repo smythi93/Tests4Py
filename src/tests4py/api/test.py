@@ -157,7 +157,7 @@ def system_generate_project(
                 report.verify_passing,
                 report.verify_failing,
                 report.verify_results,
-            ) = _get_systemtest_runs(project, path, environ)
+            ) = _get_systemtest_runs(project, path, environ, work_dir=work_dir)
             LOGGER.info(
                 f"Verify: {report.verify_passing} passed --- {report.verify_failing} failed"
             )

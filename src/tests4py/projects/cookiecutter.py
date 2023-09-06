@@ -8,7 +8,6 @@ import string
 import subprocess
 import sys
 from abc import abstractmethod, ABC
-from os import PathLike
 from pathlib import Path
 from subprocess import Popen
 from typing import List, Optional, Tuple, Any, Sequence
@@ -211,22 +210,23 @@ class CookieCutterAPI(API, GrammarVisitor, abc.ABC):
                     else:
                         fp.write(f'echo "{v}"\n')
 
-    def _setup(self):
-        if os.path.exists(self.repo_path):
-            if os.path.isdir(self.repo_path):
-                shutil.rmtree(self.repo_path, ignore_errors=True)
+    def _setup(self, work_dir: Path):
+        repo_path = work_dir / self.repo_path
+        if repo_path.exists():
+            if repo_path.is_dir():
+                shutil.rmtree(repo_path, ignore_errors=True)
             else:
-                os.remove(self.repo_path)
+                os.remove(repo_path)
 
-        os.makedirs(self.repo_path)
-
-        with open(os.path.join(self.repo_path, "cookiecutter.json"), "w") as fp:
-            fp.write(self.config)
-
-        repo_path = os.path.join(self.repo_path, "{{cookiecutter.repo_name}}")
         os.makedirs(repo_path)
 
-        with open(os.path.join(repo_path, "README.rst"), "w") as fp:
+        with open(os.path.join(repo_path, "cookiecutter.json"), "w") as fp:
+            fp.write(self.config)
+
+        repo_name_path = repo_path / "{{cookiecutter.repo_name}}"
+        os.makedirs(repo_name_path)
+
+        with open(repo_name_path / "README.rst", "w") as fp:
             fp.write(
                 "============\nFake Project\n============\n\n"
                 "Project name: **{{ cookiecutter.project_name }}**\n\n"
@@ -234,7 +234,7 @@ class CookieCutterAPI(API, GrammarVisitor, abc.ABC):
             )
 
         if self.pre_hooks or self.post_hooks:
-            hooks_path = os.path.join(self.repo_path, "hooks")
+            hooks_path = repo_path / "hooks"
             os.makedirs(hooks_path)
             if self.pre_hooks:
                 self._write_hook(hooks_path, self.pre_hooks, "pre_gen_project")
@@ -252,23 +252,27 @@ class CookieCutterAPI(API, GrammarVisitor, abc.ABC):
     def _communicate(self, process: Popen) -> Tuple[bytes, bytes] | Tuple[str, str]:
         return process.communicate(20 * b"\n", self.default_timeout)
 
-    def get_test_arguments(self, system_test_path: PathLike) -> List[str]:
-        return self._get_command_parameters() + [self.repo_path]
-
-    def _build_test(self, system_test_path: PathLike, work_dir: Path):
+    def get_test_arguments(self, system_test_path: os.PathLike) -> List[str]:
         with open(system_test_path, "r") as fp:
-            content = fp.read()
+            test = fp.read()
+        parts = test.split("\n")
+        if parts and parts[-1] == "":
+            parts.pop()
+        return parts if parts else []
+
+    def prepare_args(self, args: List[str], work_dir: Path):
         try:
-            self.visit_source(content)
+            self.visit_source("\n".join(args))
             self.parsed = True
-        except SyntaxError:
-            LOGGER.error(f"Cannot parse contents of {system_test_path}")
+            self._setup(work_dir)
+            self.path = [work_dir / path for path in self.path]
+        except SyntaxError as e:
+            LOGGER.error(f"Cannot parse contents of {args}: {e}")
             self.parsed = False
-        self._setup()
-        self.path = [work_dir / path for path in self.path]
         if self.path:
             for p in self.path:
                 shutil.rmtree(p, ignore_errors=True)
+        return self._get_command_parameters() + [self.repo_path]
 
     def oracle(self, args) -> Tuple[TestResult, str]:
         if args is None:
@@ -290,7 +294,6 @@ class CookieCutterAPI(API, GrammarVisitor, abc.ABC):
         try:
             work_dir = Path.cwd() if work_dir is None else work_dir
             self.repo_path = work_dir / self.REPO_PATH
-            self._build_test(args, work_dir)
             process = subprocess.Popen(
                 ["cookiecutter"] + args,
                 stdin=subprocess.PIPE,
@@ -1001,9 +1004,9 @@ def tearDown(self) -> None:
 
 
 grammar: Grammar = {
-    "<start>": ["<config>\n<hooks>"],
+    "<start>": ["<config><hooks>"],
     "<config>": ["{<pairs>}", "{}"],
-    "<hooks>": ["", "<hook_list>"],
+    "<hooks>": ["", "\n<hook_list>"],
     "<hook_list>": ["<hook>", "<hook_list>\n<hook>"],
     "<hook>": ["<pre_hook>", "<post_hook>"],
     "<pre_hook>": ["pre:<hook_content>"],

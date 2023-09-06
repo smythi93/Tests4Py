@@ -67,7 +67,9 @@ class API:
         try:
             return system_test_path, *self.oracle(
                 self.execute(
-                    self.get_test_arguments(system_test_path),
+                    self.prepare_args(
+                        self.get_test_arguments(system_test_path), work_dir
+                    ),
                     environ,
                     work_dir=work_dir,
                 )
@@ -86,7 +88,7 @@ class API:
         work_dir: Optional[Path] = None,
     ) -> Tuple[TestResult, str]:
         if isinstance(args_or_path, Sequence):
-            args = args_or_path
+            args = self.prepare_args(args_or_path, work_dir)
         else:
             system_tests_path = Path(args_or_path)
             if (
@@ -95,7 +97,7 @@ class API:
                 or system_tests_path.is_dir()
             ):
                 raise ValueError(f"{system_tests_path} does not exist or is not a file")
-            args = self.get_test_arguments(args_or_path)
+            args = self.prepare_args(self.get_test_arguments(args_or_path))
         if invoke_oracle:
             return self.oracle(self.execute(args, environ, work_dir=work_dir))
         else:
@@ -130,6 +132,9 @@ class API:
                     path = Path(dir_path, file)
                     tests.append(self.test(path, environ, work_dir=work_dir))
         return tests
+
+    def prepare_args(self, args: List[str], work_dir: Path) -> List[str]:
+        return args
 
 
 class CLIAPI(API, abc.ABC):
