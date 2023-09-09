@@ -35,14 +35,14 @@ class Project:
         project_name: str,
         github_url: str,
         status: Status,
-        cause: str,
         python_version: str,
         python_path: str,
         buggy_commit_id: str,
         fixed_commit_id: str,
         testing_framework: TestingFramework,
-        test_file: List[Path],
+        test_files: List[Path],
         test_cases: List[str],
+        relevant_test_files: Optional[List[Path]] = None,
         darwin_python_version: Optional[str] = None,
         python_fallback_version: Optional[str] = None,
         test_status_fixed: TestStatus = TestStatus.PASSING,
@@ -64,14 +64,14 @@ class Project:
         self.bug_id = bug_id
         self.github_url = github_url
         self.status = status
-        self.cause = cause
         self.python_version = python_version
         self.python_path = python_path
         self.buggy_commit_id = buggy_commit_id
         self.fixed_commit_id = fixed_commit_id
         self.testing_framework = testing_framework
-        self.test_file = test_file
-        self.test_cases = test_cases
+        self.test_files = test_files or list()
+        self.relevant_test_files = relevant_test_files or self.test_files
+        self.test_cases = test_cases or list()
         self.darwin_python_version = (
             darwin_python_version
             if darwin_python_version is not None
@@ -94,9 +94,9 @@ class Project:
         self.unittests = unittests
         self.api = api
         self.grammar = grammar
-        self.setup = list() if setup is None else setup
-        self.included_files = list() if included_files is None else included_files
-        self.excluded_files = list() if excluded_files is None else excluded_files
+        self.setup = setup or list()
+        self.included_files = included_files or list()
+        self.excluded_files = excluded_files or list()
         self.loc = loc
         self.test_base = test_base
 

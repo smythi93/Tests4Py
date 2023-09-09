@@ -6,7 +6,6 @@ appdirs==1.4.3
 async-timeout==3.0.1
 attrs==19.3.0
 Babel==2.8.0
--e git+https://github.com/psf/black.git@e6ddb68c786256e1cb0c76b42d10c212ef34cb2a#egg=black
 bleach==3.1.4
 certifi==2019.11.28
 cffi==1.14.0

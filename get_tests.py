@@ -36,7 +36,7 @@ if __name__ == "__main__":
         report = test_project(
             DEFAULT_WORK_DIR / project.get_identifier(),
             xml_output=Path("tmp.xml"),
-            single_test=[str(tf) for tf in project.test_file],
+            single_test=[str(tf) for tf in project.test_files],
         )
         if not report.successful:
             print(f"Test failed:")

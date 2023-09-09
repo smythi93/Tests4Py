@@ -79,6 +79,7 @@ def tests4py_info(project_name: str = None, bug_id: int = None):
 def tests4py_test(
     work_dir: Path = None,
     single_test: str = None,
+    relevant_tests: bool = False,
     all_tests: bool = False,
     output: Path = None,
     coverage: bool = False,
@@ -90,6 +91,7 @@ def tests4py_test(
         api.test_project(
             work_dir,
             single_test=single_test,
+            relevant_tests=relevant_tests,
             all_tests=all_tests,
             xml_output=output,
             coverage=coverage,
