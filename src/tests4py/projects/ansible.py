@@ -140,6 +140,15 @@ def register():
                 "test_check_required_arguments.py::test_check_required_arguments_missing_multiple",
             ),
         ],
+        relevant_test_files=[
+            Path(
+                "test",
+                "units",
+                "module_utils",
+                "common",
+                "validation",
+            )
+        ],
         loc=55640,
     )
     Ansible(
@@ -167,8 +176,8 @@ def register():
                 "test_collection_install.py::test_add_collection_requirement_to_unknown_installed_version",
             ),
         ],
-        loc=718675,
         test_status_fixed=TestStatus.FAILING,
+        loc=718675,
     )
     Ansible(
         bug_id=7,
@@ -204,6 +213,7 @@ def register():
                 "test_powershell.py::test_join_path_unc",
             ),
         ],
+        relevant_test_files=[Path("test", "units", "plugins", "shell")],
         loc=718558,
     )
     Ansible(
@@ -366,6 +376,15 @@ def register():
                 "hardware",
                 "test_linux_get_cpu_info.py::test_get_cpu_info_missing_arch",
             ),
+        ],
+        relevant_test_files=[
+            Path(
+                "test",
+                "units",
+                "module_utils",
+                "facts",
+                "hardware",
+            )
         ],
         loc=623199,
     )
