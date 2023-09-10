@@ -25,7 +25,6 @@ class Calculator(Project):
         systemtests: Optional[SystemtestGenerator] = None,
         api: Optional[API] = None,
         loc: int = 0,
-        relevant_test_files: Optional[List[Path]] = None,
     ):
         super().__init__(
             bug_id=bug_id,
@@ -47,8 +46,8 @@ class Calculator(Project):
             grammar=grammar,
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "."]],
+            test_base=Path("test"),
             included_files=[os.path.join("src", "calc")],
-            relevant_test_files=relevant_test_files,
         )
 
 
@@ -66,6 +65,7 @@ def register():
             os.path.join("tests", "test_calc.py") + "::TestCalc::test_sqrt_0",
             os.path.join("tests", "test_calc.py") + "::TestCalc::test_sqrt_neg",
         ],
+        loc=20,
     )
 
 
