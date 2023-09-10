@@ -49,6 +49,7 @@ def sflkit_instrument(
 def sflkit_get_events(
     work_dir_or_project: Union[Path, Project] = None,
     output: Path = None,
+    all_tests: bool = False,
     report: SFLEventsReport = None,
 ):
     report = report or SFLEventsReport()
@@ -63,6 +64,7 @@ def sflkit_get_events(
         PytestRunner().run(
             directory=work_dir,
             output=output,
+            files=None if all_tests else project.relevant_test_files,
             base=project.test_base,
             environ=environ,
         )

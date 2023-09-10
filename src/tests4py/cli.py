@@ -1,10 +1,10 @@
 import argparse
+import importlib.metadata
 import logging
 import os
 import sys
 from pathlib import Path
 
-from tests4py import __version__
 from tests4py.constants import (
     CHECKOUT,
     COMPILE,
@@ -80,7 +80,9 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         help="Activate debugging log",
     )
 
-    arguments.add_argument("--version", action="version", version=__version__)
+    arguments.add_argument(
+        "--version", action="version", version=importlib.metadata.version("tests4py")
+    )
 
     # The subparsers
     commands = arguments.add_subparsers(
