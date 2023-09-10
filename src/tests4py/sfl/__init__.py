@@ -17,7 +17,7 @@ from tests4py.sfl.utils import (
     analyze,
 )
 
-DEFAULT_TIME_OUT = 30
+DEFAULT_TIME_OUT = 10
 
 
 def sflkit_instrument(
