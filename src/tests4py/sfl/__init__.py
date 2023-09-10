@@ -17,6 +17,8 @@ from tests4py.sfl.utils import (
     analyze,
 )
 
+DEFAULT_TIME_OUT = 30
+
 
 def sflkit_instrument(
     work_dir_or_project: Project,
@@ -61,7 +63,7 @@ def sflkit_get_events(
         report.project = project
         environ = env_on(project)
         environ = activate_venv(work_dir, environ)
-        PytestRunner().run(
+        PytestRunner(timeout=DEFAULT_TIME_OUT).run(
             directory=work_dir,
             output=output,
             files=None if all_tests else project.relevant_test_files,
