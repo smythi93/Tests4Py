@@ -18,7 +18,7 @@ class Httpie(Project):
         bug_id: int,
         buggy_commit_id: str,
         fixed_commit_id: str,
-        test_file: List[Path],
+        test_files: List[Path],
         test_cases: List[str],
         test_status_fixed: TestStatus = TestStatus.PASSING,
         test_status_buggy: TestStatus = TestStatus.FAILING,
@@ -26,19 +26,19 @@ class Httpie(Project):
         systemtests: Optional[SystemtestGenerator] = None,
         test_base: Optional[os.PathLike] = None,
         loc: int = 0,
+        relevant_test_files: Optional[List[Path]] = None,
     ):
         super().__init__(
             bug_id=bug_id,
             project_name=PROJECT_MAME,
             github_url="https://github.com/jakubroztocil/httpie/",
             status=Status.OK,
-            cause="N.A.",
             python_version="3.7.8",
             python_path="",
             buggy_commit_id=buggy_commit_id,
             fixed_commit_id=fixed_commit_id,
             testing_framework=TestingFramework.PYTEST,
-            test_file=test_file,
+            test_files=test_files,
             test_cases=test_cases,
             test_status_fixed=test_status_fixed,
             test_status_buggy=test_status_buggy,
@@ -49,6 +49,7 @@ class Httpie(Project):
             test_base=test_base,
             loc=loc,
             included_files=[PROJECT_MAME],
+            relevant_test_files=relevant_test_files,
         )
 
 
@@ -57,7 +58,7 @@ def register():
         bug_id=1,
         buggy_commit_id="001bda19450ad85c91345eea3cfa3991e1d492ba",
         fixed_commit_id="5300b0b490b8db48fac30b5e32164be93dc574b7",
-        test_file=[
+        test_files=[
             Path("tests", "test_downloads.py"),
         ],
         test_cases=[
@@ -72,7 +73,7 @@ def register():
         bug_id=2,
         buggy_commit_id="356e0436510fee70b4071fac58be81c0a0a7db59",
         fixed_commit_id="e18b609ef7d867d6efa0efe42c832be5e0d09338",
-        test_file=[
+        test_files=[
             Path("tests", "test_redirects.py"),
         ],
         test_cases=[
@@ -87,7 +88,7 @@ def register():
         bug_id=3,
         buggy_commit_id="8c33e5e3d31d3cd6476c4d9bc963a4c529f883d2",
         fixed_commit_id="589887939507ff26d36ec74bd2c045819cfa3d56",
-        test_file=[
+        test_files=[
             Path("tests", "test_sessions.py"),
         ],
         test_cases=[
@@ -102,7 +103,7 @@ def register():
         bug_id=4,
         buggy_commit_id="8c892edd4fe700a7ca5cc733dcb4817831d253e2",
         fixed_commit_id="040d981f00c3f6830b2d0db3daf3c64c080e96e3",
-        test_file=[
+        test_files=[
             Path("tests", "test_regressions.py"),
         ],
         test_cases=[
@@ -115,7 +116,7 @@ def register():
         bug_id=5,
         buggy_commit_id="16df8848e81eefac830f407e4b985f42b52970da",
         fixed_commit_id="90af1f742230831792d74d303d1e7ce56c96d4bd",
-        test_file=[
+        test_files=[
             Path("tests", "tests.py"),
         ],
         test_cases=[

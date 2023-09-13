@@ -30,7 +30,7 @@ class PySnooper(Project):
         bug_id: int,
         buggy_commit_id: str,
         fixed_commit_id: str,
-        test_file: List[Path],
+        test_files: List[Path],
         test_cases: List[str],
         test_status_fixed: TestStatus = TestStatus.PASSING,
         test_status_buggy: TestStatus = TestStatus.FAILING,
@@ -38,20 +38,20 @@ class PySnooper(Project):
         systemtests: Optional[SystemtestGenerator] = None,
         api: Optional[API] = None,
         loc: int = 0,
+        relevant_test_files: Optional[List[Path]] = None,
     ):
         super().__init__(
             bug_id=bug_id,
             project_name=PROJECT_MAME,
             github_url="https://github.com/cool-RR/PySnooper",
             status=Status.OK,
-            cause="N.A.",
             python_version="3.8.1",
             darwin_python_version="3.8.16",
             python_path="",
             buggy_commit_id=buggy_commit_id,
             fixed_commit_id=fixed_commit_id,
             testing_framework=TestingFramework.PYTEST,
-            test_file=test_file,
+            test_files=test_files,
             test_cases=test_cases,
             test_status_fixed=test_status_fixed,
             test_status_buggy=test_status_buggy,
@@ -62,6 +62,7 @@ class PySnooper(Project):
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "."]],
             included_files=[PROJECT_MAME],
+            relevant_test_files=relevant_test_files,
         )
 
 
@@ -70,7 +71,7 @@ def register():
         bug_id=1,
         buggy_commit_id="e21a31162f4c54be693d8ca8260e42393b39abd3",
         fixed_commit_id="56f22f8ffe1c6b2be4d2cf3ad1987fdb66113da2",
-        test_file=[
+        test_files=[
             Path("tests", "test_chinese.py"),
             Path("tests", "test_pysnooper.py"),
         ],
@@ -82,7 +83,7 @@ def register():
         bug_id=2,
         buggy_commit_id="e21a31162f4c54be693d8ca8260e42393b39abd3",
         fixed_commit_id="814abc34a098c1b98cb327105ac396f985d2413e",
-        test_file=[
+        test_files=[
             Path("tests", "test_pysnooper.py"),
             Path("tests", "mini_toolbox"),
             Path("pysnooper", "pycompat.py"),
@@ -103,7 +104,7 @@ def register():
         bug_id=3,
         buggy_commit_id="6e3d797be3fa0a746fb5b1b7c7fea78eb926c208",
         fixed_commit_id="15555ed760000b049aff8fecc79d29339c1224c3",
-        test_file=[Path("tests", "test_pysnooper.py")],
+        test_files=[Path("tests", "test_pysnooper.py")],
         test_cases=[os.path.join("tests", "test_pysnooper.py") + "::test_file_output"],
         loc=222,
         api=PySnooperAPI(b"NameError: name 'output_path' is not defined"),

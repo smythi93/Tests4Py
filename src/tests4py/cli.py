@@ -193,35 +193,6 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         help="The bug number of the project_name for which the information shall be printed",
     )
 
-    # Mutation
-    # mutation_parser.add_argument(
-    #     "-w",
-    #     dest="work_dir",
-    #     required=True,
-    #     help="The working directory to run the test. Default will be the current directory",
-    # )
-    # mutation_parser.add_argument(
-    #     "-t",
-    #     dest="target",
-    #     default=None,
-    #     help="Target module or package to mutate. "
-    #     "Default will be run mutation from test case and target that relevant from bugs",
-    # )
-    # mutation_parser.add_argument(
-    #     "-u",
-    #     dest="unit_test",
-    #     default=None,
-    #     help="Test class, test method, module or package with unit tests. "
-    #     "Default will be run mutation from test case and target that relevant from bugs",
-    # )
-    # mutation_parser.add_argument(
-    #     "-r",
-    #     dest="relevant_tests",
-    #     default=False,
-    #     action="store_true",
-    #     help="Run mutation from test case and target that relevant from bugs (Default)",
-    # )
-
     # Test
     test_parser.add_argument(
         "-w",
@@ -233,18 +204,26 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         "-t",
         dest="single_test",
         default=None,
-        help="Run single test from input. Default will run the test case that are relevant for the bugs. "
+        help="Run single test from input. Default will run the test case that are failing for the bugs. "
         "Format for pytest: <test_file_path>::<test_method>. "
         "Format for unittest: <test_file_path_without.py>.<test_class>.<test_method>. "
         "Use tests4py info to get the information about the project",
+    )
+    test_parser.add_argument(
+        "-r",
+        dest="relevant_tests",
+        default=False,
+        action="store_true",
+        help="Run relevant test cases for the bug in the project. "
+        "Default will run the test case that are failing for the bugs",
     )
     test_parser.add_argument(
         "-a",
         dest="all_tests",
         default=False,
         action="store_true",
-        help="Run all test case in the project. "
-        "Default will run the test case that are relevant for the bugs",
+        help="Run all test cases in the project. "
+        "Default will run the test case that are failing for the bugs",
     )
     test_parser.add_argument(
         "-o", dest="output", default=None, help="Output test results to file"
@@ -549,6 +528,7 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         report = tests4py_test(
             work_dir=Path(args.work_dir).absolute() if args.work_dir else None,
             single_test=args.single_test,
+            relevant_tests=args.relevant_tests,
             all_tests=args.all_tests,
             output=Path(args.output).absolute() if args.output else None,
         )

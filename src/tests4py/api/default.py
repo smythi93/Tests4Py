@@ -135,7 +135,7 @@ def checkout_project(
                                     tmp_location / line.replace(os.path.sep, "_"),
                                 )
 
-                for test_file in project.test_file:
+                for test_file in project.test_files:
                     if (work_location / test_file).is_dir():
                         shutil.copytree(
                             work_location / test_file,
@@ -162,7 +162,7 @@ def checkout_project(
 
                 LOGGER.info(f"Copying required files from {tmp_location}")
 
-                for test_file in project.test_file:
+                for test_file in project.test_files:
                     dest = tmp_location / str(test_file).replace(os.path.sep, "_")
                     if dest.is_dir():
                         shutil.copytree(
@@ -326,6 +326,12 @@ def compile_project(
                     env=environ,
                 )
 
+        if config.cache:
+            cache_venv(project, work_dir)
+
+        if sfl:
+            sflkit_env(environ)
+
         LOGGER.info("Run setup")
         for command in project.setup:
             subprocess.check_call(
@@ -334,12 +340,6 @@ def compile_project(
                 stdout=subprocess.STDOUT if verbose else subprocess.DEVNULL,
                 cwd=work_dir,
             )
-
-        if config.cache:
-            cache_venv(project, work_dir)
-
-        if sfl:
-            sflkit_env(environ)
 
         LOGGER.info("Set compiled flag")
         project.compiled = True
@@ -398,7 +398,7 @@ def info_project(
                 ("Python Path", project.python_path),
                 ("Buggy Commit", project.buggy_commit_id),
                 ("Fixed Commit", project.fixed_commit_id),
-                ("Test Files", "\n".join(map(str, project.test_file))),
+                ("Test Files", "\n".join(map(str, project.test_files))),
                 ("Test Cases", "\n".join(project.test_cases)),
                 ("Unit Tests", project.unittests is not None),
                 ("System Tests", project.systemtests is not None),
@@ -436,6 +436,7 @@ def info_project(
 def test_project(
     work_dir_or_project: Optional[Union[Path, Project]] = None,
     single_test: Optional[Union[List[str], str]] = None,
+    relevant_tests: bool = False,
     all_tests: bool = False,
     xml_output: Optional[Path] = None,
     coverage: bool = False,
@@ -491,16 +492,19 @@ def test_project(
             raise NotImplementedError(
                 f"No command found for {project.testing_framework.value}"
             )
-        if not all_tests and not single_test:
+        if not relevant_tests and not all_tests and not single_test:
             LOGGER.info(f"Run relevant tests {project.test_cases}")
             command += project.test_cases
+        elif all_tests:
+            if project.test_base:
+                command.append(project.test_base)
+        elif relevant_tests:
+            command += project.relevant_test_files
         elif single_test:
             if isinstance(single_test, str):
                 command.append(single_test)
             else:
                 command += single_test
-        elif all_tests and project.test_base:
-            command.append(project.test_base)
 
         LOGGER.info(f"Run tests with command {command}")
         output = subprocess.run(

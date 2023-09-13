@@ -23,7 +23,7 @@ class Middle(Project):
         bug_id: int,
         buggy_commit_id: str,
         fixed_commit_id: str,
-        test_file: List[Path],
+        test_files: List[Path],
         test_cases: List[str],
         test_status_fixed: TestStatus = TestStatus.PASSING,
         test_status_buggy: TestStatus = TestStatus.FAILING,
@@ -31,19 +31,19 @@ class Middle(Project):
         systemtests: Optional[SystemtestGenerator] = None,
         api: Optional[API] = None,
         loc: int = 0,
+        relevant_test_files: Optional[List[Path]] = None,
     ):
         super().__init__(
             bug_id=bug_id,
             project_name=PROJECT_MAME,
             github_url="https://github.com/smythi93/middle",
             status=Status.OK,
-            cause="N.A.",
             python_version="3.10.9",
             python_path="",
             buggy_commit_id=buggy_commit_id,
             fixed_commit_id=fixed_commit_id,
             testing_framework=TestingFramework.PYTEST,
-            test_file=test_file,
+            test_files=test_files,
             test_cases=test_cases,
             test_status_fixed=test_status_fixed,
             test_status_buggy=test_status_buggy,
@@ -54,6 +54,7 @@ class Middle(Project):
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "."]],
             included_files=[os.path.join("src", PROJECT_MAME)],
+            relevant_test_files=relevant_test_files,
         )
 
 
@@ -62,7 +63,7 @@ def register():
         bug_id=1,
         buggy_commit_id="15350ede14501997656f2fd49bd5b9af2c8d2582",
         fixed_commit_id="c0e7b35b1fba9320fe40fe143c89f6b4c7c8979d",
-        test_file=[
+        test_files=[
             Path("tests", "test_middle.py"),
         ],
         test_cases=[
@@ -76,7 +77,7 @@ def register():
         bug_id=2,
         buggy_commit_id="eed99fa2741bd28744231dfcac0ea34679532bf9",
         fixed_commit_id="029cb8beb7bfc0f2853dfa9504dcdfcc753b051e",
-        test_file=[
+        test_files=[
             Path("tests", "test_middle.py"),
         ],
         test_cases=[
