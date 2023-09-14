@@ -65,6 +65,7 @@ class CookieCutter(Project):
             grammar=grammar,
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
+            test_base=Path("tests"),
             included_files=[PROJECT_MAME],
             relevant_test_files=relevant_test_files,
         )
@@ -83,9 +84,12 @@ def register():
             Path("tests", "test-generate-context", "non_ascii.json"),
         ],
         test_cases=[
-            os.path.join("tests", "test_generate_context.py")
-            + "`::test_generate_context_decodes_non_ascii_chars"
+            os.path.join(
+                "tests",
+                "test_generate_context.py::test_generate_context_decodes_non_ascii_chars",
+            )
         ],
+        relevant_test_files=[Path("tests", "test_generate_context.py")],
         test_status_buggy=TestStatus.PASSING,
         loc=1136,
     )
@@ -118,6 +122,12 @@ def register():
         test_cases=[
             os.path.join("tests", "test_read_user_choice.py") + ":test_click_invocation"
         ],
+        relevant_test_files=[
+            Path("tests", "test_read_user_choice.py"),
+            Path("tests", "test_read_user_dict.py"),
+            Path("tests", "test_read_user_variable.py"),
+            Path("tests", "test_read_user_yes_no.py"),
+        ],
         api=CookieCutter3API(),
         systemtests=CookieCutter3SystemtestGenerator(),
         unittests=CookieCutter3UnittestGenerator(),
@@ -134,6 +144,10 @@ def register():
         test_cases=[
             os.path.join("tests", "test_hooks.py")
             + "::TestExternalHooks::test_run_failing_hook"
+        ],
+        relevant_test_files=[
+            Path("tests", "test_hooks.py"),
+            Path("tests", "test_generate_hooks.py"),
         ],
         api=CookieCutter4API(),
         systemtests=CookieCutter4SystemtestGenerator(),

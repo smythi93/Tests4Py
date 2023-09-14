@@ -39,6 +39,7 @@ class CommandTests(BaseTest):
             Location(file=os.path.join("pysnooper", "tracer.py"), line=26),
             Location(file=os.path.join("pysnooper", "tracer.py"), line=87),
             Location(file=os.path.join("pysnooper", "tracer.py"), line=133),
+            Location(file=os.path.join("pysnooper", "tracer.py"), line=139),
             Location(file=os.path.join("pysnooper", "tracer.py"), line=179),
             Location(file=os.path.join("pysnooper", "tracer.py"), line=189),
             Location(file=os.path.join("pysnooper", "tracer.py"), line=207),

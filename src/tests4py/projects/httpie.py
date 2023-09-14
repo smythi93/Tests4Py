@@ -4,6 +4,7 @@ import string
 from pathlib import Path
 from typing import List, Optional, Tuple
 
+from tests4py.constants import PYTHON
 from tests4py.grammars.fuzzer import Grammar, srange, is_valid_grammar
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
@@ -46,8 +47,9 @@ class Httpie(Project):
             systemtests=systemtests,
             api=HttpieAPI(),
             grammar=grammar_request,
-            test_base=test_base,
+            test_base=test_base or Path("tests"),
             loc=loc,
+            setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
             included_files=[PROJECT_MAME],
             relevant_test_files=relevant_test_files,
         )
@@ -68,6 +70,7 @@ def register():
         ],
         # systemtests=Httpie1SystemtestGenerator(),
         # unittests=Httpie1UnittestGenerator(),
+        loc=2432,
     )
     Httpie(
         bug_id=2,
@@ -81,8 +84,13 @@ def register():
                 "tests", "test_redirects.py::TestRedirects::test_max_redirects"
             ),
         ],
+        relevant_test_files=[
+            Path("tests", "test_exit_status.py"),
+            Path("tests", "test_redirects.py"),
+        ],
         # systemtests=Httpie2SystemtestGenerator(),
         # unittests=Httpie2UnittestGenerator(),
+        loc=2281,
     )
     Httpie(
         bug_id=3,
@@ -96,8 +104,13 @@ def register():
                 "tests", "test_sessions.py::TestSession::test_download_in_session"
             ),
         ],
+        relevant_test_files=[
+            Path("tests", "test_downloads.py"),
+            Path("tests", "test_sessions.py"),
+        ],
         # systemtests=Httpie3SystemtestGenerator(),
         # unittests=Httpie3UnittestGenerator(),
+        loc=2255,
     )
     Httpie(
         bug_id=4,
@@ -109,8 +122,13 @@ def register():
         test_cases=[
             os.path.join("tests", "test_regressions.py::test_Host_header_overwrite"),
         ],
+        relevant_test_files=[
+            Path("tests", "test_cli.py"),
+            Path("tests", "test_regressions.py"),
+        ],
         # systemtests=Httpie4SystemtestGenerator(),
         # unittests=Httpie4UnittestGenerator(),
+        loc=2125,
     )
     Httpie(
         bug_id=5,
@@ -125,6 +143,7 @@ def register():
         test_base=Path("tests", "tests.py"),
         # systemtests=Httpie5SystemtestGenerator(),
         # unittests=Httpie5UnittestGenerator(),
+        loc=509,
     )
 
 

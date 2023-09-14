@@ -57,10 +57,23 @@ class FastAPI(Project):
             api=api,
             grammar=grammar_request if grammar is None else grammar,
             loc=loc,
-            setup=[[PYTHON, "-m", "pip", "install", "."]],
+            setup=[
+                [PYTHON, "-m", "pip", "install", "-e", "."],
+                [
+                    PYTHON,
+                    "-c",
+                    """
+import shutil
+import os
+shutil.rmtree(os.path.join("tests", "test_modules_same_name_body"), ignore_errors=True)
+shutil.rmtree(os.path.join("tests", "test_tutorial"), ignore_errors=True)
+""",
+                ],
+            ],
             included_files=[PROJECT_MAME],
+            test_base=Path("tests"),
             relevant_test_files=relevant_test_files,
-        )  # TODO adjust parameters
+        )
 
 
 def register():
@@ -69,7 +82,11 @@ def register():
         buggy_commit_id="766157bfb4e7dfccba09ab398e8ec444d14e947c",
         fixed_commit_id="3397d4d69a9c2d64c1219fcbf291ea5697a4abb8",
         test_files=[Path("tests", "test_jsonable_encoder.py")],
-        test_cases=["tests/test_jsonable_encoder.py::test_encode_model_with_default"],
+        test_cases=[
+            os.path.join(
+                "tests", "test_jsonable_encoder.py::test_encode_model_with_default"
+            )
+        ],
         api=FastAPI1API(
             (
                 b"TypeError: jsonable_encoder() got an unexpected keyword argument 'exclude_defaults'",
@@ -79,16 +96,31 @@ def register():
         systemtests=FastAPI1SystemtestGenerator(),
         unittests=FastAPI1UnittestGenerator(),
         grammar=grammar_jsonable_encoder,
+        loc=4274,
     )
     FastAPI(
         bug_id=2,
         buggy_commit_id="210af1fd3dc0f612a08fa02a0cb3f5adb81e5bfb",
         fixed_commit_id="02441ff0313d5b471b662293244c53e712f1243f",
         test_files=[Path("tests", "test_ws_router.py")],
-        test_cases=["tests/test_ws_router.py::test_router_ws_depends_with_override"],
+        test_cases=[
+            os.path.join(
+                "tests", "test_ws_router.py::test_router_ws_depends_with_override"
+            )
+        ],
+        relevant_test_files=[
+            Path("tests", "test_additional_responses_router.py"),
+            Path("tests", "test_custom_route_class.py"),
+            Path("tests", "test_default_response_class_router.py"),
+            Path("tests", "test_empty_router.py"),
+            Path("tests", "test_router_events.py"),
+            Path("tests", "test_router_prefix_with_template.py"),
+            Path("tests", "test_ws_router.py"),
+        ],
         systemtests=FastAPI2SystemtestGenerator(),
         unittests=FastAPI2UnittestGenerator(),
         api=FastAPI2API(),
+        loc=4266,
     )
     FastAPI(
         bug_id=3,
@@ -96,38 +128,75 @@ def register():
         fixed_commit_id="aea04ee32ee1942e6e1a904527bb8da6ba76abd9",
         test_files=[Path("tests", "test_serialize_response_model.py")],
         test_cases=[
-            "tests/test_serialize_response_model.py::test_valid",
-            "tests/test_serialize_response_model.py::test_coerce",
-            "tests/test_serialize_response_model.py::test_validlist",
-            "tests/test_serialize_response_model.py::test_validdict",
-            "tests/test_serialize_response_model.py::test_valid_exclude_unset",
-            "tests/test_serialize_response_model.py::test_coerce_exclude_unset",
-            "tests/test_serialize_response_model.py::test_validlist_exclude_unset",
-            "tests/test_serialize_response_model.py::test_validdict_exclude_unset",
+            os.path.join("tests", "test_serialize_response_model.py::test_valid"),
+            os.path.join("tests", "test_serialize_response_model.py::test_coerce"),
+            os.path.join("tests", "test_serialize_response_model.py::test_validlist"),
+            os.path.join("tests", "test_serialize_response_model.py::test_validdict"),
+            os.path.join(
+                "tests", "test_serialize_response_model.py::test_valid_exclude_unset"
+            ),
+            os.path.join(
+                "tests", "test_serialize_response_model.py::test_coerce_exclude_unset"
+            ),
+            os.path.join(
+                "tests",
+                "test_serialize_response_model.py::test_validlist_exclude_unset",
+            ),
+            os.path.join(
+                "tests",
+                "test_serialize_response_model.py::test_validdict_exclude_unset",
+            ),
+        ],
+        relevant_test_files=[
+            Path("tests", "test_serialize_response.py"),
+            Path("tests", "test_serialize_response_dataclass.py"),
+            Path("tests", "test_serialize_response_model.py"),
         ],
         api=FastAPI3API(),
         systemtests=FastAPI3SystemtestGenerator(),
         unittests=FastAPI3UnittestGenerator(),
+        loc=4238,
     )
     FastAPI(
         bug_id=4,
         buggy_commit_id="7ccd81f70653857bd8f3a15ee946aa3fb0edc2cb",
         fixed_commit_id="74c4d1c1dbe6bfdb05d6e4fc767ffe062398f0a3",
         test_files=[Path("tests", "test_param_in_path_and_dependency.py")],
-        test_cases=["tests/test_param_in_path_and_dependency.py::test_reused_param"],
+        test_cases=[
+            os.path.join(
+                "tests", "test_param_in_path_and_dependency.py::test_reused_param"
+            )
+        ],
+        relevant_test_files=[
+            Path("tests", "test_param_class.py"),
+            Path("tests", "test_param_in_path_and_dependency.py"),
+        ],
         api=FastAPI4API(),
         systemtests=FastAPI4SystemtestGenerator(),
         unittests=FastAPI4UnittestGenerator(),
+        loc=4231,
     )
     FastAPI(
         bug_id=5,
         buggy_commit_id="7cea84b74ca3106a7f861b774e9d215e5228728f",
         fixed_commit_id="75a07f24bf01a31225ee687f3e2b3fc1981b67ab",
         test_files=[Path("tests", "test_filter_pydantic_sub_model.py")],
-        test_cases=["tests/test_filter_pydantic_sub_model.py::test_filter_sub_model"],
+        test_cases=[
+            os.path.join(
+                "tests", "test_filter_pydantic_sub_model.py::test_filter_sub_model"
+            )
+        ],
+        relevant_test_files=[
+            Path("tests", "test_application.py"),
+            Path("tests", "test_duplicate_models_openapi.py"),
+            Path("tests", "test_filter_pydantic_sub_model.py"),
+            Path("tests", "test_union_body.py"),
+            Path("tests", "test_union_inherited_body.py"),
+        ],
         api=FastAPI5API(),
         systemtests=FastAPI5SystemtestGenerator(),
         unittests=FastAPI5UnittestGenerator(),
+        loc=4227,
     )
     FastAPI(
         bug_id=6,
@@ -135,13 +204,29 @@ def register():
         fixed_commit_id="874d24181e779ebc6e1c52afb7d6598f863fd6a8",
         test_files=[Path("tests", "test_forms_from_non_typing_sequences.py")],
         test_cases=[
-            "tests/test_forms_from_non_typing_sequences.py::test_python_list_param_as_form",
-            "tests/test_forms_from_non_typing_sequences.py::test_python_set_param_as_form",
-            "tests/test_forms_from_non_typing_sequences.py::test_python_tuple_param_as_form",
+            os.path.join(
+                "tests",
+                "test_forms_from_non_typing_sequences.py::test_python_list_param_as_form",
+            ),
+            os.path.join(
+                "tests",
+                "test_forms_from_non_typing_sequences.py::test_python_set_param_as_form",
+            ),
+            os.path.join(
+                "tests",
+                "test_forms_from_non_typing_sequences.py::test_python_tuple_param_as_form",
+            ),
+        ],
+        relevant_test_files=[
+            Path("tests", "test_application.py"),
+            Path("tests", "test_forms_from_non_typing_sequences.py"),
+            Path("tests", "test_union_body.py"),
+            Path("tests", "test_union_inherited_body.py"),
         ],
         api=FastAPI6API(),
         systemtests=FastAPI6SystemtestGenerator(),
         unittests=FastAPI6UnittestGenerator(),
+        loc=4220,
     )
     FastAPI(
         bug_id=7,
@@ -154,19 +239,35 @@ def register():
                 "test_multi_body_errors.py::test_jsonable_encoder_requiring_error",
             )
         ],
+        relevant_test_files=[
+            Path("tests", "test_jsonable_encoder.py"),
+            Path("tests", "test_multi_body_errors.py"),
+        ],
         api=FastAPI7API(),
         systemtests=FastAPI7SystemtestGenerator(),
         unittests=FastAPI7UnittestGenerator(),
+        loc=4113,
     )
     FastAPI(
         bug_id=8,
         buggy_commit_id="fdb6d43e103bcf7a7325d796e37c9435c9460e4c",
         fixed_commit_id="dd963511d699b463b416408a0ad705b3dda0d067",
         test_files=[Path("tests", "test_custom_route_class.py")],
-        test_cases=["tests/test_custom_route_class.py::test_route_classes"],
+        test_cases=[
+            os.path.join("tests", "test_custom_route_class.py::test_route_classes")
+        ],
+        relevant_test_files=[
+            Path("tests", "test_additional_responses_router.py"),
+            Path("tests", "test_custom_route_class.py"),
+            Path("tests", "test_default_response_class_router.py"),
+            Path("tests", "test_empty_router.py"),
+            Path("tests", "test_router_prefix_with_template.py"),
+            Path("tests", "test_ws_router.py"),
+        ],
         api=FastAPI8API(),
         systemtests=FastAPI8SystemtestGenerator(),
         unittests=FastAPI8UnittestGenerator(),
+        loc=3694,
     )
     FastAPI(
         bug_id=9,
@@ -174,36 +275,64 @@ def register():
         fixed_commit_id="c5817912d2be25bb310bf9da517882f57bbe7bb5",
         test_files=[Path("tests", "test_request_body_parameters_media_type.py")],
         test_cases=[
-            "tests/test_request_body_parameters_media_type.py::test_openapi_schema"
+            os.path.join(
+                "tests",
+                "test_request_body_parameters_media_type.py::test_openapi_schema",
+            )
+        ],
+        relevant_test_files=[
+            Path("tests", "test_application.py"),
+            Path("tests", "test_duplicate_models_openapi.py"),
+            Path("tests", "test_request_body_parameters_media_type.py"),
+            Path("tests", "test_union_body.py"),
+            Path("tests", "test_union_inherited_body.py"),
         ],
         api=FastAPI9API(),
         # systemtests=FastAPI9SystemtestGenerator(),
         # unittests=FastAPI9UnittestGenerator(),
+        loc=3625,
     )
     FastAPI(
         bug_id=10,
         buggy_commit_id="b77a43bcac3ec8e7edbe82543e777c60ae85c178",
-        fixed_commit_id="06eb4219345a77d23484528c9d164eb8d2097fec",
+        fixed_commit_id="38495fffa560fa57a8f0e6437d8e43c36c8e5612",
         test_files=[Path("tests", "test_skip_defaults.py")],
-        test_cases=["tests/test_skip_defaults.py::test_return_defaults"],
-        test_status_buggy=TestStatus.WRONG,
+        test_cases=[
+            os.path.join("tests", "test_skip_defaults.py::test_return_defaults")
+        ],
+        relevant_test_files=[
+            Path("tests", "test_dependency_overrides.py"),
+            Path("tests", "test_skip_defaults.py"),
+        ],
+        loc=3613,
     )
     FastAPI(
         bug_id=11,
         buggy_commit_id="bf229ad5d830eb5320f966d51a55e590e8d57008",
-        fixed_commit_id="38495fffa560fa57a8f0e6437d8e43c36c8e5612",
+        fixed_commit_id="06eb4219345a77d23484528c9d164eb8d2097fec",
         test_files=[
             Path("tests", "test_union_body.py"),
             Path("tests", "test_union_inherited_body.py"),
         ],
         test_cases=[
-            "tests/test_union_body.py::test_item_openapi_schema",
-            "tests/test_union_body.py::test_post_other_item",
-            "tests/test_union_body.py::test_post_item",
-            "tests/test_union_inherited_body.py::test_inherited_item_openapi_schema",
-            "tests/test_union_inherited_body.py::test_post_extended_item",
-            "tests/test_union_inherited_body.py::test_post_item",
+            os.path.join("tests", "test_union_body.py::test_item_openapi_schema"),
+            os.path.join("tests", "test_union_body.py::test_post_other_item"),
+            os.path.join("tests", "test_union_body.py::test_post_item"),
+            os.path.join(
+                "tests",
+                "test_union_inherited_body.py::test_inherited_item_openapi_schema",
+            ),
+            os.path.join(
+                "tests", "test_union_inherited_body.py::test_post_extended_item"
+            ),
+            os.path.join("tests", "test_union_inherited_body.py::test_post_item"),
         ],
+        relevant_test_files=[
+            Path("tests", "test_application.py"),
+            Path("tests", "test_union_body.py"),
+            Path("tests", "test_union_inherited_body.py"),
+        ],
+        loc=3591,
     )
     FastAPI(
         bug_id=12,
@@ -211,15 +340,41 @@ def register():
         fixed_commit_id="d262f6e9296993e528e2327f0a73f7bf5514e7c6",
         test_files=[Path("tests", "test_security_http_bearer_optional.py")],
         test_cases=[
-            "tests/test_security_http_bearer_optional.py::test_security_http_bearer_incorrect_scheme_credentials"
+            os.path.join(
+                "tests",
+                "test_security_http_bearer_optional.py::test_security_http_bearer_incorrect_scheme_credentials",
+            )
         ],
+        relevant_test_files=[
+            Path("tests", "test_security_http_base.py"),
+            Path("tests", "test_security_http_base_optional.py"),
+            Path("tests", "test_security_http_basic_optional.py"),
+            Path("tests", "test_security_http_basic_realm.py"),
+            Path("tests", "test_security_http_bearer.py"),
+            Path("tests", "test_security_http_bearer_optional.py"),
+            Path("tests", "test_security_http_digest.py"),
+            Path("tests", "test_security_http_digest_optional.py"),
+        ],
+        loc=3396,
     )
     FastAPI(
         bug_id=13,
         buggy_commit_id="6f7f9268f6b03f42831dcfeaa5c15ba9813333ec",
         fixed_commit_id="c8df3ae57c57e119d115dd3c1f44efa78de1022a",
         test_files=[Path("tests", "test_additional_responses_router.py")],
-        test_cases=["tests/test_additional_responses_router.py::test_openapi_schema"],
+        test_cases=[
+            os.path.join(
+                "tests", "test_additional_responses_router.py::test_openapi_schema"
+            )
+        ],
+        relevant_test_files=[
+            Path("tests", "test_additional_properties.py"),
+            Path("tests", "test_additional_response_extra.py"),
+            Path("tests", "test_additional_responses_router.py"),
+            Path("tests", "test_include_route.py"),
+            Path("tests", "test_ws_router.py"),
+        ],
+        loc=2703,
     )
     FastAPI(
         bug_id=14,
@@ -227,8 +382,19 @@ def register():
         fixed_commit_id="b7d184363fad5f6b55d15ec3a3a844aa81092bbd",
         test_files=[Path("tests", "test_additional_properties.py")],
         test_cases=[
-            "tests/test_additional_properties.py::test_additional_properties_schema"
+            os.path.join(
+                "tests",
+                "test_additional_properties.py::test_additional_properties_schema",
+            )
         ],
+        relevant_test_files=[
+            Path("tests", "test_additional_properties.py"),
+            Path("tests", "test_application.py"),
+            Path("tests", "test_extra_routes.py"),
+            Path("tests", "test_multi_body_errors.py"),
+            Path("tests", "test_put_no_body.py"),
+        ],
+        loc=2533,
     )
     FastAPI(
         bug_id=15,
@@ -236,9 +402,15 @@ def register():
         fixed_commit_id="6d77e2ac5f2cadc63424f2d85d8d8cded2975922",
         test_files=[Path("tests", "test_ws_router.py")],
         test_cases=[
-            "tests/test_ws_router.py::test_router",
-            "tests/test_ws_router.py::test_prefix_router",
+            os.path.join("tests", "test_ws_router.py::test_router"),
+            os.path.join("tests", "test_ws_router.py::test_prefix_router"),
         ],
+        relevant_test_files=[
+            Path("tests", "test_extra_routes.py"),
+            Path("tests", "test_include_route.py"),
+            Path("tests", "test_ws_router.py"),
+        ],
+        loc=2495,
     )
     FastAPI(
         bug_id=16,
@@ -248,7 +420,17 @@ def register():
             Path("tests", "test_datetime_custom_encoder.py"),
             Path("tests", "test_jsonable_encoder.py"),
         ],
-        test_cases=["tests/test_jsonable_encoder.py::test_encode_model_with_config"],
+        test_cases=[
+            os.path.join(
+                "tests", "test_jsonable_encoder.py::test_encode_model_with_config"
+            )
+        ],
+        relevant_test_files=[
+            Path("tests", "test_datetime.py"),
+            Path("tests", "test_datetime_custom_encoder.py"),
+            Path("tests", "test_jsonable_encoder.py"),
+        ],
+        loc=2427,
     )
 
 

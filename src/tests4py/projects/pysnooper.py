@@ -45,8 +45,7 @@ class PySnooper(Project):
             project_name=PROJECT_MAME,
             github_url="https://github.com/cool-RR/PySnooper",
             status=Status.OK,
-            python_version="3.8.1",
-            darwin_python_version="3.8.16",
+            python_version="3.8.4",
             python_path="",
             buggy_commit_id=buggy_commit_id,
             fixed_commit_id=fixed_commit_id,
@@ -62,6 +61,7 @@ class PySnooper(Project):
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "."]],
             included_files=[PROJECT_MAME],
+            test_base=Path("tests"),
             relevant_test_files=relevant_test_files,
         )
 
@@ -75,7 +75,7 @@ def register():
             Path("tests", "test_chinese.py"),
             Path("tests", "test_pysnooper.py"),
         ],
-        test_cases=[os.path.join("tests", "test_chinese.py") + "::test_chinese"],
+        test_cases=[os.path.join("tests", "test_chinese.py::test_chinese")],
         loc=448,
         test_status_buggy=TestStatus.PASSING,
     )
@@ -90,8 +90,11 @@ def register():
             Path("pysnooper", "utils.py"),
         ],
         test_cases=[
-            os.path.join("tests", "test_pysnooper.py") + "::test_custom_repr_single",
-            os.path.join("tests", "test_pysnooper.py") + "::test_custom_repr",
+            os.path.join("tests", "test_pysnooper.py::test_custom_repr_single"),
+            os.path.join("tests", "test_pysnooper.py::test_custom_repr"),
+        ],
+        relevant_test_files=[
+            Path("tests", "test_pysnooper.py"),
         ],
         loc=463,
         api=PySnooperAPI(
@@ -105,7 +108,7 @@ def register():
         buggy_commit_id="6e3d797be3fa0a746fb5b1b7c7fea78eb926c208",
         fixed_commit_id="15555ed760000b049aff8fecc79d29339c1224c3",
         test_files=[Path("tests", "test_pysnooper.py")],
-        test_cases=[os.path.join("tests", "test_pysnooper.py") + "::test_file_output"],
+        test_cases=[os.path.join("tests", "test_pysnooper.py::test_file_output")],
         loc=222,
         api=PySnooperAPI(b"NameError: name 'output_path' is not defined"),
         unittests=PySnooper3UnittestGenerator(),

@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return '<body>PHP "Error" is difficult.<body>'
+        return '"""aZhhGAuRzG"""'
 
     def test_diversity_2(self):
-        return '<video>PHP "Project" is hard.<video>'
+        return '"""WTDYcMlJGGouhwwmnwMsJF"""'
 
     def test_diversity_3(self):
-        return '<embed>PHP "Fundamental" is easy.<embed>'
+        return '"""LPuRcKppHdFrwESGrftbpIBgvYau"""'
 
     def test_diversity_4(self):
-        return '<p>Ruby "Syntax" is easy.<p>'
+        return '"""PFjpbYODHaAKtuMyDrTXHHO"""'
 
     def test_diversity_5(self):
-        return '<img>PHP "Book" is good.<img>'
+        return '"""XadJLoyKcWHBHXPcSHQJyHstIeUMG"""'
 
     def test_diversity_6(self):
-        return '<h1>JavaScript "Error" is good.<h1>'
+        return '"""cecpQLBVBzDVeycWLgrjTJhqa"""'
 
     def test_diversity_7(self):
-        return '<span>C "Project" is difficult.<span>'
+        return '"""jQJnQXVcgjVvxBGjHYjXNReFFxm"""'
 
     def test_diversity_8(self):
-        return '<i>C# "Code" is difficult.<i>'
+        return '"""MtAbGRtdFGKaSZDoUsZHNMeawY"""'
 
     def test_diversity_9(self):
-        return '<i>C# "Error" is cool.<i>'
+        return '"""neHVLaSzKNsPOsKpWZYGIxiSfzNSF"""'
 
     def test_diversity_10(self):
-        return '<canvas>C# "Fundamental" is difficult.<canvas>'
+        return '"""jFqhKwgAmJHfAcuhhxAalvH"""'
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return "<article>JavaScript 'Syntax' is complex.<article>"
+        return "<search>kWOREGqWUuGrBCdJLaHk<body>gkKTWpvpuSiBK</body>qvRQILDHOlVSzaacTdt</search>"
 
     def test_diversity_2(self):
-        return "<title>Python 'Language' is hard.<title>"
+        return "<article>ozzHsciYyHxTJrkblU <span>QmDfwmJIsYpfa </span>DvKcsZBTYsyfabSELIjTkdnIVlgUK</article>"
 
     def test_diversity_3(self):
-        return "<li>Python 'Project' is easy.<li>"
+        return "<ul>cCFecupGRmCqnqupvfTgeykzRQBK'<output>zJSebCUKNLZQZdTCrUOVqXcHNInlhe'</output>bbbRPqcqbpjsHMH</ul>"
 
     def test_diversity_4(self):
-        return "<i>JavaScript 'Fundamental' is complex.<i>"
+        return "<output>IVyFsNqvZttQ <div>GGVbYJJEfogTP </div>KYFtKThfvd</output>"
 
     def test_diversity_5(self):
-        return "<details>JavaScript 'Book' is controversial.<details>"
+        return "<h1>KtuUbmCSJItpMTU<h1>"
 
     def test_diversity_6(self):
-        return "<ul>R 'Project' is easy.<ul>"
+        return "<q>nfurYOhhCTPfRaRNoQFS <aside>xxnFckujbghMnk </aside>fcMOafakFoENEEFFpCOomkagmslmbN</q>"
 
     def test_diversity_7(self):
-        return "<canvas>C# 'Code' is easy.<canvas>"
+        return "<article>kZhAfMjuYO<progress>nEVGIFoVLGEaFKruZUjUUu</progress>pOIEVAajgdkUZxVDrboPBrmPO</article>"
 
     def test_diversity_8(self):
-        return "<output>Python 'Fundamental' is hard.<output>"
+        return "<ul>nfurYOhhCTPfRaRNoQFS'<div>xxnFckujbghMnk'</div>fcMOafakFoENEEFFpCOomkagmslmbN</ul>"
 
     def test_diversity_9(self):
-        return "<progress>C# 'Error' is hard.<progress>"
+        return "<i>HuyxEjqHCgr</i>"
 
     def test_diversity_10(self):
-        return "<article>Pearl 'Book' is controversial.<article>"
+        return "<search>BlGoMtRrlkklqmXGQ <datalist>zNDnzdZnHlQEgkFXgDJnqXN </datalist>AstvewUtlRPCFVAtKGqX</search>"

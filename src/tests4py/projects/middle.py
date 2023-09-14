@@ -31,7 +31,6 @@ class Middle(Project):
         systemtests: Optional[SystemtestGenerator] = None,
         api: Optional[API] = None,
         loc: int = 0,
-        relevant_test_files: Optional[List[Path]] = None,
     ):
         super().__init__(
             bug_id=bug_id,
@@ -54,7 +53,7 @@ class Middle(Project):
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "."]],
             included_files=[os.path.join("src", PROJECT_MAME)],
-            relevant_test_files=relevant_test_files,
+            test_base=Path("tests"),
         )
 
 
@@ -67,11 +66,12 @@ def register():
             Path("tests", "test_middle.py"),
         ],
         test_cases=[
-            os.path.join("tests", "test_middle.py") + "::TestMiddle::test_middle_213"
+            os.path.join("tests", "test_middle.py::TestMiddle::test_middle_213")
         ],
         unittests=MiddleUnittestGenerator(),
         systemtests=MiddleSystemtestGenerator(),
         api=Middle1API(),
+        loc=25,
     )
     Middle(
         bug_id=2,
@@ -81,11 +81,9 @@ def register():
             Path("tests", "test_middle.py"),
         ],
         test_cases=[
-            os.path.join("tests", "test_middle.py") + "::TestMiddle::test_middle_213",
+            os.path.join("tests", "test_middle.py::TestMiddle::test_middle_213"),
         ],
-        unittests=MiddleUnittestGenerator(),
-        systemtests=MiddleSystemtestGenerator(),
-        api=Middle2API(),
+        loc=12,
     )
 
 
@@ -98,22 +96,6 @@ class Middle1API(CLIAPI):
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
         _, expected, _ = sorted(list(map(int, process.args[1:])))
-        result = int(process.stdout.decode("utf8"))
-        if result == expected:
-            return TestResult.PASSING, ""
-        else:
-            return TestResult.FAILING, f"Expected {expected}, but was {result}"
-
-
-class Middle2API(API):
-    def __init__(self, default_timeout=5):
-        super().__init__(default_timeout=default_timeout)
-
-    def oracle(self, args: Any) -> Tuple[TestResult, str]:
-        if args is None:
-            return TestResult.UNDEFINED, "No process finished"
-        process: subprocess.CompletedProcess = args
-        _, expected, _ = sorted(list(map(int, process.args[2:])))
         result = int(process.stdout.decode("utf8"))
         if result == expected:
             return TestResult.PASSING, ""

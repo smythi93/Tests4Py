@@ -2,7 +2,7 @@ import importlib.resources
 from typing import List
 
 from sflkit.analysis.suggestion import Location
-from whatthepatch import parse_patch, exceptions
+from unidiff import PatchSet
 
 from tests4py.api.default import (
     checkout_project,
@@ -49,6 +49,14 @@ def get_loc(project: Project):
     return project.loc
 
 
+class _BlankLine:
+    def __init__(self):
+        self.is_added = False
+        self.is_context = False
+        self.is_removed = False
+        self.source_line_no = 1
+
+
 def get_faulty_lines(project: Project):
     locations = list()
     project_resources = importlib.resources.files(
@@ -62,65 +70,62 @@ def get_faulty_lines(project: Project):
         try:
             with open(resource, "r") as fp:
                 s = fp.read()
-            for diff in parse_patch(s):
-                if diff.header.old_path.startswith("test"):
-                    continue
-                new_counter = None
-                offset = 0
-                new_location = None
-                alternative = None
-                last_line_not_empty = None
-                for change in diff.changes:
-                    location = None
-                    if change.new is None and change.old is not None:
-                        if not isinstance(change.line, str) or change.line.strip():
-                            location = Location(diff.header.old_path, change.old)
-                    elif change.old is None and change.new is not None:
-                        if new_counter is None or new_counter + 1 != change.new:
-                            new_location = Location(
-                                diff.header.old_path, change.new - offset
-                            )
-                            if (
-                                last_line_not_empty is not None
-                                and last_line_not_empty == change.new - offset - 1
-                            ):
-                                alternative = Location(
-                                    diff.header.old_path, last_line_not_empty
+            for diff in PatchSet(s):
+                if project.test_base:
+                    if diff.path.startswith(str(project.test_base)):
+                        continue
+                for change in diff:
+                    last_line_to_add = False
+                    last_line = _BlankLine()
+                    last_line_not_empty = _BlankLine()
+                    for line in change:
+                        if line.is_context:
+                            if line.value.strip():
+                                if last_line_to_add:
+                                    locations.append(
+                                        Location(diff.path, line.source_line_no)
+                                    )
+                                last_line_not_empty = line
+                                last_line_to_add = False
+                            elif last_line_to_add:
+                                locations.append(
+                                    Location(
+                                        diff.path,
+                                        last_line_not_empty.source_line_no,
+                                    )
                                 )
-                        new_counter = change.new
-                    if change.new is not None and change.old is not None:
-                        offset = change.new - change.old
-                    if (
-                        new_location is not None
-                        and change.old is not None
-                        and new_location.line == change.old
-                        and isinstance(change.line, str)
-                        and change.line.strip()
-                        and not change.line.strip().startswith("#")
-                    ):
-                        if new_location not in locations:
-                            locations.append(new_location)
-                        new_location = None
-                        alternative = None
-                    elif (
-                        alternative is not None
-                        and change.old is not None
-                        and new_location.line >= change.old
-                    ):
-                        if alternative not in locations:
-                            locations.append(alternative)
-                        new_location = None
-                        alternative = None
-
-                    if location is not None and location not in locations:
-                        locations.append(location)
-                    if (
-                        change.old
-                        and change.line.strip()
-                        and not change.line.strip().startswith("#")
-                    ):
-                        last_line_not_empty = change.old
-        except (IOError, exceptions.WhatThePatchException):
+                                last_line_to_add = False
+                        elif line.is_added:
+                            if line.value.strip():
+                                if last_line.is_removed:
+                                    last_line_to_add = False
+                                    if not last_line.value.strip():
+                                        locations.append(
+                                            Location(
+                                                diff.path, last_line.source_line_no
+                                            )
+                                        )
+                                elif last_line_not_empty.is_removed:
+                                    last_line_to_add = False
+                                else:
+                                    last_line_to_add = True
+                        elif line.is_removed:
+                            if line.value.strip():
+                                if last_line_not_empty.is_added:
+                                    locations.append(
+                                        Location(diff.path, line.source_line_no)
+                                    )
+                                last_line_to_add = False
+                                last_line_not_empty = line
+                                locations.append(
+                                    Location(diff.path, line.source_line_no)
+                                )
+                        last_line = line
+                    if last_line_to_add:
+                        locations.append(
+                            Location(diff.path, last_line_not_empty.source_line_no)
+                        )
+        except IOError:
             pass
     return locations
 

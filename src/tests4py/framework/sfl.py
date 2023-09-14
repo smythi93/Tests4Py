@@ -28,7 +28,10 @@ def tests4py_sfl_instrument(
 
 
 def tests4py_sfl_events(
-    work_dir: Path = None, output: Path = None, verbose: bool = True
+    work_dir: Path = None,
+    output: Path = None,
+    all_tests: bool = False,
+    verbose: bool = True,
 ):
     report = SFLEventsReport()
     init_logger(verbose=verbose)
@@ -36,6 +39,7 @@ def tests4py_sfl_events(
         sfl.sflkit_get_events(
             work_dir,
             output=output,
+            all_tests=all_tests,
             report=report,
         )
     except BaseException as e:

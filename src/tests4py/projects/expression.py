@@ -25,7 +25,6 @@ class Expression(Project):
         systemtests: Optional[SystemtestGenerator] = None,
         api: Optional[API] = None,
         loc: int = 0,
-        relevant_test_files: Optional[List[Path]] = None,
     ):
         super().__init__(
             bug_id=bug_id,
@@ -48,7 +47,7 @@ class Expression(Project):
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "."]],
             included_files=[os.path.join("src", PROJECT_MAME)],
-            relevant_test_files=relevant_test_files,
+            test_base=Path("tests"),
         )
 
 
@@ -66,6 +65,7 @@ def register():
             + "::TestEvaluate::test_eval_div_error",
             os.path.join("tests", "test_expression.py") + "::TestExpr::test_div_error",
         ],
+        loc=108,
     )
 
 

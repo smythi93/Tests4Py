@@ -7,122 +7,136 @@ from markup import remove_html_markup
 class TestsFailing(unittest.TestCase):
     def test_diversity_1(self):
         self.assertEqual(
-            'Matlab "Usage" is controversial.',
-            remove_html_markup('<li>Matlab "Usage" is controversial.</li>'),
+            '""aZhhGAuRzG""',
+            remove_html_markup('""aZhhGAuRzG""'),
         )
 
     def test_diversity_2(self):
         self.assertEqual(
-            'C# "Error" is easy.',
-            remove_html_markup('<audio>C# "Error" is easy.</audio>'),
+            '""WTDYcMlJGGouhwwmnwMsJF""',
+            remove_html_markup('""WTDYcMlJGGouhwwmnwMsJF""'),
         )
 
     def test_diversity_3(self):
         self.assertEqual(
-            'R "Program" is controversial.',
-            remove_html_markup('<aside>R "Program" is controversial.</aside>'),
+            '""LPuRcKppHdFrwESGrftbpIBgvYau""',
+            remove_html_markup('""LPuRcKppHdFrwESGrftbpIBgvYau""'),
         )
 
     def test_diversity_4(self):
         self.assertEqual(
-            'Matlab "Error" is difficult.',
-            remove_html_markup('<datalist>Matlab "Error" is difficult.</datalist>'),
+            '""PFjpbYODHaAKtuMyDrTXHHO""',
+            remove_html_markup('""PFjpbYODHaAKtuMyDrTXHHO""'),
         )
 
     def test_diversity_5(self):
-        self.assertAlmostEqual(
-            'Ruby "Book" is complex.',
-            remove_html_markup('<img>Ruby "Book" is complex.</img>'),
+        self.assertEqual(
+            '""XadJLoyKcWHBHXPcSHQJyHstIeUMG""',
+            remove_html_markup('""XadJLoyKcWHBHXPcSHQJyHstIeUMG""'),
         )
 
     def test_diversity_6(self):
         self.assertEqual(
-            'Python "Book" is hard.',
-            remove_html_markup('<footer>Python "Book" is hard.</footer>'),
+            '""cecpQLBVBzDVeycWLgrjTJhqa""',
+            remove_html_markup('""cecpQLBVBzDVeycWLgrjTJhqa""'),
         )
 
     def test_diversity_7(self):
         self.assertEqual(
-            'R "Book" is controversial.',
-            remove_html_markup('<article>R "Book" is controversial.</article>'),
+            '""jQJnQXVcgjVvxBGjHYjXNReFFxm""',
+            remove_html_markup('""jQJnQXVcgjVvxBGjHYjXNReFFxm""'),
         )
 
     def test_diversity_8(self):
         self.assertEqual(
-            'C "Project" is complex.',
-            remove_html_markup('<section>C "Project" is complex.</section>'),
+            '""MtAbGRtdFGKaSZDoUsZHNMeawY""',
+            remove_html_markup('""MtAbGRtdFGKaSZDoUsZHNMeawY""'),
         )
 
     def test_diversity_9(self):
         self.assertEqual(
-            'Java "Language" is good.',
-            remove_html_markup('<embed>Java "Language" is good.</embed>'),
+            '""neHVLaSzKNsPOsKpWZYGIxiSfzNSF""',
+            remove_html_markup('""neHVLaSzKNsPOsKpWZYGIxiSfzNSF""'),
         )
 
     def test_diversity_10(self):
-        self.assertAlmostEqual(
-            'Java "Error" is difficult.',
-            remove_html_markup('<canvas>Java "Error" is difficult.</canvas>'),
+        self.assertEqual(
+            '""jFqhKwgAmJHfAcuhhxAalvH""',
+            remove_html_markup('""jFqhKwgAmJHfAcuhhxAalvH""'),
         )
 
 
 class TestsPassing(unittest.TestCase):
     def test_diversity_1(self):
         self.assertEqual(
-            "R Fundamental is complex.",
-            remove_html_markup("<output>R 'Fundamental' is complex.</output>"),
+            "FyoVvwEucMT'FrSKJBWObAwFNVdenJDbVmp'zmpvOpMRRXRgeidfTbVzllpGlKYeqh",
+            remove_html_markup(
+                "<output>FyoVvwEucMT'FrSKJBWObAwFNVdenJDbVmp'zmpvOpMRRXRgeidfTbVzllpGlKYeqh</output>"
+            ),
         )
 
     def test_diversity_2(self):
         self.assertEqual(
-            "Pearl 'Syntax' is hard.",
-            remove_html_markup("<video>Pearl 'Syntax' is hard.</video>"),
+            "cMkvjdZvkQeTpoptLK",
+            remove_html_markup("<b>cMkvjdZvkQeTpoptLK</b>"),
         )
 
     def test_diversity_3(self):
         self.assertEqual(
-            "Rust 'Usage' is hard.",
-            remove_html_markup("<datalist>Rust 'Usage' is hard.</datalist>"),
+            "ZtDKaHOsDrroFkCMJOfjNvFhxVVPtsxIJnDeXyTCRBXAldXQnWZpAnBOcgEawrvAYG",
+            remove_html_markup(
+                "<p>ZtDKaHOsDrroFkCMJOf<b>jNvFhxVVPtsxIJnDeXyTCRB</b>XAldXQnWZpAnBOcgEawrvAYG</p>"
+            ),
         )
 
     def test_diversity_4(self):
         self.assertEqual(
-            "C 'Usage' is difficult.",
-            remove_html_markup("<title>C 'Usage' is difficult.</title>"),
+            "IVyFsNqvZttQ GGVbYJJEfogTP KYFtKThfvd",
+            remove_html_markup(
+                "<output>IVyFsNqvZttQ <div>GGVbYJJEfogTP </div>KYFtKThfvd</output>"
+            ),
         )
 
     def test_diversity_5(self):
-        self.assertAlmostEqual(
-            "Python 'Project' is controversial.",
-            remove_html_markup("<header>Python 'Project' is controversial.</header>"),
+        self.assertEqual(
+            "hHhcDDmXkYFWXtslMY",
+            remove_html_markup("<b>hHhcDDmXkYFWXtslMY</b>"),
         )
 
     def test_diversity_6(self):
         self.assertEqual(
-            'R "Language" is easy.',
-            remove_html_markup("<body>R 'Language' is easy.</body>"),
+            "FrSKJBWObAwFNVdenJDbVmpFyoVvwEucMTzmpvOpMRRXRgeidfTbVzllpGlKYeqh",
+            remove_html_markup(
+                "<i>FyoVvwEucMT<h5>FrSKJBWObAwFNVdenJDbVmp</h5>zmpvOpMRRXRgeidfTbVzllpGlKYeqh</i>"
+            ),
         )
 
     def test_diversity_7(self):
         self.assertEqual(
-            'PHP "Project" is cool.',
-            remove_html_markup("<search>PHP 'Project' is cool.</search>"),
+            "YFbvtsUjPXtdSlyjlNodREhSDEPs'uDCzUWQzeuGkwIzW'FRgwFyjeMGFeowphL",
+            remove_html_markup(
+                "<search>YFbvtsUjPXtdSlyjlNodREhSDEPs'uDCzUWQzeuGkwIzW'FRgwFyjeMGFeowphL</search>"
+            ),
         )
 
     def test_diversity_8(self):
         self.assertEqual(
-            "Java 'Book' is controversial.",
-            remove_html_markup("<ul>Java 'Book' is controversial.</ul>"),
+            "AqoZHmPCzFBEdUBIYXXyOhIDnhH'VWCJowRHETrCWNODiDtaEVRAv'oWpaJqjGZfogkGPjugsSfpUOZNSC",
+            remove_html_markup(
+                "<ul>JAqoZHmPCzFBEdUBIYXXyOhIDnhH'VWCJowRHETrCWNODiDtaEVRAv'oWpaJqjGZfogkGPjugsSfpUOZNSC</ul>"
+            ),
         )
 
     def test_diversity_9(self):
         self.assertEqual(
-            "Matlab 'Usage' is difficult.",
-            remove_html_markup("<hr>Matlab 'Usage' is difficult.</hr>"),
+            "YDiSzIscqmFMMRTYngJq",
+            remove_html_markup("<hr>YDiSzIscqmFMMRTYngJq</hr>"),
         )
 
     def test_diversity_10(self):
-        self.assertAlmostEqual(
-            'Javascript "Code" is cool.',
-            remove_html_markup("<head>Javascript 'Code' is cool.</head>"),
+        self.assertEqual(
+            "BlGoMtRrlkklqmXGQ zNDnzdZnHlQEgkFXgDJnqXN AstvewUtlRPCFVAtKGqX",
+            remove_html_markup(
+                "<search>BlGoMtRrlkklqmXGQ <datalist>zNDnzdZnHlQEgkFXgDJnqXN </datalist>AstvewUtlRPCFVAtKGqX</search>"
+            ),
         )
