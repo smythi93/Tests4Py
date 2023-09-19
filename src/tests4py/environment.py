@@ -143,7 +143,14 @@ def activate_shell_check_output(*args, **kwargs):
 class ActivateShellPopen(DEFAULT_POPEN):
     @staticmethod
     def _replace_args(args):
-        return [arg.replace("<", "^<").replace(">", "^>") for arg in args]
+        return [
+            (
+                arg.replace("<", "^<").replace(">", "^>")
+                if isinstance(arg, str) and ("<" in arg or ">" in arg)
+                else arg
+            )
+            for arg in args
+        ]
 
     def __init__(self, *args, **kwargs):
         if "args" in kwargs:
