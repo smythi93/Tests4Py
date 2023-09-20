@@ -5,7 +5,7 @@ import string
 import subprocess
 from pathlib import Path
 from typing import List, Optional, Tuple, Any, Callable
-
+import re
 from tests4py.grammars.fuzzer import Grammar
 from tests4py.grammars.fuzzer import is_valid_grammar
 
@@ -98,7 +98,10 @@ class Markup1API(API):
         if args is None:
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
-        expected = str(process.args[2])
+        expected = process.args[2]
+        clean_it = re.compile("<.*?>")
+        expected = re.sub(clean_it, "", expected).strip()
+        expected = expected.replace("^", "")
         result = process.stdout.decode("utf8").strip()
         print("Expected : ", expected)
         print("Result : ", result)
@@ -116,10 +119,11 @@ class Markup2API(API):
         if args is None:
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
-        expected = str(process.args[2])
-        result = process.stdout.decode("utf8")
-        print("args : ", args)
-        print("subCo : ", subprocess.CompletedProcess)
+        expected = process.args[2]
+        clean_it2 = re.compile("<.*?>")
+        expected = re.sub(clean_it2, "", expected).strip()
+        result = process.stdout.decode("utf8").strip()
+        expected = expected.replace("^", "")
         print("Expected : ", expected)
         print("Result : ", result)
         if result == expected:
@@ -139,42 +143,12 @@ class MarkupTestGenerator:
 
     @staticmethod
     def html_markup_generator():
-        html_markups = [
-            ["<head>", "</head>"],
-            ["<title>", "</title>"],
-            ["<body>", "</body>"],
-            ["<header>", "</header>"],
-            ["<footer>", "</footer>"],
-            ["<article>", "</article>"],
-            ["<section>", "</section>"],
-            ["<p>", "</p>"],
-            ["<div>", "</div>"],
-            ["<span>", "</span>"],
-            ["<img>", "</img>"],
-            ["<aside>", "</aside>"],
-            ["<canvas>", "</canvas>"],
-            ["<datalist>", "</datalist>"],
-            ["<audio>", "</audio>"],
-            ["<details>", "</details>"],
-            ["<nav>", "</nav>"],
-            ["<embed>", "</embed>"],
-            ["<search>", "</search>"],
-            ["<output>", "</output>"],
-            ["<progress>", "</progress>"],
-            ["<video>", "</video>"],
-            ["<ul>", "</ul>"],
-            ["<ol>", "</ol>"],
-            ["<li>", "</li>"],
-            ["<b>", "</b>"],
-            ["<i>", "</i>"],
-            ["<q>", "</q>"],
-            ["<h1>", "</h1>"],
-            ["<h5>", "</h5>"],
-            ["<hr>", "</hr>"],
-        ]
-        number = random.randint(0, 30)
-        first_tag, last_tag = html_markups[number]
-        return first_tag, last_tag
+        html_ = "".join(random.choices(string.ascii_lowercase, k=random.randint(1, 15)))
+        if len(html_) == 1 and html_.startswith("h"):
+            short_html_ = str(random.randint(1, 6))
+            html_ = html_ + short_html_
+
+        return html_
 
 
 class MarkupUnittestGenerator(
@@ -216,73 +190,35 @@ class MarkupUnittestGenerator(
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         generated_string = self.generate_one()
-        prospects = ([f"'{generated_string}'", f'""{generated_string}""'],)
+        prospects = ([f'""{generated_string}""', f'""{generated_string}""'],)
+        print("Failing Test : ", prospects[0])
         test = self.get_empty_test()
         test.body = self._get_assert(prospects[0][0], prospects[0][1])
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         generated_string = self.generate_one()
-        generated_string1 = self.generate_one()
-        generated_string2 = self.generate_one()
-        first, last = self.html_markup_generator()
-        mid_first, mid_last = self.html_markup_generator()
-
-        prospects = (
-            [f"{generated_string}", f"{first}{generated_string}{last}"],
-            [
-                f"{generated_string1}'{generated_string}'{generated_string2}",
-                f"{first}{generated_string1}'{generated_string}'{generated_string2}{last}",
-            ],
-            [
-                f"{generated_string1}{generated_string}{generated_string2}",
-                f"{first}{generated_string1}{mid_first}{generated_string}{mid_last}{generated_string2}{last}",
-            ],
-            [
-                f'{generated_string1}{" "}{generated_string}{" "}{generated_string2}',
-                f'{first}{generated_string1}{" "}{mid_first}{generated_string}{" "}{mid_last}{generated_string2}{last}',
-            ],
-        )
-        number = random.randint(0, 3)
+        html_ = self.html_markup_generator()
+        prospects = [f"{generated_string}", f"<{html_}>{generated_string}</{html_}>"]
+        print("Passing Test : ", prospects[0])
         test = self.get_empty_test()
-        test.body = self._get_assert(prospects[number][0], prospects[number][1])
+        test.body = self._get_assert(prospects[0], prospects[1])
         return test, TestResult.PASSING
 
 
 class MarkupSystemtestGenerator(SystemtestGenerator, MarkupTestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
         generated_string = self.generate_values(self.generate_random_string)
-        prospects = ([f'""{generated_string}""'],)
-        print("Created Values of Failing System Test: ", prospects[0])
+        prospects = [f"'\"{generated_string}\"'"]
+        print("Failing System Test : ", prospects[0])
         return f"{prospects[0]}", TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
         generated_string = self.generate_values(self.generate_random_string)
-        generated_string1 = self.generate_values(self.generate_random_string)
-        generated_string2 = self.generate_values(self.generate_random_string)
-
-        first, last = self.html_markup_generator()
-        mid_first, mid_last = self.html_markup_generator()
-
-        prospects = (
-            [f"{generated_string}", f"{first}{generated_string}{last}"],
-            [
-                f"{generated_string1}'{generated_string}'{generated_string2}",
-                f"{first}{generated_string1}'{generated_string}'{generated_string2}{last}",
-            ],
-            [
-                f"{generated_string1}{generated_string}{generated_string2}",
-                f"{first}{generated_string1}{mid_first}{generated_string}{mid_last}{generated_string2}{last}",
-            ],
-            [
-                f'{generated_string1}{" "}{generated_string}{" "}{generated_string2}',
-                f'{first}{generated_string1}{" "}{mid_first}{generated_string}{" "}{mid_last}{generated_string2}{last}',
-            ],
-        )
-        number = random.randint(0, 3)
-        print("Created Values of Passing System Test: ", prospects[number])
-
-        return f"{prospects[number]}", TestResult.PASSING
+        html_ = self.html_markup_generator()
+        prospects = [f"<{html_}>{generated_string}</{html_}>"]
+        print("Passing System Test : ", prospects[0])
+        return f"{prospects[0]}", TestResult.PASSING
 
 
 grammar: Grammar = {

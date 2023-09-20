@@ -7,14 +7,14 @@ from markup import remove_html_markup
 class TestsFailing(unittest.TestCase):
     def test_diversity_1(self):
         self.assertEqual(
-            '""aZhhGAuRzG""',
-            remove_html_markup('""aZhhGAuRzG""'),
+            '"aZhhGAuRzG"',
+            remove_html_markup('"aZhhGAuRzG"'),
         )
 
     def test_diversity_2(self):
         self.assertEqual(
-            '""WTDYcMlJGGouhwwmnwMsJF""',
-            remove_html_markup('""WTDYcMlJGGouhwwmnwMsJF""'),
+            '"WTDYcMlJGGouhwwmnwMsJF"',
+            remove_html_markup('"WTDYcMlJGGouhwwmnwMsJF"'),
         )
 
     def test_diversity_3(self):
@@ -69,45 +69,41 @@ class TestsFailing(unittest.TestCase):
 class TestsPassing(unittest.TestCase):
     def test_diversity_1(self):
         self.assertEqual(
-            "FyoVvwEucMT'FrSKJBWObAwFNVdenJDbVmp'zmpvOpMRRXRgeidfTbVzllpGlKYeqh",
+            "AvzdaXVxNMqBUQpLxSIwiRcsHC",
             remove_html_markup(
-                "<output>FyoVvwEucMT'FrSKJBWObAwFNVdenJDbVmp'zmpvOpMRRXRgeidfTbVzllpGlKYeqh</output>"
+                "<wnegktaqxjsdbje>AvzdaXVxNMqBUQpLxSIwiRcsHC</wnegktaqxjsdbje>"
             ),
         )
 
     def test_diversity_2(self):
         self.assertEqual(
-            "cMkvjdZvkQeTpoptLK",
-            remove_html_markup("<b>cMkvjdZvkQeTpoptLK</b>"),
+            "ZnvdJzSHLLQxCLHoe",
+            remove_html_markup("<xsbqwkhkbzkul>ZnvdJzSHLLQxCLHoe</xsbqwkhkbzkul>"),
         )
 
     def test_diversity_3(self):
         self.assertEqual(
-            "ZtDKaHOsDrroFkCMJOfjNvFhxVVPtsxIJnDeXyTCRBXAldXQnWZpAnBOcgEawrvAYG",
-            remove_html_markup(
-                "<p>ZtDKaHOsDrroFkCMJOf<b>jNvFhxVVPtsxIJnDeXyTCRB</b>XAldXQnWZpAnBOcgEawrvAYG</p>"
-            ),
+            "GwxdyJVyWAsQXeiRXGvDVmBsSK",
+            remove_html_markup("<rw>GwxdyJVyWAsQXeiRXGvDVmBsSK</rw>"),
         )
 
     def test_diversity_4(self):
         self.assertEqual(
-            "IVyFsNqvZttQ GGVbYJJEfogTP KYFtKThfvd",
-            remove_html_markup(
-                "<output>IVyFsNqvZttQ <div>GGVbYJJEfogTP </div>KYFtKThfvd</output>"
-            ),
+            "RGfUCIYYNlgeIrGbWEHjGj",
+            remove_html_markup("<vflmttlzwyti>RGfUCIYYNlgeIrGbWEHjGj</vflmttlzwyti>"),
         )
 
     def test_diversity_5(self):
         self.assertEqual(
-            "hHhcDDmXkYFWXtslMY",
-            remove_html_markup("<b>hHhcDDmXkYFWXtslMY</b>"),
+            "wFimrubwprJucSEXJ",
+            remove_html_markup("<oktdqxlikfta>wFimrubwprJucSEXJ</oktdqxlikfta>"),
         )
 
     def test_diversity_6(self):
         self.assertEqual(
-            "FrSKJBWObAwFNVdenJDbVmpFyoVvwEucMTzmpvOpMRRXRgeidfTbVzllpGlKYeqh",
+            "CsGdYXQPCtgcKBnHrOinXVJdPqQ",
             remove_html_markup(
-                "<i>FyoVvwEucMT<h5>FrSKJBWObAwFNVdenJDbVmp</h5>zmpvOpMRRXRgeidfTbVzllpGlKYeqh</i>"
+                "<zdgirnlaqvz>CsGdYXQPCtgcKBnHrOinXVJdPqQ</zdgirnlaqvz>"
             ),
         )
 
@@ -121,22 +117,20 @@ class TestsPassing(unittest.TestCase):
 
     def test_diversity_8(self):
         self.assertEqual(
-            "AqoZHmPCzFBEdUBIYXXyOhIDnhH'VWCJowRHETrCWNODiDtaEVRAv'oWpaJqjGZfogkGPjugsSfpUOZNSC",
+            "kObSKUytjyczdCKhOWSUZufbWN",
             remove_html_markup(
-                "<ul>JAqoZHmPCzFBEdUBIYXXyOhIDnhH'VWCJowRHETrCWNODiDtaEVRAv'oWpaJqjGZfogkGPjugsSfpUOZNSC</ul>"
+                "<skptnwsfynvur>kObSKUytjyczdCKhOWSUZufbWN</skptnwsfynvur>"
             ),
         )
 
     def test_diversity_9(self):
         self.assertEqual(
-            "YDiSzIscqmFMMRTYngJq",
-            remove_html_markup("<hr>YDiSzIscqmFMMRTYngJq</hr>"),
+            "ReOpBCSLfvIWSsKlXw",
+            remove_html_markup("<swwsbczw>ReOpBCSLfvIWSsKlXw</swwsbczw>"),
         )
 
     def test_diversity_10(self):
         self.assertEqual(
-            "BlGoMtRrlkklqmXGQ zNDnzdZnHlQEgkFXgDJnqXN AstvewUtlRPCFVAtKGqX",
-            remove_html_markup(
-                "<search>BlGoMtRrlkklqmXGQ <datalist>zNDnzdZnHlQEgkFXgDJnqXN </datalist>AstvewUtlRPCFVAtKGqX</search>"
-            ),
+            "zVnMtFXjIfqWxxynxsVBzapiLHzhk",
+            remove_html_markup("<erxvolwe>zVnMtFXjIfqWxxynxsVBzapiLHzhk</erxvolwe>"),
         )
