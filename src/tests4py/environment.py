@@ -1,6 +1,5 @@
 import importlib
 import os
-import platform
 import shutil
 import subprocess
 import sys
@@ -141,9 +140,7 @@ class ActivateShellPopen(DEFAULT_POPEN):
 
 
 def env_on(project: Project, skip=False) -> Environment:
-    if sys.platform.startswith("win") or (
-        sys.platform.startswith("darwin") and platform.processor().startswith("arm")
-    ):
+    if sys.platform.startswith("win"):
         LOGGER.debug("Activate chell for subprocess")
         importlib.reload(subprocess)
         subprocess.Popen = ActivateShellPopen
