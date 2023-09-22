@@ -46,6 +46,7 @@ class PySnooper(Project):
             github_url="https://github.com/cool-RR/PySnooper",
             status=Status.OK,
             python_version="3.8.4",
+            darwin_python_version="3.8.16",
             python_path="",
             buggy_commit_id=buggy_commit_id,
             fixed_commit_id=fixed_commit_id,
