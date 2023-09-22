@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 from tests4py.constants import PYTHON
+from tests4py.grammars.default import clean_up, CLI_GRAMMAR, get_possible_options
 from tests4py.grammars.fuzzer import Grammar, GrammarFuzzer, srange, is_valid_grammar
 from tests4py.grammars.tree import ComplexDerivationTree
 from tests4py.grammars.utils import GrammarVisitor
@@ -443,32 +444,51 @@ class FastAPIDefaultAPI(API, GrammarVisitor):
 
     def __init__(self, default_timeout: int = 5):
         API.__init__(self, default_timeout=default_timeout)
-        GrammarVisitor.__init__(self, grammar_request)
-        self.path = None
+        GrammarVisitor.__init__(self, grammar_request_generic)
+        self.websockets = dict()
+        self.dependencies = []
+        self.overrides = dict()
+        self.url = None
         self.mode = None
-        self.alias = False
-        self.override = False
+        self.data = None
 
     def visit_options(self, node: ComplexDerivationTree):
-        self.path = None
+        self.websockets = dict()
+        self.dependencies = []
+        self.overrides = dict()
+        self.url = None
         self.mode = None
-        self.alias = False
-        self.override = False
+        self.data = None
         self.generic_visit(node)
 
+    def visit_arg(self, node: ComplexDerivationTree):
+        return self.visit(node.children[0])
+
+    @staticmethod
+    def visit_unescaped(node: ComplexDerivationTree):
+        return node.children[0].to_string()
+
+    @staticmethod
+    def visit_escaped(node: ComplexDerivationTree):
+        return node.children[1].to_string()
+
     # noinspection PyUnusedLocal
-    def visit_alias(self, node: ComplexDerivationTree):
-        self.alias = True
+    def visit_websocket(self, node: ComplexDerivationTree):
+        self.websockets[self.visit(node.children[1])] = self.visit(node.children[2])
+
+    # noinspection PyUnusedLocal
+    def visit_dependency(self, node: ComplexDerivationTree):
+        self.dependencies.append(self.visit(node.children[1]))
 
     # noinspection PyUnusedLocal
     def visit_override(self, node: ComplexDerivationTree):
-        self.override = True
+        self.overrides[self.visit(node.children[1])] = self.visit(node.children[2])
 
     def visit_url(self, node: ComplexDerivationTree):
-        self.path = node.children[1].to_string()
+        self.url = self.visit(node.children[1])
 
     def visit_mode(self, node: ComplexDerivationTree):
-        self.mode = node.children[1].to_string()
+        self.mode = self.visit(node.children[1])
 
     def condition(self, process: subprocess.CompletedProcess) -> bool:
         return False
@@ -500,18 +520,27 @@ class FastAPIDefaultAPI(API, GrammarVisitor):
 
 class FastAPI2API(FastAPIDefaultAPI):
     def condition(self, process: subprocess.CompletedProcess) -> bool:
-        return self.mode == "websocket" and self.path == "/router/" and self.override
+        return (
+            self.mode == "websocket"
+            and self.url in self.websockets
+            and self.websockets[self.url] in self.overrides
+        )
 
     def contains(self, process: subprocess.CompletedProcess) -> bool:
-        return b"Overridden" not in process.stdout
+        return (
+            self.overrides[self.websockets[self.url]].encode("utf8")
+            not in process.stdout
+        )
 
     def fallback_condition(self, process: subprocess.CompletedProcess) -> bool:
         return (
-            self.mode == "websocket" and self.path == "/router/" and not self.override
+            self.mode == "websocket"
+            and self.url in self.websockets
+            and not self.websockets[self.url] in self.overrides
         )
 
     def fallback_contains(self, process: subprocess.CompletedProcess) -> bool:
-        return b"Dependency" not in process.stdout
+        return self.websockets[self.url].encode("utf8") not in process.stdout
 
 
 class FastAPI3API(FastAPIDefaultAPI):
@@ -645,14 +674,20 @@ class FastAPI1TestGenerator(ABC):
             entries = [
                 f"'{key}':{self.string_fuzzer.fuzz()}" for key in self._get_keys()
             ]
-            return f"{{{','.join(entries)}}}"
+            if entries:
+                return f"\"{{{','.join(entries)}}}\""
+            else:
+                return "{}"
         else:
             keys = self._get_keys()
             if "foo" not in keys:
                 keys.append("foo")
                 random.shuffle(keys)
             entries = [f"{key}={self.string_fuzzer.fuzz()}" for key in keys]
-            return f"{'self.' if set_self else ''}Model({','.join(entries)})"
+            if entries:
+                return f"\"{'self.' if set_self else ''}Model({','.join(entries)})\""
+            else:
+                return f"{'self.' if set_self else ''}Model()"
 
     def _generate_key_list(self):
         return ",".join(self._get_keys(m=1))
@@ -1189,95 +1224,128 @@ class FastAPI10UnittestGenerator(UnittestGenerator):
         pass
 
 
-grammar_jsonable_encoder: Grammar = {
-    "<start>": ["<options>"],
-    "<options>": ["", "<option_list>"],
-    "<option_list>": ["<option>", "<option_list>\n<option>"],
-    "<option>": [
-        "<obj>",
-        "<include>",
-        "<exclude>",
-        "<by_alias>",
-        "<skip_defaults>",
-        "<exclude_unset>",
-        "<exclude_defaults>",
-        "<include_none>",
-        "<exclude_none>",
-        "<custom_encoder>",
-        "<sqlalchemy_safe>",
-    ],
-    # OPTIONS
-    "<obj>": ["-o<object>"],
-    "<include>": ["-i<key_list>"],
-    "<exclude>": ["-e<key_list>"],
-    "<by_alias>": ["-a"],
-    "<skip_defaults>": ["-s"],
-    "<exclude_unset>": ["-u"],
-    "<exclude_defaults>": ["-d"],
-    "<include_none>": ["-ni"],
-    "<exclude_none>": ["-ne"],
-    "<custom_encoder>": ["-c<custom_encoders>"],
-    "<sqlalchemy_safe>": ["-q"],
-    # MODEL
-    "<object>": ["<dict>", "<model>"],
-    "<dict>": ["{}", "{<dict_entries>}"],
-    "<dict_entries>": ["<dict_entry>", "<dict_entries>,<dict_entry>"],
-    "<dict_entry>": ["'<key>':<str>"],
-    "<model>": ["Model()", "Model(<parameters>)"],
-    "<parameters>": ["<parameter>", "<parameters>,<parameter>"],
-    "<parameter>": ["<key>=<str>"],
-    # LISTS
-    "<key_list>": ["<key>", "<key_list>,<key>"],
-    # ENCODERS
-    "<custom_encoders>": ["{str:repr}"],
-    # UTILS
-    "<key>": ["foo", "bar", "bla", "da"],
-    "<str>": ["''", "'<chars>'"],
-    "<chars>": ["<char>", "<chars><char>"],
-    "<char>": srange(string.ascii_letters + string.digits + "_ "),
-}
+grammar_jsonable_encoder: Grammar = clean_up(
+    dict(
+        CLI_GRAMMAR,
+        **{
+            "<start>": ["<options>"],
+            "<flag>": [
+                "-<by_alias>",
+                "-<skip_defaults>",
+                "-<exclude_unset>",
+                "-<exclude_defaults>",
+                "-<include_none>",
+                "-<exclude_none>",
+                "-<sqlalchemy_safe>",
+            ],
+            "<op>": [
+                "-<obj>",
+                "-<include>",
+                "-<exclude>",
+                "-<custom_encoder>",
+            ],
+            # OPTIONS
+            "<obj>": get_possible_options("o", "<object>"),
+            "<include>": get_possible_options("i", "<key_list>"),
+            "<exclude>": get_possible_options("e", "<key_list>"),
+            "<custom_encoder>": get_possible_options("c", "<custom_encoders>"),
+            "<by_alias>": ["a"],
+            "<skip_defaults>": ["s"],
+            "<exclude_unset>": ["u"],
+            "<exclude_defaults>": ["d"],
+            "<include_none>": ["ni"],
+            "<exclude_none>": ["ne"],
+            "<sqlalchemy_safe>": ["q"],
+            # MODEL
+            "<object>": ["<dict>", "<model>"],
+            "<dict>": ["{}", '"{}"', '"{<dict_entries>}"'],
+            "<dict_entries>": ["<dict_entry>", "<dict_entries>,<dict_entry>"],
+            "<dict_entry>": ["'<key>':<str>"],
+            "<model>": ["Model()", '"Model()"', '"Model(<parameters>)"'],
+            "<parameters>": ["<parameter>", "<parameters>,<parameter>"],
+            "<parameter>": ["<key>=<str>"],
+            # LISTS
+            "<key_list>": ["<key>", "<key_list>,<key>"],
+            # ENCODERS
+            "<custom_encoders>": ["{str:repr}"],
+            # UTILS
+            "<key>": ["foo", "bar", "bla", "da"],
+            "<str>": ["''", "'<chars>'"],
+            "<chars>": ["<char>", "<chars><char>"],
+            "<char>": srange(string.ascii_letters + string.digits + "_ "),
+        },
+    )
+)
 
 assert is_valid_grammar(grammar_jsonable_encoder)
 
-grammar_request: Grammar = {
-    "<start>": ["<options>"],
-    "<options>": ["", "<option_list>"],
-    "<option_list>": ["<option>", "<option_list>\n<option>"],
-    "<option>": [
-        "<url>",
-        "<mode>",
-        "<data>",
-        "<alias>",
-        "<override>",
-        "<users>",
-    ],
-    # OPTIONS
-    "<url>": ["-p<path>"],
-    "<mode>": ["-m<r_mode>"],
-    "<data>": ["-d<json>"],
-    "<alias>": ["-a"],
-    "<override>": ["-o"],
-    "<users>": ["-u"],
-    # UTILS
-    "<path>": ["/<chars>", "/<chars>/", "/<chars><path>"],
-    "<r_mode>": ["get", "post", "websocket"],
-    "<json>": ["<json_object>", "<json_list>", "<json_value>"],
-    "<json_object>": ["{}", "{<pairs>}"],
-    "<pairs>": ["<pair>", "<pairs>,<pair>"],
-    "<pair>": ["<key>:<json_value>"],
-    "<json_list>": ["[]", "[<json_values>]"],
-    "<json_values>": ["<json_value>", "<json_values>,<json_value>"],
-    "<json_value>": ["<number>", "<str>", "<json_object>", "<json_list>"],
-    "<key>": ["<str>"],
-    "<str>": ['""', '"<chars>"'],
-    "<chars>": ["<char>", "<chars><char>"],
-    "<char>": srange(string.ascii_letters + string.digits + "_-. "),
-    "<number>": ["<int>", "<float>"],
-    "<int>": ["<nonzero><digits>", "-<nonzero><digits>", "0", "-0"],
-    "<digit>": srange(string.digits),
-    "<digits>": ["", "<digits><digit>"],
-    "<nonzero>": ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
-    "<float>": ["<int>.<digit><digits>"],
-}
+grammar_request: Grammar = clean_up(
+    dict(
+        CLI_GRAMMAR,
+        **{
+            "<start>": ["<options>"],
+            "<op>": [
+                "-<websocket>",
+                "-<dependency>",
+                "-<override>",
+                "-<url>",
+                "-<data>",
+                "-<mode>",
+            ],
+            # OPTIONS
+            "<websocket>": get_possible_options("ws", "<arg> <arg>"),
+            "<dependency>": get_possible_options("ds", "<arg>"),
+            "<override>": get_possible_options("os", "<arg> <arg>"),
+            "<url>": get_possible_options("u", "<arg>"),
+            "<data>": get_possible_options("d", "<json>"),
+            "<mode>": get_possible_options("m", "<r_mode>"),
+            # UTILS
+            "<r_mode>": ["get", "post", "websocket"],
+            "<json>": ["<json_object>", "<json_list>", "<json_value>"],
+            "<json_object>": ["{}", "{<pairs>}"],
+            "<pairs>": ["<pair>", "<pairs>,<pair>"],
+            "<pair>": ["<key>:<json_value>"],
+            "<json_list>": ["[]", "[<json_values>]"],
+            "<json_values>": ["<json_value>", "<json_values>,<json_value>"],
+            "<json_value>": ["<number>", "<str>", "<json_object>", "<json_list>"],
+            "<key>": ["<str>"],
+            "<str>": ['""', '"<chars>"'],
+            "<chars>": ["<char>", "<chars><char>"],
+            "<char>": srange(string.ascii_letters + string.digits + "_-. "),
+            "<number>": ["<int>", "<float>"],
+            "<int>": ["<nonzero><digits>", "-<nonzero><digits>", "0", "-0"],
+            "<digit>": srange(string.digits),
+            "<digits>": ["", "<digits><digit>"],
+            "<nonzero>": ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
+            "<float>": ["<int>.<digit><digits>"],
+        },
+    )
+)
 
 assert is_valid_grammar(grammar_request)
+
+grammar_request_generic: Grammar = clean_up(
+    dict(
+        CLI_GRAMMAR,
+        **{
+            "<start>": ["<options>"],
+            "<op>": [
+                "-<websocket>",
+                "-<dependency>",
+                "-<override>",
+                "-<url>",
+                "-<data>",
+                "-<mode>",
+            ],
+            # OPTIONS
+            "<websocket>": get_possible_options("ws", "<arg> <arg>"),
+            "<dependency>": get_possible_options("ds", "<arg>"),
+            "<override>": get_possible_options("os", "<arg> <arg>"),
+            "<url>": get_possible_options("u", "<arg>"),
+            "<data>": get_possible_options("d", "<arg>"),
+            "<mode>": get_possible_options("m", "<arg>"),
+        },
+    )
+)
+
+assert is_valid_grammar(grammar_request_generic)

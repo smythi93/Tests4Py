@@ -1,7 +1,5 @@
 import argparse
 import sys
-from decimal import Decimal
-from typing import List
 
 # noinspection PyUnresolvedReferences
 from fastapi import APIRouter, Depends, FastAPI, Form
@@ -38,158 +36,72 @@ else:
 if __name__ == "__main__":
     arguments = argparse.ArgumentParser()
 
-    arguments.add_argument("-p", dest="url", default="/")
-    arguments.add_argument("-m", dest="mode", default="get")
-    arguments.add_argument("-d", dest="data", default=None)
-    arguments.add_argument("-a", dest="alias", default=False, action="store_true")
-    arguments.add_argument("-o", dest="override", default=False, action="store_true")
-    arguments.add_argument("-u", dest="users", default=False, action="store_true")
+    arguments.add_argument(
+        "-ws", dest="websockets", nargs=2, metavar=("url", "dependency")
+    )
+    arguments.add_argument("-ds", dest="dependencies", action="append")
+    arguments.add_argument(
+        "-os",
+        dest="overrides",
+        action="append",
+        nargs=2,
+        metavar=("dependency", "override"),
+    )
+    arguments.add_argument(
+        "-c",
+        dest="overrides",
+        action="append",
+        nargs=2,
+        metavar=("dependency", "override"),
+    )
+    arguments.add_argument(
+        "-m", dest="mode", required=True, choices=["websocket", "get", "post"]
+    )
+    arguments.add_argument("-u", dest="url", required=True)
+    arguments.add_argument("-d", dest="data")
 
     args = arguments.parse_args()
 
     app = FastAPI()
     router = APIRouter()
 
-    if args.alias and field_exists:
+    dependencies = dict()
 
-        class Item(BaseModel):
-            name: str = Field(..., alias="aliased_name")
-            price: float = None
-            ids: List[int] = None
-            age: condecimal(gt=Decimal(0.0))
+    for dep in args.dependencies:
 
-    else:
+        async def dependency():
+            return dep
 
-        class Item(BaseModel):
-            name: str = ...
-            price: float = None
-            ids: List[int] = None
-            age: condecimal(gt=Decimal(0.0))
+        dependencies[dep] = dependency
 
-    if field_exists:
+    for dep, over in args.overrides:
 
-        class OtherItem(BaseModel):
-            name: str = Field(..., alias="aliased_name")
-            price: float = None
-            ids: List[int] = None
+        async def dependency():
+            return dep
 
-    else:
+        async def override():
+            return over
 
-        class OtherItem(BaseModel):
-            name: str = ...
-            price: float = None
-            ids: List[int] = None
+        dependencies[dep] = dependency
+        app.dependency_overrides[dependency] = override
 
-    class ModelB(BaseModel):
-        username: str
+    for url, dep in args.websockets:
 
-    class ModelA(ModelB):
-        password: str
-
-    class ModelC(BaseModel):
-        id_: int
-        model_b: ModelB
-
-    async def dependency():
-        return "Dependency"
-
-    async def overridden():
-        return "Overridden"
-
-    @app.get("/items/valid", response_model=Item)
-    def get_valid():
-        return (
-            Item(aliased_name="valid", price=1.0, age=5)
-            if args.alias
-            else Item(name="valid", price=1.0, age=5)
-        )
-
-    @app.post("/items/")
-    def save_item_no_body(item: Item):
-        return {"item": item}
-
-    @app.get("/items/valid_list", response_model=List[Item])
-    def get_valid():
-        return [
-            Item(aliased_name="valid", price=1.0, age=5)
-            if args.alias
-            else Item(name="valid", price=1.0, age=5),
-            Item(aliased_name="list", price=1.0, age=5, ids=[1, 2, 3])
-            if args.alias
-            else Item(name="list", price=1.0, age=5, ids=[1, 2, 3]),
-        ]
-
-    @app.get("/items/other", response_model=OtherItem)
-    def get_other():
-        return OtherItem(aliased_name="valid", price=1.0, age=5)
-
-    if args.users:
-
-        async def user_exists(user_id: int):
-            return True
-
-        @app.get("/user/{user_id}", dependencies=[Depends(user_exists)])
-        async def read_users(user_id: int):
-            return user_id
-
-    @router.websocket("/")
-    async def router_ws_decorator_depends(
-        websocket: WebSocket, data=Depends(dependency)
-    ):
-        await websocket.accept()
-        await websocket.send_text(data)
-        await websocket.close()
-
-    async def get_model_a() -> ModelA:
-        return ModelA(username="test-user", password="test-password")
-
-    @app.get("/model", response_model=ModelC)
-    async def get_model_c(model_a=Depends(get_model_a)):
-        return {"id_": 0, "model_b": model_a}
-
-    @app.post("/form/python-set")
-    def post_form_param_set(items: set = Form(...)):
-        return items
-
-    @app.post("/form/python-list")
-    def post_form_param_tuple(items: tuple = Form(...)):
-        return items
-
-    class CustomAPIRoute(APIRoute):
-        x_type = "test"
-
-    custom_router = APIRouter(route_class=CustomAPIRoute)
-
-    @custom_router.get("/")
-    def get_custom():
-        return {"msg": "test"}
-
-    app.include_router(router=custom_router, prefix="/custom")
-    app.include_router(router, prefix="/router")
-
-    @app.get("/routes/")
-    def get_routes():
-        routes = dict()
-        for r in app.router.routes:
-            if r.path == "/custom/":
-                routes[r.path] = r.x_type
-            else:
-                routes[r.path] = r.__class__.__name__
-        return routes
-
-    if args.override:
-        app.dependency_overrides[dependency] = overridden
+        @app.websocket(url)
+        async def app_ws(websocket: WebSocket, data=Depends(dependencies[dep])):
+            await websocket.accept()
+            await websocket.send_text(data)
+            await websocket.close()
 
     client = TestClient(app)
 
     if args.mode == "websocket":
         with client.websocket_connect(args.url) as websocket:
             print(websocket.receive_text())
-    elif args.data is not None:
-        response = getattr(client, args.mode)(args.url, json=eval(args.data))
-        print(response.json())
-        sys.exit(response.status_code)
     else:
-        response = getattr(client, args.mode)(args.url)
+        if args.data is None:
+            response = getattr(client, args.mode)(args.url)
+        else:
+            response = getattr(client, args.mode)(args.url, json=eval(args.data))
         print(response.json())
         sys.exit(response.status_code)

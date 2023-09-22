@@ -54,18 +54,18 @@ FLOAT: Grammar = dict(
 def get_possible_options(option: str, arg: str) -> List[str]:
     return [
         f"{option}{arg}",
-        f"{option} {arg}",
+        f"{option}<sep>{arg}",
         f"{option}={arg}",
     ]
 
 
 CLI_GRAMMAR = dict(
     {
-        "<start>": ["<options> <args>", "<options>", "<args>"],
+        "<start>": ["<options><sep><args>", "<options>", "<args>"],
         "<options>": ["", "<option_list>"],
-        "<option_list>": ["<option>", "<option> <option_list>"],
+        "<option_list>": ["<option>", "<option><sep><option_list>"],
         "<args>": ["", "<arg_list>"],
-        "<arg_list>": ["<arg>", "<arg> <arg_list>"],
+        "<arg_list>": ["<arg>", "<arg><sep><arg_list>"],
         "<arg>": [
             "<unescaped>",
             '"<escaped>"',
@@ -80,6 +80,7 @@ CLI_GRAMMAR = dict(
         "<flag>": ["-<unescaped>", "--<unescaped>"],
         "<op>": get_possible_options("-<unescaped>", "<arg>")
         + get_possible_options("--<unescaped>", "<arg>"),
+        "<sep>": [" ", "\n"],
     },
     **STRING,
     **STRING_WS_ESCAPED,
