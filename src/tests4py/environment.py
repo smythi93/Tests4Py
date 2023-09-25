@@ -183,18 +183,28 @@ def get_python_version(environ: Environment):
 
 def update_env(environ: Environment):
     subprocess.check_call(
-        [PYTHON, "-m", "pip", "install", "--upgrade", "pip"], env=environ
+        [PYTHON, "-m", "pip", "install", "--upgrade", "pip"],
+        env=environ,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
     )
     subprocess.check_call(
         [PYTHON, "-m", "pip", "install", "--upgrade", "setuptools"],
         env=environ,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
     )
     subprocess.check_call(
-        [PYTHON, "-m", "pip", "install", "--upgrade", "wheel"], env=environ
+        [PYTHON, "-m", "pip", "install", "--upgrade", "wheel"],
+        env=environ,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
     )
     subprocess.check_call(
         [PYTHON, "-m", "pip", "install", "--upgrade", "pytest"],
         env=environ,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
     )
 
 
@@ -202,6 +212,8 @@ def sflkit_env(environ: Environment):
     subprocess.check_call(
         [PYTHON, "-m", "pip", "install", "sflkitlib==0.0.1"],
         env=environ,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
     )
 
 

@@ -51,6 +51,8 @@ def run_project(
         report.input = str(args_or_path)
         environ = env_on(project)
         environ = activate_venv(work_dir, environ)
+        if not isinstance(args_or_path, Path):
+            args_or_path = [args.replace("\\-", "-") for args in args_or_path]
         result, feedback = project.api.run(
             args_or_path, environ, work_dir=work_dir, invoke_oracle=invoke_oracle
         )

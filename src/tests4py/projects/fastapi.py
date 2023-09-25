@@ -2,17 +2,19 @@ import ast
 import os.path
 import queue
 import random
+import shlex
 import string
 import subprocess
 from abc import ABC
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Callable, Any, Dict
 
 from tests4py.constants import PYTHON
-from tests4py.grammars.default import clean_up, CLI_GRAMMAR, get_possible_options
+from tests4py.grammars.default import clean_up, CLI_GRAMMAR, get_possible_options, FLOAT
 from tests4py.grammars.fuzzer import Grammar, GrammarFuzzer, srange, is_valid_grammar
 from tests4py.grammars.tree import ComplexDerivationTree
 from tests4py.grammars.utils import GrammarVisitor
+from tests4py.logger import LOGGER
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, ExpectErrAPI, TestResult
@@ -446,49 +448,90 @@ class FastAPIDefaultAPI(API, GrammarVisitor):
         API.__init__(self, default_timeout=default_timeout)
         GrammarVisitor.__init__(self, grammar_request_generic)
         self.websockets = dict()
+        self.gets = dict()
+        self.posts = dict()
         self.dependencies = []
         self.overrides = dict()
         self.url = None
         self.mode = None
         self.data = None
+        self.aliased = False
 
     def visit_options(self, node: ComplexDerivationTree):
+        self.websockets = dict()
+        self.gets = dict()
+        self.posts = dict()
         self.websockets = dict()
         self.dependencies = []
         self.overrides = dict()
         self.url = None
         self.mode = None
         self.data = None
+        self.aliased = None
         self.generic_visit(node)
+
+    def prepare_args(self, args: List[str], work_dir: Path) -> List[str]:
+        try:
+            self.visit_source(shlex.join(args))
+            self.parsed = True
+        except SyntaxError as e:
+            LOGGER.error(f"Cannot parse contents of {args}: {e}")
+            self.parsed = False
+        return args
 
     def visit_arg(self, node: ComplexDerivationTree):
         return self.visit(node.children[0])
 
     @staticmethod
     def visit_unescaped(node: ComplexDerivationTree):
-        return node.children[0].to_string()
+        return node.to_string()
 
     @staticmethod
     def visit_escaped(node: ComplexDerivationTree):
         return node.children[1].to_string()
 
+    @staticmethod
+    def _filter(node: ComplexDerivationTree):
+        return list(
+            filter(
+                lambda n: n.value not in ("<sep>", " ", "\n", "\t", "\r"), node.children
+            )
+        )
+
     # noinspection PyUnusedLocal
     def visit_websocket(self, node: ComplexDerivationTree):
-        self.websockets[self.visit(node.children[1])] = self.visit(node.children[2])
+        filtered = self._filter(node)
+        self.websockets[self.visit(filtered[1])] = self.visit(filtered[2])
+
+    def visit_get(self, node: ComplexDerivationTree):
+        filtered = self._filter(node)
+        self.gets[self.visit(filtered[1])] = self.visit(filtered[2])
+
+    def visit_post(self, node: ComplexDerivationTree):
+        filtered = self._filter(node)
+        self.posts[self.visit(filtered[1])] = self.visit(filtered[2])
 
     # noinspection PyUnusedLocal
     def visit_dependency(self, node: ComplexDerivationTree):
-        self.dependencies.append(self.visit(node.children[1]))
+        filtered = self._filter(node)
+        self.dependencies.append(self.visit(filtered[1]))
 
     # noinspection PyUnusedLocal
     def visit_override(self, node: ComplexDerivationTree):
-        self.overrides[self.visit(node.children[1])] = self.visit(node.children[2])
+        filtered = self._filter(node)
+        self.overrides[self.visit(filtered[1])] = self.visit(filtered[2])
 
     def visit_url(self, node: ComplexDerivationTree):
-        self.url = self.visit(node.children[1])
+        filtered = self._filter(node)
+        self.url = self.visit(filtered[1])
 
     def visit_mode(self, node: ComplexDerivationTree):
-        self.mode = self.visit(node.children[1])
+        filtered = self._filter(node)
+        self.mode = self.visit(filtered[1])
+
+    def visit_alias(self, node: ComplexDerivationTree):
+        filtered = self._filter(node)
+        self.aliased = self.visit(filtered[1])
 
     def condition(self, process: subprocess.CompletedProcess) -> bool:
         return False
@@ -502,15 +545,26 @@ class FastAPIDefaultAPI(API, GrammarVisitor):
     def fallback_contains(self, process: subprocess.CompletedProcess) -> bool:
         return False
 
+    def get_failing_feedback(self):
+        return ""
+
+    def get_failing_fallback_feedback(self):
+        return ""
+
+    def get_error_feedback(self):
+        return "Encountered an error that cannot be interpreted"
+
     def oracle(self, args) -> Tuple[TestResult, str]:
         process = args
+        if not self.parsed:
+            return TestResult.UNDEFINED, "Cannot parse argument"
         if self.condition(process) and self.contains(process):
-            return TestResult.FAILING, ""
+            return TestResult.FAILING, self.get_failing_feedback()
         else:
             if self.fallback_condition(process) and self.fallback_contains(process):
-                return TestResult.FAILING, ""
+                return TestResult.FAILING, self.get_failing_fallback_feedback()
             elif self.error_handling(process):
-                return TestResult.UNDEFINED, ""
+                return TestResult.UNDEFINED, self.get_error_feedback()
             else:
                 return TestResult.PASSING, ""
 
@@ -556,7 +610,6 @@ class FastAPI3API(FastAPIDefaultAPI):
                 or b"validation error for OtherItem" in process.stderr
                 or b"validation errors for OtherItem" in process.stderr
             )
-            and b"aliased_name" in process.stderr
             and b"field required (type=value_error.missing)" in process.stderr
         )
 
@@ -658,7 +711,7 @@ class FastAPISystemtestGenerator(SystemtestGenerator, ABC):
 class FastAPI1TestGenerator(ABC):
     def __init__(self):
         self.string_fuzzer = GrammarFuzzer(
-            grammar_jsonable_encoder, start_symbol="<str>"
+            grammar_jsonable_encoder, start_symbol="<json_str>"
         )
 
     @staticmethod
@@ -737,139 +790,142 @@ class FastAPI1SystemtestGenerator(FastAPISystemtestGenerator, FastAPI1TestGenera
 
 
 class FastAPIDefaultSystemtestGenerator(FastAPISystemtestGenerator, ABC):
+    WEBSOCKET = "websocket"
     GET = "get"
     POST = "post"
-    WEBSOCKET = "websocket"
-    MODES_TO_PATHS = {
-        GET: [
-            "/items/valid",
-            "/items/valid_list",
-            "/items/other",
-            "/user/{user_id}",
-            "/model",
-            "/routes/",
-            "/custom/",
-        ],
-        POST: ["/items/", "/form/python-set", "/form/python-list"],
-        WEBSOCKET: [
-            "/router/",
-        ],
-    }
-    PATHS_TO_MODES = {
-        "/items/valid": GET,
-        "/items/valid_list": GET,
-        "/items/other": GET,
-        "/user/{user_id}": GET,
-        "/model": GET,
-        "/routes/": GET,
-        "/custom/": GET,
-        "/items/": POST,
-        "/form/python-set": POST,
-        "/form/python-list": POST,
-        "/router/": WEBSOCKET,
-    }
 
-    def __init__(self):
+    def __init__(self, max_others: int = 10):
         super().__init__()
-        self.string_fuzzer = GrammarFuzzer(grammar_request, start_symbol="<str>")
+        self.string_fuzzer = GrammarFuzzer(grammar_request, start_symbol="<chars>")
         self.json_fuzzer = GrammarFuzzer(grammar_request, start_symbol="<json>")
+        self.paths: Dict[str, str] = dict()
+        self.dependencies: List[str] = list()
+        self.overrides: List[str] = list()
+        self.data: Optional[str] = None
+        self.max_others = max_others
+        self.responders: List[
+            Tuple[Callable[[Any], Tuple[List[str], str]], List[Callable]]
+        ] = [
+            (self.generate_websocket, [self.random_bool]),
+        ]
+        self.others: List[
+            Tuple[Callable[[Any], Tuple[List[str], str]], List[Callable]]
+        ] = [
+            (self.generate_dependency, [self.random_bool]),
+        ]
 
-    def _generate_mode_and_path(
-        self, mode: str = None, path: str = None, users: bool = False
-    ):
-        if mode and path:
-            return mode, path
-        elif mode and mode in self.MODES_TO_PATHS:
-            path = random.choice(
-                list(
-                    filter(
-                        lambda p: users or "user" not in p, self.MODES_TO_PATHS[mode]
-                    )
-                )
-            )
-        elif path and path in self.PATHS_TO_MODES:
-            mode = self.PATHS_TO_MODES[path]
+    def reset(self):
+        self.paths = dict()
+        self.dependencies = list()
+        self.overrides = list()
+        self.data = None
+
+    def _generate_path(self) -> str:
+        prefix = "" if random.random() < 0.5 else self._generate_path()
+        return prefix + "/" + self.string_fuzzer.fuzz()
+
+    def generate_new_path(self) -> str:
+        path = self._generate_path()
+        while path in self.paths:
+            path = self._generate_path()
+        return path
+
+    def generate_dependency(self, override: bool = False) -> Tuple[List[str], str]:
+        dependency = self.string_fuzzer.fuzz()
+        while dependency in self.dependencies:
+            dependency = self.string_fuzzer.fuzz()
+        if override:
+            override = dependency
+            while override == dependency:
+                override = self.string_fuzzer.fuzz()
+            self.overrides.append(dependency)
+            return ["-os", dependency, override], None
         else:
-            path = random.choice(
-                list(
-                    filter(
-                        lambda p: users or "user" not in p, self.PATHS_TO_MODES.keys()
-                    )
-                )
-            )
-            mode = self.PATHS_TO_MODES[path]
-        return mode, path
+            self.dependencies.append(dependency)
+            return ["-ds", dependency], None
 
-    def _generate_data(self, data: str = None, path: str = None, aliased: bool = False):
-        if data is not None:
-            return data
-        elif path and path == "/items/":
-            data = "{"
-            if aliased:
-                data += f'"aliased_name":{self.string_fuzzer.fuzz()}'
-            else:
-                data += f'"name":{self.string_fuzzer.fuzz()}'
-            data += (
-                f',"price":{random.random() + random.randint(0, 100)}'
-                + f',"age":{random.randint(0, 100)}}}'
-            )
-            return data
+    def generate_websocket(self, override: bool = False) -> Tuple[List[str], str]:
+        path = self.generate_new_path()
+        self.paths[path] = self.WEBSOCKET
+        args = []
+        if override:
+            if not self.overrides:
+                args, _ = self.generate_dependency(override=True)
+            dependency = random.choice(self.overrides)
+        else:
+            if not self.dependencies:
+                args, _ = self.generate_dependency(override=False)
+            dependency = random.choice(self.dependencies)
+        return args + ["-ws", path, dependency], path
+
+    @staticmethod
+    def random_bool() -> bool:
+        return bool(random.getrandbits(1))
+
+    @staticmethod
+    def select_and_generate(
+        choices: List[Tuple[Callable[[Any], Tuple[List[str], str]], List[Callable]]]
+    ):
+        producer, args_producer = random.choice(choices)
+        return producer(*list(map(lambda f: f(), args_producer)))
+
+    def generate_others(self) -> List[str]:
+        args = []
+        for i in range(random.randint(0, self.max_others)):
+            arg, _ = self.select_and_generate(self.responders + self.others)
+            args += arg
+        return args
+
+    def generate_data(self) -> List[str]:
+        if self.data is not None:
+            return ["-d", f'"self.data"']
         else:
             if random.getrandbits(1):
-                return None
-            return self.json_fuzzer.fuzz()
+                return []
+            return ["-d", f'"{self.json_fuzzer.fuzz()}"']
 
-    def _generate_request(
+    def generate_target(
+        self, excluded: Optional[List[Callable]] = None
+    ) -> Tuple[List[str], str]:
+        excluded = excluded or list()
+        return self.select_and_generate(
+            list(filter(lambda f: f[0] not in excluded, self.responders))
+        )
+
+    def generate_request(
         self,
-        mode: str = None,
-        path: str = None,
-        data: str = None,
-        alias: bool = None,
-        override: bool = None,
-        users: bool = None,
+        target_arguments: List[str],
+        target_path: str,
     ):
-        users = bool(random.getrandbits(1)) if users is None else users
-        mode, path = self._generate_mode_and_path(mode=mode, path=path, users=users)
-        alias = bool(random.getrandbits(1)) if alias is None else alias
-        override = bool(random.getrandbits(1)) if override is None else override
-        data = self._generate_data(data, path, alias)
-        request = [f"-m{mode}", f"-p{path}"]
-        if alias:
-            request.append("-a")
-        if override:
-            request.append("-o")
-        if users:
-            request.append("-u")
-        if data is not None:
-            request.append(f"-d{data}")
-        random.shuffle(request)
-        return "\n".join(request)
+        arguments = self.generate_others()
+        data_arguments = self.generate_data()
+        return " ".join(
+            arguments
+            + target_arguments
+            + data_arguments
+            + ["-u", target_path, "-m", self.paths[target_path]]
+        )
 
 
 class FastAPI2SystemtestGenerator(FastAPIDefaultSystemtestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
+        self.reset()
         return (
-            self._generate_request(path="/router/", override=True),
+            self.generate_request(*self.generate_websocket(override=True)),
             TestResult.FAILING,
         )
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        if random.getrandbits(1):
+        self.reset()
+        if True or random.getrandbits(1):  # TODO remove when alternatives exist
             return (
-                self._generate_request(path="/router/", override=False),
+                self.generate_request(*self.generate_websocket(override=False)),
                 TestResult.PASSING,
             )
         else:
             return (
-                self._generate_request(
-                    path=random.choice(
-                        list(
-                            filter(
-                                lambda p: "user" not in p and "/router/" not in p,
-                                self.PATHS_TO_MODES.keys(),
-                            )
-                        )
-                    )
+                self.generate_request(
+                    *self.generate_target(excluded=[self.generate_websocket])
                 ),
                 TestResult.PASSING,
             )
@@ -1041,7 +1097,7 @@ except ImportError:
 class FastAPI2UnittestGenerator(UnittestGenerator):
     def __init__(self):
         super().__init__()
-        self.string_fuzzer = GrammarFuzzer(grammar_request, start_symbol="<str>")
+        self.string_fuzzer = GrammarFuzzer(grammar_request, start_symbol="<json_str>")
         self.json_fuzzer = GrammarFuzzer(grammar_request, start_symbol="<json>")
 
     def get_utils(self) -> List[ast.stmt]:
@@ -1260,17 +1316,17 @@ grammar_jsonable_encoder: Grammar = clean_up(
             "<object>": ["<dict>", "<model>"],
             "<dict>": ["{}", '"{}"', '"{<dict_entries>}"'],
             "<dict_entries>": ["<dict_entry>", "<dict_entries>,<dict_entry>"],
-            "<dict_entry>": ["'<key>':<str>"],
+            "<dict_entry>": ["'<key>':<json_str>"],
             "<model>": ["Model()", '"Model()"', '"Model(<parameters>)"'],
             "<parameters>": ["<parameter>", "<parameters>,<parameter>"],
-            "<parameter>": ["<key>=<str>"],
+            "<parameter>": ["<key>=<json_str>"],
             # LISTS
             "<key_list>": ["<key>", "<key_list>,<key>"],
             # ENCODERS
             "<custom_encoders>": ["{str:repr}"],
             # UTILS
             "<key>": ["foo", "bar", "bla", "da"],
-            "<str>": ["''", "'<chars>'"],
+            "<json_str>": ["''", "'<chars>'"],
             "<chars>": ["<char>", "<chars><char>"],
             "<char>": srange(string.ascii_letters + string.digits + "_ "),
         },
@@ -1291,34 +1347,52 @@ grammar_request: Grammar = clean_up(
                 "-<url>",
                 "-<data>",
                 "-<mode>",
+                "-<item>",
+                "-<model_a>",
+                "-<model_b>",
+                "-<get>",
+                "-<post>",
+                "-<alias>",
             ],
             # OPTIONS
-            "<websocket>": get_possible_options("ws", "<arg> <arg>"),
+            "<websocket>": get_possible_options("ws", "<arg><sep><arg>"),
             "<dependency>": get_possible_options("ds", "<arg>"),
-            "<override>": get_possible_options("os", "<arg> <arg>"),
+            "<override>": get_possible_options("os", "<arg><sep><arg>"),
             "<url>": get_possible_options("u", "<arg>"),
             "<data>": get_possible_options("d", "<json>"),
             "<mode>": get_possible_options("m", "<r_mode>"),
+            "<item>": get_possible_options("item", "<arg><sep><float><sep><integer>"),
+            "<model_a>": get_possible_options("ma", "<arg><sep><arg>"),
+            "<model_b>": get_possible_options("mb", "<arg>"),
+            "<get>": get_possible_options("gs", "<arg><sep><model>"),
+            "<post>": get_possible_options("ps", "<arg><sep><model>"),
+            "<alias>": get_possible_options("a", "<arg>"),
             # UTILS
             "<r_mode>": ["get", "post", "websocket"],
-            "<json>": ["<json_object>", "<json_list>", "<json_value>"],
+            "<json>": ["<json_>", '"<json_>"', "'<json_>'"],
+            "<json_>": ["<json_object>", "<json_list>", "<json_value>"],
             "<json_object>": ["{}", "{<pairs>}"],
             "<pairs>": ["<pair>", "<pairs>,<pair>"],
             "<pair>": ["<key>:<json_value>"],
             "<json_list>": ["[]", "[<json_values>]"],
             "<json_values>": ["<json_value>", "<json_values>,<json_value>"],
-            "<json_value>": ["<number>", "<str>", "<json_object>", "<json_list>"],
-            "<key>": ["<str>"],
-            "<str>": ['""', '"<chars>"'],
+            "<json_value>": ["<float>", "<json_str>", "<json_object>", "<json_list>"],
+            "<key>": ["<json_str>"],
+            "<json_str>": ['\\"\\"', '\\"<chars>\\"', '""', '"<chars>"'],
             "<chars>": ["<char>", "<chars><char>"],
-            "<char>": srange(string.ascii_letters + string.digits + "_-. "),
-            "<number>": ["<int>", "<float>"],
-            "<int>": ["<nonzero><digits>", "-<nonzero><digits>", "0", "-0"],
-            "<digit>": srange(string.digits),
-            "<digits>": ["", "<digits><digit>"],
-            "<nonzero>": ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
-            "<float>": ["<int>.<digit><digits>"],
+            "<char>": srange(string.ascii_letters + string.digits + "_"),
+            "<model>": [
+                "ModelA",
+                "ModelB",
+                "ModelCA",
+                "ModelCB",
+                "Item",
+                "OtherItem",
+                "List[Item]",
+                "List[OtherItem]",
+            ],
         },
+        **FLOAT,
     )
 )
 
@@ -1329,22 +1403,38 @@ grammar_request_generic: Grammar = clean_up(
         CLI_GRAMMAR,
         **{
             "<start>": ["<options>"],
+            "<option>": ["<op>"],
             "<op>": [
                 "-<websocket>",
                 "-<dependency>",
                 "-<override>",
+                "-<get>",
+                "-<post>",
                 "-<url>",
                 "-<data>",
                 "-<mode>",
+                "-<item>",
+                "-<model_a>",
+                "-<model_b>",
+                "-<get>",
+                "-<post>",
+                "-<alias>",
             ],
             # OPTIONS
-            "<websocket>": get_possible_options("ws", "<arg> <arg>"),
+            "<websocket>": get_possible_options("ws", "<arg><sep><arg>"),
             "<dependency>": get_possible_options("ds", "<arg>"),
-            "<override>": get_possible_options("os", "<arg> <arg>"),
+            "<override>": get_possible_options("os", "<arg><sep><arg>"),
             "<url>": get_possible_options("u", "<arg>"),
             "<data>": get_possible_options("d", "<arg>"),
             "<mode>": get_possible_options("m", "<arg>"),
+            "<item>": get_possible_options("item", "<arg><sep><arg><sep><arg>"),
+            "<model_a>": get_possible_options("ma", "<arg><sep><arg>"),
+            "<model_b>": get_possible_options("mb", "<arg>"),
+            "<get>": get_possible_options("gs", "<arg><sep><arg>"),
+            "<post>": get_possible_options("ps", "<arg><sep><arg>"),
+            "<alias>": get_possible_options("a", "<arg>"),
         },
+        **FLOAT,
     )
 )
 

@@ -582,7 +582,13 @@ class TestDefaultGrammar(unittest.TestCase):
         self.__test_parse__(
             CLI_GRAMMAR,
             "<start>",
-            ["-a", "-a abc -b -c def abcdef", '-a "a b"', '"\\"This is a test\\""'],
+            [
+                "-a",
+                "-a abc -b -c def abcdef",
+                '-a "a b"',
+                '"\\"This is a test\\""',
+                "-c /test/",
+            ],
             ["a -b c", '""This is a test""'],
         )
 
