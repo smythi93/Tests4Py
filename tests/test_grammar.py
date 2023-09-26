@@ -9,8 +9,8 @@ from tests4py.grammars.default import (
     INTEGER,
     FLOAT,
     STRING,
-    STRING_WS_ESCAPED,
     STRING_WS,
+    STRING_WS_ESCAPED_DOUBLE,
     CLI_GRAMMAR,
 )
 from tests4py.grammars.fuzzer import Grammar, is_valid_grammar
@@ -466,7 +466,7 @@ class TestDefaultGrammar(unittest.TestCase):
                 tree = None
                 for tree in parser.parse(word):
                     break
-            except SyntaxError as e:
+            except SyntaxError:
                 pass
             else:
                 self.fail(f"Can parse {word}: {tree}")
@@ -536,8 +536,8 @@ class TestDefaultGrammar(unittest.TestCase):
 
     def test_string_ws_escaped(self):
         self.__test_parse__(
-            STRING_WS_ESCAPED,
-            "<string_ws_escaped>",
+            STRING_WS_ESCAPED_DOUBLE,
+            "<string_ws_escaped_double>",
             [
                 "1",
                 "-0",
