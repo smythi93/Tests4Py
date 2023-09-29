@@ -1,11 +1,9 @@
 import importlib
 import os
-import platform
 import shutil
 import subprocess
 import sys
 from pathlib import Path
-from typing import Callable
 
 from tests4py.constants import (
     Environment,
@@ -120,26 +118,6 @@ def install_pyenv() -> str:
         subprocess.check_call(["bash"], stdin=process)
 
 
-# Windows stuff
-
-
-def set_shell(call: Callable, *args, **kwargs):
-    kwargs["shell"] = True
-    return call(*args, **kwargs)
-
-
-def activate_shell_run(*args, **kwargs):
-    return set_shell(DEFAULT_RUN, *args, **kwargs)
-
-
-def activate_shell_check_call(*args, **kwargs):
-    return set_shell(DEFAULT_CHECK_CALL, *args, **kwargs)
-
-
-def activate_shell_check_output(*args, **kwargs):
-    return set_shell(DEFAULT_CHECK_OUTPUT, *args, **kwargs)
-
-
 class ActivateShellPopen(DEFAULT_POPEN):
     @staticmethod
     def _replace_args(args):
@@ -162,14 +140,9 @@ class ActivateShellPopen(DEFAULT_POPEN):
 
 
 def env_on(project: Project, skip=False) -> Environment:
-    if sys.platform.startswith("win") or (
-        sys.platform.startswith("darwin") and platform.processor().startswith("arm")
-    ):
+    if sys.platform.startswith("win"):
         LOGGER.debug("Activate chell for subprocess")
         importlib.reload(subprocess)
-        subprocess.run = activate_shell_run
-        subprocess.check_call = activate_shell_check_call
-        subprocess.check_output = activate_shell_check_output
         subprocess.Popen = ActivateShellPopen
 
     environ = os.environ.copy()
@@ -210,18 +183,28 @@ def get_python_version(environ: Environment):
 
 def update_env(environ: Environment):
     subprocess.check_call(
-        [PYTHON, "-m", "pip", "install", "--upgrade", "pip"], env=environ
+        [PYTHON, "-m", "pip", "install", "--upgrade", "pip"],
+        env=environ,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
     )
     subprocess.check_call(
         [PYTHON, "-m", "pip", "install", "--upgrade", "setuptools"],
         env=environ,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
     )
     subprocess.check_call(
-        [PYTHON, "-m", "pip", "install", "--upgrade", "wheel"], env=environ
+        [PYTHON, "-m", "pip", "install", "--upgrade", "wheel"],
+        env=environ,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
     )
     subprocess.check_call(
         [PYTHON, "-m", "pip", "install", "--upgrade", "pytest"],
         env=environ,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
     )
 
 
@@ -229,6 +212,8 @@ def sflkit_env(environ: Environment):
     subprocess.check_call(
         [PYTHON, "-m", "pip", "install", "sflkitlib==0.0.1"],
         env=environ,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
     )
 
 

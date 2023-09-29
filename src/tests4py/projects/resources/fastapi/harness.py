@@ -3,31 +3,31 @@ import sys
 from decimal import Decimal
 from typing import List
 
-# noinspection PyUnresolvedReferences
+# noinspection PyUnresolvedReferences,PyPackageRequirements
 from fastapi import APIRouter, Depends, FastAPI, Form
 
-# noinspection PyUnresolvedReferences
+# noinspection PyUnresolvedReferences,PyPackageRequirements
 from fastapi.routing import APIRoute
 
 try:
-    # noinspection PyUnresolvedReferences
+    # noinspection PyUnresolvedReferences,PyPackageRequirements
     from fastapi import WebSocket
 except ImportError:
-    # noinspection PyUnresolvedReferences
+    # noinspection PyUnresolvedReferences,PyPackageRequirements
     from starlette.websockets import WebSocket
 
 try:
-    # noinspection PyUnresolvedReferences
+    # noinspection PyUnresolvedReferences,PyPackageRequirements
     from fastapi.testclient import TestClient
 except ImportError:
-    # noinspection PyUnresolvedReferences
+    # noinspection PyUnresolvedReferences,PyPackageRequirements
     from starlette.testclient import TestClient
 
-# noinspection PyUnresolvedReferences
+# noinspection PyUnresolvedReferences,PyPackageRequirements
 from pydantic import BaseModel, condecimal
 
 try:
-    # noinspection PyUnresolvedReferences
+    # noinspection PyUnresolvedReferences,PyPackageRequirements
     from pydantic import Field
 except ImportError:
     field_exists = False
@@ -38,22 +38,91 @@ else:
 if __name__ == "__main__":
     arguments = argparse.ArgumentParser()
 
-    arguments.add_argument("-p", dest="url", default="/")
-    arguments.add_argument("-m", dest="mode", default="get")
-    arguments.add_argument("-d", dest="data", default=None)
-    arguments.add_argument("-a", dest="alias", default=False, action="store_true")
-    arguments.add_argument("-o", dest="override", default=False, action="store_true")
-    arguments.add_argument("-u", dest="users", default=False, action="store_true")
+    arguments.add_argument(
+        "-ws",
+        dest="websockets",
+        action="append",
+        default=[],
+        nargs=2,
+        metavar=("url", "dependency"),
+    )
+    arguments.add_argument("-ds", dest="dependencies", action="append", default=[])
+    arguments.add_argument(
+        "-os",
+        dest="overrides",
+        action="append",
+        default=[],
+        nargs=2,
+        metavar=("dependency", "override"),
+    )
+    arguments.add_argument(
+        "-a",
+        dest="alias",
+        default=None,
+    )
+    arguments.add_argument(
+        "-m", dest="mode", required=True, choices=["websocket", "get", "post"]
+    )
+    arguments.add_argument("-u", dest="url", required=True)
+    arguments.add_argument("-d", dest="data")
+    arguments.add_argument(
+        "-item",
+        dest="item",
+        nargs=3,
+        metavar=("name", "price", "age"),
+        default=("valid", "1.0", "5"),
+    )
+    arguments.add_argument(
+        "-mb", dest="model_b", nargs=1, metavar="username", default="username"
+    )
+    arguments.add_argument(
+        "-ma",
+        dest="model_a",
+        nargs=2,
+        metavar=("username", "password"),
+        default=("username", "password"),
+    )
+    arguments.add_argument(
+        "-gs",
+        dest="gets",
+        action="append",
+        default=[],
+        nargs=2,
+        metavar=("url", "response"),
+    )
+    arguments.add_argument(
+        "-ps",
+        dest="posts",
+        action="append",
+        default=[],
+        nargs=2,
+        metavar=("url", "response"),
+    )
 
     args = arguments.parse_args()
 
     app = FastAPI()
     router = APIRouter()
 
+    dependencies = dict()
+
+    def get_dependency(d):
+        async def dependency():
+            return d
+
+        return dependency
+
+    for dep in args.dependencies:
+        dependencies[dep] = get_dependency(dep)
+
+    for dep, over in args.overrides:
+        dependencies[dep] = get_dependency(dep)
+        app.dependency_overrides[dependencies[dep]] = lambda: over
+
     if args.alias and field_exists:
 
         class Item(BaseModel):
-            name: str = Field(..., alias="aliased_name")
+            name: str = Field(..., alias=args.alias)
             price: float = None
             ids: List[int] = None
             age: condecimal(gt=Decimal(0.0))
@@ -65,11 +134,43 @@ if __name__ == "__main__":
             price: float = None
             ids: List[int] = None
             age: condecimal(gt=Decimal(0.0))
+
+    item_name, item_price, item_age = args.item
+
+    def get_item():
+        return Item(
+            **{
+                args.alias or "name": item_name,
+                "price": float(item_price),
+                "age": int(item_age),
+            }
+        )
+
+    def save_item_no_body(item: Item):
+        return {"item": item}
+
+    def get_item_list():
+        return [
+            Item(
+                **{
+                    args.alias or "name": item_name,
+                    "price": float(item_price),
+                    "age": int(item_age),
+                }
+            ),
+            Item(
+                **{
+                    args.alias or "name": item_name,
+                    "price": float(item_price),
+                    "age": int(item_age),
+                }
+            ),
+        ]
 
     if field_exists:
 
         class OtherItem(BaseModel):
-            name: str = Field(..., alias="aliased_name")
+            name: str = Field(..., alias=args.alias or "aliased_name")
             price: float = None
             ids: List[int] = None
 
@@ -80,116 +181,155 @@ if __name__ == "__main__":
             price: float = None
             ids: List[int] = None
 
+    def get_other():
+        return OtherItem(
+            **{
+                args.alias or ("aliased_name" if field_exists else "name"): item_name,
+                "price": float(item_price),
+                "age": int(item_age),
+            }
+        )
+
+    def get_other_list():
+        return [
+            OtherItem(
+                **{
+                    args.alias
+                    or ("aliased_name" if field_exists else "name"): item_name,
+                    "price": float(item_price),
+                    "age": int(item_age),
+                }
+            ),
+            OtherItem(
+                **{
+                    args.alias
+                    or ("aliased_name" if field_exists else "name"): item_name,
+                    "price": float(item_price),
+                    "age": int(item_age),
+                }
+            ),
+        ]
+
     class ModelB(BaseModel):
         username: str
 
+    b_username = args.model_b
+
+    async def get_model_b() -> ModelB:
+        return ModelB(username=b_username)
+
     class ModelA(ModelB):
         password: str
+
+    a_username, a_password = args.model_a
+
+    async def get_model_a() -> ModelA:
+        return ModelA(username=a_username, passord=a_password)
 
     class ModelC(BaseModel):
         id_: int
         model_b: ModelB
 
-    async def dependency():
-        return "Dependency"
-
-    async def overridden():
-        return "Overridden"
-
-    @app.get("/items/valid", response_model=Item)
-    def get_valid():
-        return (
-            Item(aliased_name="valid", price=1.0, age=5)
-            if args.alias
-            else Item(name="valid", price=1.0, age=5)
-        )
-
-    @app.post("/items/")
-    def save_item_no_body(item: Item):
-        return {"item": item}
-
-    @app.get("/items/valid_list", response_model=List[Item])
-    def get_valid():
-        return [
-            Item(aliased_name="valid", price=1.0, age=5)
-            if args.alias
-            else Item(name="valid", price=1.0, age=5),
-            Item(aliased_name="list", price=1.0, age=5, ids=[1, 2, 3])
-            if args.alias
-            else Item(name="list", price=1.0, age=5, ids=[1, 2, 3]),
-        ]
-
-    @app.get("/items/other", response_model=OtherItem)
-    def get_other():
-        return OtherItem(aliased_name="valid", price=1.0, age=5)
-
-    if args.users:
-
-        async def user_exists(user_id: int):
-            return True
-
-        @app.get("/user/{user_id}", dependencies=[Depends(user_exists)])
-        async def read_users(user_id: int):
-            return user_id
-
-    @router.websocket("/")
-    async def router_ws_decorator_depends(
-        websocket: WebSocket, data=Depends(dependency)
-    ):
-        await websocket.accept()
-        await websocket.send_text(data)
-        await websocket.close()
-
-    async def get_model_a() -> ModelA:
-        return ModelA(username="test-user", password="test-password")
-
-    @app.get("/model", response_model=ModelC)
-    async def get_model_c(model_a=Depends(get_model_a)):
+    async def get_model_c_a(model_a=Depends(get_model_a)):
         return {"id_": 0, "model_b": model_a}
 
-    @app.post("/form/python-set")
-    def post_form_param_set(items: set = Form(...)):
-        return items
+    async def get_model_c_b(model_b=Depends(get_model_b)):
+        return {"id_": 0, "model_b": model_b}
 
-    @app.post("/form/python-list")
-    def post_form_param_tuple(items: tuple = Form(...)):
-        return items
+    for url, response in args.gets:
+        responder = None
+        type_ = None
+        if response == "Item":
+            responder = get_item
+            type_ = Item
+        elif response == "List[Item]":
+            responder = get_item_list
+            type_ = List[Item]
+        elif response == "OtherIterm":
+            responder = get_other
+            type_ = OtherItem
+        elif response == "List[OtherIterm]":
+            responder = get_other_list
+            type_ = List[OtherItem]
+        elif responder == "ModelA":
+            responder = get_model_a
+            type_ = ModelA
+        elif responder == "ModelB":
+            responder = get_model_b
+            type_ = ModelB
+        elif responder == "ModelCA":
+            responder = get_model_c_a
+            type_ = ModelC
+        elif responder == "ModelCB":
+            responder = get_model_c_b
+            type_ = ModelC
 
-    class CustomAPIRoute(APIRoute):
-        x_type = "test"
+        if responder is not None:
 
-    custom_router = APIRouter(route_class=CustomAPIRoute)
+            @app.get(url, response_model=type_)
+            def get():
+                return responder()
 
-    @custom_router.get("/")
-    def get_custom():
-        return {"msg": "test"}
+    for url, response in args.posts:
+        responder = None
+        type_ = None
+        no_response = False
+        if response == "Item":
+            responder = save_item_no_body
+            type_ = Item
+            no_response = True
+        elif response == "List[Item]":
+            responder = get_item_list
+            type_ = List[Item]
+        elif response == "OtherIterm":
+            responder = get_other
+            type_ = OtherItem
+        elif response == "List[OtherIterm]":
+            responder = get_other_list
+            type_ = List[OtherItem]
+        elif responder == "ModelA":
+            responder = get_model_a
+            type_ = ModelA
+        elif responder == "ModelB":
+            responder = get_model_b
+            type_ = ModelB
+        elif responder == "ModelCA":
+            responder = get_model_c_a
+            type_ = ModelC
+        elif responder == "ModelCB":
+            responder = get_model_c_b
+            type_ = ModelC
 
-    app.include_router(router=custom_router, prefix="/custom")
-    app.include_router(router, prefix="/router")
+        if responder is not None:
+            if no_response:
 
-    @app.get("/routes/")
-    def get_routes():
-        routes = dict()
-        for r in app.router.routes:
-            if r.path == "/custom/":
-                routes[r.path] = r.x_type
+                @app.post(url)
+                def post(m: type_):
+                    return responder(m)
+
             else:
-                routes[r.path] = r.__class__.__name__
-        return routes
 
-    if args.override:
-        app.dependency_overrides[dependency] = overridden
+                @app.post(url, response_model=type_)
+                def post():
+                    return responder()
+
+    for url, dep in args.websockets:
+
+        @app.websocket(url)
+        async def app_ws(websocket: WebSocket, data=Depends(dependencies[dep])):
+            await websocket.accept()
+            await websocket.send_text(data)
+            await websocket.close()
 
     client = TestClient(app)
 
     if args.mode == "websocket":
-        with client.websocket_connect(args.url) as websocket:
-            print(websocket.receive_text())
-    elif args.data is not None:
-        response = getattr(client, args.mode)(args.url, json=eval(args.data))
-        print(response.json())
-        sys.exit(response.status_code)
+        with client.websocket_connect(args.url) as ws:
+            print(ws.receive_text())
     else:
-        response = getattr(client, args.mode)(args.url)
+        if args.data is None:
+            response = getattr(client, args.mode)(args.url)
+        else:
+            response = getattr(client, args.mode)(args.url, json=eval(args.data))
         print(response.json())
         sys.exit(response.status_code)

@@ -3,65 +3,65 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return "-p/router/\n-mwebsocket\n-o"
+        return "-ws / dep -os dep over -m websocket -u /"
 
     def test_diversity_2(self):
-        return "-p/router/\n-mwebsocket\n-o\n-a"
+        return "-ws / dep -os dep over -ds dep2 -m websocket -u /"
 
     def test_diversity_3(self):
-        return "-p/router/\n-mwebsocket\n-o\n-a\n-d{}"
+        return "-ws / dep -os dep over -ds dep2 -m websocket -d {} -u /"
 
     def test_diversity_4(self):
-        return "-p/router/\n-mwebsocket\n-o\n-a\n-d[]"
+        return "-ws / dep -os dep over -ds dep2 -m websocket -d [] -u /"
 
     def test_diversity_5(self):
-        return '-p/router/\n-mwebsocket\n-o\n-a\n-d[1,2,0.0,"test"]'
+        return '-ws / dep -os dep over -ds dep2 -m websocket -d "[1,2,0.0,\\"test\\"]" -u /'
 
     def test_diversity_6(self):
-        return '-p/router/\n-mwebsocket\n-o\n-a\n-d[1,2,0.0,"test"]'
+        return '-ws / dep -os dep over -ds dep2 -m websocket -d "[1,2,0.0,\\"test\\"]" -u /'
 
     def test_diversity_7(self):
-        return '-a\n-p/router/\n-mwebsocket\n-o\n-d{"d":1,"t":"test"}'
+        return '-ws / dep -os dep over -ds dep2 -m websocket -d "{\\"d\\":1,\\"t\\":\\"test\\"}" -u /'
 
     def test_diversity_8(self):
-        return "-a\n-p/router/\n-mwebsocket\n-o"
+        return '-os dep over -ds dep2 -m websocket -ws / dep -d "[1,2,0.0,\\"test\\"]" -u /'
 
     def test_diversity_9(self):
-        return '-p/router/\n-mwebsocket\n-o\n-d"test"'
+        return '-ws / dep -os dep over -ds dep2 -m websocket -d "\\"test\\"" -u /'
 
     def test_diversity_10(self):
-        return "-p/router/\n-mwebsocket\n-o\n-d1"
+        return "-ws /test dep2 -ws /test2 dep -os dep over -os dep2 over2 -m websocket -u /test"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return "-p/router/\n-mwebsocket"
+        return "-ws / dep -ds dep -m websocket -u /"
 
     def test_diversity_2(self):
-        return "-p/items/valid\n-mget\n-o\n-a"
+        return "-ws /test dep -ds dep -m websocket -u /test"
 
     def test_diversity_3(self):
-        return "-p/router/\n-mwebsocket\n-a\n-d{}"
-
-    def test_diversity_4(self):
-        return "-p/router/\n-mwebsocket\n-a\n-d[]"
-
-    def test_diversity_5(self):
-        return '-p/items/\n-mpost\n-d{"name":"test-name","price":1.6,"age":5}'
-
-    def test_diversity_6(self):
         return (
-            '-p/items/\n-mpost\n-a\n-d{"aliased_name":"test-name","price":1.6,"age":5}'
+            "-ws /test dep2 -ws /test2 dep -os dep over -ds dep2 -m websocket -u /test"
         )
 
+    def test_diversity_4(self):
+        return "-ws / dep -ds dep -m websocket -u /"
+
+    def test_diversity_5(self):
+        return "-ws / dep -ds dep -m websocket -u /"
+
+    def test_diversity_6(self):
+        return "-ws / dep -ds dep -m websocket -u /"
+
     def test_diversity_7(self):
-        return '-a\n-p/router/\n-mwebsocket\n-d{"d":1,"t":"test"}'
+        return "-ws / dep -ds dep -m websocket -u /"
 
     def test_diversity_8(self):
-        return "-p/openapi.json"
+        return "-gs /valid/ OtherItem -m get -u /valid/"
 
     def test_diversity_9(self):
-        return '-p/items/valid_list\n-mget\n-o\n-d"test"'
+        return "-gs /valid/ Item -a aliased_name -m get -u /valid/"
 
     def test_diversity_10(self):
-        return "-p/model\n-mget\n-o\n-d1"
+        return "-gs /valid/ Item -m get -u /valid/"

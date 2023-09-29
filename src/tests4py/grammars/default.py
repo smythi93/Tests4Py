@@ -14,9 +14,15 @@ from tests4py.grammars.fuzzer import (
 
 PRINTABLE = srange(string.printable)
 ASCII = srange(string.ascii_letters + string.digits + "_")
-PRINTABLE_ESCAPED = srange(string.printable.replace('"', "")) + ['\\"']
-PRINTABLE_CLI = srange(string.printable.replace('"', "").replace("-", ""))
+PRINTABLE_ESCAPED_DOUBLE = srange(string.printable.replace('"', "")) + ['\\"']
+PRINTABLE_ESCAPED_SINGLE = srange(string.printable.replace("'", "")) + ["\\'"]
 PRINTABLE_WITHOUT_WS = srange(string.digits + string.ascii_letters + string.punctuation)
+PRINTABLE_CLI = srange(
+    (string.digits + string.ascii_letters + string.punctuation)
+    .replace('"', "")
+    .replace("'", "")
+    .replace("-", "")
+)
 DIGITS = crange("0", "9")
 NON_ZERO_DIGITS = crange("1", "9")
 
@@ -36,8 +42,14 @@ def get_string_rule(possible_chars: List[str], suffix: str = ""):
 
 STRING: Grammar = get_string_rule(PRINTABLE_WITHOUT_WS)
 STRING_WS: Grammar = get_string_rule(PRINTABLE, suffix="_ws")
-STRING_WS_ESCAPED: Grammar = get_string_rule(PRINTABLE_ESCAPED, suffix="_ws_escaped")
+STRING_WS_ESCAPED_DOUBLE: Grammar = get_string_rule(
+    PRINTABLE_ESCAPED_DOUBLE, suffix="_ws_escaped_double"
+)
+STRING_WS_ESCAPED_SINGLE: Grammar = get_string_rule(
+    PRINTABLE_ESCAPED_SINGLE, suffix="_ws_escaped_single"
+)
 STRING_ASCII: Grammar = get_string_rule(ASCII, suffix="_ascii")
+STRING_CLI: Grammar = get_string_rule(PRINTABLE_CLI, suffix="_cli")
 NUMBER: Grammar = {
     "<number>": ["0", "<non_zero><digits>"],
     "<non_zero>": NON_ZERO_DIGITS,
@@ -54,25 +66,26 @@ FLOAT: Grammar = dict(
 def get_possible_options(option: str, arg: str) -> List[str]:
     return [
         f"{option}{arg}",
-        f"{option} {arg}",
+        f"{option}<sep>{arg}",
         f"{option}={arg}",
     ]
 
 
 CLI_GRAMMAR = dict(
     {
-        "<start>": ["<options> <args>", "<options>", "<args>"],
+        "<start>": ["<options><sep><args>", "<options>", "<args>"],
         "<options>": ["", "<option_list>"],
-        "<option_list>": ["<option>", "<option> <option_list>"],
+        "<option_list>": ["<option>", "<option><sep><option_list>"],
         "<args>": ["", "<arg_list>"],
-        "<arg_list>": ["<arg>", "<arg> <arg_list>"],
+        "<arg_list>": ["<arg>", "<arg><sep><arg_list>"],
         "<arg>": [
             "<unescaped>",
-            '"<escaped>"',
+            '"<escaped_double>"',
+            "'<escaped_single>'",
         ],
-        "<unescaped>": ["<unescaped_start><string>"],
-        "<escaped>": ["<string_ws_escaped>"],
-        "<unescaped_start>": srange(PRINTABLE_CLI),
+        "<unescaped>": ["<string_cli>"],
+        "<escaped_double>": ["<string_ws_escaped_double>"],
+        "<escaped_single>": ["<string_ws_escaped_single>"],
         "<option>": [
             "<flag>",
             "<op>",
@@ -80,14 +93,17 @@ CLI_GRAMMAR = dict(
         "<flag>": ["-<unescaped>", "--<unescaped>"],
         "<op>": get_possible_options("-<unescaped>", "<arg>")
         + get_possible_options("--<unescaped>", "<arg>"),
+        "<sep>": [" ", "\n"],
     },
-    **STRING,
-    **STRING_WS_ESCAPED,
+    **STRING_CLI,
+    **STRING_WS_ESCAPED_DOUBLE,
+    **STRING_WS_ESCAPED_SINGLE,
 )
 
 assert is_valid_grammar(STRING, "<string>")
 assert is_valid_grammar(STRING_WS, "<string_ws>")
-assert is_valid_grammar(STRING_WS_ESCAPED, "<string_ws_escaped>")
+assert is_valid_grammar(STRING_WS_ESCAPED_DOUBLE, "<string_ws_escaped_double>")
+assert is_valid_grammar(STRING_WS_ESCAPED_SINGLE, "<string_ws_escaped_single>")
 assert is_valid_grammar(NUMBER, "<number>")
 assert is_valid_grammar(INTEGER, "<integer>")
 assert is_valid_grammar(FLOAT, "<float>")
