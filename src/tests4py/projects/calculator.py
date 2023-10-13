@@ -92,11 +92,8 @@ class Calculator1API(API):
         if args is None:
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
-        print("", args)
-        expected = process.args[0:]
-        result = process.stdout.decode("utf8")
-        print("Expected : ", expected)
-        print("Result : ", result)
+        expected = process.args[2]
+        result = process.stdout.decode("utf8").strip()
         if result == expected:
             return TestResult.PASSING, f"Expected {expected}, but was {result}"
         else:
@@ -148,7 +145,7 @@ class CalculatorUnittestGenerator(
 
     @staticmethod
     def _get_assert(
-        expected: int | float,
+        expected: Any,
         result: int | float,
     ) -> List[ast.stmt]:
         return [
@@ -249,9 +246,7 @@ class CalculatorUnittestGenerator(
         )
 
         dice = random.randint(0, 7)
-        print(functions[dice][0], self.main(functions[dice][1]))
         test = self.get_empty_test()
-
         test.body = self._get_assert(
             functions[dice][0], str(self.main(functions[dice][1]))
         )
@@ -266,8 +261,8 @@ class CalculatorSystemtestGenerator(SystemtestGenerator, CalculatorTestGenerator
                 generated_value = self.generate_values(self._generate_int)
                 if generated_value < 0:
                     break
-        print("Gen Value Failing System : ", generated_value)
-        return f"({generated_value})", TestResult.FAILING
+        # generated_value = rsqrt(generated_value)
+        return f"sqrt({generated_value})", TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
         generated_value = self.generate_values(self._generate_int)
@@ -276,13 +271,51 @@ class CalculatorSystemtestGenerator(SystemtestGenerator, CalculatorTestGenerator
                 generated_value = self.generate_values(self._generate_int)
                 if generated_value > 0:
                     break
-        print("Gen Value Passing System : ", generated_value)
-        return f"{generated_value}", TestResult.PASSING
+        generated_value_sin = self.generate_values(self._generate_int)
+        if rsin(generated_value_sin) > 0:
+            while rsin(generated_value_sin) > 0:
+                generated_value_sin = self.generate_values(self._generate_int)
+                if rsin(generated_value_sin) <= 0:
+                    break
+        # "cos(x)" values that turns out negative and used in "sqrt"
+        generated_value_cos = self.generate_values(self._generate_int)
+        if rcos(generated_value_cos) > 0:
+            while rcos(generated_value_cos) > 0:
+                generated_value_cos = self.generate_values(self._generate_int)
+                if rcos(generated_value_cos) <= 0:
+                    break
+        # "tan(x)" values that turns out negative and used in "sqrt"
+        generated_value_tan = self.generate_values(self._generate_int)
+        if rtan(generated_value_tan) > 0:
+            while rtan(generated_value_tan) > 0:
+                generated_value_tan = self.generate_values(self._generate_int)
+                if rtan(generated_value_tan) <= 0:
+                    break
+        possibilities_ = (
+            ["sqrt", generated_value],
+            ["sin", generated_value_sin],
+            ["cos", generated_value_cos],
+            ["tan", generated_value_tan],
+        )
+        spin_ = random.randint(0, 3)
+        return (
+            f"{possibilities_[spin_][1]}",
+            TestResult.PASSING,
+        )
 
 
 grammar: Grammar = {
-    "<start>": ["<integers_>", "<floats_>", "<argument_>"],
-    "<argument_>": ["<letter_><argument_>", "<letter_>"],
+    "<start>": ["<structure_>"],
+    "<structure_>": [
+        "<integers_>",
+        "<floats_>",
+        "<string_>",
+        "<string_>(<integers_>)",
+        "<string_>(<floats_>)",
+        "<string_>(<string_>(<integers_>))",
+        "<string_>(<string_>(<floats_>))",
+    ],
+    "<string_>": ["<letter_><string_>", "<letter_>"],
     "<letter_>": srange(string.ascii_letters),
     "<floats_>": ["<float_>", "-<float_>"],
     "<float_>": ["<integer_>.<integer_>"],

@@ -1,12 +1,20 @@
 import os
+import ast
+import random
+import string
+import subprocess
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Tuple, Any, Callable
+
+from tests4py.grammars.fuzzer import Grammar
+from tests4py.grammars.fuzzer import is_valid_grammar
 
 from tests4py.constants import PYTHON
-from tests4py.grammars.fuzzer import Grammar, is_valid_grammar
+from tests4py.grammars import python
+from tests4py.grammars.fuzzer import srange
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
-from tests4py.tests.utils import API
+from tests4py.tests.utils import API, TestResult, CLIAPI
 
 PROJECT_MAME = "expression"
 
@@ -66,12 +74,189 @@ def register():
             os.path.join("tests", "test_expression.py") + "::TestExpr::test_div_error",
         ],
         loc=108,
+        unittests=ExpressionUnittestGenerator(),
+        systemtests=ExpressionSystemtestGenerator(),
+        api=ExpressionAPI(),
     )
 
 
-grammar: Grammar = {
-    "<start>": [""],
-}
+class ExpressionAPI(API):
+    def __init__(self, default_timeout=5):
+        super().__init__(default_timeout=default_timeout)
 
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        print("args", args)
+        expected = process.args[2:]
+        result = process.stdout.decode("utf8")
+        print("Expected : ", expected)
+        print("Result : ", result)
+        if result == expected:
+            return TestResult.PASSING, f"Expected {expected}, but was {result}"
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class ExpressionTestGenerator:
+    @staticmethod
+    def generate_values(producer: Callable) -> Tuple[Any]:
+        return producer()
+
+    @staticmethod
+    def _generate_int() -> int:
+        value = random.randint(1, 101)
+        #   if value < 0:
+        #       value = "( %d )" % value
+        return value
+
+    @staticmethod
+    def _generate_symbol() -> str:
+        symbols_ = ["+", "-", "/", "*"]
+        return symbols_[random.randint(0, 3)]
+
+    def _generate_structure(self):
+        structures_ = (
+            f"{self._generate_int()}",
+            f"{self._generate_int()} {self._generate_symbol()} {self._generate_int()}",
+            f"( {self._generate_int()} {self._generate_symbol()} {self._generate_int()} )",
+        )
+        structures_2_ = (
+            f"{self._generate_int()}",
+            f"{self._generate_int()} {self._generate_symbol()} {self._generate_int()}",
+            f"( {self._generate_int()} )",
+            f"( {self._generate_int()} {self._generate_symbol()} {self._generate_int()} )",
+        )
+
+        structure_ = (
+            " "
+            + structures_[random.randint(0, 2)]
+            + " "
+            + self._generate_symbol()
+            + " "
+            + structures_2_[random.randint(0, 3)]
+            + " "
+        )
+        print(structure_)
+        return structure_
+
+
+class ExpressionUnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, ExpressionTestGenerator
+):
+    def _generate_one(
+        self,
+    ) -> str:
+        return self.generate_values(self._generate_structure)
+
+    @staticmethod
+    def _get_assert(
+        expected: Any,
+        result: str,
+    ) -> List[ast.stmt]:
+        return [
+            ast.Call(
+                func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
+                args=[
+                    ast.Constant(value=expected),
+                    ast.Call(
+                        func=ast.Name(id="evaluate"),
+                        args=(
+                            [
+                                ast.Constant(value=result),
+                            ],
+                        ),
+                        keywords=[],
+                    ),
+                ],
+                keywords=[],
+            )
+        ]
+
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.ImportFrom(
+                module="expression.evaluate",
+                names=[
+                    ast.alias(name="evaluate"),
+                ],
+                level=0,
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        generated_value = self._generate_one()
+        generated_value = generated_value.replace(" ", "")
+        asssert: eval(generated_value)
+        if ZeroDivisionError:
+            generated_value = self._generate_one()
+            generated_value = generated_value.replace(" ", "")
+        print("gen value failing : ", generated_value)
+        test = self.get_empty_test()
+        test.body = self._get_assert(eval(str(generated_value)), generated_value)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        generated_value = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert(eval(str(generated_value)), generated_value)
+        return test, TestResult.PASSING
+
+
+class ExpressionSystemtestGenerator(SystemtestGenerator, ExpressionTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        generated_value = self.generate_values(self._generate_structure)
+        generated_value = generated_value.replace(" ", "")
+        print("generated_value : ", generated_value)
+        generated_value = " ( 30 / 5 ) / ( 3 + 3 ) "
+        print("generated_value : ", type(generated_value))
+        return f"{generated_value}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        generated_value = self.generate_values(self._generate_structure)
+        print("generated_value : ", generated_value)
+        generated_value = " ( 30 / 5 ) / ( 3 + 3 ) "
+        print("generated_value : ", type(generated_value))
+        return f"{generated_value}", TestResult.PASSING
+
+
+grammar: Grammar = {
+    "<start>": ["<expression_p>", "<expression_f>"],
+    "<expression_p>": [
+        " <integers_> ",
+        " ( <integers_> ) ",
+        " <integers_> <symbol_> <integers_> ",
+        " ( <integers_> <symbol_> <integers_> ) <symbol_> <integers_> ",
+        " <integers_> <symbol_> ( <integers_> <symbol_> <integers_> ) ",
+        " <integers_> <symbol_> ( <integers_> ) <symbol_> <integers_> ",
+        " <integers_> <symbol_> <integers_> <symbol_> ( <integers_> ) ",
+        " ( <integers_> <symbol_> <integers_> ) ",
+        " ( <integers_> <symbol_> <integers_> ) <symbol_> <integers_> <symbol_> <integers_> ",
+        " <integers_> <symbol_> <integers_> <symbol_> ( <integers_> <symbol_> <integers_> ) ",
+        " <integers_> <symbol_> ( <integers_> <symbol_> <integers_> ) <symbol_> <integers_> ",
+        " <integers_> <symbol_> <integers_> <symbol_> <integers_> <symbol_> <integers_> ",
+        " ( <integers_> <symbol_> <integers_> ) <symbol_> ( <integers_> <symbol_> <integers_> ) ",
+    ],
+    "<expression_f>": [
+        "<integers_>",
+        "(<integers_>)",
+        "<integers_><symbol_><integers_>",
+        "(<integers_><symbol_><integers_>)<symbol_><integers_>",
+        "<integers_><symbol_>(<integers_><symbol_><integers_>)",
+        "<integers_><symbol_>(<integers_>)<symbol_><integers_>",
+        "<integers_><symbol_><integers_><symbol_>(<integers_>)",
+        "(<integers_><symbol_><integers_>)",
+        "(<integers_><symbol_><integers_>)<symbol_><integers_><symbol_><integers_>",
+        "<integers_><symbol_><integers_><symbol_>(<integers_><symbol_><integers_>)",
+        "<integers_><symbol_>(<integers_><symbol_><integers_>)<symbol_><integers_>",
+        "<integers_><symbol_><integers_><symbol_><integers_><symbol_><integers_>",
+        "(<integers_><symbol_><integers_>)<symbol_>(<integers_><symbol_><integers_>)",
+    ],
+    "<symbol_>": ["+", "-", "/", "*"],
+    "<integers_>": ["<integer_>", "-<integer_>"],
+    "<integer_>": ["<digit_><integer_>", "<digit_>"],
+    "<digit_>": srange(string.digits),
+}
 
 assert is_valid_grammar(grammar)
