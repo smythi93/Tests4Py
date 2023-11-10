@@ -3,6 +3,7 @@ import ast
 import random
 import string
 import subprocess
+from _ast import Call, ImportFrom
 from pathlib import Path
 from typing import List, Optional, Tuple, Any, Callable
 
@@ -179,14 +180,14 @@ class ExpressionUnittestGenerator(
 ):
     def _generate_one(
         self,
-    ) -> str:
+    ) -> tuple:
         return self.generate_values(self._generate_structure)
 
     @staticmethod
     def _get_assert(
         expected: Any,
         result: str,
-    ) -> List[ast.stmt]:
+    ) -> list[Call]:
         return [
             ast.Call(
                 func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
@@ -206,7 +207,7 @@ class ExpressionUnittestGenerator(
             )
         ]
 
-    def get_imports(self) -> List[ast.stmt]:
+    def get_imports(self) -> list[ImportFrom]:
         return [
             ast.ImportFrom(
                 module="expression.evaluate",
