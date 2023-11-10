@@ -1,38 +1,45 @@
 import unittest
 from unittest import TestCase
 from expression.evaluate import evaluate
+from expression.expr.parse import parse
+from expression.expr.arithmetic import Constant, Div, Add, Mul
 
 
 class TestsFailing(unittest.TestCase):
     def test_diversity_1(self):
-        self.assertEqual(AssertionError, evaluate("30/(3-1)-1*4"))
+        self.assertRaises("Zero Division Error", evaluate(" 30 / ( 3 - 1 ) - 1 * 2 "))
 
     def test_diversity_2(self):
-        self.assertEqual(AssertionError, evaluate("550/11*1"))
+        self.assertRaises("Zero Division Error", evaluate, " 1 / 0 ")
 
     def test_diversity_3(self):
-        self.assertEqual(ZeroDivisionError, evaluate("20/(3-3)"))
+        self.assertRaises("Zero Division Error", evaluate("20 / ( 3 - 3 )"))
 
     def test_diversity_4(self):
-        self.assertEqual(AssertionError, evaluate("45+(3+3)+5"))
+        term = parse("1 / 0")
+        self.assertIsInstance(term, Div)
+        self.assertIsInstance(term.left, Constant)
+        self.assertIsInstance(term.right, Constant)
+        self.assertEqual(1, term.left.value)
+        self.assertEqual(0, term.right.value)
 
     def test_diversity_5(self):
-        self.assertEqual(AssertionError, evaluate("(80/5)+(1-8)"))
+        self.assertRaises("Zero Division Error", evaluate(" ( 80 / 5 ) / ( 5 * 0 ) "))
 
     def test_diversity_6(self):
-        self.assertEqual(AssertionError, evaluate("50/(2*4)"))
+        self.assertRaises("Zero Division Error", evaluate(" 50 / ( 25 * 0 ) "))
 
     def test_diversity_7(self):
-        self.assertEqual(AssertionError, evaluate("30/(8/4)"))
+        self.assertRaises("Zero Division Error", evaluate(" 30 / ( 8 - 8 ) "))
 
     def test_diversity_8(self):
-        self.assertEqual(AssertionError, evaluate("(2+1)*4"))
+        self.assertRaises("Zero Division Error", evaluate(" ( 2 + 2 ) / ( 4 - 4 ) "))
 
     def test_diversity_9(self):
-        self.assertEqual(AssertionError, evaluate("4/(3-0)*3"))
+        self.assertRaises("Zero Division Error", evaluate(" 4 / ( 3 - 3 ) * 3 "))
 
     def test_diversity_10(self):
-        self.assertRaises(ValueError, evaluate("(4-2)*6"))
+        self.assertRaises("Zero Division Error", evaluate(" ( 2 - 2 ) * 6 "))
 
 
 class TestsPassing(unittest.TestCase):
@@ -43,25 +50,42 @@ class TestsPassing(unittest.TestCase):
         self.assertAlmostEqual(0.5, evaluate(" 2 / 4 "), 5)
 
     def test_diversity_3(self):
-        self.assertEqual(5, evaluate(" ( 30 / 5 ) / ( 3 + 3 ) "))
+        term = Add(Constant(1), Constant(3))
+        self.assertEqual(4, term.evaluate())
 
     def test_diversity_4(self):
-        self.assertEqual(40, evaluate(" 40 / 40 "))
+        term = Mul(Add(Constant(1), Constant(3)), Constant(2))
+        self.assertEqual(8, term.evaluate())
 
     def test_diversity_5(self):
-        self.assertEqual(16, evaluate(" 4 * 4 "))
+        self.assertEqual(0, evaluate("0"))
 
     def test_diversity_6(self):
-        self.assertEqual(2, evaluate(" 40 / ( 2 + 3 ) "))
+        term = parse("(1 + 0) * 2")
+        self.assertIsInstance(term, Mul)
+        self.assertIsInstance(term.left, Add)
+        self.assertIsInstance(term.right, Constant)
+        self.assertIsInstance(term.left.left, Constant)
+        self.assertIsInstance(term.left.right, Constant)
+        self.assertEqual(1, term.left.left.value)
+        self.assertEqual(0, term.left.right.value)
+        self.assertEqual(2, term.right.value)
 
     def test_diversity_7(self):
-        self.assertEqual(2, evaluate(" ( 2 + 3 ) - 21 + 4 "))
+        term = parse("1 + 0")
+        self.assertIsInstance(term, Add)
+        self.assertIsInstance(term.left, Constant)
+        self.assertIsInstance(term.right, Constant)
+        self.assertEqual(1, term.left.value)
+        self.assertEqual(0, term.right.value)
 
     def test_diversity_8(self):
         self.assertEqual(2, evaluate(" ( 2 + 3 ) - 5 * 3 "))
 
     def test_diversity_9(self):
-        self.assertEqual(2, evaluate(" 300 - ( 12 + 3 ) "))
+        term = parse("0")
+        self.assertIsInstance(term, Constant)
+        self.assertEqual(0, term.value)
 
     def test_diversity_10(self):
         self.assertEqual(2, evaluate(" 15 - ( 2 + 3 ) "))

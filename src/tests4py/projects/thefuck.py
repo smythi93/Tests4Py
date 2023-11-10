@@ -1,9 +1,19 @@
-from pathlib import Path
-from typing import List, Optional, Tuple
+import ast
+import os
+import random
+import string
+import subprocess
 
+from pathlib import Path
+from typing import List, Optional, Tuple, Any, Callable
+from tests4py.grammars.fuzzer import Grammar
+from tests4py.grammars.fuzzer import is_valid_grammar
+from tests4py.constants import PYTHON
+from tests4py.grammars import python
+from tests4py.grammars.fuzzer import srange
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
-from tests4py.tests.utils import API, TestResult
+from tests4py.tests.utils import API, TestResult, CLIAPI
 
 PROJECT_MAME = "thefuck"
 
@@ -46,7 +56,7 @@ class TheFuck(Project):
             grammar=None,
             loc=loc,
             relevant_test_files=relevant_test_files,
-        )  # TODO adjust parameters
+        )
 
 
 def register():
@@ -56,6 +66,9 @@ def register():
         fixed_commit_id="444908ce1c17767ef4aaf9e0b4950497914f7f63",
         test_files=[Path("tests", "rules", "test_pip_unknown_command.py")],
         test_cases=["tests/rules/test_pip_unknown_command.py::test_get_new_command"],
+        api=TheFuckAPI1(),
+        unittests=TheFuckUnittestGenerator1(),
+        systemtests=TheFuckSystemtestGenerator1(),
     )
     TheFuck(
         bug_id=2,
@@ -306,9 +319,135 @@ def register():
     )
 
 
-class TheFuckAPI(API):
+class TheFuckAPI1(API):
     def __init__(self, default_timeout: int = 5):
         super().__init__(default_timeout=default_timeout)
 
-    def oracle(self, args) -> Tuple[TestResult, str]:
-        return TestResult.UNDEFINED, ""
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[1:]
+        result = str(process.stdout.decode("utf8"))
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class TheFuckTestGenerator:
+    @staticmethod
+    def generate_values(producer: Callable) -> Tuple[Any]:
+        return producer()
+
+    @staticmethod
+    def generate_random_string():
+        return "".join(random.choices(string.ascii_letters, k=random.randint(10, 30)))
+
+
+class TheFuckUnittestGenerator1(
+    python.PythonGenerator, UnittestGenerator, TheFuckTestGenerator
+):
+    @staticmethod
+    def _generate_pip_command_passing() -> str:
+        pip_passing = [
+            ("pip search", "pip src"),
+            ("pip config", "pip cnfg"),
+            ("pip download", "pip dwnld"),
+            ("pip list", "pip lst"),
+            ("pip install", "pip instl"),
+            ("pip uninstall", "pip unstal"),
+            ("pip show", "pip shw"),
+            ("pip wheel", "pip whel"),
+            ("pip inspect", "pip spct"),
+            ("pip cache", "pip cac"),
+        ]
+        dice_ = random.randint(0, 9)
+        return pip_passing[dice_][0], pip_failing[dice_][1]
+
+    @staticmethod
+    def _generate_pip_command_failing() -> str:
+        pip_failing = [
+            ("pip install", "pipip instal"),
+            ("pip search aircrack", "PIP SEARCH AIRCRACK"),
+            ("pip install hashcat", "pip install hash-cat"),
+            ("pip install hashcat", "pip install h@shc@t"),
+            ("pip install wireshark", "pip instal wire--shark"),
+            ("pip uninstall medusa", "pip un install medusa "),
+            ("pip show hydra", "pip_show hydra"),
+            ("pip search john", "PIP SERCH john"),
+            ("pip install brutus", "peep install brutus"),
+            ("pip download medusa", "pip download m3dus4"),
+        ]
+        dice_ = random.randint(0, 9)
+        return pip_failing[dice_][0], pip_failing[dice_][1]
+
+    def _generate_one(
+        self,
+    ) -> str:
+        return self.generate_values(self._generate_pip_command_failing)
+
+    # self._generate_pip_command_passing()
+
+    @staticmethod
+    def _get_assert(
+        expected: str,
+        result: str,
+    ) -> List[ast.stmt]:
+        return [
+            ast.Call(
+                func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
+                args=[
+                    ast.Constant(value=expected),
+                    ast.Call(
+                        func=ast.Name(id="fuck"),
+                        args=[
+                            ast.Constant(value=expected),
+                            ast.Constant(value=result),
+                        ],
+                        keywords=[],
+                    ),
+                ],
+                keywords=[],
+            )
+        ]
+
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.ImportFrom(
+                module="fuck",
+                names=[ast.alias(name="fuck")],
+                level=0,
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        expected, result = self._generate_one()
+        test = self.get_empty_test()
+        print("Result : ", result, "Expected : ", expected)
+        test.body = self._get_assert(expected, result)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        expected, result = self._generate_one()
+        test = self.get_empty_test()
+        print("Result : ", result, "Expected : ", expected)
+        test.body = self._get_assert(expected, result)
+        return test, TestResult.PASSING
+
+
+class TheFuckSystemtestGenerator1(SystemtestGenerator, TheFuckTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return f"", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return f"", TestResult.PASSING
+
+
+grammar: Grammar = {
+    "<start>": ["<structure_>"],
+    "<structure_>": ["<string_>", "<string_> <structure_>"],
+    "<string_>": ["<char_><string_>", "<char_>", ""],
+    "<char_>": srange(string.ascii_letters),
+}
+assert is_valid_grammar(grammar)

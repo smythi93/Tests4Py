@@ -88,25 +88,28 @@ class ExpressionAPI(API):
         if args is None:
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
-        print("args", args)
+        print(args)
         expected = process.args[2:]
+        expected = "".join(expected)
         result = process.stdout.decode("utf8")
-        print("Expected : ", expected)
-        print("Result : ", result)
+        result1 = process.stdout
+        print("Exp :", expected)
+        print("Res : ", result)
+        print("Res1 : ", result1)
         if result == expected:
-            return TestResult.PASSING, f"Expected {expected}, but was {result}"
+            return TestResult.PASSING, ""
         else:
             return TestResult.FAILING, f"Expected {expected}, but was {result}"
 
 
 class ExpressionTestGenerator:
     @staticmethod
-    def generate_values(producer: Callable) -> Tuple[Any]:
-        return producer()
+    def generate_values(producer: Callable) -> Tuple[Any, Any]:
+        return tuple(producer())
 
     @staticmethod
     def _generate_int() -> int:
-        value = random.randint(1, 101)
+        value = random.randint(1, 1001)
         #   if value < 0:
         #       value = "( %d )" % value
         return value
@@ -120,26 +123,55 @@ class ExpressionTestGenerator:
         structures_ = (
             f"{self._generate_int()}",
             f"{self._generate_int()} {self._generate_symbol()} {self._generate_int()}",
-            f"( {self._generate_int()} {self._generate_symbol()} {self._generate_int()} )",
         )
         structures_2_ = (
             f"{self._generate_int()}",
             f"{self._generate_int()} {self._generate_symbol()} {self._generate_int()}",
-            f"( {self._generate_int()} )",
-            f"( {self._generate_int()} {self._generate_symbol()} {self._generate_int()} )",
         )
 
         structure_ = (
-            " "
-            + structures_[random.randint(0, 2)]
+            structures_[random.randint(0, 1)]
             + " "
             + self._generate_symbol()
             + " "
-            + structures_2_[random.randint(0, 3)]
+            + structures_2_[random.randint(0, 1)]
             + " "
         )
-        print(structure_)
-        return structure_
+
+        # Division by Zero breaks the code so -> 3 - 3 or 3 * 0 or 3 / 0
+        failing_minus_ = self._generate_int()
+        structure_2_ = [
+            (" " + structures_[random.randint(0, 1)] + " " + "/" + " " + "0" + " "),
+            (
+                " "
+                + structures_[0]
+                + " "
+                + "/"
+                + " "
+                + "0"
+                + " "
+                + self._generate_symbol()
+                + " "
+                + structures_[1]
+            ),
+            (
+                " "
+                + structures_[random.randint(0, 1)]
+                + " "
+                + "/"
+                + " "
+                + str(failing_minus_)
+                + " "
+                + "-"
+                + " "
+                + str(failing_minus_)
+                + " "
+            ),
+        ]
+
+        # print(structure_)
+        # print(structure_2_)
+        return structure_, structure_2_[random.randint(0, 2)]
 
 
 class ExpressionUnittestGenerator(
@@ -182,50 +214,62 @@ class ExpressionUnittestGenerator(
                     ast.alias(name="evaluate"),
                 ],
                 level=0,
-            )
+            ),
+            ast.ImportFrom(
+                module="expression.expr.arithmetic",
+                names=[
+                    ast.alias(name="Constant"),
+                    ast.alias(name="Div"),
+                    ast.alias(name="Add"),
+                    ast.alias(name="Mul"),
+                ],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="expression.expr.parse",
+                names=[
+                    ast.alias(name="parse"),
+                ],
+                level=0,
+            ),
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        generated_value = self._generate_one()
-        generated_value = generated_value.replace(" ", "")
-        asssert: eval(generated_value)
-        if ZeroDivisionError:
-            generated_value = self._generate_one()
-            generated_value = generated_value.replace(" ", "")
-        print("gen value failing : ", generated_value)
+        _, generated_value = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert(eval(str(generated_value)), generated_value)
+        test.body = self._get_assert("Zero Division Error", generated_value)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        generated_value = self._generate_one()
+        generated_value, _ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert(eval(str(generated_value)), generated_value)
+        test.body = self._get_assert(eval(generated_value), generated_value)
         return test, TestResult.PASSING
 
 
 class ExpressionSystemtestGenerator(SystemtestGenerator, ExpressionTestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        generated_value = self.generate_values(self._generate_structure)
-        generated_value = generated_value.replace(" ", "")
-        print("generated_value : ", generated_value)
-        generated_value = " ( 30 / 5 ) / ( 3 + 3 ) "
-        print("generated_value : ", type(generated_value))
+        _, generated_value = self.generate_values(self._generate_structure)
+        print("generated_failing_value : ", generated_value)
+        print("generated_failing_value_type : ", type(generated_value))
+        # last_generated_value = tuple(map(str, generated_value))
+        # print("Last : ", last_generated_value)
+        # print(type(last_generated_value))
         return f"{generated_value}", TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        generated_value = self.generate_values(self._generate_structure)
-        print("generated_value : ", generated_value)
-        generated_value = " ( 30 / 5 ) / ( 3 + 3 ) "
-        print("generated_value : ", type(generated_value))
+        generated_value, _ = self.generate_values(self._generate_structure)
+        print("generated_passing_value : ", generated_value)
+        print("generated_passing_value_type : ", type(generated_value))
+        # last_generated_value = tuple(map(str, generated_value))
+        # print("Last : ", last_generated_value)
+        # print(type(last_generated_value))
         return f"{generated_value}", TestResult.PASSING
 
 
 grammar: Grammar = {
-    "<start>": ["<expression_p>", "<expression_f>"],
-    "<expression_p>": [
-        " <integers_> ",
-        " ( <integers_> ) ",
+    "<start>": ["<expression_>"],
+    "<expression_>": [
         " <integers_> <symbol_> <integers_> ",
         " ( <integers_> <symbol_> <integers_> ) <symbol_> <integers_> ",
         " <integers_> <symbol_> ( <integers_> <symbol_> <integers_> ) ",
@@ -237,21 +281,6 @@ grammar: Grammar = {
         " <integers_> <symbol_> ( <integers_> <symbol_> <integers_> ) <symbol_> <integers_> ",
         " <integers_> <symbol_> <integers_> <symbol_> <integers_> <symbol_> <integers_> ",
         " ( <integers_> <symbol_> <integers_> ) <symbol_> ( <integers_> <symbol_> <integers_> ) ",
-    ],
-    "<expression_f>": [
-        "<integers_>",
-        "(<integers_>)",
-        "<integers_><symbol_><integers_>",
-        "(<integers_><symbol_><integers_>)<symbol_><integers_>",
-        "<integers_><symbol_>(<integers_><symbol_><integers_>)",
-        "<integers_><symbol_>(<integers_>)<symbol_><integers_>",
-        "<integers_><symbol_><integers_><symbol_>(<integers_>)",
-        "(<integers_><symbol_><integers_>)",
-        "(<integers_><symbol_><integers_>)<symbol_><integers_><symbol_><integers_>",
-        "<integers_><symbol_><integers_><symbol_>(<integers_><symbol_><integers_>)",
-        "<integers_><symbol_>(<integers_><symbol_><integers_>)<symbol_><integers_>",
-        "<integers_><symbol_><integers_><symbol_><integers_><symbol_><integers_>",
-        "(<integers_><symbol_><integers_>)<symbol_>(<integers_><symbol_><integers_>)",
     ],
     "<symbol_>": ["+", "-", "/", "*"],
     "<integers_>": ["<integer_>", "-<integer_>"],
