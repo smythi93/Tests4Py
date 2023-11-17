@@ -3,7 +3,8 @@ import os
 import random
 import string
 import subprocess
-import math
+from _ast import Call
+
 from math import cos as rcos
 from math import sin as rsin
 from math import tan as rtan
@@ -13,11 +14,10 @@ from typing import List, Optional, Tuple, Any, Callable
 from tests4py.grammars.fuzzer import srange
 from tests4py.constants import PYTHON
 from tests4py.grammars import python
-from tests4py.grammars.default import clean_up, CLI_GRAMMAR, INTEGER
 from tests4py.grammars.fuzzer import Grammar, is_valid_grammar
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
-from tests4py.tests.utils import API, TestResult, CLIAPI
+from tests4py.tests.utils import API, TestResult
 
 
 PROJECT_MAME = "calculator"
@@ -146,8 +146,8 @@ class CalculatorUnittestGenerator(
     @staticmethod
     def _get_assert(
         expected: Any,
-        result: int | float,
-    ) -> List[ast.stmt]:
+        result: str,
+    ) -> list[Call]:
         return [
             ast.Call(
                 func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),

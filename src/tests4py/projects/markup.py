@@ -3,6 +3,7 @@ import os
 import random
 import string
 import subprocess
+from _ast import Call
 from pathlib import Path
 from typing import List, Optional, Tuple, Any, Callable
 import re
@@ -14,7 +15,7 @@ from tests4py.grammars import python
 from tests4py.grammars.fuzzer import srange
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
-from tests4py.tests.utils import API, TestResult, CLIAPI
+from tests4py.tests.utils import API, TestResult
 
 PROJECT_MAME = "markup"
 
@@ -134,7 +135,7 @@ class Markup2API(API):
 
 class MarkupTestGenerator:
     @staticmethod
-    def generate_values(producer: Callable) -> Tuple[Any]:
+    def generate_values(producer: Callable) -> str:
         return str(producer())
 
     @staticmethod
@@ -163,7 +164,7 @@ class MarkupUnittestGenerator(
     def _get_assert(
         expected: str,
         result: str,
-    ) -> List[ast.stmt]:
+    ) -> list[Call]:
         return [
             ast.Call(
                 func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),

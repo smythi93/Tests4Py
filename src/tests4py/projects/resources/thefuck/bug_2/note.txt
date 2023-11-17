@@ -1,0 +1,6 @@
+Bug2 of API thefuck does not take any input values, instead it gets environment value of the system path.
+Broken line only takes unix/linux systems` PATH, whereas Fixed line of code can also parse Windows OS PATH
+ which is separated by ; instead of : (PATH separator for Linux = ':' and for Windows = ';')
+
+-            for path in os.environ.get('PATH', '').split(':')
++            for path in os.environ.get('PATH', '').split(os.pathsep)
