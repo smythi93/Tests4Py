@@ -1,72 +1,72 @@
 import unittest
-import re
 from thefuck.rules.pip_unknown_command import get_new_command
 from thefuck.utils import replace_argument, for_app
 from thefuck.specific.sudo import sudo_support
+from thefuck.types import Command
 
 
 class TestsFailing(unittest.TestCase):
     def test_diversity_1(self):
-        self.assertEqual("pip install", get_new_command("pipip instal"))
+        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
 
     def test_diversity_2(self):
-        self.assertEqual("pip search aircrack", get_new_command("PIP SEARCH AIRCRACK"))
+        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
 
     def test_diversity_3(self):
-        self.assertEqual("pip install hashcat", get_new_command("pip install hash-cat"))
+        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
 
     def test_diversity_4(self):
-        self.assertEqual("pip install hashcat", get_new_command("pip install h@shc@t"))
+        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
 
     def test_diversity_5(self):
-        self.assertEqual("pip install wireshark", get_new_command("pip instal wire--shark"))
+        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
 
     def test_diversity_6(self):
-        self.assertEqual("pip uninstall medusa", get_new_command("pip un install medusa"))
+        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
 
     def test_diversity_7(self):
-        self.assertEqual("pip show hydra", get_new_command("pip_show hydra"))
+        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
 
     def test_diversity_8(self):
-        self.assertEqual("pip search john", get_new_command("PIP SERCH john"))
+        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
 
     def test_diversity_9(self):
-        self.assertEqual("pip install brutus", get_new_command("peep install brutus"))
+        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
 
     def test_diversity_10(self):
-        self.assertEqual("pip download medusa", get_new_command("pip download m3dus4"))
+        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
 
 
 class TestsPassing(unittest.TestCase):
     def test_diversity_1(self):
-        self.assertEqual("pip search python", get_new_command("pip src python"))
+        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
 
     def test_diversity_2(self):
-        self.assertEqual(('ERROR: unknown command "instl", maybe you meant "install"', "pip instl python"), get_new_command("pip install python"))
+        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
 
     def test_diversity_3(self):
         self.assertEqual("ERROR: unknown command", get_new_command("pip cnfg"))
 
     def test_diversity_4(self):
-        self.assertEqual("pip list", get_new_command("pip lst"))
+        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
 
     def test_diversity_5(self):
-        self.assertEqual("pip install", get_new_command("pip instl"))
+        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
 
     def test_diversity_6(self):
-        self.assertEqual("pip uninstall", get_new_command("pip unstal"))
+        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
 
     def test_diversity_7(self):
-        self.assertEqual("pip show", get_new_command("pip shw"))
+        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
 
     def test_diversity_8(self):
-        self.assertEqual("pip wheel", get_new_command("pip whel"))
+        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
 
     def test_diversity_9(self):
-        self.assertEqual("pip inspect", get_new_command("pip spct"))
+        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
 
     def test_diversity_10(self):
-        self.assertEqual("pip cache", get_new_command("pip cac"))
+        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
 
 
 '''

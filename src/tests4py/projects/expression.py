@@ -15,25 +15,25 @@ from tests4py.grammars import python
 from tests4py.grammars.fuzzer import srange
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
-from tests4py.tests.utils import API, TestResult, CLIAPI
+from tests4py.tests.utils import API, TestResult
 
 PROJECT_MAME = "expression"
 
 
 class Expression(Project):
     def __init__(
-        self,
-        bug_id: int,
-        buggy_commit_id: str,
-        fixed_commit_id: str,
-        test_files: List[Path],
-        test_cases: List[str],
-        test_status_fixed: TestStatus = TestStatus.PASSING,
-        test_status_buggy: TestStatus = TestStatus.FAILING,
-        unittests: Optional[UnittestGenerator] = None,
-        systemtests: Optional[SystemtestGenerator] = None,
-        api: Optional[API] = None,
-        loc: int = 0,
+            self,
+            bug_id: int,
+            buggy_commit_id: str,
+            fixed_commit_id: str,
+            test_files: List[Path],
+            test_cases: List[str],
+            test_status_fixed: TestStatus = TestStatus.PASSING,
+            test_status_buggy: TestStatus = TestStatus.FAILING,
+            unittests: Optional[UnittestGenerator] = None,
+            systemtests: Optional[SystemtestGenerator] = None,
+            api: Optional[API] = None,
+            loc: int = 0,
     ):
         super().__init__(
             bug_id=bug_id,
@@ -89,16 +89,19 @@ class ExpressionAPI(API):
         if args is None:
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
-        print(args)
         expected = process.args[2:]
-        expected = "".join(expected)
+        expected = "".join(expected).strip()
         result = process.stdout.decode("utf8")
-        result1 = process.stdout
-        print("Exp :", expected)
-        print("Res : ", result)
-        print("Res1 : ", result1)
+        result = result.strip()
+        try:
+            eval(expected)
+        except ZeroDivisionError:
+            result = "ZeroDivisionError"
+        if result != "ZeroDivisionError":
+            expected = str(eval(expected))
+
         if result == expected:
-            return TestResult.PASSING, ""
+            return TestResult.PASSING, f"Expected {expected}, and was {result}"
         else:
             return TestResult.FAILING, f"Expected {expected}, but was {result}"
 
@@ -111,8 +114,6 @@ class ExpressionTestGenerator:
     @staticmethod
     def _generate_int() -> int:
         value = random.randint(1, 1001)
-        #   if value < 0:
-        #       value = "( %d )" % value
         return value
 
     @staticmethod
@@ -120,73 +121,41 @@ class ExpressionTestGenerator:
         symbols_ = ["+", "-", "/", "*"]
         return symbols_[random.randint(0, 3)]
 
-    def _generate_structure(self):
-        structures_ = (
-            f"{self._generate_int()}",
-            f"{self._generate_int()} {self._generate_symbol()} {self._generate_int()}",
-        )
-        structures_2_ = (
-            f"{self._generate_int()}",
-            f"{self._generate_int()} {self._generate_symbol()} {self._generate_int()}",
-        )
-
+    def generate_structure_(self):
         structure_ = (
-            structures_[random.randint(0, 1)]
-            + " "
-            + self._generate_symbol()
-            + " "
-            + structures_2_[random.randint(0, 1)]
-            + " "
+            f"{self._generate_int()}",
+            f"{self._generate_int()} {self._generate_symbol()} {self._generate_int()}",
         )
+        structure_zero_div_ = " " + "/" + " " + "0" + " "
+        value_for_sub = self._generate_int()
+        structure_sub_zero_div_ = "(" + str(value_for_sub) + " - " + str(value_for_sub) + ")"
+        structure_passing_ = ("(" + (structure_[1] + ")" + " " + self._generate_symbol() + " " + structure_[0]),
+                              (structure_[1]),
+                              ("(" + structure_[1] + ")"),
+                              (structure_[0] + " " + self._generate_symbol() + " " + "(" + structure_[1] + ")")
 
-        # Division by Zero breaks the code so -> 3 - 3 or 3 * 0 or 3 / 0
-        failing_minus_ = self._generate_int()
-        structure_2_ = [
-            (" " + structures_[random.randint(0, 1)] + " " + "/" + " " + "0" + " "),
-            (
-                " "
-                + structures_[0]
-                + " "
-                + "/"
-                + " "
-                + "0"
-                + " "
-                + self._generate_symbol()
-                + " "
-                + structures_[1]
-            ),
-            (
-                " "
-                + structures_[random.randint(0, 1)]
-                + " "
-                + "/"
-                + " "
-                + str(failing_minus_)
-                + " "
-                + "-"
-                + " "
-                + str(failing_minus_)
-                + " "
-            ),
-        ]
-
-        # print(structure_)
-        # print(structure_2_)
-        return structure_, structure_2_[random.randint(0, 2)]
+                              )
+        structure_failing_ = (
+            ("(" + structure_[1] + ")" + structure_zero_div_),
+            (structure_[0] + structure_zero_div_ + self._generate_symbol() + " " + structure_[0]),
+            (structure_[0] + structure_zero_div_),
+            (structure_[0] + " / " + structure_sub_zero_div_)
+        )
+        return structure_passing_[random.randint(0, 3)], structure_failing_[random.randint(0, 3)]
 
 
 class ExpressionUnittestGenerator(
     python.PythonGenerator, UnittestGenerator, ExpressionTestGenerator
 ):
     def _generate_one(
-        self,
+            self,
     ) -> tuple:
-        return self.generate_values(self._generate_structure)
+        return self.generate_values(self.generate_structure_)
 
     @staticmethod
     def _get_assert(
-        expected: Any,
-        result: str,
+            expected: str,
+            result: str,
     ) -> list[Call]:
         return [
             ast.Call(
@@ -204,7 +173,31 @@ class ExpressionUnittestGenerator(
                     ),
                 ],
                 keywords=[],
-            )
+            ),
+        ]
+
+    @staticmethod
+    def _get_assert_with_error_(
+            expected: ZeroDivisionError | str,
+            result: str,
+    ) -> list[Call]:
+        return [
+            ast.Call(
+                func=ast.Attribute(value=ast.Name(id="self"), attr="assertRaises"),
+                args=[
+                    ast.Constant(value=expected),
+                    ast.Call(
+                        func=ast.Name(id="evaluate"),
+                        args=(
+                            [
+                                ast.Constant(value=result),
+                            ],
+                        ),
+                        keywords=[],
+                    ),
+                ],
+                keywords=[],
+            ),
         ]
 
     def get_imports(self) -> list[ImportFrom]:
@@ -237,12 +230,14 @@ class ExpressionUnittestGenerator(
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, generated_value = self._generate_one()
+        print("fail :", generated_value)
         test = self.get_empty_test()
-        test.body = self._get_assert("Zero Division Error", generated_value)
+        test.body = self._get_assert_with_error_('ZeroDivisionError', generated_value)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         generated_value, _ = self._generate_one()
+        print("pass :", generated_value)
         test = self.get_empty_test()
         test.body = self._get_assert(eval(generated_value), generated_value)
         return test, TestResult.PASSING
@@ -250,38 +245,23 @@ class ExpressionUnittestGenerator(
 
 class ExpressionSystemtestGenerator(SystemtestGenerator, ExpressionTestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        _, generated_value = self.generate_values(self._generate_structure)
-        print("generated_failing_value : ", generated_value)
-        print("generated_failing_value_type : ", type(generated_value))
-        # last_generated_value = tuple(map(str, generated_value))
-        # print("Last : ", last_generated_value)
-        # print(type(last_generated_value))
+        _, generated_value = self.generate_values(self.generate_structure_)
         return f"{generated_value}", TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        generated_value, _ = self.generate_values(self._generate_structure)
-        print("generated_passing_value : ", generated_value)
-        print("generated_passing_value_type : ", type(generated_value))
-        # last_generated_value = tuple(map(str, generated_value))
-        # print("Last : ", last_generated_value)
-        # print(type(last_generated_value))
+        generated_value, _ = self.generate_values(self.generate_structure_)
         return f"{generated_value}", TestResult.PASSING
 
 
 grammar: Grammar = {
     "<start>": ["<expression_>"],
     "<expression_>": [
-        " <integers_> <symbol_> <integers_> ",
-        " ( <integers_> <symbol_> <integers_> ) <symbol_> <integers_> ",
-        " <integers_> <symbol_> ( <integers_> <symbol_> <integers_> ) ",
-        " <integers_> <symbol_> ( <integers_> ) <symbol_> <integers_> ",
-        " <integers_> <symbol_> <integers_> <symbol_> ( <integers_> ) ",
-        " ( <integers_> <symbol_> <integers_> ) ",
-        " ( <integers_> <symbol_> <integers_> ) <symbol_> <integers_> <symbol_> <integers_> ",
-        " <integers_> <symbol_> <integers_> <symbol_> ( <integers_> <symbol_> <integers_> ) ",
-        " <integers_> <symbol_> ( <integers_> <symbol_> <integers_> ) <symbol_> <integers_> ",
-        " <integers_> <symbol_> <integers_> <symbol_> <integers_> <symbol_> <integers_> ",
-        " ( <integers_> <symbol_> <integers_> ) <symbol_> ( <integers_> <symbol_> <integers_> ) ",
+        "<integers_> <symbol_> <integers_>",
+        "(<integers_> <symbol_> <integers_>)",
+        "<integers_> <symbol_> <integers_> <symbol_> <integers_>",
+        "(<integers_> <symbol_> <integers_>) <symbol_> <integers_>",
+        "<integers_> <symbol_> (<integers_> <symbol_> <integers_>)",
+
     ],
     "<symbol_>": ["+", "-", "/", "*"],
     "<integers_>": ["<integer_>", "-<integer_>"],

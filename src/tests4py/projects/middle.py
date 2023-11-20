@@ -3,6 +3,7 @@ import os
 import random
 import string
 import subprocess
+from _ast import Call
 from pathlib import Path
 from typing import List, Optional, Tuple, Any, Callable
 
@@ -151,7 +152,7 @@ class MiddleUnittestGenerator(
         x: int | float | str | bytes,
         y: int | float | str | bytes,
         z: int | float | str | bytes,
-    ) -> List[ast.stmt]:
+    ) -> list[Call]:
         return [
             ast.Call(
                 func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),

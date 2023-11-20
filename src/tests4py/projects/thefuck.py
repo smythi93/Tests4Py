@@ -3,7 +3,6 @@ import random
 import string
 import subprocess
 import os
-import glob
 from _ast import Call, ImportFrom
 from pathlib import Path
 from typing import List, Optional, Tuple, Any, Callable
@@ -14,8 +13,6 @@ from tests4py.grammars.fuzzer import srange
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
-# from tmp.thefuck_2.thefuck.utils import get_all_executables
-
 
 
 PROJECT_MAME = "thefuck"
@@ -352,6 +349,7 @@ class TheFuckAPI2(API):
         process: subprocess.CompletedProcess = args
         expected = process.args[0:]
         result = process.stdout.decode("utf8")
+        print(args)
         print('expected : ', expected)
         print('result : ', result)
         if result == expected:
@@ -370,61 +368,48 @@ class TheFuckTestGenerator:
         return "".join(random.choices(string.ascii_letters, k=random.randint(10, 30)))
 
     @staticmethod
-    def _generate_pip_command_() -> tuple:
+    def thefuck1_generate_() -> tuple:
         # peep install brutus - peep - pip install brutus => output
         pip_failing = [
-            ("pip install, pip, pipip install", ""),
-            ("pip search aircrack, PIP SEARCH AIRCRACK", ""),
-            ("pip install hashcat", "pip install hash-cat", ""),
-            ("pip install hashcat", "pip install h@shc@t", ""),
-            ("pip install wireshark", "pip instal wire--shark", ""),
-            ("pip uninstall medusa", "pip un install medusa", ""),
-            ("pip show hydra", "pip_show hydra", ""),
-            ("pip search john", "PIP SERCH john", ""),
-            ("pip install brutus", "peep", "peep install brutus", ""),
-            ("pip download medusa", "pip download m3dus4", ""),
+            ("pip install", "pipip install"),
+            ("pip search aircrack", "PIP SEARCH AIRCRACK"),
+            ("pip install hashcat", "pip install hash-cat"),
+            ("pip install hashcat", "pip install h@shc@t"),
+            ("pip install wireshark", "pip instal wire--shark"),
+            ("pip uninstall medusa", "pip un install medusa"),
+            ("pip show hydra", "pip_show hydra"),
+            ("pip search john", "PIP SERCH john"),
+            ("pip install brutus", "peep", "peep install brutus"),
+            ("pip download medusa", "pip download m3dus4"),
         ]
 
         pip_passing = [
-            ("ERROR: unknown command instl, maybe you meant install, pip instl python", "pip install python"),
-            ("ERROR: unknown command instl, maybe you meant install, pip instl python", "pip install python"),
-            ("ERROR: unknown command instl, maybe you meant install, pip instl python", "pip install python"),
-            ("ERROR: unknown command instl, maybe you meant install, pip instl python", "pip install python"),
-            ("ERROR: unknown command instl, maybe you meant install, pip instl python", "pip install python"),
-            ("ERROR: unknown command instl, maybe you meant install, pip instl python", "pip install python"),
-            ("ERROR: unknown command instl, maybe you meant install, pip instl python", "pip install python"),
-            ("ERROR: unknown command instl, maybe you meant install, pip instl python", "pip install python"),
-            ("ERROR: unknown command instl, maybe you meant install, pip instl python", "pip install python"),
-            ("ERROR: unknown command instl, maybe you meant install, pip instl python", "pip install python"),
-            ("ERROR: unknown command instl, maybe you meant install, pip instl python", "pip install python"),
 
-            # ("pip config", "pip cnfg"),
-            # ("pip download", "pip dwnld"),
-            # ("pip list", "pip lst"),
-            # ("pip install", "pip instl"),
-            # ("pip uninstall", "pip unstal"),
-            # ("pip show", "pip shw"),
-            # ("pip wheel", "pip whel"),
-            # ("pip inspect", "pip insct"),
-            # ("pip cache", "pip cac"),
+            ("pip config", "pip cnfg"),
+            ("pip download", "pip dwnld"),
+            ("pip list", "pip lst"),
+            ("pip install", "pip instl"),
+            ("pip uninstall", "pip unstal"),
+            ("pip show", "pip shw"),
+            ("pip wheel", "pip whel"),
+            ("pip inspect", "pip insct"),
+            ("pip cache", "pip cac"),
+            ("pip cache", "pip cac"),
         ]
 
-        '''
-        
-        pip_passing = [
-            ("pip src, ERROR: unknown command src, maybe you meant search", "pip src"),
-            ("pip cnfg, ERROR: unknown command cnfg, maybe you meant config", "pip cnfg"),
-            ("pip dwnld, ERROR: unknown command dwnld, maybe you meant download", "pip dwnld"),
-            ("pip lst, ERROR: unknown command lst, maybe you meant list", "pip lst"),
-            ("pip instl', ERROR: unknown command instl, maybe you meant install", "pip instl"),
-            ("pip unstal, ERROR: unknown command unstal, maybe you meant uninstall", "pip unstal"),
-            ("pip shw, ERROR: unknown command shw, maybe you meant show", "pip shw"),
-            ("pip whel, ERROR: unknown command whel, maybe you meant wheel", "pip whel"),
-            ("pip insct, ERROR: unknown command insct, maybe you meant inspect", "pip insct"),
-            ("pip cac, ERROR: unknown command cac, maybe you meant cache", "pip cac"),
-        ]
-        
-        '''
+        pip_passing2 = [
+            ("pip instal python", "pip install python"),
+            ("pip instal tools", "pip install tools"),
+            ("pip instal gdb", "pip install gdb"),
+            ("pip instal requests", "pip install requests"),
+            ("pip instal requests", "pip install requests"),
+            ("pip instal requests", "pip install requests"),
+            ("pip instal requests", "pip install requests"),
+            ("pip instal requests", "pip install requests"),
+            ("pip instal requests", "pip install requests"),
+            ("pip instal requests", "pip install requests"),
+            ]
+
         dice_ = random.randint(0, 9)
         return pip_failing[dice_][0], pip_failing[dice_][1], pip_passing[dice_][0], pip_passing[dice_][1]
 
@@ -460,14 +445,14 @@ class TheFuckUnittestGenerator1(
     def _generate_one(
             self,
     ) -> str:
-        return self.generate_values(self._generate_pip_command_)
+        return self.generate_values(self.thefuck1_generate_)
 
     # self._generate_pip_command_passing()
 
     @staticmethod
     def _get_assert(
+            value: str,
             expected: str,
-            result: str,
     ) -> list[Call]:
         return [
             ast.Call(
@@ -477,8 +462,7 @@ class TheFuckUnittestGenerator1(
                     ast.Call(
                         func=ast.Name(id="get_new_command"),
                         args=[
-                            # ast.Constant(value=expected),
-                            ast.Constant(value=result),
+                            ast.Constant(value=value),
                         ],
                         keywords=[],
                     ),
@@ -499,25 +483,37 @@ class TheFuckUnittestGenerator1(
                 names=[ast.alias(name="replace_argument, for_app")],
                 level=0,
             ),
+            ast.Import(
+                module="",
+                names=[ast.alias(name="re")],
+                level=0,
+            ),
             ast.ImportFrom(
                 module="thefuck.specific.sudo",
                 names=[ast.alias(name="sudo_support")],
                 level=0,
             ),
+            ast.ImportFrom(
+                module="thefuck.types",
+                names=[ast.alias(name="Command")],
+                level=0,
+            ),
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        expected, result, _, _ = self._generate_one()
+        expected, value, _, _ = self._generate_one()
         test = self.get_empty_test()
-        print("Result : ", result, "Expected : ", expected)
-        test.body = self._get_assert(expected, result)
+        print("Value : ", value)
+        print("Expected : ", expected)
+        test.body = self._get_assert(value, expected)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        _, _, expected, result = self._generate_one()
+        _, _, expected, value = self._generate_one()
         test = self.get_empty_test()
-        print("Result : ", result, "Expected : ", expected)
-        test.body = self._get_assert(expected, result)
+        print("Value : ", value)
+        print("Expected : ", expected)
+        test.body = self._get_assert(value, expected)
         return test, TestResult.PASSING
 
 
@@ -576,12 +572,12 @@ class TheFuckUnittestGenerator2(
 
 class TheFuckSystemtestGenerator1(SystemtestGenerator, TheFuckTestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        # expected, result, _, _ = self.generate_values(self._generate_pip_command_)
-        return f"FAILING", TestResult.FAILING
+        _, fail_,  = self.generate_values(self.thefuck1_generate_)
+        return f"{fail_}", TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        # _, _, expected, result = self.generate_values(self._generate_pip_command_)
-        return f"PASSING", TestResult.PASSING
+        pass_, _, = self.generate_values(self.thefuck1_generate_)
+        return f"{pass_}", TestResult.PASSING
 
 
 class TheFuckSystemtestGenerator2(SystemtestGenerator, TheFuckTestGenerator):
