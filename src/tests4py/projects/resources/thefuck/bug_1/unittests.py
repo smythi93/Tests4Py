@@ -1,72 +1,70 @@
 import unittest
 from thefuck.rules.pip_unknown_command import get_new_command
-from thefuck.utils import replace_argument, for_app
-from thefuck.specific.sudo import sudo_support
 from thefuck.types import Command
 
 
 class TestsFailing(unittest.TestCase):
     def test_diversity_1(self):
-        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
+        self.assertAlmostEquals("pip install numpy", get_new_command(Command("pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"")))
 
     def test_diversity_2(self):
-        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
+        self.assertAlmostEqual("pip install numpy", get_new_command(Command("pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"")))
 
     def test_diversity_3(self):
-        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
+        self.assertEqual("pip install numpy", get_new_command(Command("pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"")))
 
     def test_diversity_4(self):
-        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
+        self.assertEqual("pip install numpy", get_new_command(Command("pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"")))
 
     def test_diversity_5(self):
-        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
+        self.assertEqual("pip install numpy", get_new_command(Command("pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"")))
 
     def test_diversity_6(self):
-        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
+        self.assertEqual("pip install numpy", get_new_command(Command("pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"")))
 
     def test_diversity_7(self):
-        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
+        self.assertEqual("pip install numpy", get_new_command(Command("pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"")))
 
     def test_diversity_8(self):
-        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
+        self.assertEqual("pip install numpy", get_new_command(Command("pip instll numpy")))
 
     def test_diversity_9(self):
-        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
+        self.assertEqual("pip install numpy", get_new_command(Command("pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"")))
 
     def test_diversity_10(self):
-        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
+        self.assertEqual("pip install numpy", get_new_command(Command("pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"")))
 
 
 class TestsPassing(unittest.TestCase):
     def test_diversity_1(self):
-        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
-
+        self.assertEqual('pip install numpy', get_new_command(
+            Command('pip instl numpy', 'ERROR: unknown command "instl", maybe you meant "install"')))
     def test_diversity_2(self):
-        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
+        self.assertEqual("pip install numpy", get_new_command(Command("pip instl numpy, unknown command \"instl\", maybe you meant \"install\"")))
 
     def test_diversity_3(self):
-        self.assertEqual("ERROR: unknown command", get_new_command("pip cnfg"))
+        self.assertEqual("pip install numpy", get_new_command(Command("pip instll numpy")))
 
     def test_diversity_4(self):
-        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
+        self.assertEqual("pip install", get_new_command(Command("pip instaall", "ERROR: unknown command \"instaall\"\nMaybe you meant \"install\"")))
 
     def test_diversity_5(self):
-        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
+        self.assertEqual("pip install numpy", get_new_command(Command("pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"")))
 
     def test_diversity_6(self):
-        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
+        self.assertEqual("pip install numpy", get_new_command(Command("pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"")))
 
     def test_diversity_7(self):
-        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
+        self.assertEqual("pip install numpy", get_new_command(Command("pip instl numpy, unknown command \"instl\", maybe you meant \"install\"")))
 
     def test_diversity_8(self):
-        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
+        self.assertEqual("pip install numpy", get_new_command(Command("pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"")))
 
     def test_diversity_9(self):
-        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
+        self.assertEqual("pip install numpy", get_new_command(Command("pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"")))
 
     def test_diversity_10(self):
-        self.assertEqual("pip show hydra", get_new_command("pip shw hydra"))
+        self.assertEqual("pip install numpy", get_new_command(Command("pip instl numpy, unknown command \"instl\", maybe you meant \"install\"")))
 
 
 '''

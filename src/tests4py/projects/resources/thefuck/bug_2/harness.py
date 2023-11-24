@@ -2,6 +2,6 @@ import sys
 from thefuck.utils import get_all_executables
 
 if __name__ == "__main__":
-    print(sys.argv[0:])
     executables = get_all_executables()
-    # print(executables)
+    if any(sys.argv[1] in s for s in executables):
+        print(sys.argv[1])

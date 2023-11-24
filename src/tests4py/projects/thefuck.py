@@ -13,7 +13,7 @@ from tests4py.grammars.fuzzer import srange
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
-
+from subprocess import Popen, PIPE, DEVNULL
 
 PROJECT_MAME = "thefuck"
 
@@ -347,11 +347,24 @@ class TheFuckAPI2(API):
         if args is None:
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
-        expected = process.args[0:]
-        result = process.stdout.decode("utf8")
-        print(args)
-        print('expected : ', expected)
-        print('result : ', result)
+        expected = process.args[2]
+        result = process.stdout.decode("utf8").strip()
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class TheFuckAPI3(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        result = process.stdout.decode("utf8").strip()
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -369,49 +382,36 @@ class TheFuckTestGenerator:
 
     @staticmethod
     def thefuck1_generate_() -> tuple:
-        # peep install brutus - peep - pip install brutus => output
+        #     def test_failing_529c33328e0b3a88e990f3307c1ed57d(self):self.assertEqual('pip instl numpy',
+        #     get_new_command(Command('pip install numpy', 'ERROR: unknown command "instl", maybe you meant "install"')))
+        #   def test_passing_79f0a6cb5a57f00925fa149c5cb7b495(self): self.assertEqual('pip install numpy',
+        #   get_new_command(Command('pip instl numpy', 'ERROR: unknown command "instl", maybe you meant "install"')))
+
         pip_failing = [
-            ("pip install", "pipip install"),
-            ("pip search aircrack", "PIP SEARCH AIRCRACK"),
-            ("pip install hashcat", "pip install hash-cat"),
-            ("pip install hashcat", "pip install h@shc@t"),
-            ("pip install wireshark", "pip instal wire--shark"),
-            ("pip uninstall medusa", "pip un install medusa"),
-            ("pip show hydra", "pip_show hydra"),
-            ("pip search john", "PIP SERCH john"),
-            ("pip install brutus", "peep", "peep install brutus"),
-            ("pip download medusa", "pip download m3dus4"),
+            ("pip install numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"", "pip instl numpy"),
+            ("", "pip install numpy", "pip instl numpy"),
+            #("pip install numpy", "pip instl numpy, unknown command \"instl\", maybe you meant \"install\"", "pip instl numpy"),
+            #("pip install numpy", "pip instl numpy", "unknown command \"instl\", maybe you meant \"install\""),
+            #("pip install numpy", "pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\""),
+            #("", "pip install numpy", "pip instl numpy"),
+            #("pip install", "pip instaall", "ERROR: unknown command \"instaall\"\nMaybe you meant \"install\""),
+            #("pip instl numpy", "pip install numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\""),
         ]
 
         pip_passing = [
 
-            ("pip config", "pip cnfg"),
-            ("pip download", "pip dwnld"),
-            ("pip list", "pip lst"),
-            ("pip install", "pip instl"),
-            ("pip uninstall", "pip unstal"),
-            ("pip show", "pip shw"),
-            ("pip wheel", "pip whel"),
-            ("pip inspect", "pip insct"),
-            ("pip cache", "pip cac"),
-            ("pip cache", "pip cac"),
+            #("pip install numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"", "pip instl numpy",),
+            #("pip install numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"", "pip instl numpy",),
+            #("pip install numpy", "pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\""),
+            #("pip install numpy", "pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\""),
+            #("pip install numpy", "pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\""),
+            ("pip install numpy", "pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\""),
+            ("pip install numpy", "pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\""),
+            #("pip install", "pip instaall", "ERROR: unknown command \"instaall\"\nMaybe you meant \"install\""),
         ]
 
-        pip_passing2 = [
-            ("pip instal python", "pip install python"),
-            ("pip instal tools", "pip install tools"),
-            ("pip instal gdb", "pip install gdb"),
-            ("pip instal requests", "pip install requests"),
-            ("pip instal requests", "pip install requests"),
-            ("pip instal requests", "pip install requests"),
-            ("pip instal requests", "pip install requests"),
-            ("pip instal requests", "pip install requests"),
-            ("pip instal requests", "pip install requests"),
-            ("pip instal requests", "pip install requests"),
-            ]
-
-        dice_ = random.randint(0, 9)
-        return pip_failing[dice_][0], pip_failing[dice_][1], pip_passing[dice_][0], pip_passing[dice_][1]
+        dice_ = random.randint(0, 1)
+        return pip_failing[dice_][0], pip_failing[dice_][1], pip_failing[dice_][2], pip_passing[dice_][0], pip_passing[dice_][1], pip_passing[dice_][2]
 
     @staticmethod
     def thefuck2_generate_() -> tuple:
@@ -429,13 +429,18 @@ class TheFuckTestGenerator:
 
         dice_ = random.randint(0, len(executables))
         passing_ = executables[dice_]
-        # passing_path = executable_paths[dice_]  # Full Paths
-        # passing_ex_ = "/Users/bs/PycharmProjects/Tests4Py/venv/bin:/Library/Frameworks/Python.framework/Versions/3.12/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/bs/Library/Application Support/JetBrains/Toolbox/scripts"
-
-        username = "".join(random.choices(string.ascii_letters, k=random.randint(3, 13)))
+        username = "".join(random.choices(string.ascii_letters, k=random.randint(3, 8)))
         failing_ = "C:\\Windows\\System32;C:\\Windows;C:\\Program Files\\Java\\jdk1.8.0_181\\bin;C:\\Program Files (x86)\\" + username + "\\bin"
 
         return passing_, failing_
+
+    @staticmethod
+    def thefuck3_generate_() -> str:
+        proc = Popen(['fish', '-c', 'echo $FISH_VERSION'],
+                     stdout=PIPE, stderr=DEVNULL)
+        version = proc.stdout.read().decode('utf-8').strip()
+        print(u'Fish Shell {}'.format(version))
+        return u'Fish Shell {}'.format(version)
 
 
 class TheFuckUnittestGenerator1(
@@ -447,12 +452,11 @@ class TheFuckUnittestGenerator1(
     ) -> str:
         return self.generate_values(self.thefuck1_generate_)
 
-    # self._generate_pip_command_passing()
-
     @staticmethod
     def _get_assert(
-            value: str,
             expected: str,
+            script: str,
+            output: str,
     ) -> list[Call]:
         return [
             ast.Call(
@@ -462,7 +466,14 @@ class TheFuckUnittestGenerator1(
                     ast.Call(
                         func=ast.Name(id="get_new_command"),
                         args=[
-                            ast.Constant(value=value),
+                            ast.Call(
+                                func=ast.Name(id="Command"),
+                                args=[
+                                    ast.Constant(value=script),
+                                    ast.Constant(value=output),
+                                ],
+                                keywords=[],
+                            )
                         ],
                         keywords=[],
                     ),
@@ -501,19 +512,21 @@ class TheFuckUnittestGenerator1(
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        expected, value, _, _ = self._generate_one()
+        expected, script, output, _, _, _ = self._generate_one()
         test = self.get_empty_test()
-        print("Value : ", value)
-        print("Expected : ", expected)
-        test.body = self._get_assert(value, expected)
+        print("output fail : ", output)
+        print("script fail : ", script)
+        print('expected fail : ', expected)
+        test.body = self._get_assert(expected, script, output)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        _, _, expected, value = self._generate_one()
+        _, _, _, expected, script, output = self._generate_one()
         test = self.get_empty_test()
-        print("Value : ", value)
-        print("Expected : ", expected)
-        test.body = self._get_assert(value, expected)
+        print("output pass : ", output)
+        print("script pass : ", script)
+        print('expected pass : ', expected)
+        test.body = self._get_assert(expected, script, output)
         return test, TestResult.PASSING
 
 
@@ -570,17 +583,82 @@ class TheFuckUnittestGenerator2(
         return test, TestResult.PASSING
 
 
+class TheFuckUnittestGenerator3(
+    python.PythonGenerator, UnittestGenerator, TheFuckTestGenerator
+):
+
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.thefuck2_generate_)
+
+    @staticmethod
+    def _get_assert(
+           result: str,
+    ) -> list[Call]:
+        return [
+            ast.Call(
+                func=ast.Attribute(value=ast.Name(id="self"), attr="assertIn"),
+                args=[
+                    ast.Constant(value=result),
+                    ast.Call(
+                        func=ast.Name(id="get_all_executables"),
+                        args=[
+                        ],
+                        keywords=[],
+                    ),
+                ],
+                keywords=[],
+            )
+        ]
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            ast.ImportFrom(
+                module="thefuck.utils",
+                names=[ast.alias(name="get_all_executables")],
+                level=0,
+            ),
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        _, fail_ = self._generate_one()
+        # print(fail_)
+        test = self.get_empty_test()
+        test.body = self._get_assert(fail_)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_, _ = self._generate_one()
+        # print(pas_)
+        test = self.get_empty_test()
+        test.body = self._get_assert(pass_)
+        return test, TestResult.PASSING
+
+
 class TheFuckSystemtestGenerator1(SystemtestGenerator, TheFuckTestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
         _, fail_,  = self.generate_values(self.thefuck1_generate_)
+        print('fail : ', fail_)
         return f"{fail_}", TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
         pass_, _, = self.generate_values(self.thefuck1_generate_)
+        print('pass : ', pass_)
         return f"{pass_}", TestResult.PASSING
 
 
 class TheFuckSystemtestGenerator2(SystemtestGenerator, TheFuckTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.thefuck2_generate_)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.thefuck2_generate_)
+        return f"{pass_}", TestResult.PASSING
+
+
+class TheFuckSystemtestGenerator3(SystemtestGenerator, TheFuckTestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
         _, fail_ = self.generate_values(self.thefuck2_generate_)
         return f"{fail_}", TestResult.FAILING
