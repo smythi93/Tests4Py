@@ -4,6 +4,7 @@ import string
 import subprocess
 import os
 from _ast import Call, ImportFrom
+from os import PathLike
 from pathlib import Path
 from typing import List, Optional, Tuple, Any, Callable
 from tests4py.grammars.fuzzer import Grammar
@@ -14,6 +15,7 @@ from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
 from subprocess import Popen, PIPE, DEVNULL
+import pkgutil
 
 PROJECT_MAME = "thefuck"
 
@@ -87,6 +89,9 @@ def register():
         fixed_commit_id="ce5feaebf7fd5c1190b5e14fbc1e962cc8db5f39",
         test_files=[Path("tests", "shells", "test_fish.py")],
         test_cases=["tests/shells/test_fish.py::TestFish::test_info"],
+        api=TheFuckAPI3(),
+        unittests=TheFuckUnittestGenerator3(),
+        systemtests=TheFuckSystemtestGenerator3(),
     )
     TheFuck(
         bug_id=4,
@@ -327,12 +332,23 @@ class TheFuckAPI1(API):
     def __init__(self, default_timeout: int = 5):
         super().__init__(default_timeout=default_timeout)
 
+    def get_test_arguments(self, s: str) -> List[str]:
+        return [s]
+
     def oracle(self, args: Any) -> Tuple[TestResult, str]:
         if args is None:
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
-        expected = process.args[1:]
+        expected = process.args[2]
+        expected = expected.replace("(", "")
+        expected = expected.replace(",", "")
         result = str(process.stdout.decode("utf8"))
+        result = result.strip()
+        print("******************")
+        print("a :", args)
+        print("r :", result)
+        print("e :", expected)
+        print("******************")
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -387,31 +403,38 @@ class TheFuckTestGenerator:
         #   def test_passing_79f0a6cb5a57f00925fa149c5cb7b495(self): self.assertEqual('pip install numpy',
         #   get_new_command(Command('pip instl numpy', 'ERROR: unknown command "instl", maybe you meant "install"')))
 
-        pip_failing = [
-            ("pip install numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"", "pip instl numpy"),
-            ("", "pip install numpy", "pip instl numpy"),
-            #("pip install numpy", "pip instl numpy, unknown command \"instl\", maybe you meant \"install\"", "pip instl numpy"),
-            #("pip install numpy", "pip instl numpy", "unknown command \"instl\", maybe you meant \"install\""),
-            #("pip install numpy", "pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\""),
-            #("", "pip install numpy", "pip instl numpy"),
-            #("pip install", "pip instaall", "ERROR: unknown command \"instaall\"\nMaybe you meant \"install\""),
-            #("pip instl numpy", "pip install numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\""),
-        ]
+        pip_commands = ("install", "uninstall", "inspect", "list", "show", "freeze", "check",
+                        "download", "wheel", "hash", "search", "cache", "config", "debug",)
 
-        pip_passing = [
+        pip_passing_inputs = ("instl'", "unstal", "spect", "lst", "shw", "freze", "chck",
+                              "downld", "whel", "hsh", "serch", "cach", "cnfig", "dbug")
 
-            #("pip install numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"", "pip instl numpy",),
-            #("pip install numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"", "pip instl numpy",),
-            #("pip install numpy", "pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\""),
-            #("pip install numpy", "pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\""),
-            #("pip install numpy", "pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\""),
-            ("pip install numpy", "pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\""),
-            ("pip install numpy", "pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\""),
-            #("pip install", "pip instaall", "ERROR: unknown command \"instaall\"\nMaybe you meant \"install\""),
-        ]
+        pip_failing_inputs = ("inst@ll", "uninst4LLL", "1nsp3ct", "l1st", "sh0w->", "FR33ze",
+                              "CHECK=", "-dowNLoad", "wh33l", "h4sh", "sEArch", "*cAch3", "c0nf1g", "~deBUG",)
 
-        dice_ = random.randint(0, 1)
-        return pip_failing[dice_][0], pip_failing[dice_][1], pip_failing[dice_][2], pip_passing[dice_][0], pip_passing[dice_][1], pip_passing[dice_][2]
+        python_libraries = ("pathlib", "pstats", "struct", "http", "warnings", "tokenize", "ast", "doctest",
+                            "crypt", "calendar", "multiprocessing", "wsgiref", "tabnanny", "zipimport", "os",
+                            "pyexpat", "ssl", "sflkit", "ssl", "pstats", "audioop", "unicodedata", "trace",
+                            "venv", "re", "cgi", "pty", "mailbox",)
+
+        '''
+        python_libraries = []
+        for _, name, _ in pkgutil.iter_modules():
+            if '_' not in name:
+                python_libraries.append(name)
+        '''
+        lib_dice = random.randint(0, 27)
+        dice_ = random.randint(0, 13)
+        # lib_dice = random.randint(0, len(python_libraries) - 1)
+        pip_failing = (f"pip {pip_commands[dice_]} {python_libraries[lib_dice]}",
+                       f"pip {pip_failing_inputs[dice_]} {python_libraries[lib_dice]}",
+                       f"ERROR: unknown command \"{pip_failing_inputs[dice_]}\", maybe you meant \"{pip_commands[dice_]}\"")
+
+        pip_passing = (f"pip {pip_commands[dice_]} {python_libraries[lib_dice]}",
+                       f"pip {pip_passing_inputs[dice_]} {python_libraries[lib_dice]}",
+                       f"ERROR: unknown command \"{pip_passing_inputs[dice_]}\", maybe you meant \"{pip_commands[dice_]}\"")
+
+        return pip_failing[0], pip_failing[1], pip_failing[2], pip_passing[0], pip_passing[1], pip_passing[2]
 
     @staticmethod
     def thefuck2_generate_() -> tuple:
@@ -490,21 +513,6 @@ class TheFuckUnittestGenerator1(
                 level=0,
             ),
             ast.ImportFrom(
-                module="thefuck.utils",
-                names=[ast.alias(name="replace_argument, for_app")],
-                level=0,
-            ),
-            ast.Import(
-                module="",
-                names=[ast.alias(name="re")],
-                level=0,
-            ),
-            ast.ImportFrom(
-                module="thefuck.specific.sudo",
-                names=[ast.alias(name="sudo_support")],
-                level=0,
-            ),
-            ast.ImportFrom(
                 module="thefuck.types",
                 names=[ast.alias(name="Command")],
                 level=0,
@@ -541,7 +549,7 @@ class TheFuckUnittestGenerator2(
 
     @staticmethod
     def _get_assert(
-           result: str,
+            result: str,
     ) -> list[Call]:
         return [
             ast.Call(
@@ -594,7 +602,7 @@ class TheFuckUnittestGenerator3(
 
     @staticmethod
     def _get_assert(
-           result: str,
+            result: str,
     ) -> list[Call]:
         return [
             ast.Call(
@@ -638,13 +646,16 @@ class TheFuckUnittestGenerator3(
 
 class TheFuckSystemtestGenerator1(SystemtestGenerator, TheFuckTestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        _, fail_,  = self.generate_values(self.thefuck1_generate_)
-        print('fail : ', fail_)
+        expected, script, output, _, _, _ = self.generate_values(self.thefuck1_generate_)
+        print('fail : ', script, output)
+        fail_ = expected, script, output
         return f"{fail_}", TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        pass_, _, = self.generate_values(self.thefuck1_generate_)
-        print('pass : ', pass_)
+        _, _, _, expected, script, output = self.generate_values(self.thefuck1_generate_)
+        print('pass : ', script)
+        print("out : ", output)
+        pass_ = expected, script, output
         return f"{pass_}", TestResult.PASSING
 
 
@@ -670,11 +681,12 @@ class TheFuckSystemtestGenerator3(SystemtestGenerator, TheFuckTestGenerator):
 
 grammar: Grammar = {
     "<start>": ["<structure_>"],
-    "<structure_>": ["<str_int_sym_>", "<str_int_sym_><structure_>", "<str_int_sym_> <structure_>"],
+    "<structure_>": ["<str_int_sym_><structure_>"],
     "<str_int_sym_>": ["<string_><str_int_sym_>", "<integer_><str_int_sym_>", "<symbols_><str_int_sym_>", ""],
-    "<string_>": ["<char_><string_>", "<char_>", ""],
-    "<integer_>": ["<digit_><integer_>", "<digit_>", ""],
-    "<symbols_>": srange(string.punctuation),
+    "<string_>": ["<char_><string_>", "<char_>", " "],
+    "<integer_>": ["<digit_><integer_>", "<digit_>", " "],
+    "<symbols_>": ["<symbol_><symbols_>", "<symbol_>", " "],
+    "<symbol_>": srange(string.punctuation),
     "<digit_>": srange(string.digits),
     "<char_>": srange(string.ascii_letters),
 }
