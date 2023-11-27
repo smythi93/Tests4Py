@@ -8,9 +8,9 @@ from typing import List, Union, Optional
 from tabulate import tabulate
 
 from tests4py.api.cache import (
-    check_cache_exists_project,
-    copy_cached_project,
-    cache_project,
+    check_cache_exists,
+    copy_cached,
+    cache,
     check_cache_exists_env,
     copy_cached_env,
     cache_venv,
@@ -56,7 +56,7 @@ from tests4py.projects import (
 )
 
 
-def checkout_project(
+def checkout(
     project: Project,
     work_dir: Path = DEFAULT_WORK_DIR,
     update: bool = False,
@@ -81,7 +81,7 @@ def checkout_project(
             tmp_location = (work_dir / f"tmp_{project.project_name}").absolute()
 
             if check_further:
-                if force or not config.cache or not check_cache_exists_project(project):
+                if force or not config.cache or not check_cache_exists(project):
                     LOGGER.info(
                         f"Cloning {project.github_url} into {work_location}... "
                     )
@@ -92,13 +92,13 @@ def checkout_project(
                         stdout=subprocess.STDOUT if verbose else subprocess.DEVNULL,
                     )
                     if config.cache:
-                        cache_project(project, work_location)
+                        cache(project, work_location)
                 else:
                     LOGGER.info(
                         f"Copying {project.github_url} from {GLOBAL_PROJECTS / project.project_name} "
                         f"into {work_location}... "
                     )
-                    copy_cached_project(project, work_location)
+                    copy_cached(project, work_location)
             else:
                 raise AttributeError("Not status=OK")
 
@@ -274,7 +274,7 @@ def checkout_project(
     return report
 
 
-def compile_project(
+def build(
     work_dir_or_project: Optional[Union[Path, Project]] = None,
     recompile: bool = False,
     force: bool = False,
@@ -352,7 +352,7 @@ def compile_project(
     return report
 
 
-def info_project(
+def info(
     project_name: Optional[str] = None,
     bug_id: Optional[int] = None,
     report: Optional[InfoReport] = None,
@@ -433,7 +433,7 @@ def info_project(
     return report
 
 
-def test_project(
+def test(
     work_dir_or_project: Optional[Union[Path, Project]] = None,
     single_test: Optional[Union[List[str], str]] = None,
     relevant_tests: bool = False,

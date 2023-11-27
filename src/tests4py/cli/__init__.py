@@ -5,39 +5,34 @@ import os
 import sys
 from pathlib import Path
 
+from tests4py.cli.framework import unittest, systemtest
+from tests4py.cli.framework.cache import tests4py_cache, tests4py_clear
+from tests4py.cli.framework.config import tests4py_config_set
+from tests4py.cli.framework.default import (
+    tests4py_checkout,
+    tests4py_compile,
+    tests4py_info,
+    tests4py_test,
+)
+from tests4py.cli.framework.grammar import tests4py_grammar
+from tests4py.cli.framework.sfl import tests4py_sfl_instrument, tests4py_sfl_events
 from tests4py.constants import (
     CHECKOUT,
     COMPILE,
-    # COVERAGE,
     INFO,
-    # MUTATION,
     TEST,
     UNITTEST,
     SYSTEMTEST,
-    RUN,
-    GENERATE,
     CONFIG,
     CACHE,
+    CLEAR,
     GRAMMAR,
+    RUN,
     DEFAULT_WORK_DIR,
+    GENERATE,
     DEFAULT_SUB_PATH_SYSTEMTESTS,
     DEFAULT_SUB_PATH_UNITTESTS,
-    CLEAR,
 )
-from tests4py.framework import (
-    unittest,
-    systemtest,
-)
-from tests4py.framework.cache import tests4py_cache, tests4py_clear
-from tests4py.framework.config import tests4py_config_set
-from tests4py.framework.default import (
-    tests4py_checkout,
-    tests4py_compile,
-    tests4py_test,
-    tests4py_info,
-)
-from tests4py.framework.grammar import tests4py_grammar
-from tests4py.framework.sfl import tests4py_sfl_instrument, tests4py_sfl_events
 from tests4py.logger import LOGGER
 from tests4py.sfl.constants import SFL, INSTRUMENT, EVENTS
 

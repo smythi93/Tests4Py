@@ -2,7 +2,7 @@ import json
 import os
 from typing import List
 
-from tests4py import framework
+from tests4py.cli import framework
 from tests4py.constants import (
     DEFAULT_WORK_DIR,
     INFO_FILE,

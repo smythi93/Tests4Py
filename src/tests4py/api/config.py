@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from typing import Optional
 
+from tests4py.api.report import ConfigReport
 from tests4py.constants import GLOBAL_CONFIG_FILE, GLOBAL_CONFIGS, GLOBAL_PROJECTS
 
 
@@ -35,3 +36,20 @@ def load_config() -> GlobalConfig:
         config.write()
     os.makedirs(GLOBAL_PROJECTS, exist_ok=True)
     return config
+
+
+def config_set(name: str, value: bool, report: Optional[ConfigReport] = None):
+    if report is None:
+        report = ConfigReport()
+    try:
+        config = load_config()
+        if hasattr(config, name):
+            setattr(config, name, value)
+        else:
+            raise AttributeError(f"Config has no attribute {name}")
+        config.write()
+        report.successful = True
+    except BaseException as e:
+        report.raised = e
+        report.successful = False
+    return report

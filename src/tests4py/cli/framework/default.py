@@ -41,7 +41,7 @@ def tests4py_checkout(
         project = projects.get_project(project_name, bug_id)
         if not fixed:
             project.buggy = True
-        api.checkout_project(
+        api.checkout(
             project, work_dir=work_dir, update=update, force=force, report=report
         )
     except BaseException as e:
@@ -59,7 +59,7 @@ def tests4py_compile(
     report = CompileReport()
     init_logger(verbose=verbose)
     try:
-        api.compile_project(work_dir, recompile=recompile, force=force, report=report)
+        api.build(work_dir, recompile=recompile, force=force, report=report)
     except BaseException as e:
         report.raised = e
         report.successful = False
@@ -69,7 +69,7 @@ def tests4py_compile(
 def tests4py_info(project_name: str = None, bug_id: int = None):
     report = InfoReport()
     try:
-        api.info_project(project_name=project_name, bug_id=bug_id, report=report)
+        api.info(project_name=project_name, bug_id=bug_id, report=report)
     except BaseException as e:
         report.raised = e
         report.successful = False
@@ -88,7 +88,7 @@ def tests4py_test(
     report = TestReport()
     init_logger(verbose=verbose)
     try:
-        api.test_project(
+        api.test(
             work_dir,
             single_test=single_test,
             relevant_tests=relevant_tests,
