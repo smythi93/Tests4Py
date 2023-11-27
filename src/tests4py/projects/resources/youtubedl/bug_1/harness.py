@@ -1,4 +1,5 @@
 import argparse
+import ast
 import operator
 import re
 
@@ -86,10 +87,18 @@ def match_str_fixed(filter_str, dct):
         _match_one(filter_part, dct) for filter_part in filter_str.split('&'))
 
 
+def dict_type(s):
+    try:
+        # Safely evaluate the string as a Python literal
+        return ast.literal_eval(s)
+    except ValueError:
+        raise argparse.ArgumentTypeError("Not a valid Python dictionary")
+
+
 if __name__ == "__main__":
     arguments = argparse.ArgumentParser()
     arguments.add_argument("-q", dest="query", default=None)
-    arguments.add_argument("-d", dest="dict", default=None)
+    arguments.add_argument("-d", dest="dict", type=dict_type, default=None)
 
     args = arguments.parse_args()
 
