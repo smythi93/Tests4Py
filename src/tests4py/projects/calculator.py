@@ -1,12 +1,24 @@
+import ast
 import os
-from pathlib import Path
-from typing import List, Optional
+import random
+import string
+import subprocess
+from _ast import Call
 
+from math import cos as rcos
+from math import sin as rsin
+from math import tan as rtan
+from math import sqrt as rsqrt
+from pathlib import Path
+from typing import List, Optional, Tuple, Any, Callable
+from tests4py.grammars.fuzzer import srange
 from tests4py.constants import PYTHON
+from tests4py.grammars import python
 from tests4py.grammars.fuzzer import Grammar, is_valid_grammar
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
-from tests4py.tests.utils import API
+from tests4py.tests.utils import API, TestResult
+
 
 PROJECT_MAME = "calculator"
 
@@ -66,11 +78,250 @@ def register():
             os.path.join("tests", "test_calc.py") + "::TestCalc::test_sqrt_neg",
         ],
         loc=20,
+        unittests=CalculatorUnittestGenerator(),
+        systemtests=CalculatorSystemtestGenerator(),
+        api=Calculator1API(),
     )
 
 
+class Calculator1API(API):
+    def __init__(self, default_timeout=5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        result = process.stdout.decode("utf8").strip()
+        if result == expected:
+            return TestResult.PASSING, f"Expected {expected}, but was {result}"
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class CalculatorTestGenerator:
+    @staticmethod
+    def generate_values(producer: Callable) -> Tuple[Any]:
+        return producer()
+
+    @staticmethod
+    def _generate_int() -> int:
+        return random.randint(-9999, 9999)
+
+    def _generate_float(self) -> float:
+        return self._generate_int() + random.random()
+
+    @staticmethod
+    def sqrt(value):
+        return rsqrt(value)
+
+    @staticmethod
+    def cos(value):
+        return rcos(value)
+
+    @staticmethod
+    def sin(value):
+        return rsin(value)
+
+    @staticmethod
+    def tan(value):
+        return rtan(value)
+
+    @staticmethod
+    def main(argument):
+        return eval(argument)
+
+
+class CalculatorUnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, CalculatorTestGenerator
+):
+    def _generate_one(
+        self,
+    ) -> [int, float]:
+        return self.generate_values(
+            random.choice((self._generate_int, self._generate_float))
+        )
+
+    @staticmethod
+    def _get_assert(
+        expected: Any,
+        result: str,
+    ) -> list[Call]:
+        return [
+            ast.Call(
+                func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
+                args=[
+                    ast.Constant(value=expected),
+                    ast.Call(
+                        func=ast.Name(id="main"),
+                        args=(
+                            [
+                                ast.Constant(value=result),
+                            ],
+                        ),
+                        keywords=[],
+                    ),
+                ],
+                keywords=[],
+            )
+        ]
+
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.ImportFrom(
+                module="calc",
+                names=[
+                    ast.alias(name="main"),
+                    ast.alias(name="sin"),
+                    ast.alias(name="cos"),
+                    ast.alias(name="tan"),
+                    ast.alias(name="sqrt"),
+                ],
+                level=0,
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        # Negative values and zero that make "sqrt" fail
+        generated_value = self._generate_one()
+        if generated_value > 0:
+            while generated_value > 0:
+                generated_value = self._generate_one()
+                if generated_value <= 0:
+                    break
+        # "sin(x)" values that turns out negative and used in "sqrt"
+        generated_value_sin = self._generate_one()
+        if rsin(generated_value_sin) > 0:
+            while rsin(generated_value_sin) > 0:
+                generated_value_sin = self._generate_one()
+                if rsin(generated_value_sin) <= 0:
+                    break
+        # "cos(x)" values that turns out negative and used in "sqrt"
+        generated_value_cos = self._generate_one()
+        if rcos(generated_value_cos) > 0:
+            while rcos(generated_value_cos) > 0:
+                generated_value_cos = self._generate_one()
+                if rcos(generated_value_cos) <= 0:
+                    break
+        # "tan(x)" values that turns out negative and used in "sqrt"
+        generated_value_tan = self._generate_one()
+        if rtan(generated_value_tan) > 0:
+            while rtan(generated_value_tan) > 0:
+                generated_value_tan = self._generate_one()
+                if rtan(generated_value_tan) <= 0:
+                    break
+
+        prospects = (
+            f"sqrt({round(generated_value, 5)})",
+            f"sqrt(sin({round(generated_value_sin, 5)}))",
+            f"sqrt(cos({round(generated_value_cos, 5)}))",
+            f"sqrt(tan({round(generated_value_tan, 5)}))",
+            "sqrt(%f)" % round(generated_value, 5),
+        )
+
+        dice = random.randint(0, 4)
+        test = self.get_empty_test()
+        test.body = self._get_assert(-1, prospects[dice])
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        generated_value = self._generate_one()
+        if generated_value <= 0:
+            while generated_value <= 0:
+                generated_value = self._generate_one()
+                if generated_value > 0:
+                    break
+
+        generated_value = round(generated_value, 5)
+        functions = (
+            [self.sin(generated_value), f"rsin({generated_value})"],
+            [self.cos(generated_value), f"rcos({generated_value})"],
+            [self.tan(generated_value), f"rtan({generated_value})"],
+            [self.sqrt(generated_value), f"rsqrt({generated_value})"],
+            [self.sin(generated_value), "rsin(%f)" % generated_value],
+            [self.cos(generated_value), "rcos(%f)" % generated_value],
+            [self.tan(generated_value), "rtan(%f)" % generated_value],
+            [self.sqrt(generated_value), "rsqrt(%f)" % generated_value],
+        )
+
+        dice = random.randint(0, 7)
+        test = self.get_empty_test()
+        test.body = self._get_assert(
+            functions[dice][0], str(self.main(functions[dice][1]))
+        )
+        return test, TestResult.PASSING
+
+
+class CalculatorSystemtestGenerator(SystemtestGenerator, CalculatorTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        generated_value = self.generate_values(self._generate_int)
+        if generated_value > 0:
+            while generated_value > 0:
+                generated_value = self.generate_values(self._generate_int)
+                if generated_value < 0:
+                    break
+        # generated_value = rsqrt(generated_value)
+        return f"sqrt({generated_value})", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        generated_value = self.generate_values(self._generate_int)
+        if generated_value <= 0:
+            while generated_value <= 0:
+                generated_value = self.generate_values(self._generate_int)
+                if generated_value > 0:
+                    break
+        generated_value_sin = self.generate_values(self._generate_int)
+        if rsin(generated_value_sin) > 0:
+            while rsin(generated_value_sin) > 0:
+                generated_value_sin = self.generate_values(self._generate_int)
+                if rsin(generated_value_sin) <= 0:
+                    break
+        # "cos(x)" values that turns out negative and used in "sqrt"
+        generated_value_cos = self.generate_values(self._generate_int)
+        if rcos(generated_value_cos) > 0:
+            while rcos(generated_value_cos) > 0:
+                generated_value_cos = self.generate_values(self._generate_int)
+                if rcos(generated_value_cos) <= 0:
+                    break
+        # "tan(x)" values that turns out negative and used in "sqrt"
+        generated_value_tan = self.generate_values(self._generate_int)
+        if rtan(generated_value_tan) > 0:
+            while rtan(generated_value_tan) > 0:
+                generated_value_tan = self.generate_values(self._generate_int)
+                if rtan(generated_value_tan) <= 0:
+                    break
+        possibilities_ = (
+            ["sqrt", generated_value],
+            ["sin", generated_value_sin],
+            ["cos", generated_value_cos],
+            ["tan", generated_value_tan],
+        )
+        spin_ = random.randint(0, 3)
+        return (
+            f"{possibilities_[spin_][1]}",
+            TestResult.PASSING,
+        )
+
+
 grammar: Grammar = {
-    "<start>": [""],
+    "<start>": ["<structure_>"],
+    "<structure_>": [
+        "<integers_>",
+        "<floats_>",
+        "<string_>",
+        "<string_>(<integers_>)",
+        "<string_>(<floats_>)",
+        "<string_>(<string_>(<integers_>))",
+        "<string_>(<string_>(<floats_>))",
+    ],
+    "<string_>": ["<letter_><string_>", "<letter_>"],
+    "<letter_>": srange(string.ascii_letters),
+    "<floats_>": ["<float_>", "-<float_>"],
+    "<float_>": ["<integer_>.<integer_>"],
+    "<integers_>": ["<integer_>", "-<integer_>"],
+    "<integer_>": ["<digit_><integer_>", "<digit_>"],
+    "<digit_>": srange(string.digits),
 }
 
 
