@@ -267,14 +267,6 @@ class CookieCutterAPI(API, GrammarVisitor, abc.ABC):
     def _communicate(self, process: Popen) -> Tuple[bytes, bytes] | Tuple[str, str]:
         return process.communicate(20 * b"\n", self.default_timeout)
 
-    def get_test_arguments(self, system_test_path: os.PathLike) -> List[str]:
-        with open(system_test_path, "r") as fp:
-            test = fp.read()
-        parts = test.split("\n")
-        if parts and parts[-1] == "":
-            parts.pop()
-        return parts if parts else []
-
     def prepare_args(self, args: List[str], work_dir: Path):
         try:
             self.visit_source("\n".join(args))
