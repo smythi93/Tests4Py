@@ -11,7 +11,7 @@ version = "0.0.5"
 authors = [
     { name = "Marius Smytzek", email = "marius.smytzek@cispa.de" },
     { name = "Martin Eberlein", email = "ebermart@informatik.hu-berlin.de" },
-    { name = "Batuhan Cerce", email = "batuhan.cerce@cispa.de" },
+    { name = "Batuhan Serce", email = "batuhan.serce@cispa.de" },
 ]
 description = "Tests4Py a benchmark for testing bugs"
 readme = "README.md"
