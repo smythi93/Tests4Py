@@ -1,0 +1,11 @@
+First version uses the fish -c 'echo $FISH_VERSION' command to get the version of the Fish shell.
+It relies on the $FISH_VERSION environment variable to fetch the version information.
+
+Second version uses the fish --version command to obtain the Fish shell version.
+It captures the output of this command and processes it to extract the version information.
+It does not rely on an environment variable like $FISH_VERSION.
+
+In the original code, it relies on the echo $FISH_VERSION command and
+expects the version information to be explicitly set in the $FISH_VERSION environment variable.
+In the modified code, it uses the standard --version flag,
+which is a common convention for obtaining the version information of command-line tools.

@@ -2,65 +2,64 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 
 class TestsFailing(FailingSystemtests):
-
     def test_diversity_1(self):
-        return "pip inst@ll pstats"
+        return ""
 
     def test_diversity_2(self):
-        return "pip -dowNLoad cgi"
+        return ""
 
     def test_diversity_3(self):
-        return "pip h@sh audioop"
+        return ""
 
     def test_diversity_4(self):
-        return "pip FR33ze cgi"
+        return ""
 
     def test_diversity_5(self):
-        return "pip l1st zipimport"
+        return ""
 
     def test_diversity_6(self):
-        return "pip sh0w-> pyexpat "
+        return ""
 
     def test_diversity_7(self):
-        return "pip ~d3bug crypt"
+        return ""
 
     def test_diversity_8(self):
-        return "pip l1st pathlib"
+        return ""
 
     def test_diversity_9(self):
-        return "pip -dowNLoad trace"
+        return ""
 
     def test_diversity_10(self):
-        return "pip h@sh audioop"
+        return ""
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return "pip whel calendar"
+        return ""
 
     def test_diversity_2(self):
-        return "pip cahe ast"
+        return ""
 
     def test_diversity_3(self):
-        return "pip debg venv"
+        return ""
 
     def test_diversity_4(self):
-        return "pip serch pstats"
+        return ""
 
     def test_diversity_5(self):
-        return "pip hsh cgi"
+        return ""
 
     def test_diversity_6(self):
-        return "pip instll warnings"
+        return ""
 
     def test_diversity_7(self):
-        return "pip cche pathlib"
+        return ""
 
     def test_diversity_8(self):
-        return "pip whel unicodedata"
+        return ""
 
     def test_diversity_9(self):
-        return "pip unstall pyexpat"
+        return ""
 
     def test_diversity_10(self):
-        return "pip show trace"
+        return ""
