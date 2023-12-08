@@ -1,22 +1,20 @@
 import unittest
-from thefuck.shell.fish import Fish
-from thefuck.shells.fish import _get_functions, _get_aliases
+from thefuck.rules.git_push import match
+from thefuck.types import Command
 
 
 class TestsFailing(unittest.TestCase):
     def test_diversity_1(self):
-        f = Fish()
-        self.assertIn("", _get_functions(f._get_overridden_aliases()))
+        self.assertEqual("", match(Command('git push -u origin master', 'Branch master set up to track remote branch master from origin.')))
 
     def test_diversity_2(self):
-        self.assertEqual("", _get_aliases())
+        self.assertEqual("", "")
 
     def test_diversity_3(self):
-        self.assertEqual("", _get_functions())
+        self.assertEqual("", "")
 
     def test_diversity_4(self):
-        f = Fish()
-        self.assertEqual("", f.get_aliases)
+        self.assertEqual("", "")
 
     def test_diversity_5(self):
         self.assertEqual("", "")
@@ -39,12 +37,10 @@ class TestsFailing(unittest.TestCase):
 
 class TestsPassing(unittest.TestCase):
     def test_diversity_1(self):
-        f = Fish()
-        self.assertEqual("", f._get_overridden_aliases(_get_aliases))
+        self.assertEqual("", "")
 
     def test_diversity_2(self):
-        f = Fish()
-        self.assertEqual("", f._get_overridden_aliases(_get_aliases))
+        self.assertEqual("", "")
 
     def test_diversity_3(self):
         self.assertEqual("", "")
