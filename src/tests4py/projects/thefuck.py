@@ -14,8 +14,6 @@ from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
 from subprocess import Popen, PIPE, DEVNULL
-import pkgutil
-import sys
 
 PROJECT_MAME = "thefuck"
 
@@ -119,6 +117,9 @@ def register():
         fixed_commit_id="7c858fadb3458be829d3d43666ccb46c3ed5b8a0",
         test_files=[Path("tests", "rules", "test_git_branch_exists.py")],
         test_cases=["tests/rules/test_git_branch_exists.py::test_get_new_command"],
+        api=TheFuckAPI6(),
+        unittests=TheFuckUnittestGenerator6(),
+        systemtests=TheFuckSystemtestGenerator6(),
     )
     TheFuck(
         bug_id=7,
@@ -423,6 +424,24 @@ class TheFuckAPI5(API):
             return TestResult.FAILING, f"Expected {expected}, but was {result}"
 
 
+class TheFuckAPI6(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        result = process.stdout.decode("utf8").strip()
+        print(expected)
+        print(result)
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
 class TheFuckTestGenerator:
     @staticmethod
     def generate_values(producer: Callable) -> str:
@@ -455,12 +474,6 @@ class TheFuckTestGenerator:
                             "pyexpat", "pstats", "unicodedata", "trace",
                             "venv", "cgi", "mailbox", "pandas", "pyparsing", "packaging")
 
-        '''
-        python_libraries = []
-        for _, name, _ in pkgutil.iter_modules():
-            if '_' not in name:
-                python_libraries.append(name)
-        '''
         lib_dice = random.randint(0, 16)
         dice_ = random.randint(0, 13)
         pip_failing = ((f"pip {pip_commands[dice_]} {python_libraries[lib_dice]}",
@@ -514,11 +527,6 @@ class TheFuckTestGenerator:
 
     @staticmethod
     def thefuck4_generate_():
-        #proc1 = subprocess.run(['fish', '-ic', 'functions'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
-        #                       check=True)
-        #functions_out = proc1.stdout.strip().split('\n')
-        #print("All Functions:")
-        #print(functions_out)
         proc = subprocess.run(['fish', '-ic', 'alias'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
                               check=True)
         print("All proc:", proc)
@@ -552,18 +560,47 @@ class TheFuckTestGenerator:
     def thefuck5_generate_():
         branch_name = TheFuckTestGenerator.generate_random_string()
         passing_ = ((True, f'git push --set-upstream <remote> <{branch_name}>',
-                    f'fatal: The current branch [{branch_name}] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [{branch_name}]'),
+                     f'fatal: The current branch [{branch_name}] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [{branch_name}]'),
                     (False, f'git pull --set-upstream <remote> <{branch_name}>',
-                    f'fatal: The current branch [{branch_name}] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [{branch_name}]'))
+                     f'fatal: The current branch [{branch_name}] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [{branch_name}]'))
 
         failing_ = ((False, f'git push --set-upstream <remote> <{branch_name}>',
-                    b'fatal: The current branch [{branch_name}] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [{branch_name}]'),
+                     b'fatal: The current branch [{branch_name}] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [{branch_name}]'),
                     (False, f'git pull --set-upstream <remote> <{branch_name}>',
-                    b'fatal: The current branch [{branch_name}] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [{branch_name}]'),
+                     b'fatal: The current branch [{branch_name}] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [{branch_name}]'),
                     (False, f'git push --set-upstream <remote> <{branch_name}>', random.randint(1, 1000)),
                     )
 
         return passing_[random.randint(0, 1)], failing_[random.randint(0, 2)]
+
+    @staticmethod
+    def thefuck6_generate_():
+        branch_name = TheFuckTestGenerator.generate_random_string()
+        passing_ = ((True, f'git branch -d {branch_name}', f"fatal: A branch named ' {branch_name} already exists."),
+                    (False, f'git branch -d {branch_name}', f"A branch named ' {branch_name} already exists."))
+
+        passing2_ = ((False, f'git branch -d {branch_name}', f"fatal: A branch named ' {branch_name} already exists."),
+                     ([], f'git branch -d {branch_name}', f"fatal: A branch named {branch_name} already exists."))
+
+        failing_ = ((False, f'git branch -d {branch_name}', b"A branch named ' {branch_name} already exists."),
+                    (False, f'git branch -d {branch_name}', random.randint(1, 1000)))
+
+        failing2_ = (([[f'git branch -d {branch_name}', f'git branch {branch_name}'],
+                           [f'git branch -d {branch_name}', f'git checkout -b {branch_name}'],
+                           [f'git branch -D {branch_name}', f'git branch {branch_name}'],
+                           [f'git branch -D {branch_name}', f'git checkout -b {branch_name}'],
+                           [f'git checkout {branch_name}']], f'git branch -d {branch_name}',
+                      f"fatal: A branch named {branch_name} already exists."),
+                     ([[f'git branch -d {branch_name}', f'git branch {branch_name}'],
+                           [f'git branch -d {branch_name}', f'git checkout -b {branch_name}'],
+                           [f'git branch -D {branch_name}', f'git branch {branch_name}'],
+                           [f'git branch -D {branch_name}', f'git checkout -b {branch_name}'],
+                           [f'git checkout {branch_name}']], f'git branch -D {branch_name}',
+                      f"fatal: A branch named {branch_name} already exists."),
+
+                     )
+        return passing_[random.randint(0, 1)], passing2_[random.randint(0, 1)], failing_[random.randint(0, 1)], \
+        failing2_[random.randint(0, 1)]
 
 
 class TheFuckUnittestGenerator1(
@@ -910,17 +947,121 @@ class TheFuckUnittestGenerator5(
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass_, _ = self._generate_one()
-        expected, script_parts, output = pass_
+        _, fail_ = self._generate_one()
+        expected, script_parts, output = fail_
         test = self.get_empty_test()
         test.body = self._get_assert(expected, script_parts, output)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        _, fail_ = self._generate_one()
-        expected, script_parts, output = fail_
+        pass_, _ = self._generate_one()
+        expected, script_parts, output = pass_
         test = self.get_empty_test()
         test.body = self._get_assert(expected, script_parts, output)
+        return test, TestResult.PASSING
+
+
+class TheFuckUnittestGenerator6(
+    python.PythonGenerator, UnittestGenerator, TheFuckTestGenerator
+):
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.thefuck6_generate_)
+
+    @staticmethod
+    def _get_assert(expected: bool | list | str, script: str, output: str) -> list[Call]:
+        return [
+            ast.Call(
+                func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
+                args=[
+                    ast.Constant(value=expected),
+                    ast.Call(
+                        func=ast.Name(id="match"),
+                        args=[
+                            ast.Call(
+                                func=ast.Name(id="Command"),
+                                args=[
+                                    ast.Constant(value=script),
+                                    ast.Constant(value=output),
+                                ],
+                                keywords=[],
+                            ),
+                        ],
+                        keywords=[],
+                    ),
+                ],
+                keywords=[],
+            )]
+
+    @staticmethod
+    def _get_assert_2(expected: bool | list | str, script: str, output: str) -> list[Call]:
+        return [
+            ast.Call(
+                func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
+                args=[
+                    ast.Constant(value=expected),
+                    ast.Call(
+                        func=ast.Name(id="get_new_command"),
+                        args=[
+                            ast.Call(
+                                func=ast.Name(id="Command"),
+                                args=[
+                                    ast.Constant(value=script),
+                                    ast.Constant(value=output),
+                                ],
+                                keywords=[],
+                            ),
+                        ],
+                        keywords=[],
+                    ),
+                ],
+                keywords=[],
+            )]
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            ast.ImportFrom(
+                module="thefuck.types",
+                names=[ast.alias(name="Command")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="thefuck.rules.git_branch_exists",
+                names=[ast.alias(name="match")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="thefuck.rules.git_branch_exists",
+                names=[ast.alias(name="get_new_command")],
+                level=0,
+            ),
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        _, _, fail_, fail2_ = self._generate_one()
+        chosen_ = random.randint(0, 1)
+        if chosen_ == 0:
+            expected, script, output = fail_
+            test = self.get_empty_test()
+            test.body = self._get_assert(expected, script, output)
+        else:
+            expected, script, output = fail2_
+            test = self.get_empty_test()
+            test.body = self._get_assert_2(expected, script, output)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_, pass2_, _, _ = self._generate_one()
+        chosen_ = random.randint(0, 1)
+        if chosen_ == 0:
+            expected, script, output = pass_
+            test = self.get_empty_test()
+            test.body = self._get_assert(expected, script, output)
+        else:
+            expected, script, output = pass2_
+            test = self.get_empty_test()
+            test.body = self._get_assert_2(expected, script, output)
         return test, TestResult.PASSING
 
 
@@ -971,6 +1112,16 @@ class TheFuckSystemtestGenerator5(SystemtestGenerator, TheFuckTestGenerator):
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
         pass_, _ = self.generate_values(self.thefuck5_generate_)
+        return f"{pass_}", TestResult.PASSING
+
+
+class TheFuckSystemtestGenerator6(SystemtestGenerator, TheFuckTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, _, fail_, fail2_ = self.generate_values(self.thefuck6_generate_)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, pass2_, _, _ = self.generate_values(self.thefuck6_generate_)
         return f"{pass_}", TestResult.PASSING
 
 
