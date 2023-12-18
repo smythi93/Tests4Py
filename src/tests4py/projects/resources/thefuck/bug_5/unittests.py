@@ -5,81 +5,84 @@ from thefuck.types import Command
 
 class TestsFailing(unittest.TestCase):
     def test_diversity_1(self):
-        self.assertEqual(False, match(Command('git push --set-upstream <remote> <A>',
-                                             b'fatal: The current branch [A] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [A]')))
+        self.assertEqual(True, match(Command('git pushpull --set-upstream <remote> <a>',
+                                             'fatal: The current branch [a] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [a]')))
 
     def test_diversity_2(self):
-        self.assertEqual(False, match(Command('git push --set-upstream <remote> <B>', 100)))
+        self.assertEqual(True, match(Command('git pushpull --set-upstream <remote> <b>',
+                                             'fatal: The current branch [b] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [b]')))
 
     def test_diversity_3(self):
-        self.assertEqual(False, match(Command('git push --set-upstream <remote> <C>',
-                                             b'fatal: The current branch [C] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [C]')))
+        self.assertEqual(True, match(Command('git pushpull --set-upstream <remote> <c>',
+                                             'fatal: The current branch [c] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [c]')))
 
     def test_diversity_4(self):
-        self.assertEqual(False, match(Command('git push --set-upstream <remote> <D>',
-                                             b'fatal: The current branch [D] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [D]')))
+        self.assertEqual(True, match(Command('git pushpull --set-upstream <remote> <d>',
+                                             'fatal: The current branch [d] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [d]')))
 
     def test_diversity_5(self):
-        self.assertEqual(False, match(Command('git push --set-upstream <remote> <E>', 10)))
+        self.assertEqual(True, match(Command('git pushpull --set-upstream <remote> <e>',
+                                             'fatal: The current branch [e] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [e]')))
 
     def test_diversity_6(self):
-        self.assertEqual(False, match(Command('git pull --set-upstream <remote> <F>',
-                                              b'fatal: The current branch [F] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [F]')))
+        self.assertEqual(False, match(Command('git push --set-upstream <remote> <f> SELECT * FROM users',
+                                              'fatal: The current branch [f] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [f]')))
 
     def test_diversity_7(self):
-        self.assertEqual(False, match(Command('git push --set-upstream <remote> <G>',
-                                              b'fatal: The current branch [G] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [G]')))
+        self.assertEqual(False, match(Command('git push --set-upstream <remote> <g> SELECT * FROM users',
+                                              'fatal: The current branch [g] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [g]')))
 
     def test_diversity_8(self):
-        self.assertEqual(False, match(Command('git push --set-upstream <remote> <H>', 1)))
+        self.assertEqual(False, match(Command('git push --set-upstream <remote> <h> SELECT * FROM users',
+                                              'fatal: The current branch [h] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [h]')))
 
     def test_diversity_9(self):
-        self.assertEqual(False, match(Command('git pull --set-upstream <remote> <I>',
-                                              b'fatal: The current branch [I] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [I]')))
+        self.assertEqual(False, match(Command('git push --set-upstream <remote> <i> SELECT * FROM users',
+                                              'fatal: The current branch [i] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [i]')))
 
     def test_diversity_10(self):
-        self.assertEqual(False, match(Command('git push --set-upstream <remote> <J>',
-                                              b'fatal: The current branch [J] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [J]')))
+        self.assertEqual(False, match(Command('git push --set-upstream <remote> <j> SELECT * FROM users',
+                                              'fatal: The current branch [j] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [j]')))
 
 
 class TestsPassing(unittest.TestCase):
 
     def test_diversity_1(self):
-        self.assertEqual(True, match(Command('git push --set-upstream <remote> <K>',
-                                             'fatal: The current branch [K] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [K]')))
+        self.assertEqual(True, match(Command('git push --set-upstream <remote> <k>',
+                                             'fatal: The current branch [k] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [k]')))
 
     def test_diversity_2(self):
-        self.assertEqual(True, match(Command('git push --set-upstream <remote> <L>',
-                                             'fatal: The current branch [L] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [L]')))
+        self.assertEqual(True, match(Command('git push --set-upstream <remote> <l>',
+                                             'fatal: The current branch [l] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [l]')))
 
     def test_diversity_3(self):
-        self.assertEqual(True, match(Command('git push --set-upstream <remote> <M>',
-                                             'fatal: The current branch [M] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [M]')))
+        self.assertEqual(True, match(Command('git push --set-upstream <remote> <m>',
+                                             'fatal: The current branch [m] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [m]')))
 
     def test_diversity_4(self):
-        self.assertEqual(True, match(Command('git push --set-upstream <remote> <N>',
-                                             'fatal: The current branch [N] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [N]')))
+        self.assertEqual(True, match(Command('git push --set-upstream <remote> <n>',
+                                             'fatal: The current branch [n] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [n]')))
 
     def test_diversity_5(self):
-        self.assertEqual(True, match(Command('git push --set-upstream <remote> <O>',
-                                             'fatal: The current branch [O] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [O]')))
+        self.assertEqual(True, match(Command('git push --set-upstream <remote> <o>',
+                                             'fatal: The current branch [o] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [o]')))
 
     def test_diversity_6(self):
-        self.assertEqual(False, match(Command('git pull --set-upstream <remote> <P>',
-                                              'fatal: The current branch [P] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [P]')))
+        self.assertEqual(False, match(Command('git pull --set-upstream <remote> <p>',
+                                              'fatal: The current branch [p] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [p]')))
 
     def test_diversity_7(self):
-        self.assertEqual(False, match(Command('git pull --set-upstream <remote> <Q>',
-                                              'fatal: The current branch [Q] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [Q]')))
+        self.assertEqual(False, match(Command('git pull --set-upstream <remote> <q>',
+                                              'fatal: The current branch [q] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [q]')))
 
     def test_diversity_8(self):
-        self.assertEqual(False, match(Command('git pull --set-upstream <remote> <R>',
-                                              'fatal: The current branch [R] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [R]')))
+        self.assertEqual(False, match(Command('git pull --set-upstream <remote> <r>',
+                                              'fatal: The current branch [r] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [r]')))
 
     def test_diversity_9(self):
-        self.assertEqual(False, match(Command('git pull --set-upstream <remote> <S>',
-                                              'fatal: The current branch [S] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [S]')))
+        self.assertEqual(False, match(Command('git pull --set-upstream <remote> <s>',
+                                              'fatal: The current branch [s] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [s]')))
 
     def test_diversity_10(self):
-        self.assertEqual(False, match(Command('git pull --set-upstream <remote> <T>',
-                                              'fatal: The current branch [T] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [T]')))
+        self.assertEqual(False, match(Command('git pull --set-upstream <remote> <t>',
+                                              'fatal: The current branch [t] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [t]')))
