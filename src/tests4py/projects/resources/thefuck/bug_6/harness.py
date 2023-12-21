@@ -1,5 +1,5 @@
 import sys
-from thefuck.rules.git_push import match
+from thefuck.rules.git_branch_exists import match
 from thefuck.types import Command
 from thefuck.rules.git_branch_exists import get_new_command
 

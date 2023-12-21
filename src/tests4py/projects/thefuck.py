@@ -432,9 +432,6 @@ class TheFuckAPI6(API):
         expected = expected.replace("(", "")
         expected = expected.replace(",", "")
         result = process.stdout.decode("utf8").strip()
-        print("args", args)
-        print("ex : ", expected)
-        print("res : ", result)
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -526,34 +523,26 @@ class TheFuckTestGenerator:
 
     @staticmethod
     def thefuck4_generate_():
+        alias = {}
+        overridden = []
         proc = subprocess.run(['fish', '-ic', 'alias'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
                               check=True)
-        print("All proc:", proc)
         alias_out = proc.stdout.strip().split('\n')
-        print("All Aliases:")
-        print(alias_out)
-        overridden = os.environ.get('THEFUCK_OVERRIDDEN_ALIASES',
-                                    os.environ.get('TF_OVERRIDDEN_ALIASES', ''))
-        print("All overridden:", overridden)
-        print(len(overridden))
+        alias_out = [i.removeprefix("alias ") for i in alias_out]
 
-        aliases = {}
-        proc = Popen(['fish', '-ic', 'alias'], stdout=PIPE, stderr=DEVNULL)
-        alias_out = proc.stdout.read().decode('utf-8').strip()
-        if not alias_out:
-            return aliases
-        for alias in alias_out.split('\n'):
-            for separator in (' ', '='):
-                split_alias = alias.replace('alias ', '', 1).split(separator, 1)
-                if len(split_alias) == 2:
-                    name, value = split_alias
-                    break
-            else:
-                continue
-            if name in overridden:
-                aliases[name] = value
-        print(aliases)
-        return overridden
+        alias_split = [j.split("'") for j in alias_out]
+        for k in alias_split:
+            if len(k) >= 2:
+                first_ = k[0]
+                second_ = k[1]
+                first_ = first_.replace(" ", "")
+                alias[first_] = second_
+
+                # \not found in {&apos;dc&apos;: &quot;&apos;cd ~/Documents&apos;&quot;
+                overridden = list(alias)
+        print(alias)
+        print(overridden)
+        return overridden[random.randint(0, len(overridden)-1)]
 
     @staticmethod
     def thefuck5_generate_():
@@ -573,22 +562,22 @@ class TheFuckTestGenerator:
     @staticmethod
     def thefuck6_generate_():
         branch_name = TheFuckTestGenerator.generate_random_string()
-        # Passing 1 and Failing 1 for match function, the others are for get_command function
+        # Passing 1 and Failing 1 for def match() function, the others are for def get_command() function
         passing_ = ((True, f'git branch -d {branch_name}', f"fatal: A branch named '{branch_name} already exists."),
-                    (False, f'git branch -d {branch_name}', f"fatal : A branch named '{branch_name}' already exists."))
+                    (True, f'git branch -D {branch_name}', f"fatal: A branch named '{branch_name} already exists."))
 
         passing2_ = ((f'git branch -d {branch_name} && git branch {branch_name}', f'git branch -d {branch_name}',
                       f"fatal: A branch named '{branch_name}' already exists."),
                      (f'git branch -d {branch_name} && git checkout -b {branch_name}', f'git branch -d {branch_name}',
                       f"fatal: A branch named '{branch_name}' already exists."))
 
-        failing_ = ((True, f'git branch -D {branch_name} SELECT * FROM database', f"A branch named '{branch_name} already exists."),
-                    (False, f"git branch -D -{branch_name}- ", f"fatal: A branch named '{branch_name} already exists."),)
+        failing_ = ((False, f'git branch -d {branch_name} SELECT * FROM database', f"fatal: A branch named '{branch_name}' already exists."),
+                    (False, f"git branch -D {branch_name} SELECT * FROM database", f"fatal: A branch named '{branch_name}' already exists."),)
 
-        failing2_ = (([f'git branch -D {branch_name}, git branch {branch_name}'], f'git branch -D "{branch_name}"',
-                      f"fatal: A branch named {branch_name} already exists."),
-                     ([f'git branch -D {branch_name}, git checkout -b {branch_name}'], f'git branch -D {branch_name}',
-                      f"fatal: A branch named {branch_name} already exists."))
+        failing2_ = (([f'git branch -d {branch_name}, git branch {branch_name}'], f'git branch -d {branch_name}',
+                      f"fatal: A branch named '{branch_name}' already exists."),
+                     ([f'git branch -d {branch_name}, git checkout -b {branch_name}'], f'git branch -d {branch_name}',
+                      f"fatal: A branch named '{branch_name}' already exists."))
 
         return passing_[random.randint(0, 1)], passing2_[random.randint(0, 1)], failing_[random.randint(0, 1)], failing2_[random.randint(0, 1)]
 
@@ -998,8 +987,9 @@ class TheFuckUnittestGenerator6(
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, _, fail_, fail2_ = self._generate_one()
-        chosen_ = random.randint(0, 1)
-        if chosen_ == 0:
+        # There are two functions to be tested so dice_ will decide :)
+        dice_ = random.randint(0, 1)
+        if dice_ == 0:
             expected, script, output = fail_
             test = self.get_empty_test()
             test.body = self._get_assert(expected, script, output)
@@ -1011,8 +1001,9 @@ class TheFuckUnittestGenerator6(
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, pass2_, _, _ = self._generate_one()
-        chosen_ = random.randint(0, 1)
-        if chosen_ == 0:
+        # There are two functions to be tested so dice_ will decide :)
+        dice_ = random.randint(0, 1)
+        if dice_ == 0:
             expected, script, output = pass_
             test = self.get_empty_test()
             test.body = self._get_assert(expected, script, output)
