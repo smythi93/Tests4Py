@@ -13,7 +13,6 @@ from tests4py.grammars.fuzzer import srange
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
-from subprocess import Popen, PIPE, DEVNULL
 
 PROJECT_MAME = "thefuck"
 
@@ -127,6 +126,9 @@ def register():
         fixed_commit_id="75d2c43997ca703150cbdb4c46ed7b2e2e71fd11",
         test_files=[Path("tests", "rules", "test_php_s.py")],
         test_cases=["tests/rules/test_php_s.py::test_match"],
+        api=TheFuckAPI7(),
+        unittests=TheFuckUnittestGenerator7(),
+        systemtests=TheFuckSystemtestGenerator7(),
     )
     TheFuck(
         bug_id=8,
@@ -438,6 +440,22 @@ class TheFuckAPI6(API):
             return TestResult.FAILING, f"Expected {expected}, but was {result}"
 
 
+class TheFuckAPI7(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        result = process.stdout.decode("utf8").strip()
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
 class TheFuckTestGenerator:
     @staticmethod
     def generate_values(producer: Callable) -> str:
@@ -525,23 +543,26 @@ class TheFuckTestGenerator:
     def thefuck4_generate_():
         alias = {}
         overridden = []
-        proc = subprocess.run(['fish', '-ic', 'alias'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
-                              check=True)
-        alias_out = proc.stdout.strip().split('\n')
-        alias_out = [i.removeprefix("alias ") for i in alias_out]
+        try:
+            proc = subprocess.run(['fish', '-ic', 'alias'], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                  text=True, check=True)
 
-        alias_split = [j.split("'") for j in alias_out]
-        for k in alias_split:
-            if len(k) >= 2:
-                first_ = k[0]
-                second_ = k[1]
-                first_ = first_.replace(" ", "")
-                alias[first_] = second_
+            alias_out = proc.stdout.strip().split('\n')
+            alias_out = [i.removeprefix("alias ") for i in alias_out]
+            alias_split = [j.split("'") for j in alias_out]
+            for k in alias_split:
+                if len(k) >= 2:
+                    first_ = k[0]
+                    second_ = k[1]
+                    first_ = first_.replace(" ", "")
+                    alias[first_] = second_
+                    overridden = list(alias)
+        except SystemError:
+            "Cannot retrieve Fish Shell overridden"
 
-                # \not found in {&apos;dc&apos;: &quot;&apos;cd ~/Documents&apos;&quot;
-                overridden = list(alias)
-        print(alias)
-        print(overridden)
+        for every in overridden:
+            if every == 'ls':
+                overridden.remove(every)
         return overridden[random.randint(0, len(overridden)-1)]
 
     @staticmethod
@@ -580,6 +601,16 @@ class TheFuckTestGenerator:
                       f"fatal: A branch named '{branch_name}' already exists."))
 
         return passing_[random.randint(0, 1)], passing2_[random.randint(0, 1)], failing_[random.randint(0, 1)], failing2_[random.randint(0, 1)]
+
+    @staticmethod
+    def thefuck7_generate_():
+        passing = ('php -s localhost:8000',
+                   'php -s 127.0.0.1:8000',
+                   'php -S localhost:8000 -c /path/to/php.ini',
+                   'php -S localhost:8000 -t /path/to/your/project',
+                   'php -S localhost:8000 router.php',
+                   )
+        return None
 
 
 class TheFuckUnittestGenerator1(
@@ -791,7 +822,7 @@ class TheFuckUnittestGenerator4(
             ),
             ast.Expr(
                 value=ast.Call(
-                    func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
+                    func=ast.Attribute(value=ast.Name(id="self"), attr="assertIn"),
                     args=[
                         ast.Constant(value=result),
                         ast.Call(
@@ -828,8 +859,9 @@ class TheFuckUnittestGenerator4(
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        fail_ = self._generate_one()
+        _ = self._generate_one()
         test = self.get_empty_test()
+        fail_ = "Error Retrieving Fish Shell Overridden"
         test.body = self._get_assert(fail_)
         return test, TestResult.FAILING
 
@@ -1014,6 +1046,74 @@ class TheFuckUnittestGenerator6(
         return test, TestResult.PASSING
 
 
+class TheFuckUnittestGenerator7(
+    python.PythonGenerator, UnittestGenerator, TheFuckTestGenerator
+):
+
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.thefuck7_generate_)
+
+    @staticmethod
+    def _get_assert(
+            expected: bool,
+            script_parts: str,
+            output: str,
+    ) -> list[Call]:
+        return [
+            ast.Call(
+                func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
+                args=[
+                    ast.Constant(value=expected),
+                    ast.Call(
+                        func=ast.Name(id="match"),
+                        args=[
+                            ast.Call(
+                                func=ast.Name(id="Command"),
+                                args=[
+                                    ast.Constant(value=script_parts),
+                                    ast.Constant(value=output),
+                                ],
+                                keywords=[],
+                            ),
+                        ],
+                        keywords=[],
+                    ),
+                ],
+                keywords=[],
+            )
+        ]
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            ast.ImportFrom(
+                module="thefuck.types",
+                names=[ast.alias(name="Command")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="thefuck.rules.php_s",
+                names=[ast.alias(name="match")],
+                level=0,
+            ),
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        fail_ = self._generate_one()
+        expected, script_parts, output = fail_
+        test = self.get_empty_test()
+        test.body = self._get_assert(expected, script_parts, output)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_ = self._generate_one()
+        expected, script_parts, output = pass_
+        test = self.get_empty_test()
+        test.body = self._get_assert(expected, script_parts, output)
+        return test, TestResult.PASSING
+
+
 class TheFuckSystemtestGenerator1(SystemtestGenerator, TheFuckTestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
         _, fail_ = self.generate_values(self.thefuck1_generate_)
@@ -1048,7 +1148,8 @@ class TheFuckSystemtestGenerator3(SystemtestGenerator, TheFuckTestGenerator):
 
 class TheFuckSystemtestGenerator4(SystemtestGenerator, TheFuckTestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        fail_ = self.generate_values(self.thefuck4_generate_)
+        _ = self.generate_values(self.thefuck4_generate_)
+        fail_ = "Error"
         return f"{fail_}", TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
@@ -1082,6 +1183,16 @@ class TheFuckSystemtestGenerator6(SystemtestGenerator, TheFuckTestGenerator):
             return f"{pass_}", TestResult.PASSING
         else:
             return f"{pass2_}", TestResult.PASSING
+
+
+class TheFuckSystemtestGenerator7(SystemtestGenerator, TheFuckTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        fail_ = self.generate_values(self.thefuck7_generate_)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, = self.generate_values(self.thefuck7_generate_)
+        return f"{pass_}", TestResult.PASSING
 
 
 grammar: Grammar = {

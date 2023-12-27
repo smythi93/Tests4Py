@@ -2,6 +2,9 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 
 class TestsFailing(FailingSystemtests):
+    # Create Fish() Shell instance, _get_aliases(fish.get_overridden_aliases()) -
+    # Result should be like "Error retrieving overridden" for failing values
+    # There is no input so, no input provided
     def test_diversity_1(self):
         return ""
 
@@ -34,6 +37,9 @@ class TestsFailing(FailingSystemtests):
 
 
 class TestsPassing(PassingSystemtests):
+    # Create Fish() Shell instance, _get_aliases(fish.get_overridden_aliases()) -
+    # Result should be like "cd ~/Downloads" or just "cd" for passing values
+    # There is no input so, no input provided
     def test_diversity_1(self):
         return ""
 
