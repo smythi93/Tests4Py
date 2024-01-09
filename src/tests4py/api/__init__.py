@@ -5,17 +5,17 @@ from sflkit.analysis.suggestion import Location
 from unidiff import PatchSet
 
 from tests4py.api.default import (
-    checkout_project,
-    compile_project,
-    test_project,
-    info_project,
+    checkout,
+    build,
+    test,
+    info,
 )
 from tests4py.api.test import (
-    run_project,
-    system_generate_project,
-    system_test_project,
-    unit_generate_project,
-    unit_test_project,
+    run,
+    systemtest_generate,
+    systemtest_test,
+    unittest_generate,
+    unittest_test,
 )
 from tests4py.api.utils import setup
 from tests4py.projects import (
@@ -134,13 +134,13 @@ __all__ = [
     "get_bugs",
     "get_projects",
     "get_faulty_lines",
-    "checkout_project",
-    "compile_project",
-    "test_project",
-    "info_project",
-    "run_project",
-    "system_generate_project",
-    "system_test_project",
-    "unit_generate_project",
-    "unit_test_project",
+    "checkout",
+    "build",
+    "test",
+    "info",
+    "run",
+    "systemtest_generate",
+    "systemtest_test",
+    "unittest_generate",
+    "unittest_test",
 ]

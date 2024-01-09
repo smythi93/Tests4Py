@@ -6,7 +6,7 @@ from sflkit.analysis.analysis_type import AnalysisType
 from sflkit.analysis.spectra import Spectrum
 from sflkit.analysis.suggestion import Location
 
-from tests4py import framework
+from tests4py.cli import framework
 from tests4py.constants import DEFAULT_WORK_DIR
 from utils import BaseTest
 

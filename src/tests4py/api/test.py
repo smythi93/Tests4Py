@@ -28,7 +28,7 @@ from tests4py.projects import Project, TestingFramework
 from tests4py.tests.utils import TestResult
 
 
-def run_project(
+def run(
     work_dir_or_project: Optional[Union[Path, Project]] = None,
     args_or_path: Sequence[str] | Path = None,
     invoke_oracle: bool = False,
@@ -85,7 +85,7 @@ def _get_systemtest_runs(
     return total, passing, failing, results
 
 
-def system_generate_project(
+def systemtest_generate(
     work_dir_or_project: Optional[Union[Path, Project]] = None,
     path: Path = None,
     n: int = 1,
@@ -180,7 +180,7 @@ def clean_results(
     return cleaned_results
 
 
-def system_test_project(
+def systemtest_test(
     work_dir_or_project: Optional[Union[Path, Project]] = None,
     path_or_str: Path | str = None,
     diversity: bool = False,
@@ -245,7 +245,7 @@ def system_test_project(
     return report
 
 
-def unit_generate_project(
+def unittest_generate(
     work_dir_or_project: Optional[Union[Path, Project]] = None,
     path: Path = None,
     n: int = 1,
@@ -341,7 +341,7 @@ def unit_generate_project(
     return report
 
 
-def unit_test_project(
+def unittest_test(
     work_dir_or_project: Optional[Union[Path, Project]] = None,
     path: Path = None,
     diversity: bool = True,

@@ -5,7 +5,7 @@ from typing import Optional, List, Tuple, Dict
 
 from tests4py.constants import (
     CHECKOUT,
-    COMPILE,
+    BUILD,
     Environment,
     INFO,
     TEST,
@@ -78,7 +78,7 @@ class CheckoutReport(LocationReport):
 
 class CompileReport(LocationReport):
     def __init__(self):
-        super().__init__(COMPILE)
+        super().__init__(BUILD)
         self.env: Optional[Environment] = None
 
     def to_dict(self):

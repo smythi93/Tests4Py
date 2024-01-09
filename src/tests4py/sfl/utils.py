@@ -4,7 +4,7 @@ from typing import Optional
 import sflkit
 from sflkitlib.events import EventType
 
-from tests4py.api import compile_project
+from tests4py.api import build
 from tests4py.api.report import ProjectReport
 from tests4py.projects import Project
 from tests4py.sfl.constants import (
@@ -85,7 +85,7 @@ def create_config(
 
 def instrument(config: sflkit.Config):
     sflkit.instrument_config(config)
-    report = compile_project(Path(config.instrument_working), sfl=True)
+    report = build(Path(config.instrument_working), sfl=True)
     if report.raised:
         raise report.raised
 

@@ -3,7 +3,7 @@ import traceback
 from pathlib import Path
 
 from tests4py.api import get_projects
-from tests4py.api.default import checkout_project, compile_project, test_project
+from tests4py.api.default import checkout, build, test
 from tests4py.constants import DEFAULT_WORK_DIR
 from tests4py.tests.utils import TestResult
 
@@ -19,21 +19,21 @@ if __name__ == "__main__":
     for project in projects:
         project.buggy = True
         print(f"\n\n\n================ {project} ================")
-        report = checkout_project(project)
+        report = checkout(project)
         if not report.successful:
             print(f"Checkout failed:")
             traceback.print_exception(report.raised)
             input()
             results[project.get_identifier()] = None
             continue
-        report = compile_project(DEFAULT_WORK_DIR / project.get_identifier())
+        report = build(DEFAULT_WORK_DIR / project.get_identifier())
         if not report.successful:
             print(f"Compile failed:")
             traceback.print_exception(report.raised)
             input()
             results[project.get_identifier()] = None
             continue
-        report = test_project(
+        report = test(
             DEFAULT_WORK_DIR / project.get_identifier(),
             xml_output=Path("tmp.xml"),
             single_test=[str(tf) for tf in project.test_files],
