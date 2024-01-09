@@ -16,10 +16,9 @@ from tests4py.constants import Environment, PYTHON
 from tests4py.grammars.fuzzer import GrammarFuzzer, Grammar, srange, is_valid_grammar
 from tests4py.grammars.tree import ComplexDerivationTree
 from tests4py.grammars.utils import GrammarVisitor
-from tests4py.logger import LOGGER
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
-from tests4py.tests.utils import API, TestResult
+from tests4py.tests.utils import API, TestResult, SpecificationError
 
 PROJECT_MAME = "cookiecutter"
 
@@ -169,7 +168,6 @@ class CookieCutterAPI(API, GrammarVisitor, abc.ABC):
         self.pre_hook_crash = False
         self.post_hook_crash = False
         self.repo_path = self.REPO_PATH
-        self.parsed = False
 
     def visit_hooks(self, node: ComplexDerivationTree):
         self.pre_hooks = []
@@ -270,12 +268,10 @@ class CookieCutterAPI(API, GrammarVisitor, abc.ABC):
     def prepare_args(self, args: List[str], work_dir: Path):
         try:
             self.visit_source("\n".join(args))
-            self.parsed = True
             self._setup(work_dir)
             self.path = [work_dir / path for path in self.path]
         except SyntaxError as e:
-            LOGGER.error(f"Cannot parse contents of {args}: {e}")
-            self.parsed = False
+            raise SpecificationError(f"Cannot parse contents of {args}: {e}")
         if self.path:
             for p in self.path:
                 shutil.rmtree(p, ignore_errors=True)
@@ -284,8 +280,6 @@ class CookieCutterAPI(API, GrammarVisitor, abc.ABC):
     def oracle(self, args) -> Tuple[TestResult, str]:
         if args is None:
             return TestResult.UNDEFINED, "timeout or exception triggered"
-        if not self.parsed:
-            return TestResult.UNDEFINED, "cannot parse arguments"
         process, args = args
         stdout, stderr = args
         return self._validate(process, stdout, stderr), ""
