@@ -10,7 +10,7 @@ from tests4py.cli.framework.cache import tests4py_cache, tests4py_clear
 from tests4py.cli.framework.config import tests4py_config_set
 from tests4py.cli.framework.default import (
     tests4py_checkout,
-    tests4py_compile,
+    tests4py_build,
     tests4py_info,
     tests4py_test,
 )
@@ -18,7 +18,7 @@ from tests4py.cli.framework.grammar import tests4py_grammar
 from tests4py.cli.framework.sfl import tests4py_sfl_instrument, tests4py_sfl_events
 from tests4py.constants import (
     CHECKOUT,
-    COMPILE,
+    BUILD,
     INFO,
     TEST,
     UNITTEST,
@@ -49,16 +49,7 @@ def str_to_bool(s):
         raise argparse.ArgumentTypeError("Boolean value expected.")
 
 
-def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
-    if "-O" in sys.argv:
-        sys.argv.remove("-O")
-        os.execl(sys.executable, sys.executable, "-O", *sys.argv)
-
-    if stdout is not None:
-        sys.stdout = stdout
-    if stderr is not None:
-        sys.stderr = stderr
-
+def get_parser():
     arguments = argparse.ArgumentParser(
         description="The access point to the tests4py framework"
     )
@@ -86,7 +77,7 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         required=True,
     )
     checkout_parser = commands.add_parser(CHECKOUT, help="Check out a project")
-    compile_parser = commands.add_parser(COMPILE, help="Compile a project")
+    build_parser = commands.add_parser(BUILD, help="Build a project")
     # coverage_parser = commands.add_parser(
     #    COVERAGE, help="Measure coverage of a project"
     # )
@@ -152,22 +143,22 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         help="If set the command won't use any cached version, even if the global cache flag is set",
     )
 
-    # Compile
-    compile_parser.add_argument(
+    # Build
+    build_parser.add_argument(
         "-w",
         dest="work_dir",
         default=None,
-        help="The working directory to compile the project. "
+        help="The working directory to build the project. "
         "Default will be the current directory",
     )
-    compile_parser.add_argument(
+    build_parser.add_argument(
         "-r",
-        dest="recompile",
+        dest="rebuild",
         default=False,
         action="store_true",
-        help="Set to recompile the project from scratch",
+        help="Set to rebuild the project from scratch",
     )
-    compile_parser.add_argument(
+    build_parser.add_argument(
         "-f",
         dest="force",
         default=False,
@@ -496,7 +487,20 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
         help=f"The path or string of the input",
     )
 
-    args = arguments.parse_args(args or sys.argv[1:])
+    return arguments
+
+
+def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
+    if "-O" in sys.argv:
+        sys.argv.remove("-O")
+        os.execl(sys.executable, sys.executable, "-O", *sys.argv)
+
+    if stdout is not None:
+        sys.stdout = stdout
+    if stderr is not None:
+        sys.stderr = stderr
+
+    args = get_parser().parse_args(args or sys.argv[1:])
 
     if args.debug:
         LOGGER.setLevel(logging.DEBUG)
@@ -510,10 +514,10 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
             update=args.update,
             force=args.force,
         )
-    elif args.command == COMPILE:
-        report = tests4py_compile(
+    elif args.command == BUILD:
+        report = tests4py_build(
             work_dir=Path(args.work_dir).absolute() if args.work_dir else None,
-            recompile=args.recompile,
+            rebuild=args.rebuild,
             force=args.force,
         )
     elif args.command == INFO:

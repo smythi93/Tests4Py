@@ -55,7 +55,7 @@ class CommandTests(BaseTest):
         work_dir = DEFAULT_WORK_DIR / identifier
         project = load_bug_info(work_dir / INFO_FILE)
         self.assertFalse(project.compiled)
-        report = framework.default.tests4py_compile(work_dir)
+        report = framework.default.tests4py_build(work_dir)
         if report.raised:
             raise report.raised
         project = load_bug_info(work_dir / INFO_FILE)

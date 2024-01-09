@@ -276,7 +276,7 @@ def checkout(
 
 def build(
     work_dir_or_project: Optional[Union[Path, Project]] = None,
-    recompile: bool = False,
+    rebuild: bool = False,
     force: bool = False,
     report: Optional[CompileReport] = None,
     sfl: bool = False,
@@ -291,7 +291,7 @@ def build(
     try:
         project, t4p_info, t4p_requirements = load_project(work_dir)
         report.project = project
-        if project.compiled and not recompile:
+        if project.compiled and not rebuild:
             LOGGER.info(f"{project} already compiled")
             report.successful = True
             return report

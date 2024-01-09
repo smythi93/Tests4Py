@@ -42,7 +42,7 @@ class TestGenerationTests(BaseProjectTests):
         work_dir = DEFAULT_WORK_DIR / name
         project_ = load_bug_info(work_dir / INFO_FILE)
         self.assertFalse(project_.compiled)
-        report = framework.default.tests4py_compile(work_dir)
+        report = framework.default.tests4py_build(work_dir)
         if report.raised:
             raise report.raised
         project_ = load_bug_info(work_dir / INFO_FILE)

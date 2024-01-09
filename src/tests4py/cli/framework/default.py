@@ -39,8 +39,7 @@ def tests4py_checkout(
         setup()
 
         project = projects.get_project(project_name, bug_id)
-        if not fixed:
-            project.buggy = True
+        project.buggy = not fixed
         api.checkout(
             project, work_dir=work_dir, update=update, force=force, report=report
         )
@@ -50,16 +49,16 @@ def tests4py_checkout(
     return report
 
 
-def tests4py_compile(
+def tests4py_build(
     work_dir: Path = None,
-    recompile: bool = False,
+    rebuild: bool = False,
     force: bool = False,
     verbose: bool = True,
 ) -> CompileReport:
     report = CompileReport()
     init_logger(verbose=verbose)
     try:
-        api.build(work_dir, recompile=recompile, force=force, report=report)
+        api.build(work_dir, rebuild=rebuild, force=force, report=report)
     except BaseException as e:
         report.raised = e
         report.successful = False
