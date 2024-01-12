@@ -479,10 +479,9 @@ class TheFuckAPI8(API):
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
         expected = process.args[2]
+        expected = expected.replace("(", "")
+        expected = expected.replace(",", "")
         result = process.stdout.decode("utf8").strip()
-        print("ex:", expected)
-        print("res:", result)
-        print("args:", args)
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -515,11 +514,19 @@ class TheFuckAPI10(API):
         if args is None:
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
-        expected = process.args[2]
         result = process.stdout.decode("utf8").strip()
-        print("ex:", expected)
-        print("res:", result)
-        print("args:", args)
+        if len(process.args) == 6:
+            expected = process.args[2]
+            expected = expected.replace(expected[len(expected) - 1], "")
+            expected = expected.replace(expected[0], "")
+        else:
+            expected = str(process.args[2:5])
+            expected = expected.replace("([", "")
+            expected = expected.replace("],", "")
+            expected = expected.replace("help,", "help")
+            expected = expected.replace("read,", "read")
+            expected = expected.replace("missing,", "missing")
+
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -898,12 +905,44 @@ class TheFuckTestGenerator:
 
     @staticmethod
     def thefuck8_generate_():
-        dnf_install_command = "tito", "vim", "@docker", "@Web Server"
-        no_such_command_ = f"""No such command: %s. Please use /usr/bin/dnf --help
-        It could be a DNF plugin command, try: "dnf install '{dnf_install_command[random.randint(0, len(dnf_install_command)-1)]}'"
-        """
-        print(no_such_command_)
-        return no_such_command_
+        dnf_operations_wrong = ['autooremove', 'cheeck', 'cheeck-updaate', 'cleean', 'deeplist',
+                                'distroo-sync', 'downgraade', 'grooup', 'hellp', 'histoory',
+                                'infoo', 'instaall', 'lisst', 'makecaache', 'maark', 'proovides',
+                                'reinstaall', 'remoove', 'repoolist', 'repooquery',
+                                'repoository-packages', 'seaarch', 'sheell', 'swaap', 'updateinfoo',
+                                'upgrrade', 'upgrade-minimale', 'buuilddeep', 'config-manageer',
+                                'coopr', 'debug-dumpe', 'debug-restoree', 'debuginfoo-install',
+                                'downlooad', 'needss-restarting', 'plaayground', 'repocloosure',
+                                'repoograph', 'repoomanage', 'repoosync']
+
+        dnf_operations_correct = ['autoremove', 'check', 'check-update', 'clean', 'deplist',
+                                  'distro-sync', 'downgrade', 'group', 'help', 'history',
+                                  'info', 'install', 'list', 'makecache', 'mark', 'provides',
+                                  'reinstall', 'remove', 'repolist', 'repoquery',
+                                  'repository-packages', 'search', 'shell', 'swap', 'updateinfo',
+                                  'upgrade', 'upgrade-minimal', 'builddep', 'config-manager',
+                                  'copr', 'debug-dump', 'debug-restore', 'debuginfo-install',
+                                  'download', 'needs-restarting', 'playground', 'repoclosure',
+                                  'repograph', 'repomanage', 'reposync']
+
+        apps = ["tito", "vim", "'@docker'", "'@Web Server'", "httpd", "nginx", "git", "python", "wget", "firefox",
+                "nano", "neofetch", "gimp", "vlc"]
+
+        chosen_app = apps[random.randint(0, len(apps) - 1)]
+
+        chosen_dnf_ = random.randint(0, len(dnf_operations_correct) - 1)
+
+        script_passing_ = f"dnf {dnf_operations_wrong[chosen_dnf_]} {chosen_app}"
+
+        script_failing_ = f"dnf {dnf_operations_correct[chosen_dnf_]} {chosen_app}"
+
+        output_passing_ = """No such command: %s. Please use /usr/bin/dnf --help
+        It could be a DNF plugin command, try: dnf install "dnf-command %s" 
+        """ % (dnf_operations_wrong[chosen_dnf_], dnf_operations_correct[chosen_dnf_])
+
+        output_failing_ = "No such command"
+
+        return True, script_passing_, output_passing_, False, script_failing_, output_failing_
 
     @staticmethod
     def thefuck9_generate_():
@@ -963,28 +1002,44 @@ To push the current branch and set the remote as upstream, use
 
     @staticmethod
     def thefuck10_generate_():
+        stdout_ = "Output Message: " + TheFuckTestGenerator.generate_random_string()
         passing_ = (
-            (['read --help', 'man 3 read', 'man 2 read'], 'man read', "", ""),
-            ('man 3 read', 'man 2 read', "", ""),
-            ('man 2 read', 'man 3 read', "", ""),
-            ('man -s3 read', 'man -s2 read', "", ""),
-            ('man -s2 read', 'man -s3 read', "", ""),
-            ('man -s 3 read', 'man -s 2 read', "", ""),
-            ('man -s 2 read', 'man -s 3 read', "", ""),
-            (['missing --help', 'man 3 missing', 'man 2 missing'], 'man missing', "", 'No manual entry for missing\n')
+            ('man 3 read', 'man 2 read', stdout_, ""),
+            ('man 2 read', 'man 3 read', stdout_, ""),
+            ('man -s3 read', 'man -s2 read', stdout_, ""),
+            ('man -s2 read', 'man -s3 read', stdout_, ""),
+            ('man -s 3 read', 'man -s 2 read', stdout_, ""),
+            ('man -s 2 read', 'man -s 3 read', stdout_, ""),
+            ('man 3 write', 'man 2 write', stdout_, ""),
+            ('man 2 write', 'man 3 write', stdout_, ""),
+            ('man -s3 write', 'man -s2 write', stdout_, ""),
+            ('man -s2 write', 'man -s3 write', stdout_, ""),
+            ('man -s 3 write', 'man -s 2 write', stdout_, ""),
+            ('man -s 2 write', 'man -s 3 write', stdout_, ""),
+            (['read --help', 'man 3 read', 'man 2 read'], 'man read', stdout_, ""),
+            (['missing --help', 'man 3 missing', 'man 2 missing'], 'man missing', stdout_,
+             'No manual entry for missing\n'),
+
         )
         failing_ = (
-            (['read --help', 'man 5 read', 'man 4 read'], 'man read', "", ""),
-            ('man 5 read', 'man 4 read', "", ""),
-            ('man 4 read', 'man 5 read', "", ""),
-            ('man -s5 read', 'man -s4 read', "", ""),
-            ('man -s4 read', 'man -s5 read', "", ""),
-            ('man -s 5 read', 'man -s 4 read', "", ""),
-            ('man -s 4 read', 'man -s 5 read', "", ""),
-            (['missing --help', 'man 5 missing', 'man 4 missing'], 'man missing', "", 'No manual entry for missing\n')
+            ('man 5 read', 'man 4 read', stdout_, ""),
+            ('man 4 read', 'man 5 read', stdout_, ""),
+            ('man -s5 read', 'man -s4 read', stdout_, ""),
+            ('man -s4 read', 'man -s5 read', stdout_, ""),
+            ('man -s 5 read', 'man -s 4 read', stdout_, ""),
+            ('man -s 4 read', 'man -s 5 read', stdout_, ""),
+            ('man 5 write', 'man 4 write', stdout_, ""),
+            ('man 4 write', 'man 5 write', stdout_, ""),
+            ('man -s5 write', 'man -s4 write', stdout_, ""),
+            ('man -s4 write', 'man -s5 write', stdout_, ""),
+            ('man -s 5 write', 'man -s 4 write', stdout_, ""),
+            ('man -s 4 write', 'man -s 5 write', stdout_, ""),
+            (['read --help', 'man 5 read', 'man 4 read'], 'man read', stdout_, ""),
+            (['missing --help', 'man 5 missing', 'man 4 missing'], 'man missing', stdout_,
+             'No manual entry for missing\n')
         )
 
-        return passing_[random.randint(0, len(passing_)-1)], failing_[random.randint(0, len(failing_)-1)],
+        return passing_[random.randint(0, len(passing_) - 1)], failing_[random.randint(0, len(failing_) - 1)],
 
 
 class TheFuckUnittestGenerator1(
@@ -1491,15 +1546,24 @@ class TheFuckUnittestGenerator8(
         return self.generate_values(self.thefuck8_generate_)
 
     @staticmethod
-    def _get_assert(expected: Any, text: str | bytes) -> list[Call]:
+    def _get_assert(expected: Any, script: str, output: str) -> list[Call]:
         return [
             ast.Call(
                 func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
                 args=[
                     ast.Constant(value=expected),
                     ast.Call(
-                        func=ast.Name(id="_parse_operations"),
-                        args=[ast.Constant(value=text)],
+                        func=ast.Name(id="match"),
+                        args=[
+                            ast.Call(
+                                func=ast.Name(id="Command"),
+                                args=[
+                                    ast.Constant(value=script),
+                                    ast.Constant(value=output),
+                                ],
+                                keywords=[],
+                            ),
+                        ],
                         keywords=[],
                     ),
                 ],
@@ -1511,21 +1575,27 @@ class TheFuckUnittestGenerator8(
         return [
             ast.ImportFrom(
                 module="thefuck.rules.dnf_no_such_command",
-                names=[ast.alias(name="_parse_operations")],
+                names=[ast.alias(name="match")],
                 level=0,
             ),
+            ast.ImportFrom(
+                module="thefuck.types",
+                names=[ast.alias(name="Command")],
+                level=0,
+            ),
+
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        fail_ = self._generate_one()
+        _, _, _, expected, script, output = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert(fail_, b"")
+        test.body = self._get_assert(expected, script, output)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass_ = self._generate_one()
+        expected, script, output, _, _, _ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert(pass_, b"")
+        test.body = self._get_assert(expected, script, output)
         return test, TestResult.PASSING
 
 
@@ -1749,11 +1819,13 @@ class TheFuckSystemtestGenerator7(SystemtestGenerator, TheFuckTestGenerator):
 
 class TheFuckSystemtestGenerator8(SystemtestGenerator, TheFuckTestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        fail_ = self.generate_values(self.thefuck8_generate_)
+        _, _, _, expected, script, output = self.generate_values(self.thefuck8_generate_)
+        fail_ = expected, script, output
         return f"{fail_}", TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        pass_ = self.generate_values(self.thefuck8_generate_)
+        expected, script, output, _, _, _ = self.generate_values(self.thefuck8_generate_)
+        pass_ = expected, script, output
         return f"{pass_}", TestResult.PASSING
 
 
