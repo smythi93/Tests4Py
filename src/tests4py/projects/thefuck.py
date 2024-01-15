@@ -629,50 +629,30 @@ class TheFuckTestGenerator:
             "~deBUG",
         )
 
-        python_libraries = (
-            "pathlib",
-            "pstats",
-            "warnings",
-            "ast",
-            "crypt",
-            "calendar",
-            "zipimport",
-            "pyexpat",
-            "pstats",
-            "unicodedata",
-            "trace",
-            "venv",
-            "cgi",
-            "mailbox",
-            "pandas",
-            "pyparsing",
-            "packaging",
-        )
-
-        lib_dice = random.randint(0, 16)
         dice_ = random.randint(0, 13)
+        python_lib = TheFuckTestGenerator.generate_random_string()
         pip_failing = (
             (
-                f"pip {pip_commands[dice_]} {python_libraries[lib_dice]}",
-                f"pip {pip_failing_inputs[dice_]} {python_libraries[lib_dice]}",
+                f"pip {pip_commands[dice_]} {python_lib}",
+                f"pip {pip_failing_inputs[dice_]} {python_lib}",
                 f'ERROR: unknown command "{pip_failing_inputs[dice_]}", maybe you meant "{pip_commands[dice_]}"',
             ),
             (
-                f"pip {pip_commands[dice_]} {python_libraries[lib_dice]}",
-                f"pip {pip_failing_inputs_2[dice_]} {python_libraries[lib_dice]}",
+                f"pip {pip_commands[dice_]} {python_lib}",
+                f"pip {pip_failing_inputs_2[dice_]} {python_lib}",
                 f'ERROR: unknown command "{pip_failing_inputs_2[dice_]}", maybe you meant "{pip_commands[dice_]}"',
             ),
         )
 
         pip_passing = (
             (
-                f"pip {pip_commands[dice_]} {python_libraries[lib_dice]}",
-                f"pip {pip_passing_inputs[dice_]} {python_libraries[lib_dice]}",
+                f"pip {pip_commands[dice_]} {python_lib}",
+                f"pip {pip_passing_inputs[dice_]} {python_lib}",
                 f'ERROR: unknown command "{pip_passing_inputs[dice_]}", maybe you meant "{pip_commands[dice_]}"',
             ),
             (
-                f"pip {pip_commands[dice_]} {python_libraries[lib_dice]}",
-                f"pip {pip_passing_inputs_2[dice_]} {python_libraries[lib_dice]}",
+                f"pip {pip_commands[dice_]} {python_lib}",
+                f"pip {pip_passing_inputs_2[dice_]} {python_lib}",
                 f'ERROR: unknown command "{pip_passing_inputs_2[dice_]}", maybe you meant "{pip_commands[dice_]}"',
             ),
         )
@@ -694,12 +674,10 @@ class TheFuckTestGenerator:
 
         dice_ = random.randint(0, len(executables))
         passing_ = executables[dice_]
-        username = "".join(random.choices(string.ascii_letters, k=random.randint(3, 8)))
-        failing_ = (
-                "C:\\Windows\\System32;C:\\Windows;C:\\Program Files\\Java\\jdk1.8.0_181\\bin;C:\\Program Files (x86)\\"
-                + username
-                + "\\bin"
-        )
+        username = "".join(random.choices(string.ascii_letters, k=random.randint(5, 20)))
+        file_name_ = "".join(random.choices(string.ascii_letters, k=random.randint(5, 15)))
+
+        failing_ = f"C:\\Windows\\System32;C:\\Windows;C:\\Program Files\\{file_name_}\\bin;C:\\Program Files (x86)\\{username}\\bin"
 
         return passing_, failing_
 
@@ -925,16 +903,13 @@ class TheFuckTestGenerator:
                                   'download', 'needs-restarting', 'playground', 'repoclosure',
                                   'repograph', 'repomanage', 'reposync']
 
-        apps = ["tito", "vim", "'@docker'", "'@Web Server'", "httpd", "nginx", "git", "python", "wget", "firefox",
-                "nano", "neofetch", "gimp", "vlc"]
-
-        chosen_app = apps[random.randint(0, len(apps) - 1)]
+        app_random = TheFuckTestGenerator.generate_random_string()
 
         chosen_dnf_ = random.randint(0, len(dnf_operations_correct) - 1)
 
-        script_passing_ = f"dnf {dnf_operations_wrong[chosen_dnf_]} {chosen_app}"
+        script_passing_ = f"dnf {dnf_operations_wrong[chosen_dnf_]} {app_random}"
 
-        script_failing_ = f"dnf {dnf_operations_correct[chosen_dnf_]} {chosen_app}"
+        script_failing_ = f"dnf {dnf_operations_correct[chosen_dnf_]} {app_random}"
 
         output_passing_ = """No such command: %s. Please use /usr/bin/dnf --help
         It could be a DNF plugin command, try: dnf install "dnf-command %s" 
