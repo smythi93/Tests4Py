@@ -2,65 +2,64 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 
 class TestsFailing(FailingSystemtests):
-
     def test_diversity_1(self):
-        return "pip inst@ll pstats"
+        return "man -s5 read"
 
     def test_diversity_2(self):
-        return "pip -dowNLoad cgi"
+        return "man -s4 read"
 
     def test_diversity_3(self):
-        return "pip h@sh audioop"
+        return "man -s 4 read"
 
     def test_diversity_4(self):
-        return "pip FR33ze cgi"
+        return "man -s 5 write"
 
     def test_diversity_5(self):
-        return "pip l1st zipimport"
+        return "man read"
 
     def test_diversity_6(self):
-        return "pip sh0w-> pyexpat "
+        return "man 4 read"
 
     def test_diversity_7(self):
-        return "pip ~d3bug crypt"
+        return "man 5 write"
 
     def test_diversity_8(self):
-        return "pip l1st pathlib"
+        return "man missing"
 
     def test_diversity_9(self):
-        return "pip -dowNLoad trace"
+        return "man -s5 read"
 
     def test_diversity_10(self):
-        return "pip h@sh audioop"
+        return "man -s4 read"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return "pip whel calendar"
+        return "man -s2 write"
 
     def test_diversity_2(self):
-        return "pip cahe ast"
+        return "man -s3 read"
 
     def test_diversity_3(self):
-        return "pip debg venv"
+        return "man -s 3 read"
 
     def test_diversity_4(self):
-        return "pip serch pstats"
+        return "man -s 2 read"
 
     def test_diversity_5(self):
-        return "pip hsh cgi"
+        return "man read"
 
     def test_diversity_6(self):
-        return "pip instll warnings"
+        return "man 3 write"
 
     def test_diversity_7(self):
-        return "pip cche pathlib"
+        return "man 2 read"
 
     def test_diversity_8(self):
-        return "pip whel unicodedata"
+        return "man missing"
 
     def test_diversity_9(self):
-        return "pip unstall pyexpat"
+        return "man -s2 read"
 
     def test_diversity_10(self):
-        return "pip show trace"
+        return "man -s3 write"

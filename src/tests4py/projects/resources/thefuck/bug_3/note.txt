@@ -1,0 +1,8 @@
+In the faulty code, it relies on the echo $FISH_VERSION ($FISH_VERSION environment variable)
+In the fixed code, it uses the standard --version flag,
+-> Unittests and Systemtests can only be used with 1 passing and 1 failing test.
+- Usage :
+    f = Fish()
+    f.info()
+- Output :
+    'Error retrieving shell, Error Details' or 'Fish Shell 3.5.0'
