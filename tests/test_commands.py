@@ -2,7 +2,7 @@ import json
 import os
 from typing import List
 
-from tests4py import framework
+from tests4py.cli import framework
 from tests4py.constants import (
     DEFAULT_WORK_DIR,
     INFO_FILE,
@@ -55,7 +55,7 @@ class CommandTests(BaseTest):
         work_dir = DEFAULT_WORK_DIR / identifier
         project = load_bug_info(work_dir / INFO_FILE)
         self.assertFalse(project.compiled)
-        report = framework.default.tests4py_compile(work_dir)
+        report = framework.default.tests4py_build(work_dir)
         if report.raised:
             raise report.raised
         project = load_bug_info(work_dir / INFO_FILE)

@@ -14,7 +14,7 @@ Environment = Dict[str, str]
 # ~~~~~ COMMANDS ~~~~ #
 
 CHECKOUT = "checkout"
-COMPILE = "compile"
+BUILD = "build"
 COVERAGE = "coverage"
 INFO = "info"
 MUTATION = "mutation"

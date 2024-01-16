@@ -27,13 +27,16 @@ class API:
     def oracle(self, args: Any) -> Tuple[TestResult, str]:
         raise NotImplementedError()
 
-    def get_test_arguments(self, system_test_path: PathLike) -> List[str]:
-        with open(system_test_path, "r") as fp:
-            test = fp.read()
-        parts = shlex.split(test)
+    def get_test_arguments_from_string(self, s: str) -> List[str]:
+        parts = shlex.split(s)
         if parts and parts[-1] == "":
             parts.pop()
         return parts if parts else []
+
+    def get_test_arguments(self, system_test_path: PathLike) -> List[str]:
+        with open(system_test_path, "r") as fp:
+            test = fp.read()
+        return self.get_test_arguments_from_string(test)
 
     # noinspection PyBroadException
     def execute(
@@ -97,7 +100,7 @@ class API:
                 or system_tests_path.is_dir()
             ):
                 raise ValueError(f"{system_tests_path} does not exist or is not a file")
-            args = self.prepare_args(self.get_test_arguments(args_or_path))
+            args = self.prepare_args(self.get_test_arguments(args_or_path), work_dir)
         if invoke_oracle:
             return self.oracle(self.execute(args, environ, work_dir=work_dir))
         else:

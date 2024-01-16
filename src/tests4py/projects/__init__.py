@@ -88,7 +88,7 @@ class Project:
         )
         self.test_status_fixed = test_status_fixed
         self.test_status_buggy = test_status_buggy
-        self.buggy = False
+        self.buggy = True
         self.compiled = False
         self.systemtests = systemtests
         self.unittests = unittests

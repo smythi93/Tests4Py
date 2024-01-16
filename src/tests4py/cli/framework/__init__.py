@@ -1,4 +1,4 @@
-from tests4py.framework import (
+from tests4py.cli.framework import (
     cache,
     config,
     default,

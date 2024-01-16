@@ -5,11 +5,11 @@ from tests4py.constants import GLOBAL_PROJECTS, GLOBAL_GIT, VENV
 from tests4py.projects import Project
 
 
-def check_cache_exists_project(project: Project):
+def check_cache_exists(project: Project):
     return (GLOBAL_PROJECTS / project.project_name / GLOBAL_GIT).exists()
 
 
-def copy_cached_project(project: Project, dst: Path):
+def copy_cached(project: Project, dst: Path):
     shutil.rmtree(dst, ignore_errors=True)
     return shutil.copytree(
         GLOBAL_PROJECTS / project.project_name / GLOBAL_GIT,
@@ -19,7 +19,7 @@ def copy_cached_project(project: Project, dst: Path):
     )
 
 
-def cache_project(project: Project, src: Path):
+def cache(project: Project, src: Path):
     shutil.rmtree(
         GLOBAL_PROJECTS / project.project_name / GLOBAL_GIT, ignore_errors=True
     )
