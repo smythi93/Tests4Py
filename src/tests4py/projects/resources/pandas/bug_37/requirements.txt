@@ -9,7 +9,6 @@ matplotlib==3.2.1
 more-itertools==8.3.0
 numpy==1.18.4
 packaging==20.4
--e git+https://github.com/pandas-dev/pandas@c69f7d8ba74a3d9dac421655a729109777fb6512#egg=pandas
 pluggy==0.13.1
 py==1.8.1
 pyparsing==2.4.7
