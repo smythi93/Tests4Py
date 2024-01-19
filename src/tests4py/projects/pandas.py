@@ -1,6 +1,15 @@
+import ast
+import random
+import string
+import subprocess
+import os
+from _ast import Call, ImportFrom, Assign, Expr
 from pathlib import Path
-from typing import List, Optional, Tuple
-
+from typing import List, Optional, Tuple, Any, Callable
+from tests4py.grammars.fuzzer import Grammar
+from tests4py.grammars.fuzzer import is_valid_grammar
+from tests4py.grammars import python
+from tests4py.grammars.fuzzer import srange
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
@@ -58,6 +67,9 @@ def register():
         test_cases=[
             "pandas/tests/dtypes/test_dtypes.py::TestCategoricalDtype::test_not_string"
         ],
+        api=PandasAPI1(),
+        unittests=PandasUnittestGenerator1(),
+        systemtests=PandasSystemtestGenerator1(),
     )
     Pandas(
         bug_id=2,
@@ -1680,9 +1692,114 @@ def register():
     )
 
 
-class PandasAPI(API):
+class PandasAPI1(API):
     def __init__(self, default_timeout: int = 5):
         super().__init__(default_timeout=default_timeout)
 
-    def oracle(self, args) -> Tuple[TestResult, str]:
-        return TestResult.UNDEFINED, ""
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class PandasTestGenerator:
+    @staticmethod
+    def generate_values(producer: Callable) -> str:
+        return producer()
+
+    @staticmethod
+    def generate_random_string():
+        return "".join(random.choices(string.ascii_letters, k=random.randint(5, 15)))
+
+    @staticmethod
+    def pandas1_generate_():
+        values = (5, "hello there", ["a", "b"], [1, 2])
+        return values[random.randint(0, len(values)-1)]
+
+
+class PandasUnittestGenerator1(
+    python.PythonGenerator, UnittestGenerator, PandasTestGenerator
+):
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.pandas1_generate_)
+
+    @staticmethod
+    def _get_assert(
+            expected: str,
+            output: str,
+    ) -> list[Call]:
+        return [
+            ast.Call(
+                func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
+                args=[
+                    ast.Constant(value=expected),
+                    ast.Call(
+                        func=ast.Name(id="is_string_dtype"),
+                        args=[
+                            ast.Constant(value=output),
+                        ],
+                        keywords=[],
+                    ),
+                ],
+                keywords=[],
+            )
+        ]
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            ast.ImportFrom(
+                module="pandas.core.dtypes.common",
+                names=[ast.alias(name="is_string_dtype")],
+                level=0,
+            ),
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        fail_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert("", fail_)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert("", pass_)
+        return test, TestResult.PASSING
+
+
+class PandasSystemtestGenerator1(SystemtestGenerator, PandasTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.pandas1_generate_)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.pandas1_generate_)
+        return f"{pass_}", TestResult.PASSING
+
+
+grammar: Grammar = {
+    "<start>": ["<structure_>"],
+    "<structure_>": ["<str_int_sym_><structure_>"],
+    "<str_int_sym_>": [
+        "<string_><str_int_sym_>",
+        "<integer_><str_int_sym_>",
+        "<symbols_><str_int_sym_>",
+        " ",
+    ],
+    "<string_>": ["<char_><string_>", "<char_>", ""],
+    "<integer_>": ["<digit_><integer_>", "<digit_>", ""],
+    "<symbols_>": ["<symbol_><symbols_>", "<symbol_>", ""],
+    "<symbol_>": srange(string.punctuation),
+    "<digit_>": srange(string.digits),
+    "<char_>": srange(string.ascii_letters),
+}
+assert is_valid_grammar(grammar)
