@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import List, Optional, Tuple
 
+from tests4py.constants import PYTHON
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
@@ -24,6 +25,7 @@ class Pandas(Project):
         loc: int = 0,
         relevant_test_files: Optional[List[Path]] = None,
     ):
+        # noinspection SqlDialectInspection,SqlNoDataSourceInspection
         super().__init__(
             bug_id=bug_id,
             project_name=PROJECT_MAME,
@@ -46,7 +48,17 @@ class Pandas(Project):
             grammar=None,
             loc=loc,
             relevant_test_files=relevant_test_files,
+            setup=[
+                [PYTHON, "-m", "pip", "install", "-e", "."],
+            ],
         )  # TODO adjust parameters
+
+    def patch(self, location: Path):
+        with open(location / "pyproject.toml", "r") as fp:
+            content = fp.read()
+        content = content.replace("Cython>=0.29.16", "Cython==0.29.16")
+        with open(location / "pyproject.toml", "w") as fp:
+            fp.write(content)
 
 
 def register():

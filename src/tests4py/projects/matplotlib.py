@@ -46,7 +46,7 @@ class Matplotlib(Project):
             loc=loc,
             test_base=Path("lib", "matplotlib", "tests"),
             setup=[
-                ["python", "-m", "pip", "install", "-ve", "."],
+                ["python", "-m", "pip", "install", "-e", "."],
             ],
             included_files=[os.path.join("lib", PROJECT_MAME)],
             excluded_files=[os.path.join("lib", PROJECT_MAME, "tests")],

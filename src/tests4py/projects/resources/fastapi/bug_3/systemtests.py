@@ -27,7 +27,7 @@ class TestsFailing(FailingSystemtests):
         return "-gs /valid/ Item -a aliased_name -m get -u /valid/"
 
     def test_diversity_9(self):
-        return "-gs /valid/ OtherItem -m get -u /valid/"
+        return "-gs /valid/ Item -a aliased_name -m get -u /valid/"
 
     def test_diversity_10(self):
         return "-gs /valid/ Item -a aliased_name -m get -u /valid/"
