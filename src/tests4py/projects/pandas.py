@@ -56,7 +56,7 @@ class Pandas(Project):
     def patch(self, location: Path):
         with open(location / "pyproject.toml", "r") as fp:
             content = fp.read()
-        content = content.replace("Cython>=0.29.16", "Cython==0.29.19")
+        content = content.replace("Cython>=0.29.16", "Cython==0.29.16")
         with open(location / "pyproject.toml", "w") as fp:
             fp.write(content)
 
