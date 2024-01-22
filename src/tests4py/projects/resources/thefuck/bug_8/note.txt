@@ -1,0 +1,20 @@
+-> System works with dnf --help and it needs Fedora to be used properly thus it does not work in macOS.
+We only need to call _get_operations() because it takes --help content with dnf and uses it with _parse_operations()
+
+**********
+
+def _parse_operations(help_text_lines):
+    # The regex has to be a bytes-style regex since reading from a file
+    # like stdin returns a bytes-style object and a string-style regex
+    # wouldn't work.
+    operation_regex = re.compile(b'^([a-z-]+) +', re.MULTILINE)
+    return operation_regex.findall(help_text_lines)
+
+
+def _get_operations():
+    proc = subprocess.Popen(["dnf", '--help'],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+    lines = proc.stdout.read()
+
+    return _parse_operations(lines)

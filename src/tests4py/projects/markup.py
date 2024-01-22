@@ -3,7 +3,7 @@ import os
 import random
 import string
 import subprocess
-from _ast import Call
+from _ast import Call, ImportFrom
 from pathlib import Path
 from typing import List, Optional, Tuple, Any, Callable
 import re
@@ -180,7 +180,7 @@ class MarkupUnittestGenerator(
             )
         ]
 
-    def get_imports(self) -> List[ast.stmt]:
+    def get_imports(self) -> list[ImportFrom]:
         return [
             ast.ImportFrom(
                 module="markup",

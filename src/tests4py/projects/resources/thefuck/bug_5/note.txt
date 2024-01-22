@@ -1,0 +1,3 @@
+def match(command) : takes a command(script_parts, output) from Command class.
+If script_parts has 'push' and if output has 'set-upstream' then it returns True, else False.
+if input is an integer or byte string breaks the code and returns neither True nor False.
