@@ -1,0 +1,8 @@
+ -> Function gets the overriddens of Fish Shell. If there are not many passing values, passing test will return
+ the same values thus same values will not be counted (eg: 10 passing values will show 8 passing if 2 are the same)
+
+ # Create Fish() Shell instance, _get_aliases(fish.get_overridden_aliases()) -
+ # Result should be like "Error retrieving overridden" for failing and "cd ~/Downloads" or just "cd" for passing
+
+ -> There is no input so, no input provided for System tests. Unit/System tests for passing can take up to 10 values yet
+ failing tests can only produce one value, and it is the Error.

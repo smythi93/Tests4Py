@@ -3,21 +3,22 @@ import os
 import random
 import string
 import subprocess
-from _ast import Call
+from _ast import Call, ImportFrom
+
 from math import cos as rcos
 from math import sin as rsin
-from math import sqrt as rsqrt
 from math import tan as rtan
+from math import sqrt as rsqrt
 from pathlib import Path
 from typing import List, Optional, Tuple, Any, Callable
-
+from tests4py.grammars.fuzzer import srange
 from tests4py.constants import PYTHON
 from tests4py.grammars import python
 from tests4py.grammars.fuzzer import Grammar, is_valid_grammar
-from tests4py.grammars.fuzzer import srange
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
+
 
 PROJECT_MAME = "calculator"
 
@@ -56,7 +57,7 @@ class Calculator(Project):
             api=api,
             grammar=grammar,
             loc=loc,
-            setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
+            setup=[[PYTHON, "-m", "pip", "install", "."]],
             test_base=Path("test"),
             included_files=[os.path.join("src", "calc")],
         )
@@ -101,7 +102,7 @@ class Calculator1API(API):
 
 class CalculatorTestGenerator:
     @staticmethod
-    def generate_values(producer: Callable) -> Tuple[Any]:
+    def generate_values(producer: Callable) -> int:
         return producer()
 
     @staticmethod
@@ -166,7 +167,7 @@ class CalculatorUnittestGenerator(
             )
         ]
 
-    def get_imports(self) -> List[ast.stmt]:
+    def get_imports(self) -> list[ImportFrom]:
         return [
             ast.ImportFrom(
                 module="calc",
