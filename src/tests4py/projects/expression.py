@@ -1,5 +1,5 @@
-import os
 import ast
+import os
 import random
 import string
 import subprocess
@@ -7,11 +7,10 @@ from _ast import Call, ImportFrom
 from pathlib import Path
 from typing import List, Optional, Tuple, Any, Callable
 
-from tests4py.grammars.fuzzer import Grammar
-from tests4py.grammars.fuzzer import is_valid_grammar
-
 from tests4py.constants import PYTHON
 from tests4py.grammars import python
+from tests4py.grammars.fuzzer import Grammar
+from tests4py.grammars.fuzzer import is_valid_grammar
 from tests4py.grammars.fuzzer import srange
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
@@ -22,18 +21,18 @@ PROJECT_MAME = "expression"
 
 class Expression(Project):
     def __init__(
-            self,
-            bug_id: int,
-            buggy_commit_id: str,
-            fixed_commit_id: str,
-            test_files: List[Path],
-            test_cases: List[str],
-            test_status_fixed: TestStatus = TestStatus.PASSING,
-            test_status_buggy: TestStatus = TestStatus.FAILING,
-            unittests: Optional[UnittestGenerator] = None,
-            systemtests: Optional[SystemtestGenerator] = None,
-            api: Optional[API] = None,
-            loc: int = 0,
+        self,
+        bug_id: int,
+        buggy_commit_id: str,
+        fixed_commit_id: str,
+        test_files: List[Path],
+        test_cases: List[str],
+        test_status_fixed: TestStatus = TestStatus.PASSING,
+        test_status_buggy: TestStatus = TestStatus.FAILING,
+        unittests: Optional[UnittestGenerator] = None,
+        systemtests: Optional[SystemtestGenerator] = None,
+        api: Optional[API] = None,
+        loc: int = 0,
     ):
         super().__init__(
             bug_id=bug_id,
@@ -54,7 +53,7 @@ class Expression(Project):
             api=api,
             grammar=grammar,
             loc=loc,
-            setup=[[PYTHON, "-m", "pip", "install", "."]],
+            setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
             included_files=[os.path.join("src", PROJECT_MAME)],
             test_base=Path("tests"),
         )
@@ -128,34 +127,61 @@ class ExpressionTestGenerator:
         )
         structure_zero_div_ = " " + "/" + " " + "0" + " "
         value_for_sub = self._generate_int()
-        structure_sub_zero_div_ = "(" + str(value_for_sub) + " - " + str(value_for_sub) + ")"
-        structure_passing_ = ("(" + (structure_[1] + ")" + " " + self._generate_symbol() + " " + structure_[0]),
-                              (structure_[1]),
-                              ("(" + structure_[1] + ")"),
-                              (structure_[0] + " " + self._generate_symbol() + " " + "(" + structure_[1] + ")")
-
-                              )
+        structure_sub_zero_div_ = (
+            "(" + str(value_for_sub) + " - " + str(value_for_sub) + ")"
+        )
+        structure_passing_ = (
+            "("
+            + (
+                structure_[1]
+                + ")"
+                + " "
+                + self._generate_symbol()
+                + " "
+                + structure_[0]
+            ),
+            (structure_[1]),
+            ("(" + structure_[1] + ")"),
+            (
+                structure_[0]
+                + " "
+                + self._generate_symbol()
+                + " "
+                + "("
+                + structure_[1]
+                + ")"
+            ),
+        )
         structure_failing_ = (
             ("(" + structure_[1] + ")" + structure_zero_div_),
-            (structure_[0] + structure_zero_div_ + self._generate_symbol() + " " + structure_[0]),
+            (
+                structure_[0]
+                + structure_zero_div_
+                + self._generate_symbol()
+                + " "
+                + structure_[0]
+            ),
             (structure_[0] + structure_zero_div_),
-            (structure_[0] + " / " + structure_sub_zero_div_)
+            (structure_[0] + " / " + structure_sub_zero_div_),
         )
-        return structure_passing_[random.randint(0, 3)], structure_failing_[random.randint(0, 3)]
+        return (
+            structure_passing_[random.randint(0, 3)],
+            structure_failing_[random.randint(0, 3)],
+        )
 
 
 class ExpressionUnittestGenerator(
     python.PythonGenerator, UnittestGenerator, ExpressionTestGenerator
 ):
     def _generate_one(
-            self,
+        self,
     ) -> tuple:
         return self.generate_values(self.generate_structure_)
 
     @staticmethod
     def _get_assert(
-            expected: str,
-            result: str,
+        expected: str,
+        result: str,
     ) -> list[Call]:
         return [
             ast.Call(
@@ -178,8 +204,8 @@ class ExpressionUnittestGenerator(
 
     @staticmethod
     def _get_assert_with_error_(
-            expected: ZeroDivisionError | str,
-            result: str,
+        expected: ZeroDivisionError | str,
+        result: str,
     ) -> list[Call]:
         return [
             ast.Call(
@@ -232,7 +258,7 @@ class ExpressionUnittestGenerator(
         _, generated_value = self._generate_one()
         print("fail :", generated_value)
         test = self.get_empty_test()
-        test.body = self._get_assert_with_error_('ZeroDivisionError', generated_value)
+        test.body = self._get_assert_with_error_("ZeroDivisionError", generated_value)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
@@ -261,7 +287,6 @@ grammar: Grammar = {
         "<integers_> <symbol_> <integers_> <symbol_> <integers_>",
         "(<integers_> <symbol_> <integers_>) <symbol_> <integers_>",
         "<integers_> <symbol_> (<integers_> <symbol_> <integers_>)",
-
     ],
     "<symbol_>": ["+", "-", "/", "*"],
     "<integers_>": ["<integer_>", "-<integer_>"],

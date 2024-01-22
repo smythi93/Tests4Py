@@ -1,17 +1,17 @@
 import ast
 import os
 import random
+import re
 import string
 import subprocess
 from _ast import Call
 from pathlib import Path
 from typing import List, Optional, Tuple, Any, Callable
-import re
-from tests4py.grammars.fuzzer import Grammar
-from tests4py.grammars.fuzzer import is_valid_grammar
 
 from tests4py.constants import PYTHON
 from tests4py.grammars import python
+from tests4py.grammars.fuzzer import Grammar
+from tests4py.grammars.fuzzer import is_valid_grammar
 from tests4py.grammars.fuzzer import srange
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
@@ -55,7 +55,7 @@ class Markup(Project):
             api=api,
             grammar=grammar,
             loc=loc,
-            setup=[[PYTHON, "-m", "pip", "install", "."]],
+            setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
             included_files=[os.path.join("src", PROJECT_MAME)],
             relevant_test_files=relevant_test_files,
         )
