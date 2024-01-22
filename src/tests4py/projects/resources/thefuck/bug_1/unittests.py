@@ -4,100 +4,85 @@ from thefuck.types import Command
 
 
 class TestsFailing(unittest.TestCase):
+
     def test_diversity_1(self):
-        self.assertAlmostEquals("pip install numpy", get_new_command(Command("pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"")))
+        self.assertEqual('pip download cgi', get_new_command(
+            Command('pip -dowNLoad cgi', 'ERROR: unknown command "-dowNLoad", maybe you meant "download"')))
 
     def test_diversity_2(self):
-        self.assertAlmostEqual("pip install numpy", get_new_command(Command("pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"")))
+        self.assertEqual('pip uninstall warnings', get_new_command(
+            Command('pip uninst4LLL warnings', 'ERROR: unknown command "uninst4LLL", maybe you meant "uninstall"')))
 
     def test_diversity_3(self):
-        self.assertEqual("pip install numpy", get_new_command(Command("pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"")))
+        self.assertEqual('pip uninstall zipimport', get_new_command(
+            Command('pip uninst4LLL zipimport', 'ERROR: unknown command "uninst4LLL", maybe you meant "uninstall"')))
 
     def test_diversity_4(self):
-        self.assertEqual("pip install numpy", get_new_command(Command("pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"")))
-
+        self.assertEqual('pip check pathlib', get_new_command(
+            Command('pip CHECK= pathlib', 'ERROR: unknown command "CHECK=", maybe you meant "check"')))
     def test_diversity_5(self):
-        self.assertEqual("pip install numpy", get_new_command(Command("pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"")))
+        self.assertEqual('pip list ast', get_new_command(
+            Command('pip l1st ast', 'ERROR: unknown command "l1st", maybe you meant "list"')))
 
     def test_diversity_6(self):
-        self.assertEqual("pip install numpy", get_new_command(Command("pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"")))
+        self.assertEqual('pip search trace', get_new_command(
+            Command('pip sEArch trace', 'ERROR: unknown command "sEArch", maybe you meant "search"')))
 
     def test_diversity_7(self):
-        self.assertEqual("pip install numpy", get_new_command(Command("pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"")))
+        self.assertEqual('pip config pyexpat', get_new_command(
+            Command('pip c0nf1g pyexpat', 'ERROR: unknown command "c0nf1g", maybe you meant "config"')))
 
     def test_diversity_8(self):
-        self.assertEqual("pip install numpy", get_new_command(Command("pip instll numpy")))
+        self.assertEqual('pip debug pstats', get_new_command(
+            Command('pip ~deBUG pstats', 'ERROR: unknown command "~deBUG", maybe you meant "debug"')))
 
     def test_diversity_9(self):
-        self.assertEqual("pip install numpy", get_new_command(Command("pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"")))
+        self.assertEqual('pip list trace', get_new_command(
+            Command('pip l1st trace', 'ERROR: unknown command "l1st", maybe you meant "list"')))
 
     def test_diversity_10(self):
-        self.assertEqual("pip install numpy", get_new_command(Command("pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"")))
+        self.assertEqual('pip debug trace', get_new_command(
+            Command('pip ~deBUG trace', 'ERROR: unknown command "~deBUG", maybe you meant "debug"')))
 
 
 class TestsPassing(unittest.TestCase):
+
     def test_diversity_1(self):
-        self.assertEqual('pip install numpy', get_new_command(
-            Command('pip instl numpy', 'ERROR: unknown command "instl", maybe you meant "install"')))
-    def test_diversity_2(self):
-        self.assertEqual("pip install numpy", get_new_command(Command("pip instl numpy, unknown command \"instl\", maybe you meant \"install\"")))
-
-    def test_diversity_3(self):
-        self.assertEqual("pip install numpy", get_new_command(Command("pip instll numpy")))
-
-    def test_diversity_4(self):
-        self.assertEqual("pip install", get_new_command(Command("pip instaall", "ERROR: unknown command \"instaall\"\nMaybe you meant \"install\"")))
-
-    def test_diversity_5(self):
-        self.assertEqual("pip install numpy", get_new_command(Command("pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"")))
-
-    def test_diversity_6(self):
-        self.assertEqual("pip install numpy", get_new_command(Command("pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"")))
-
-    def test_diversity_7(self):
-        self.assertEqual("pip install numpy", get_new_command(Command("pip instl numpy, unknown command \"instl\", maybe you meant \"install\"")))
-
-    def test_diversity_8(self):
-        self.assertEqual("pip install numpy", get_new_command(Command("pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"")))
-
-    def test_diversity_9(self):
-        self.assertEqual("pip install numpy", get_new_command(Command("pip instl numpy", "ERROR: unknown command \"instl\", maybe you meant \"install\"")))
-
-    def test_diversity_10(self):
-        self.assertEqual("pip install numpy", get_new_command(Command("pip instl numpy, unknown command \"instl\", maybe you meant \"install\"")))
-
-
-'''
-
-class TestsPassing(unittest.TestCase):
-    def test_diversity_1(self):
-        self.assertEqual("pip src, ERROR: unknown command src, maybe you meant search", get_new_command("pip src"))
+        self.assertEqual('pip uninstall crypt', get_new_command(
+            Command('pip unstal crypt', 'ERROR: unknown command "unstal", maybe you meant "uninstall"')))
 
     def test_diversity_2(self):
-        self.assertEqual("pip dwnld, ERROR: unknown command dwnld, maybe you meant download", get_new_command("pip dwnld"))
+        self.assertEqual('pip show zipimport', get_new_command(
+            Command('pip shw zipimport', 'ERROR: unknown command "shw", maybe you meant "show"')))
 
     def test_diversity_3(self):
-        self.assertEqual("pip cnfg, ERROR: unknown command cnfg, maybe you meant config", get_new_command("pip cnfg"))
+        self.assertEqual('pip list calendar', get_new_command(
+            Command('pip lst calendar', 'ERROR: unknown command "lst", maybe you meant "list"')))
 
     def test_diversity_4(self):
-        self.assertEqual("pip lst, ERROR: unknown command lst, maybe you meant list", get_new_command("pip lst"))
+        self.assertEqual('pip search pyexpat', get_new_command(
+            Command('pip serch pyexpat', 'ERROR: unknown command "serch", maybe you meant "search"')))
 
     def test_diversity_5(self):
-        self.assertEqual("pip instl, ERROR: unknown command instl, maybe you meant install", get_new_command("pip instl"))
+        self.assertEqual('pip cache cgi', get_new_command(
+            Command('pip cach cgi', 'ERROR: unknown command "cach", maybe you meant "cache"')))
 
     def test_diversity_6(self):
-        self.assertEqual("pip unstal, ERROR: unknown command unstal, maybe you meant uninstall", get_new_command("pip unstal"))
+        self.assertEqual('pip show venv', get_new_command(
+            Command('pip shw venv', 'ERROR: unknown command "shw", maybe you meant "show"')))
 
     def test_diversity_7(self):
-        self.assertEqual("pip shw, ERROR: unknown command shw, maybe you meant show", get_new_command("pip shw"))
+        self.assertEqual('pip download cgi', get_new_command(
+            Command('pip downld cgi', 'ERROR: unknown command "downld", maybe you meant "download"')))
 
     def test_diversity_8(self):
-        self.assertEqual("pip whel, ERROR: unknown command whel, maybe you meant wheel", get_new_command("pip whel"))
+        self.assertEqual('pip config venv', get_new_command(
+            Command('pip cnfig venv', 'ERROR: unknown command "cnfig", maybe you meant "config"')))
 
     def test_diversity_9(self):
-        self.assertEqual("pip spct, ERROR: unknown command spct, maybe you meant inspect", get_new_command("pip spct"))
+        self.assertEqual('pip download calendar', get_new_command(
+            Command('pip downld calendar', 'ERROR: unknown command "downld", maybe you meant "download"')))
 
     def test_diversity_10(self):
-        self.assertEqual("pip cac, ERROR: unknown command cac, maybe you meant cache", get_new_command("pip cac"))
-
-'''
+        self.assertEqual('pip download trace', get_new_command(
+            Command('pip downld trace', 'ERROR: unknown command "downld", maybe you meant "download"')))

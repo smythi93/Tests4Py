@@ -3,7 +3,7 @@ import os
 import random
 import string
 import subprocess
-from _ast import Call
+from _ast import Call, ImportFrom
 
 from math import cos as rcos
 from math import sin as rsin
@@ -102,7 +102,7 @@ class Calculator1API(API):
 
 class CalculatorTestGenerator:
     @staticmethod
-    def generate_values(producer: Callable) -> Tuple[Any]:
+    def generate_values(producer: Callable) -> int:
         return producer()
 
     @staticmethod
@@ -167,7 +167,7 @@ class CalculatorUnittestGenerator(
             )
         ]
 
-    def get_imports(self) -> List[ast.stmt]:
+    def get_imports(self) -> list[ImportFrom]:
         return [
             ast.ImportFrom(
                 module="calc",
