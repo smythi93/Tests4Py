@@ -14,10 +14,9 @@ from tests4py.grammars.default import clean_up, CLI_GRAMMAR, get_possible_option
 from tests4py.grammars.fuzzer import Grammar, GrammarFuzzer, srange, is_valid_grammar
 from tests4py.grammars.tree import ComplexDerivationTree
 from tests4py.grammars.utils import GrammarVisitor
-from tests4py.logger import LOGGER
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
-from tests4py.tests.utils import API, ExpectErrAPI, TestResult
+from tests4py.tests.utils import API, ExpectErrAPI, TestResult, SpecificationError
 
 PROJECT_MAME = "fastapi"
 
@@ -473,10 +472,8 @@ class FastAPIDefaultAPI(API, GrammarVisitor):
     def prepare_args(self, args: List[str], work_dir: Path) -> List[str]:
         try:
             self.visit_source(shlex.join(args))
-            self.parsed = True
         except SyntaxError as e:
-            LOGGER.error(f"Cannot parse contents of {args}: {e}")
-            self.parsed = False
+            raise SpecificationError(f"Cannot parse contents of {args}: {e}")
         return args
 
     def visit_arg(self, node: ComplexDerivationTree):
