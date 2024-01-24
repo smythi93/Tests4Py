@@ -335,6 +335,34 @@ if __name__ == "__main__":
             responder = get_model_c
             depender = get_model_b
             type_ = ModelC
+        elif response == "FormList":
+
+            @app.post(url)
+            def form_from_list(items: list = Form(...)):
+                return items
+
+            continue
+        elif response == "FormSet":
+
+            @app.post(url)
+            def form_from_list(items: set = Form(...)):
+                return items
+
+            continue
+        elif response == "FormTuple":
+
+            @app.post(url)
+            def form_from_list(items: tuple = Form(...)):
+                return items
+
+            continue
+
+        elif response.startswith("FormInt"):
+            default = int(response.split("[")[1][:-1])
+
+            @app.post(url)
+            def from_from_int(items: int = Form(default)):
+                return items
 
         if responder is not None:
             if no_response:
