@@ -235,7 +235,7 @@ def systemtest_test(
             report.results.update(r)
         if output:
             with open(output, "w") as output_file:
-                json.dump(clean_results(report.results), output_file)
+                json.dump(clean_results(report.results), output_file, indent=2)
         LOGGER.info(f"Ran {report.total} tests")
         LOGGER.info(f"{report.passing} passed --- {report.failing} failed")
         report.successful = True

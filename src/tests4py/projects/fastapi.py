@@ -639,11 +639,8 @@ class FastAPI5API(FastAPIDefaultAPI):
         return process.returncode == 0 or process.returncode == 200
 
     def contains(self, process: subprocess.CompletedProcess) -> bool:
-        return (
-            b'"password"' in process.stdout
-            or b'"test-password"' in process.stdout
-            or b"'password'" in process.stdout
-            or b"'test-password'" in process.stdout
+        return (b'"id_"' in process.stdout or b"'id_'" in process.stdout) and (
+            b'"password"' in process.stdout or b"'password'" in process.stdout
         )
 
 

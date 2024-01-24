@@ -6,13 +6,6 @@ from fastapi import APIRouter, Depends, FastAPI
 
 try:
     # noinspection PyUnresolvedReferences
-    from fastapi import WebSocket
-except ImportError:
-    # noinspection PyUnresolvedReferences
-    from starlette.websockets import WebSocket
-
-try:
-    # noinspection PyUnresolvedReferences
     from fastapi.testclient import TestClient
 except ImportError:
     # noinspection PyUnresolvedReferences

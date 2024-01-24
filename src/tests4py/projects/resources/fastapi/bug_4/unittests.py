@@ -6,20 +6,13 @@ from fastapi import APIRouter, Depends, FastAPI
 
 try:
     # noinspection PyUnresolvedReferences
-    from fastapi import WebSocket
-except ImportError:
-    # noinspection PyUnresolvedReferences
-    from starlette.websockets import WebSocket
-
-try:
-    # noinspection PyUnresolvedReferences
     from fastapi.testclient import TestClient
 except ImportError:
     # noinspection PyUnresolvedReferences
     from starlette.testclient import TestClient
 
 # noinspection PyUnresolvedReferences
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class DefaultTest(unittest.TestCase):
@@ -42,10 +35,13 @@ class DefaultTest(unittest.TestCase):
             def post_valid():
                 return {"name": "valid"}
 
+        async def exists(value: int):
+            return True
+
         for url, parameter in params:
 
-            @app.get(f"{url}/{parameter}")
-            def get_valid():
+            @app.get(f"{url}/{parameter}", dependencies=[Depends(exists)])
+            def get_valid(value: int):
                 pass
 
         client = TestClient(app)
@@ -54,9 +50,17 @@ class DefaultTest(unittest.TestCase):
         return response.json(), response.status_code
 
     def assert_test(self, gets=(), posts=(), params=()):
-        response, status = self.run_test(params=(("/user", "{user_id}"),))
+        response, status = self.run_test(
+            gets=gets, posts=posts, params=(("/user", "{user_id}"),)
+        )
         self.assertIn("openapi", response)
         self.assertIn("info", response)
+        for url in gets:
+            self.assertIn(url, response["paths"])
+            self.assertIn("get", response["paths"][url])
+        for url in posts:
+            self.assertIn(url, response["paths"])
+            self.assertIn("post", response["paths"][url])
         for url, parameter in params:
             if parameter.startswith("{") and parameter.endswith("}"):
                 u = f"{url}/{parameter}"
@@ -65,6 +69,7 @@ class DefaultTest(unittest.TestCase):
                 self.assertIn("parameters", response["paths"][u]["get"])
                 self.assertIsInstance(response["paths"][u]["get"]["parameters"], List)
                 self.assertEqual(1, len(response["paths"][u]["get"]["parameters"]))
+
         self.assertEqual(200, status)
 
 

@@ -239,9 +239,9 @@ if __name__ == "__main__":
     class ModelB(BaseModel):
         username: str
 
-    b_username = args.model_b
+    b_username = args.model_b[0]
 
-    async def get_model_b() -> ModelB:
+    def get_model_b() -> ModelB:
         return ModelB(username=b_username)
 
     class ModelA(ModelB):
@@ -249,21 +249,19 @@ if __name__ == "__main__":
 
     a_username, a_password = args.model_a
 
-    async def get_model_a() -> ModelA:
-        return ModelA(username=a_username, passord=a_password)
+    def get_model_a() -> ModelA:
+        return ModelA(username=a_username, password=a_password)
 
     class ModelC(BaseModel):
         id_: int
         model_b: ModelB
 
-    async def get_model_c_a(model_a=Depends(get_model_a)):
-        return {"id_": 0, "model_b": model_a}
-
-    async def get_model_c_b(model_b=Depends(get_model_b)):
+    def get_model_c(model_b):
         return {"id_": 0, "model_b": model_b}
 
     for url, response in args.gets:
         responder = None
+        depender = None
         type_ = None
         if response == "Item":
             responder = get_item
@@ -277,27 +275,37 @@ if __name__ == "__main__":
         elif response == "List[OtherIterm]":
             responder = get_other_list
             type_ = List[OtherItem]
-        elif responder == "ModelA":
+        elif response == "ModelA":
             responder = get_model_a
             type_ = ModelA
-        elif responder == "ModelB":
+        elif response == "ModelB":
             responder = get_model_b
             type_ = ModelB
-        elif responder == "ModelCA":
-            responder = get_model_c_a
+        elif response == "ModelCA":
+            responder = get_model_c
+            depender = get_model_a
             type_ = ModelC
-        elif responder == "ModelCB":
-            responder = get_model_c_b
+        elif response == "ModelCB":
+            responder = get_model_c
+            depender = get_model_b
             type_ = ModelC
 
         if responder is not None:
+            if depender is None:
 
-            @app.get(url, response_model=type_)
-            def get():
-                return responder()
+                @app.get(url, response_model=type_)
+                def get():
+                    return responder()
+
+            else:
+
+                @app.get(url, response_model=type_)
+                def get(m=Depends(depender)):
+                    return responder(m)
 
     for url, response in args.posts:
         responder = None
+        depender = None
         type_ = None
         no_response = False
         if response == "Item":
@@ -313,17 +321,19 @@ if __name__ == "__main__":
         elif response == "List[OtherIterm]":
             responder = get_other_list
             type_ = List[OtherItem]
-        elif responder == "ModelA":
+        elif response == "ModelA":
             responder = get_model_a
             type_ = ModelA
-        elif responder == "ModelB":
+        elif response == "ModelB":
             responder = get_model_b
             type_ = ModelB
-        elif responder == "ModelCA":
-            responder = get_model_c_a
+        elif response == "ModelCA":
+            responder = get_model_c
+            depender = get_model_a
             type_ = ModelC
-        elif responder == "ModelCB":
-            responder = get_model_c_b
+        elif response == "ModelCB":
+            responder = get_model_c
+            depender = get_model_b
             type_ = ModelC
 
         if responder is not None:
@@ -334,10 +344,17 @@ if __name__ == "__main__":
                     return responder(m)
 
             else:
+                if depender is None:
 
-                @app.post(url, response_model=type_)
-                def post():
-                    return responder()
+                    @app.post(url, response_model=type_)
+                    def post():
+                        return responder()
+
+                else:
+
+                    @app.post(url, response_model=type_)
+                    def post(m=Depends(depender)):
+                        return responder(m)
 
     for url, parameter, depends in args.parameters:
 
