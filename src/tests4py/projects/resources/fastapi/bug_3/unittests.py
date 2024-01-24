@@ -1,4 +1,5 @@
 import unittest
+from typing import List
 
 # noinspection PyUnresolvedReferences
 from fastapi import APIRouter, Depends, FastAPI
@@ -17,45 +18,75 @@ except ImportError:
     # noinspection PyUnresolvedReferences
     from starlette.testclient import TestClient
 
+# noinspection PyUnresolvedReferences
+from pydantic import BaseModel, Field
+
 
 class DefaultTest(unittest.TestCase):
     @staticmethod
-    def run_test(mode="get", url="/", data=None, depend=None, override=None):
+    def run_test(
+        mode="get", url="/", data=None, alias=False, items=(("valid", 1.0, None),)
+    ):
         app = FastAPI()
-        router = APIRouter()
 
-        depend = depend or "Dependency"
+        if alias:
 
-        async def dependency():
-            return depend
+            class Item(BaseModel):
+                name: str = Field(..., alias="aliased_name")
+                price: float = None
+                owner_ids: List[int] = None
 
-        @app.get("/get", response_model=str)
-        def get_valid():
-            return f"get_{depend}"
+            name = "aliased_name"
+        else:
 
-        @app.post("/post", response_model=str)
-        def get_valid():
-            return f"post_{depend}"
+            class Item(BaseModel):
+                name: str
+                price: float = None
+                owner_ids: List[int] = None
 
-        @router.websocket("/")
-        async def router_ws_decorator_depends(
-            websocket_: WebSocket, data_=Depends(dependency)
-        ):
-            await websocket_.accept()
-            await websocket_.send_text(data_)
-            await websocket_.close()
+            name = "name"
 
-        if override:
-            app.dependency_overrides[dependency] = lambda: override
+        if len(items) == 1:
 
-        app.include_router(router, prefix="/router")
+            @app.get("/get", response_model=Item)
+            def get_valid():
+                return Item(
+                    **{
+                        name: items[0][0],
+                        "price": items[0][1],
+                        "owner_ids": items[0][2],
+                    }
+                )
+
+            @app.post("/post", response_model=Item)
+            def get_valid():
+                return Item(
+                    **{
+                        name: items[0][0],
+                        "price": items[0][1],
+                        "owner_ids": items[0][2],
+                    }
+                )
+
+        else:
+
+            @app.get("/get", response_model=List[Item])
+            def get_valid():
+                return [
+                    Item(**{name: item[0], "price": item[1], "owner_ids": item[2]})
+                    for item in items
+                ]
+
+            @app.post("/post", response_model=List[Item])
+            def get_valid():
+                return [
+                    Item(**{name: item[0], "price": item[1], "owner_ids": item[2]})
+                    for item in items
+                ]
 
         client = TestClient(app)
 
-        if mode == "websocket":
-            with client.websocket_connect(url) as websocket:
-                return websocket.receive_text(), 200
-        elif data is not None:
+        if data is not None:
             response = getattr(client, mode)(url, json=data)
             return response.json(), response.status_code
         else:
@@ -65,123 +96,198 @@ class DefaultTest(unittest.TestCase):
 
 class TestsFailing(DefaultTest):
     def test_diversity_1(self):
-        response, status = self.run_test("websocket", "/router/", override="Overridden")
-        self.assertEqual("Overridden", response)
+        response, status = self.run_test("get", "/get", alias=True)
+        self.assertEqual(
+            {"aliased_name": "valid", "price": 1.0, "owner_ids": None}, response
+        )
         self.assertEqual(200, status)
 
     def test_diversity_2(self):
-        response, status = self.run_test(
-            "websocket", "/router/", override="Overridden2"
+        response, status = self.run_test("get", "/get", alias=True, data=[1, 2, 3])
+        self.assertEqual(
+            {"aliased_name": "valid", "price": 1.0, "owner_ids": None}, response
         )
-        self.assertEqual("Overridden2", response)
         self.assertEqual(200, status)
 
     def test_diversity_3(self):
         response, status = self.run_test(
-            "websocket", "/router/", data=[1, 2, 3], override="Overridden"
+            "get", "/get", alias=True, items=[("valid", "1.0", None)]
         )
-        self.assertEqual("Overridden", response)
+        self.assertEqual(
+            {"aliased_name": "valid", "price": 1.0, "owner_ids": None}, response
+        )
         self.assertEqual(200, status)
 
     def test_diversity_4(self):
         response, status = self.run_test(
-            "websocket", "/router/", data={"t": "test"}, override="Overridden"
+            "get", "/get", alias=True, data=[1, 2, 3], items=[("valid", "1.0", None)]
         )
-        self.assertEqual("Overridden", response)
+        self.assertEqual(
+            {"aliased_name": "valid", "price": 1.0, "owner_ids": None}, response
+        )
         self.assertEqual(200, status)
 
     def test_diversity_5(self):
         response, status = self.run_test(
-            "websocket", "/router/", data="test", override="Overridden"
+            "get",
+            "/get",
+            alias=True,
+            items=[("foo", None, None), ("bar", 1.0, None), ("baz", 2.0, [1, 2, 3])],
         )
-        self.assertEqual("Overridden", response)
+        self.assertEqual(
+            [
+                {"aliased_name": "foo", "price": None, "owner_ids": None},
+                {"aliased_name": "bar", "price": 1.0, "owner_ids": None},
+                {"aliased_name": "baz", "price": 2.0, "owner_ids": [1, 2, 3]},
+            ],
+            response,
+        )
         self.assertEqual(200, status)
 
     def test_diversity_6(self):
-        response, status = self.run_test("websocket", "/router/", override="Overridden")
-        self.assertEqual("Overridden", response)
+        response, status = self.run_test(
+            "get",
+            "/get",
+            alias=True,
+            data=[1, 2, 3],
+            items=[("foo", None, None), ("bar", 1.0, None), ("baz", 2.0, [1, 2, 3])],
+        )
+        self.assertEqual(
+            [
+                {"aliased_name": "foo", "price": None, "owner_ids": None},
+                {"aliased_name": "bar", "price": 1.0, "owner_ids": None},
+                {"aliased_name": "baz", "price": 2.0, "owner_ids": [1, 2, 3]},
+            ],
+            response,
+        )
         self.assertEqual(200, status)
 
     def test_diversity_7(self):
-        response, status = self.run_test(
-            "websocket", "/router/", override="Overridden2"
+        response, status = self.run_test("post", "/post", alias=True)
+        self.assertEqual(
+            {"aliased_name": "valid", "price": 1.0, "owner_ids": None}, response
         )
-        self.assertEqual("Overridden2", response)
         self.assertEqual(200, status)
 
     def test_diversity_8(self):
         response, status = self.run_test(
-            "websocket", "/router/", data=[1, 2, 3], override="Overridden"
+            "post", "/post", alias=True, items=[("valid", "1.0", None)]
         )
-        self.assertEqual("Overridden", response)
+        self.assertEqual(
+            {"aliased_name": "valid", "price": 1.0, "owner_ids": None}, response
+        )
         self.assertEqual(200, status)
 
     def test_diversity_9(self):
         response, status = self.run_test(
-            "websocket", "/router/", data={"t": "test"}, override="Overridden"
+            "post",
+            "/post",
+            alias=True,
+            items=[("foo", None, None), ("bar", 1.0, None), ("baz", 2.0, [1, 2, 3])],
         )
-        self.assertEqual("Overridden", response)
+        self.assertEqual(
+            [
+                {"aliased_name": "foo", "price": None, "owner_ids": None},
+                {"aliased_name": "bar", "price": 1.0, "owner_ids": None},
+                {"aliased_name": "baz", "price": 2.0, "owner_ids": [1, 2, 3]},
+            ],
+            response,
+        )
         self.assertEqual(200, status)
 
     def test_diversity_10(self):
-        response, status = self.run_test(
-            "websocket", "/router/", data="test", override="Overridden"
+        response, status = self.run_test("post", "/post", alias=True, data=[1, 2, 3])
+        self.assertEqual(
+            {"aliased_name": "valid", "price": 1.0, "owner_ids": None}, response
         )
-        self.assertEqual("Overridden", response)
         self.assertEqual(200, status)
 
 
 class TestsPassing(DefaultTest):
     def test_diversity_1(self):
-        response, status = self.run_test("websocket", "/router/")
-        self.assertEqual("Dependency", response)
+        response, status = self.run_test("get", "/get")
+        self.assertEqual({"name": "valid", "price": 1.0, "owner_ids": None}, response)
         self.assertEqual(200, status)
 
     def test_diversity_2(self):
-        response, status = self.run_test("websocket", "/router/", depend="Dependency2")
-        self.assertEqual("Dependency2", response)
+        response, status = self.run_test("get", "/get", data=[1, 2, 3])
+        self.assertEqual({"name": "valid", "price": 1.0, "owner_ids": None}, response)
         self.assertEqual(200, status)
 
     def test_diversity_3(self):
-        response, status = self.run_test("websocket", "/router/", data=[1, 2, 3])
-        self.assertEqual("Dependency", response)
+        response, status = self.run_test("get", "/get", items=[("valid", "1.0", None)])
+        self.assertEqual({"name": "valid", "price": 1.0, "owner_ids": None}, response)
         self.assertEqual(200, status)
 
     def test_diversity_4(self):
-        response, status = self.run_test("websocket", "/router/", data="test_1")
-        self.assertEqual("Dependency", response)
+        response, status = self.run_test(
+            "get", "/get", data=[1, 2, 3], items=[("valid", "1.0", None)]
+        )
+        self.assertEqual({"name": "valid", "price": 1.0, "owner_ids": None}, response)
         self.assertEqual(200, status)
 
     def test_diversity_5(self):
-        response, status = self.run_test("websocket", "/router/", data="test")
-        self.assertEqual("Dependency", response)
+        response, status = self.run_test(
+            "get",
+            "/get",
+            items=[("foo", None, None), ("bar", 1.0, None), ("baz", 2.0, [1, 2, 3])],
+        )
+        self.assertEqual(
+            [
+                {"name": "foo", "price": None, "owner_ids": None},
+                {"name": "bar", "price": 1.0, "owner_ids": None},
+                {"name": "baz", "price": 2.0, "owner_ids": [1, 2, 3]},
+            ],
+            response,
+        )
         self.assertEqual(200, status)
 
     def test_diversity_6(self):
-        response, status = self.run_test("get", "/get", override="Overridden")
-        self.assertEqual("get_Dependency", response)
+        response, status = self.run_test(
+            "get",
+            "/get",
+            data=[1, 2, 3],
+            items=[("foo", None, None), ("bar", 1.0, None), ("baz", 2.0, [1, 2, 3])],
+        )
+        self.assertEqual(
+            [
+                {"name": "foo", "price": None, "owner_ids": None},
+                {"name": "bar", "price": 1.0, "owner_ids": None},
+                {"name": "baz", "price": 2.0, "owner_ids": [1, 2, 3]},
+            ],
+            response,
+        )
         self.assertEqual(200, status)
 
     def test_diversity_7(self):
-        response, status = self.run_test("post", "/post", override="Overridden")
-        self.assertEqual("post_Dependency", response)
+        response, status = self.run_test("post", "/post")
+        self.assertEqual({"name": "valid", "price": 1.0, "owner_ids": None}, response)
         self.assertEqual(200, status)
 
     def test_diversity_8(self):
         response, status = self.run_test(
-            "get", "/get", data="test", override="Overridden"
+            "post", "/post", items=[("valid", "1.0", None)]
         )
-        self.assertEqual("get_Dependency", response)
+        self.assertEqual({"name": "valid", "price": 1.0, "owner_ids": None}, response)
         self.assertEqual(200, status)
 
     def test_diversity_9(self):
         response, status = self.run_test(
-            "post", "/post", data="test", override="Overridden"
+            "post",
+            "/post",
+            items=[("foo", None, None), ("bar", 1.0, None), ("baz", 2.0, [1, 2, 3])],
         )
-        self.assertEqual("post_Dependency", response)
+        self.assertEqual(
+            [
+                {"name": "foo", "price": None, "owner_ids": None},
+                {"name": "bar", "price": 1.0, "owner_ids": None},
+                {"name": "baz", "price": 2.0, "owner_ids": [1, 2, 3]},
+            ],
+            response,
+        )
         self.assertEqual(200, status)
 
     def test_diversity_10(self):
-        response, status = self.run_test("post", "/get", override="Overridden")
-        self.assertEqual({"detail": "Method Not Allowed"}, response)
-        self.assertEqual(405, status)
+        response, status = self.run_test("post", "/post", data=[1, 2, 3])
+        self.assertEqual({"name": "valid", "price": 1.0, "owner_ids": None}, response)
+        self.assertEqual(200, status)

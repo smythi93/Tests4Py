@@ -553,8 +553,6 @@ class FastAPIDefaultAPI(API, GrammarVisitor):
 
     def oracle(self, args) -> Tuple[TestResult, str]:
         process = args
-        if not self.parsed:
-            return TestResult.UNDEFINED, "Cannot parse argument"
         if self.condition(process) and self.contains(process):
             return TestResult.FAILING, self.get_failing_feedback()
         else:
@@ -613,7 +611,7 @@ class FastAPI3API(FastAPIDefaultAPI):
 
 class FastAPI4API(FastAPIDefaultAPI):
     def condition(self, process: subprocess.CompletedProcess) -> bool:
-        return process.returncode in (0, 200) and self.path == "/openapi.json"
+        return process.returncode in (0, 200) and self.url == "/openapi.json"
 
     def contains(self, process: subprocess.CompletedProcess) -> bool:
         response = eval(process.stdout.decode("utf-8"))
@@ -681,7 +679,7 @@ class FastAPI7API(FastAPIDefaultAPI):
 class FastAPI8API(FastAPIDefaultAPI):
     def condition(self, process: subprocess.CompletedProcess) -> bool:
         return (
-            self.path == "/routes/"
+            self.url == "/routes/"
             and process.returncode != 0
             and process.returncode != 200
         )
@@ -1349,6 +1347,7 @@ grammar_request: Grammar = clean_up(
                 "-<model_b>",
                 "-<get>",
                 "-<post>",
+                "-<param>",
                 "-<alias>",
             ],
             # OPTIONS
@@ -1363,6 +1362,9 @@ grammar_request: Grammar = clean_up(
             "<model_b>": get_possible_options("mb", "<arg>"),
             "<get>": get_possible_options("gs", "<arg><sep><model>"),
             "<post>": get_possible_options("ps", "<arg><sep><model>"),
+            "<param>": get_possible_options(
+                "pas", "<arg><sep><parameter><sep><integer>"
+            ),
             "<alias>": get_possible_options("a", "<arg>"),
             # UTILS
             "<r_mode>": ["get", "post", "websocket"],
@@ -1374,6 +1376,7 @@ grammar_request: Grammar = clean_up(
             "<json_list>": ["[]", "[<json_values>]"],
             "<json_values>": ["<json_value>", "<json_values>,<json_value>"],
             "<json_value>": ["<float>", "<json_str>", "<json_object>", "<json_list>"],
+            "<parameter>": ["{<chars>}"],
             "<key>": ["<json_str>"],
             "<json_str>": ['\\"\\"', '\\"<chars>\\"', '""', '"<chars>"'],
             "<chars>": ["<char>", "<chars><char>"],
@@ -1415,6 +1418,7 @@ grammar_request_generic: Grammar = clean_up(
                 "-<model_b>",
                 "-<get>",
                 "-<post>",
+                "-<param>",
                 "-<alias>",
             ],
             # OPTIONS
@@ -1429,6 +1433,7 @@ grammar_request_generic: Grammar = clean_up(
             "<model_b>": get_possible_options("mb", "<arg>"),
             "<get>": get_possible_options("gs", "<arg><sep><arg>"),
             "<post>": get_possible_options("ps", "<arg><sep><arg>"),
+            "<param>": get_possible_options("pas", "<arg><sep><arg><sep><arg>"),
             "<alias>": get_possible_options("a", "<arg>"),
         },
         **FLOAT,

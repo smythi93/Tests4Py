@@ -98,6 +98,14 @@ if __name__ == "__main__":
         nargs=2,
         metavar=("url", "response"),
     )
+    arguments.add_argument(
+        "-pas",
+        dest="parameters",
+        action="append",
+        default=[],
+        nargs=3,
+        metavar=("url", "parameter", "depends"),
+    )
 
     args = arguments.parse_args()
 
@@ -166,6 +174,24 @@ if __name__ == "__main__":
                 }
             ),
         ]
+
+    def get_item_dict():
+        return {
+            "1": Item(
+                **{
+                    args.alias or "name": item_name,
+                    "price": float(item_price),
+                    "age": int(item_age),
+                }
+            ),
+            "2": Item(
+                **{
+                    args.alias or "name": item_name,
+                    "price": float(item_price),
+                    "age": int(item_age),
+                }
+            ),
+        }
 
     if field_exists:
 
@@ -312,6 +338,23 @@ if __name__ == "__main__":
                 @app.post(url, response_model=type_)
                 def post():
                     return responder()
+
+    for url, parameter, depends in args.parameters:
+
+        async def exists(value: int):
+            return True
+
+        if int(depends):
+
+            @app.get(f"{url}/{parameter}", dependencies=[Depends(exists)])
+            async def get(value: int):
+                pass
+
+        else:
+
+            @app.get(f"{url}/{parameter}")
+            async def get(value: int):
+                pass
 
     for url, dep in args.websockets:
 
