@@ -52,7 +52,7 @@ class Middle(Project):
             api=api,
             grammar=grammar,
             loc=loc,
-            setup=[[PYTHON, "-m", "pip", "install", "."]],
+            setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
             included_files=[os.path.join("src", PROJECT_MAME)],
             test_base=Path("tests"),
         )
