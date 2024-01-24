@@ -204,6 +204,9 @@ def register():
         fixed_commit_id="db6053b301e2b3f4363401e457b5dc4ad2e8429b",
         test_files=[Path("tests", "shells", "test_fish.py")],
         test_cases=["tests/shells/test_fish.py::TestFish::test_get_overridden_aliases"],
+        api=TheFuckAPI14(),
+        unittests=TheFuckUnittestGenerator14(),
+        systemtests=TheFuckSystemtestGenerator14(),
     )
     TheFuck(
         bug_id=15,
@@ -598,9 +601,6 @@ class TheFuckAPI13(API):
             expected = expected.replace("(", "")
             expected = expected.replace(",", "")
             result = process.stdout.decode("utf8").strip()
-        print("expected:", expected)
-        print("result:", result)
-        print("expected:", args)
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -1314,6 +1314,34 @@ To push the current branch and set the remote as upstream, use
                 failing_[random.randint(0, 1)],
                 failing2_[random.randint(0, 1)],
             )
+
+    @staticmethod
+    def thefuck14_generate_():
+        alias = {}
+        overridden = []
+        try:
+            proc = subprocess.run(
+                ["fish", "-ic", "alias"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                check=True,
+            )
+
+            alias_out = proc.stdout.strip().split("\n")
+            alias_out = [i.removeprefix("alias ") for i in alias_out]
+            alias_split = [j.split("'") for j in alias_out]
+            for k in alias_split:
+                if len(k) >= 2:
+                    first_ = k[0]
+                    second_ = k[1]
+                    first_ = first_.replace(" ", "")
+                    alias[first_] = second_
+                    overridden = list(alias)
+        except SystemError:
+            "Cannot retrieve Fish Shell overridden"
+        print(type(overridden))
+        return ""
 
 
 class TheFuckUnittestGenerator1(
@@ -2258,6 +2286,76 @@ class TheFuckUnittestGenerator13(
         return test, TestResult.PASSING
 
 
+class TheFuckUnittestGenerator14(
+    python.PythonGenerator, UnittestGenerator, TheFuckTestGenerator
+):
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.thefuck14_generate_)
+
+    @staticmethod
+    def _get_assert(
+            result: Any,
+    ) -> list[Assign | Expr]:
+        return [
+            ast.Assign(
+                targets=[ast.Name(id="f")],
+                value=ast.Call(
+                    func=ast.Name(id="Fish"),
+                    args=[],
+                    keywords=[],
+                ),
+                lineno=1,
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="self"), attr="assertIn"),
+                    args=[
+                        ast.Constant(value=result),
+                        ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id="f"),
+                                attr="_get_overridden_aliases",
+                            ),
+                            args=[],
+                            keywords=[],
+                        ),
+                    ],
+                    keywords=[],
+                ),
+                lineno=2,
+            ),
+        ]
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            #ast.ImportFrom(
+            #    module="thefuck.shells.fish",
+            #    names=[ast.alias(name="_get_overridden_aliases")],
+            #    level=0,
+            #),
+            ast.ImportFrom(
+                module="thefuck.shells.fish",
+                names=[ast.alias(name="Fish")],
+                level=0,
+            ),
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        fail_ = self._generate_one()
+        test = self.get_empty_test()
+        fail_ = "Error Retrieving Fish Shell Overridden"
+        test.body = self._get_assert(fail_)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert(pass_)
+        return test, TestResult.PASSING
+
+
 class TheFuckSystemtestGenerator1(SystemtestGenerator, TheFuckTestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
         _, fail_ = self.generate_values(self.thefuck1_generate_)
@@ -2407,6 +2505,16 @@ class TheFuckSystemtestGenerator13(SystemtestGenerator, TheFuckTestGenerator):
             return f"{pass_}", TestResult.PASSING
         else:
             return f"{pass2_}", TestResult.PASSING
+
+
+class TheFuckSystemtestGenerator14(SystemtestGenerator, TheFuckTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        fail_ = self.generate_values(self.thefuck14_generate_)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_ = self.generate_values(self.thefuck14_generate_)
+        return f"{pass_}", TestResult.PASSING
 
 
 grammar: Grammar = {
