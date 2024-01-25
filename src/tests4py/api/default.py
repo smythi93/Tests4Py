@@ -181,6 +181,8 @@ def checkout(
                         patch_fix_all.append(change_file)
                         if not project.buggy:
                             shutil.move(change_file_path, work_location / change_file)
+
+                project.patch(work_location)
             finally:
                 shutil.rmtree(tmp_location, ignore_errors=True)
 

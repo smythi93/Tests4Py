@@ -19,6 +19,10 @@ class TestResult(enum.Enum):
     UNDEFINED = "UNDEFINED"
 
 
+class SpecificationError(ValueError):
+    pass
+
+
 class API:
     def __init__(self, default_timeout=5):
         self.default_timeout = default_timeout
@@ -27,6 +31,7 @@ class API:
     def oracle(self, args: Any) -> Tuple[TestResult, str]:
         raise NotImplementedError()
 
+    # noinspection PyMethodMayBeStatic
     def get_test_arguments_from_string(self, s: str) -> List[str]:
         parts = shlex.split(s)
         if parts and parts[-1] == "":
@@ -68,15 +73,22 @@ class API:
         work_dir: Optional[Path] = None,
     ) -> Tuple[PathLike, TestResult, str]:
         try:
-            return system_test_path, *self.oracle(
-                self.execute(
-                    self.prepare_args(
-                        self.get_test_arguments(system_test_path), work_dir
-                    ),
-                    environ,
-                    work_dir=work_dir,
+            try:
+                return system_test_path, *self.oracle(
+                    self.execute(
+                        self.prepare_args(
+                            self.get_test_arguments(system_test_path), work_dir
+                        ),
+                        environ,
+                        work_dir=work_dir,
+                    )
                 )
-            )
+            except SpecificationError as e:
+                return (
+                    system_test_path,
+                    TestResult.UNDEFINED,
+                    f"Test does not match specification: {e}",
+                )
         finally:
             self.clean_up()
 

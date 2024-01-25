@@ -40,9 +40,9 @@ def run(
         project = load_project(work_dir, only_project=True)
         report.project = project
 
-        if project.systemtests is None:
+        if project.api is None:
             raise NotImplementedError(
-                f"Systemtest generation is not enabled for {project.project_name}_{project.bug_id}"
+                f"Systemtest execution is not enabled for {project.project_name}_{project.bug_id}"
             )
         if args_or_path is None:
             raise ValueError(
@@ -106,7 +106,7 @@ def systemtest_generate(
 
         if project.systemtests is None:
             raise NotImplementedError(
-                f"Systemtest generation is not enabled for {project.project_name}_{project.bug_id}"
+                f"System test generation is not enabled for {project.project_name}_{project.bug_id}"
             )
 
         if is_only_passing and is_only_failing:
@@ -118,7 +118,7 @@ def systemtest_generate(
             path = work_dir / DEFAULT_SUB_PATH_SYSTEMTESTS
         if path.exists() and not path.is_dir():
             raise ValueError(
-                f"Generation of unittest is not possible because {path} is a directory"
+                f"Generation of system tests is not possible because {path} is a directory"
             )
 
         if p < 1:
@@ -196,16 +196,16 @@ def systemtest_test(
         project = load_project(work_dir, only_project=True)
         report.project = project
 
-        if project.systemtests is None:
+        if project.api is None:
             raise NotImplementedError(
-                f"Systemtest testing is not enabled for {project.project_name}_{project.bug_id}"
+                f"Systemtest execution is not enabled for {project.project_name}_{project.bug_id}"
             )
 
         if path_or_str is None and not diversity:
             path_or_str = work_dir / DEFAULT_SUB_PATH_SYSTEMTESTS
         if path_or_str and isinstance(path_or_str, Path) and not path_or_str.exists():
             raise ValueError(
-                f"Running of systemtests is not possible because {path_or_str} does not exist"
+                f"Running of system tests is not possible because {path_or_str} does not exist"
             )
 
         environ = env_on(project)
@@ -358,7 +358,7 @@ def unittest_test(
 
         if project.unittests is None:
             raise NotImplementedError(
-                f"Unittest testing is not enabled for {project.project_name}_{project.bug_id}"
+                f"Unit testing is not enabled for {project.project_name}_{project.bug_id}"
             )
 
         if path is None and not diversity:

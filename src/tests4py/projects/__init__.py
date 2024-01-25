@@ -120,6 +120,9 @@ class Project:
     def __repr__(self):
         return f"{self.project_name}_{self.bug_id}_{'buggy' if self.buggy else 'fixed'}"
 
+    def patch(self, location: Path):
+        pass
+
 
 def get_project(project_name: str, bug_id: int) -> Project:
     global bugs

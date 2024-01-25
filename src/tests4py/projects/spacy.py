@@ -10,6 +10,7 @@ from tests4py.grammars.fuzzer import Grammar
 from tests4py.grammars.fuzzer import is_valid_grammar
 from tests4py.grammars import python
 from tests4py.grammars.fuzzer import srange
+from tests4py.constants import PYTHON
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
@@ -55,7 +56,20 @@ class SpaCy(Project):
             grammar=None,
             loc=loc,
             relevant_test_files=relevant_test_files,
+            setup=[
+                [PYTHON, "-m", "pip", "install", "-e", "."],
+            ],
         )  # TODO adjust parameters
+
+    def patch(self, location: Path):
+        with open(location / "pyproject.toml", "r") as fp:
+            content = fp.read()
+        content = content.replace(
+            "cython>=0.25",
+            "cython==0.25",
+        )
+        with open(location / "pyproject.toml", "w") as fp:
+            fp.write(content)
 
 
 def register():
