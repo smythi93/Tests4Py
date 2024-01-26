@@ -214,6 +214,9 @@ def register():
         fixed_commit_id="41707b80c61acadb7c87b0efcbf10f4186dc5937",
         test_files=[Path("tests", "rules", "test_git_add.py")],
         test_cases=["tests/rules/test_git_add.py::test_match"],
+        api=TheFuckAPI15(),
+        unittests=TheFuckUnittestGenerator15(),
+        systemtests=TheFuckSystemtestGenerator15(),
     )
     TheFuck(
         bug_id=16,
@@ -618,9 +621,6 @@ class TheFuckAPI14(API):
         expected = process.args[2]
         result = process.stdout.decode("utf8")
         result = result.strip()
-        print("expected:", expected)
-        print("result:", result)
-        print("args:", args)
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -628,6 +628,25 @@ class TheFuckAPI14(API):
 
 
 class TheFuckAPI15(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        expected = expected.replace(expected[len(expected) - 1], "")
+        expected = expected.replace(expected[0], "")
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class TheFuckAPI16(API):
     def __init__(self, default_timeout: int = 5):
         super().__init__(default_timeout=default_timeout)
 
@@ -1185,7 +1204,7 @@ To push the current branch and set the remote as upstream, use
                 'git push --quiet',
             ),
         )
-        return passing_[random.randint(0, len(passing_)-1)], failing_[random.randint(0, len(failing_)-1)]
+        return passing_[random.randint(0, len(passing_) - 1)], failing_[random.randint(0, len(failing_) - 1)]
 
     @staticmethod
     def thefuck12_generate_():
@@ -1317,31 +1336,42 @@ To push the current branch and set the remote as upstream, use
 
     @staticmethod
     def thefuck14_generate_():
-        alias = {}
-        overridden = []
+        overridden_ = []
+        overridden_alias = {'cd', 'grep', 'ls', 'man', 'open'}
         try:
-            proc = subprocess.run(
-                ["fish", "-ic", "alias"],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                check=True,
-            )
+            for alias in os.environ.get('TF_OVERRIDDEN_ALIASES', '').split(','):
+                overridden_alias.add(alias.strip())
+            for item in overridden_alias:
+                if item != "":
+                    overridden_.append(item)
+            return overridden_[random.randint(0, len(overridden_) - 1)]
 
-            alias_out = proc.stdout.strip().split("\n")
-            alias_out = [i.removeprefix("alias ") for i in alias_out]
-            alias_split = [j.split("'") for j in alias_out]
-            for k in alias_split:
-                if len(k) >= 2:
-                    first_ = k[0]
-                    second_ = k[1]
-                    first_ = first_.replace(" ", "")
-                    alias[first_] = second_
-                    overridden = list(alias)
-        except SystemError:
-            "Cannot retrieve Fish Shell overridden"
-        print(type(overridden))
-        return ""
+        except SystemError or OSError:
+            return "Error Retrieving Fish Shell Overridden"
+
+    @staticmethod
+    def thefuck15_generate_():
+        randomise_ = TheFuckTestGenerator.generate_random_string()
+        match_passing = ((True, f"git submodule update {randomise_}",
+                          f"error: pathspec '{randomise_}' did not match any file(s) known to git. Did you forget to 'git add'?"),
+                         (True, f"git commit {randomise_}",
+                          f"error: pathspec '{randomise_}' did not match any file(s) known to git. Did you forget to 'git add'?"))
+
+        match_failing = ((True, f"git submodule update {randomise_}", ""),
+                         (True, f"git commit {randomise_}", ""))
+
+        get_new_command_passing = ((f"git add -- {randomise_} && git submodule update {randomise_}", f"git submodule update {randomise_}",
+                                    f"error: pathspec '{randomise_}' did not match any file(s) known to git. Did you forget to 'git add'?"),
+                                   (f"git add -- {randomise_} && git commit {randomise_}", f"git commit {randomise_}",
+                                    f"error: pathspec '{randomise_}' did not match any file(s) known to git. Did you forget to 'git add'?"))
+
+        get_new_command_failing = ((f"git add -- {randomise_} && git submodule update {randomise_}", f"GIT SUBMODULE UPDATE {randomise_}",
+                                    f"error: pathspec '{randomise_}' did not match any file(s) known to git. Did you forget to 'git add'?"),
+                                   (f"git add -- {randomise_} && git commit {randomise_}", f"GIT COMMIT {randomise_}",
+                                    f"error: pathspec '{randomise_}' did not match any file(s) known to git. Did you forget to 'git add'?"))
+
+        return (match_passing[random.randint(0, len(match_passing) - 1)], get_new_command_passing[random.randint(0, len(get_new_command_passing) - 1)],
+                match_failing[random.randint(0, len(match_failing) - 1)], get_new_command_failing[random.randint(0, len(get_new_command_failing) - 1)])
 
 
 class TheFuckUnittestGenerator1(
@@ -2330,11 +2360,6 @@ class TheFuckUnittestGenerator14(
 
     def get_imports(self) -> list[ImportFrom]:
         return [
-            #ast.ImportFrom(
-            #    module="thefuck.shells.fish",
-            #    names=[ast.alias(name="_get_overridden_aliases")],
-            #    level=0,
-            #),
             ast.ImportFrom(
                 module="thefuck.shells.fish",
                 names=[ast.alias(name="Fish")],
@@ -2353,6 +2378,116 @@ class TheFuckUnittestGenerator14(
         pass_ = self._generate_one()
         test = self.get_empty_test()
         test.body = self._get_assert(pass_)
+        return test, TestResult.PASSING
+
+
+class TheFuckUnittestGenerator15(
+    python.PythonGenerator, UnittestGenerator, TheFuckTestGenerator
+):
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.thefuck15_generate_)
+
+    @staticmethod
+    def _get_assert(expected: bool, script: str, std_out: str, std_err: str) -> list[Call]:
+        return [
+            ast.Call(
+                func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
+                args=[
+                    ast.Constant(value=expected),
+                    ast.Call(
+                        func=ast.Name(id="match"),
+                        args=[
+                            ast.Call(
+                                func=ast.Name(id="Command"),
+                                args=[
+                                    ast.Constant(value=script),
+                                    ast.Constant(value=std_out),
+                                    ast.Constant(value=std_err),
+                                ],
+                                keywords=[],
+                            ),
+                        ],
+                        keywords=[],
+                    ),
+                ],
+                keywords=[],
+            )
+        ]
+
+    @staticmethod
+    def _get_assert_2(expected: str, script: str, std_out: str, std_err: str) -> list[Call]:
+        return [
+            ast.Call(
+                func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
+                args=[
+                    ast.Constant(value=expected),
+                    ast.Call(
+                        func=ast.Name(id="get_new_command"),
+                        args=[
+                            ast.Call(
+                                func=ast.Name(id="Command"),
+                                args=[
+                                    ast.Constant(value=script),
+                                    ast.Constant(value=std_out),
+                                    ast.Constant(value=std_err),
+                                ],
+                                keywords=[],
+                            ),
+                        ],
+                        keywords=[],
+                    ),
+                ],
+                keywords=[],
+            )
+        ]
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            ast.ImportFrom(
+                module="thefuck.types",
+                names=[ast.alias(name="Command")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="thefuck.rules.git_add",
+                names=[ast.alias(name="match")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="thefuck.rules.git_add",
+                names=[ast.alias(name="get_new_command")],
+                level=0,
+            ),
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        _, _, fail_, fail2_ = self._generate_one()
+        # There are two functions to be tested so dice_ will decide
+        dice_ = random.randint(0, 1)
+        if dice_ == 0:
+            expected, script, std_err = fail_
+            test = self.get_empty_test()
+            test.body = self._get_assert(expected, script, "", std_err)
+        else:
+            expected, script, std_err = fail2_
+            test = self.get_empty_test()
+            test.body = self._get_assert_2(expected, script, "", std_err)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_, pass2_, _, _ = self._generate_one()
+        # There are two functions to be tested so dice_ will decide
+        dice_ = random.randint(0, 1)
+        if dice_ == 0:
+            expected, script, std_err = pass_
+            test = self.get_empty_test()
+            test.body = self._get_assert(expected, script, "", std_err)
+        else:
+            expected, script, std_err = pass2_
+            test = self.get_empty_test()
+            test.body = self._get_assert_2(expected, script, "", std_err)
         return test, TestResult.PASSING
 
 
@@ -2510,11 +2645,30 @@ class TheFuckSystemtestGenerator13(SystemtestGenerator, TheFuckTestGenerator):
 class TheFuckSystemtestGenerator14(SystemtestGenerator, TheFuckTestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
         fail_ = self.generate_values(self.thefuck14_generate_)
+        fail_ = "Error Retrieving Fish Shell Overridden"
         return f"{fail_}", TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
         pass_ = self.generate_values(self.thefuck14_generate_)
         return f"{pass_}", TestResult.PASSING
+
+
+class TheFuckSystemtestGenerator15(SystemtestGenerator, TheFuckTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, _, fail_, fail2_ = self.generate_values(self.thefuck15_generate_)
+        dice_ = random.randint(0, 1)
+        if dice_ == 0:
+            return f"{fail_}", TestResult.FAILING
+        else:
+            return f"{fail2_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, pass2_, _, _ = self.generate_values(self.thefuck15_generate_)
+        dice_ = random.randint(0, 1)
+        if dice_ == 0:
+            return f"{pass_}", TestResult.PASSING
+        else:
+            return f"{pass2_}", TestResult.PASSING
 
 
 grammar: Grammar = {

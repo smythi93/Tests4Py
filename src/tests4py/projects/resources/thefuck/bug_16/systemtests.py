@@ -2,7 +2,6 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 
 class TestsFailing(FailingSystemtests):
-    # No input, only call of Fish alias if there is any by f = Fish() then f._get_overridden_alias()
     def test_diversity_1(self):
         return ""
 
@@ -35,7 +34,6 @@ class TestsFailing(FailingSystemtests):
 
 
 class TestsPassing(PassingSystemtests):
-    # No input, only call of Fish alias if there is any by f = Fish() then f._get_overridden_alias()
     def test_diversity_1(self):
         return ""
 
