@@ -450,6 +450,7 @@ class FastAPIDefaultAPI(API, GrammarVisitor):
         self.gets = dict()
         self.posts = dict()
         self.dependencies = []
+        self.routes = dict()
         self.overrides = dict()
         self.url = None
         self.mode = None
@@ -462,6 +463,7 @@ class FastAPIDefaultAPI(API, GrammarVisitor):
         self.posts = dict()
         self.websockets = dict()
         self.dependencies = []
+        self.routes = dict()
         self.overrides = dict()
         self.url = None
         self.mode = None
@@ -529,6 +531,10 @@ class FastAPIDefaultAPI(API, GrammarVisitor):
     def visit_alias(self, node: ComplexDerivationTree):
         filtered = self._filter(node)
         self.aliased = self.visit(filtered[1])
+
+    def visit_route(self, node: ComplexDerivationTree):
+        filtered = self._filter(node)
+        self.routes[self.visit(filtered[1])] = self.visit(filtered[3])
 
     def condition(self, process: subprocess.CompletedProcess) -> bool:
         return False
@@ -676,16 +682,23 @@ class FastAPI7API(FastAPIDefaultAPI):
 class FastAPI8API(FastAPIDefaultAPI):
     def condition(self, process: subprocess.CompletedProcess) -> bool:
         return (
-            self.url == "/routes/"
+            any(f"{url}/".startswith(self.url) for url in self.routes)
             and process.returncode != 0
             and process.returncode != 200
         )
 
     def contains(self, process: subprocess.CompletedProcess) -> bool:
         return (
-            b"AttributeError: 'APIRoute' object has no attribute 'x_type'"
+            b"AttributeError: 'APIRouter' object has no attribute 'value'"
             in process.stderr
         )
+
+    def fallback_condition(self, process: subprocess.CompletedProcess) -> bool:
+        return self.condition(process)
+
+    def fallback_contains(self, process: subprocess.CompletedProcess) -> bool:
+        url = filter(lambda u: f"{u}/".startswith(self.url), self.routes)[0]
+        return self.routes[url].encode("utf8") not in process.stdout
 
 
 class FastAPI9API(FastAPIDefaultAPI):
@@ -1346,6 +1359,7 @@ grammar_request: Grammar = clean_up(
                 "-<post>",
                 "-<param>",
                 "-<alias>",
+                "-<route>",
             ],
             # OPTIONS
             "<websocket>": get_possible_options("ws", "<arg><sep><arg>"),
@@ -1365,6 +1379,7 @@ grammar_request: Grammar = clean_up(
                 "pas", "<arg><sep><parameter><sep><arg_integer>"
             ),
             "<alias>": get_possible_options("a", "<arg>"),
+            "<route>": get_possible_options("r", "<arg><sep><arg><sep><arg>"),
             # UTILS
             "<r_mode>": ["get", "post", "websocket"],
             "<json>": ["<json_>", '"<json_>"', "'<json_>'"],
@@ -1431,6 +1446,7 @@ grammar_request_generic: Grammar = clean_up(
                 "-<post>",
                 "-<param>",
                 "-<alias>",
+                "-<route>",
             ],
             # OPTIONS
             "<websocket>": get_possible_options("ws", "<arg><sep><arg>"),
@@ -1446,6 +1462,7 @@ grammar_request_generic: Grammar = clean_up(
             "<post>": get_possible_options("ps", "<arg><sep><arg>"),
             "<param>": get_possible_options("pas", "<arg><sep><arg><sep><arg>"),
             "<alias>": get_possible_options("a", "<arg>"),
+            "<route>": get_possible_options("r", "<arg><sep><arg><sep><arg>"),
         },
         **FLOAT,
     )

@@ -2,7 +2,7 @@ import unittest
 from decimal import Decimal
 
 # noinspection PyUnresolvedReferences
-from fastapi import FastAPI, Form
+from fastapi import FastAPI
 
 try:
     # noinspection PyUnresolvedReferences

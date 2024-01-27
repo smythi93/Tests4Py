@@ -106,6 +106,13 @@ if __name__ == "__main__":
         nargs=3,
         metavar=("url", "parameter", "depends"),
     )
+    arguments.add_argument(
+        "-r",
+        dest="route",
+        nargs=3,
+        metavar=("url", "default", "value"),
+        default=(None, "default", "value"),
+    )
 
     args = arguments.parse_args()
 
@@ -430,6 +437,24 @@ if __name__ == "__main__":
             await websocket.accept()
             await websocket.send_text(data)
             await websocket.close()
+
+    url, default, value = args.route
+
+    class CustomRoute(APIRoute):
+        value = value
+
+    custom_router = APIRouter(route_class=CustomRoute)
+
+    @custom_router.get("/")
+    def get_value():
+        return {"value": custom_router.value}
+
+    @custom_router.get(f"/{default}")
+    def get_value():
+        return {"value": value}
+
+    if url is not None:
+        app.include_router(custom_router, prefix=url)
 
     client = TestClient(app)
 

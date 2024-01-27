@@ -2,7 +2,7 @@ import unittest
 from typing import List
 
 # noinspection PyUnresolvedReferences
-from fastapi import APIRouter, Depends, FastAPI
+from fastapi import Depends, FastAPI
 
 try:
     # noinspection PyUnresolvedReferences

@@ -10,9 +10,6 @@ except ImportError:
     # noinspection PyUnresolvedReferences
     from starlette.testclient import TestClient
 
-# noinspection PyUnresolvedReferences
-from pydantic import BaseModel
-
 
 class DefaultTest(unittest.TestCase):
     @staticmethod
