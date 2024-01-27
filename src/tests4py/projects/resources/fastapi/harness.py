@@ -143,6 +143,10 @@ if __name__ == "__main__":
             ids: List[int] = None
             age: condecimal(gt=Decimal(0.0))
 
+    class ItemLower(BaseModel):
+        name: str = ...
+        age: condecimal(lt=Decimal(90.0))
+
     item_name, item_price, item_age = args.item
 
     def get_item():
@@ -154,7 +158,18 @@ if __name__ == "__main__":
             }
         )
 
+    def get_item_lower():
+        return ItemLower(
+            **{
+                "name": item_name,
+                "age": int(item_age),
+            }
+        )
+
     def save_item_no_body(item: Item):
+        return {"item": item}
+
+    def save_item_lower(item: ItemLower):
         return {"item": item}
 
     def get_item_list():
@@ -266,6 +281,9 @@ if __name__ == "__main__":
         if response == "Item":
             responder = get_item
             type_ = Item
+        elif response == "ItemLower":
+            responder = get_item_lower
+            type_ = ItemLower
         elif response == "List[Item]":
             responder = get_item_list
             type_ = List[Item]
@@ -311,6 +329,10 @@ if __name__ == "__main__":
         if response == "Item":
             responder = save_item_no_body
             type_ = Item
+            no_response = True
+        elif response == "ItemLower":
+            responder = save_item_lower
+            type_ = ItemLower
             no_response = True
         elif response == "List[Item]":
             responder = get_item_list

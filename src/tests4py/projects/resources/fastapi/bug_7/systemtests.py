@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return '-p/items/\n-mpost\n-a\n-u\n-d{"aliased_name":"test-name","price":1.6,"age":-5.1}'
+        return '-ps /item Item -u /item -m post -d {\\"name\\":\\"name\\",\\"price\\":1.0,\\"age\\":-1}'
 
     def test_diversity_2(self):
-        return '-p/items/\n-mpost\n-d{"name":"test-name","price":1.6,"age":-1.5}'
+        return '-ps /item ItemLower -u /item -m post -d {\\"name\\":\\"name\\",\\"age\\":100}'
 
     def test_diversity_3(self):
-        return '-p/items/\n-mpost\n-d{"name":"test-name","price":1.6,"age":-1.0}'
+        return '-ps /item Item -u /item -m post -d {\\"name\\":\\"name\\",\\"price\\":1.0,\\"age\\":-1}'
 
     def test_diversity_4(self):
-        return '-p/items/\n-a\n-o\n-mpost\n-d{"aliased_name":"test-name","price":1.6,"age":-42.42}'
+        return '-ps /item Item -u /item -m post -d {\\"name\\":\\"name\\",\\"price\\":1.0,\\"age\\":-1}'
 
     def test_diversity_5(self):
-        return '-p/items/\n-a\n-o\n-mpost\n-d{"aliased_name":"test-name","price":1.6,"age":-56.05}\n-u'
+        return '-ps /item Item -u /item -m post -d {\\"name\\":\\"name\\",\\"price\\":1.0,\\"age\\":-1}'
 
     def test_diversity_6(self):
-        return '-p/items/\n-mpost\n-d{"name":"test-name","price":1.6,"age":-21.21}'
+        return '-ps /item Item -u /item -m post -d {\\"name\\":\\"name\\",\\"price\\":1.0,\\"age\\":-1}'
 
     def test_diversity_7(self):
-        return '-a\n-p/items/\n-o\n-mpost\n-d{"aliased_name":"test-name","price":1.6,"age":-0.1}'
+        return '-ps /item Item -u /item -m post -d {\\"name\\":\\"name\\",\\"price\\":1.0,\\"age\\":-1}'
 
     def test_diversity_8(self):
-        return '-p/items/\n-mpost\n-o\n-d{"name":"test-name","price":1.6,"age":-0.01}'
+        return '-ps /item Item -u /item -m post -d {\\"name\\":\\"name\\",\\"price\\":1.0,\\"age\\":-1}'
 
     def test_diversity_9(self):
-        return '-p/items/\n-mpost\n-a\n-d{"aliased_name":"test-name","price":1.6,"age":-0.001}\n-u'
+        return '-ps /item Item -u /item -m post -d {\\"name\\":\\"name\\",\\"price\\":1.0,\\"age\\":-1}'
 
     def test_diversity_10(self):
-        return '-p/items/\n-mpost\n-d{"name":"test-name","price":1.6,"age":-0.00001}'
+        return '-ps /item Item -u /item -m post -d {\\"name\\":\\"name\\",\\"price\\":1.0,\\"age\\":-1}'
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return "-p/router/\n-mwebsocket\n-a"
+        return '-ps /item Item -u /item -m post -d {\\"name\\":\\"name\\",\\"price\\":1.0,\\"age\\":5}'
 
     def test_diversity_2(self):
-        return "-p/user/1\n-u\n-mget"
+        return '-ps /item ItemLower -u /item -m post -d {\\"name\\":\\"name\\",\\"age\\":5}'
 
     def test_diversity_3(self):
-        return "-p/items/valid\n-mget"
+        return '-ps /item Item -u /item -m post -d {\\"name\\":\\"name\\",\\"price\\":1.0,\\"age\\":5}'
 
     def test_diversity_4(self):
-        return '-p/items/\n-mpost\n-a\n-d{"aliased_name":"test-name","price":1.6,"age":42,"ids":[1,2,3]}'
+        return '-ps /item Item -u /item -m post -d {\\"name\\":\\"name\\",\\"price\\":1.0,\\"age\\":5}'
 
     def test_diversity_5(self):
-        return '-p/items/\n-mpost\n-d{"name":"test-name","price":1.6,"age":42.42}'
+        return '-ps /item Item -u /item -m post -d {\\"name\\":\\"name\\",\\"price\\":1.0,\\"age\\":5}'
 
     def test_diversity_6(self):
-        return '-p/items/\n-mpost\n-a\n-u\n-d{"aliased_name":"test-name","price":1.6,"age":5}'
+        return '-ps /item Item -u /item -m post -d {\\"name\\":\\"name\\",\\"price\\":1.0,\\"age\\":5}'
 
     def test_diversity_7(self):
-        return '-p/items/valid\n-mget\n-o\n-d[1,2,0.0,"test"]'
+        return '-ps /item Item -u /item -m post -d {\\"name\\":\\"name\\",\\"price\\":1.0,\\"age\\":5}'
 
     def test_diversity_8(self):
-        return "-p/openapi.json"
+        return '-ps /item Item -u /item -m post -d {\\"name\\":\\"name\\",\\"price\\":1.0,\\"age\\":5}'
 
     def test_diversity_9(self):
-        return '-p/items/valid_list\n-mget\n-o\n-d"test"'
+        return '-ps /item Item -u /item -m post -d {\\"name\\":\\"name\\",\\"price\\":1.0,\\"age\\":5}'
 
     def test_diversity_10(self):
-        return "-p/model\n-mget\n-o\n-d1"
+        return '-ps /item Item -u /item -m post -d {\\"name\\":\\"name\\",\\"price\\":1.0,\\"age\\":5}'

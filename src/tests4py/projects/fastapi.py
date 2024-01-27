@@ -658,8 +658,8 @@ class FastAPI7API(FastAPIDefaultAPI):
 
     def contains(self, process: subprocess.CompletedProcess) -> bool:
         return (
-            b"TypeError: Object of type Decimal is not JSON serializable"
-            in process.stderr
+            b"TypeError" in process.stderr
+            and b" is not JSON serializable" in process.stderr
         )
 
     def error_handling(self, process: subprocess.CompletedProcess) -> bool:
@@ -1354,13 +1354,15 @@ grammar_request: Grammar = clean_up(
             "<url>": get_possible_options("u", "<arg>"),
             "<data>": get_possible_options("d", "<json>"),
             "<mode>": get_possible_options("m", "<r_mode>"),
-            "<item>": get_possible_options("item", "<arg><sep><float><sep><integer>"),
+            "<item>": get_possible_options(
+                "item", "<arg><sep><arg_float><sep><arg_integer>"
+            ),
             "<model_a>": get_possible_options("ma", "<arg><sep><arg>"),
             "<model_b>": get_possible_options("mb", "<arg>"),
             "<get>": get_possible_options("gs", "<arg><sep><model>"),
             "<post>": get_possible_options("ps", "<arg><sep><model>"),
             "<param>": get_possible_options(
-                "pas", "<arg><sep><parameter><sep><integer>"
+                "pas", "<arg><sep><parameter><sep><arg_integer>"
             ),
             "<alias>": get_possible_options("a", "<arg>"),
             # UTILS
@@ -1389,6 +1391,7 @@ grammar_request: Grammar = clean_up(
                 "ModelCA",
                 "ModelCB",
                 "Item",
+                "ItemLower",
                 "OtherItem",
                 "List[Item]",
                 "List[OtherItem]",
@@ -1397,6 +1400,8 @@ grammar_request: Grammar = clean_up(
                 "FormSet",
                 "FormInt[<integer>]",
             ],
+            "<arg_integer>": ["<integer>", "'<integer>'", '"<integer>"'],
+            "<arg_float>": ["<float>", "'<float>'", '"<float>"'],
         },
         **FLOAT,
     )

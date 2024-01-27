@@ -21,7 +21,6 @@ PRINTABLE_CLI = srange(
     (string.digits + string.ascii_letters + string.punctuation)
     .replace('"', "")
     .replace("'", "")
-    .replace("-", "")
 )
 DIGITS = crange("0", "9")
 NON_ZERO_DIGITS = crange("1", "9")
