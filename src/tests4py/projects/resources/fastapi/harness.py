@@ -4,7 +4,7 @@ from decimal import Decimal
 from typing import List
 
 # noinspection PyUnresolvedReferences,PyPackageRequirements
-from fastapi import APIRouter, Depends, FastAPI, Form
+from fastapi import APIRouter, Depends, FastAPI, Form, Body
 
 # noinspection PyUnresolvedReferences,PyPackageRequirements
 from fastapi.routing import APIRoute
@@ -112,6 +112,17 @@ if __name__ == "__main__":
         nargs=3,
         metavar=("url", "default", "value"),
         default=(None, "default", "value"),
+    )
+    arguments.add_argument(
+        "-mt",
+        dest="media_type",
+        default=None,
+    )
+    arguments.add_argument(
+        "-e",
+        dest="embed",
+        default=False,
+        action="store_true",
     )
 
     args = arguments.parse_args()
@@ -395,10 +406,31 @@ if __name__ == "__main__":
 
         if responder is not None:
             if no_response:
+                if args.media_type is None and not args.embed:
 
-                @app.post(url)
-                def post(m: type_):
-                    return responder(m)
+                    @app.post(url)
+                    def post(m: type_):
+                        return responder(m)
+
+                elif args.media_type is None and args.embed:
+
+                    @app.post(url)
+                    def post(m: type_ = Body(..., embed=True)):
+                        return responder(m)
+
+                elif args.media_type is not None and not args.embed:
+
+                    @app.post(url)
+                    def post(m: type_ = Body(..., media_type=args.media_type)):
+                        return responder(m)
+
+                else:
+
+                    @app.post(url)
+                    def post(
+                        m: type_ = Body(..., media_type=args.media_type, embed=True)
+                    ):
+                        return responder(m)
 
             else:
                 if depender is None:
@@ -443,7 +475,10 @@ if __name__ == "__main__":
     class CustomRoute(APIRoute):
         value = value
 
-    custom_router = APIRouter(route_class=CustomRoute)
+    try:
+        custom_router = APIRouter(route_class=CustomRoute)
+    except TypeError:
+        custom_router = APIRouter()
 
     @custom_router.get("/")
     def get_value():
