@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Union
+from typing import Union, Optional
 
 from sflkit.runners import PytestRunner
 
@@ -21,8 +21,8 @@ DEFAULT_TIME_OUT = 10
 
 
 def sflkit_instrument(
-    work_dir_or_project: Project,
     dst: Path,
+    work_dir_or_project: Optional[Union[Path, Project]] = None,
     events: str = None,
     report: SFLInstrumentReport = None,
 ):
