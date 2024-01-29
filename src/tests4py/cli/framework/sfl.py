@@ -16,8 +16,8 @@ def tests4py_sfl_instrument(
     init_logger(verbose=verbose)
     try:
         sfl.sflkit_instrument(
-            work_dir,
             dst=dst,
+            work_dir_or_project=work_dir,
             events=events,
             report=report,
         )

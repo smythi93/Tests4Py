@@ -210,7 +210,7 @@ def update_env(environ: Environment):
 
 def sflkit_env(environ: Environment):
     subprocess.check_call(
-        [PYTHON, "-m", "pip", "install", "sflkitlib==0.0.1"],
+        [PYTHON, "-m", "pip", "install", "sflkitlib>=0.0.3"],
         env=environ,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
