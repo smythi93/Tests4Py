@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return ""
+        return "fuck"
 
     def test_diversity_2(self):
-        return ""
+        return "thefuck"
 
     def test_diversity_3(self):
-        return ""
+        return "FUCK"
 
     def test_diversity_4(self):
-        return ""
+        return "HDHddusfugs"
 
     def test_diversity_5(self):
-        return ""
+        return "krngeruvenj"
 
     def test_diversity_6(self):
-        return ""
+        return "uJGKhdfhf"
 
     def test_diversity_7(self):
-        return ""
+        return "rgefgre"
 
     def test_diversity_8(self):
-        return ""
+        return "fenfdseefe"
 
     def test_diversity_9(self):
-        return ""
+        return "HJDSgdshjdg"
 
     def test_diversity_10(self):
-        return ""
+        return "jrfhugd"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return ""
+        return "fuck"
 
     def test_diversity_2(self):
-        return ""
+        return "FUCK"
 
     def test_diversity_3(self):
-        return ""
+        return "thefuck"
 
     def test_diversity_4(self):
-        return ""
+        return "mjerew"
 
     def test_diversity_5(self):
-        return ""
+        return "efrwger"
 
     def test_diversity_6(self):
-        return ""
+        return "FDSweda"
 
     def test_diversity_7(self):
-        return ""
+        return "fdsGResa"
 
     def test_diversity_8(self):
-        return ""
+        return "KGrjwuai"
 
     def test_diversity_9(self):
-        return ""
+        return "dkjfdssDSF"
 
     def test_diversity_10(self):
-        return ""
+        return "sfNDSUFGUahs"
