@@ -114,7 +114,7 @@ class RunReport(LocationReport):
         if self.input:
             dictionary["input"] = self.input
         if self.test_result:
-            dictionary["test_result"] = self.test_result
+            dictionary["test_result"] = self.test_result.name
         if self.feedback:
             dictionary["feedback"] = self.feedback
         return dictionary

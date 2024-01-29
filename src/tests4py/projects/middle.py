@@ -32,6 +32,7 @@ class Middle(Project):
         systemtests: Optional[SystemtestGenerator] = None,
         api: Optional[API] = None,
         loc: int = 0,
+        relevant_test_files: Optional[List[Path]] = None,
     ):
         super().__init__(
             bug_id=bug_id,
@@ -55,6 +56,7 @@ class Middle(Project):
             setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
             included_files=[os.path.join("src", PROJECT_MAME)],
             test_base=Path("tests"),
+            relevant_test_files=relevant_test_files,
         )
 
 
@@ -69,6 +71,7 @@ def register():
         test_cases=[
             os.path.join("tests", "test_middle.py::TestMiddle::test_middle_213")
         ],
+        relevant_test_files=[Path("tests", "test_middle.py")],
         unittests=MiddleUnittestGenerator(),
         systemtests=MiddleSystemtestGenerator(),
         api=Middle1API(),
@@ -84,6 +87,7 @@ def register():
         test_cases=[
             os.path.join("tests", "test_middle.py::TestMiddle::test_middle_213"),
         ],
+        relevant_test_files=[Path("tests", "test_middle.py")],
         loc=12,
     )
 

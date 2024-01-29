@@ -46,7 +46,12 @@ TMP_FILE = "tests4py_tmp"
 # ~~ TEST PATTERN ~~ #
 
 PYTEST_PATTERN = re.compile(
-    rb"= ((((?P<f>\d+) failed)|((?P<p>\d+) passed)|(\d+ (skipped|warning(s?)|(error(s?)))))(, )?)+ in "
+    rb"=( |\x1b\[\d+m)+(("
+    rb"((?P<f>\d+) failed)|"
+    rb"((?P<p>\d+) passed)|"
+    rb"(\d+ (skipped|warning(s?)|"
+    rb"(error(s?)))))"
+    rb"(( |\x1b\[\d+m)*,( |\x1b\[\d+m)+)?)+( |\x1b\[\d+m)+in( |\x1b\[\d+m)+"
 )
 UNITTEST_TOTAL_PATTERN = re.compile(rb"Ran (?P<t>\d+) tests? in")
 UNITTEST_FAILED_PATTERN = re.compile(rb"FAILED (failures=(?P<f>\d+))")
