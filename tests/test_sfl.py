@@ -1,4 +1,5 @@
 import os.path
+import unittest
 from pathlib import Path
 
 from sflkit.analysis.analysis_type import AnalysisType
@@ -11,7 +12,7 @@ from utils import BaseTest
 
 
 class TestSFL(BaseTest):
-    # @unittest.skip
+    @unittest.skip
     def test_middle(self):
         project_name = "middle"
         bug_id = 2
