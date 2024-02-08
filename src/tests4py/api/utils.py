@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from typing import Optional, Union, Tuple
 
@@ -31,14 +32,14 @@ from tests4py.projects import (
 )
 
 
-def get_work_dir(work_dir_or_project: Optional[Union[Path, Project]] = None):
+def get_work_dir(work_dir_or_project: Optional[Union[os.PathLike, Project]] = None):
     if work_dir_or_project is None:
         config = load_config()
         return get_correct_dir(config)
     elif isinstance(work_dir_or_project, Project):
         return DEFAULT_WORK_DIR / work_dir_or_project.get_identifier()
     else:
-        return work_dir_or_project
+        return Path(work_dir_or_project)
 
 
 def get_correct_dir(config: GlobalConfig):
