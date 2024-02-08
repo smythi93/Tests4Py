@@ -29,7 +29,7 @@ from tests4py.tests.utils import TestResult
 
 
 def run(
-    work_dir_or_project: Optional[Union[Path, Project]] = None,
+    work_dir_or_project: Optional[Union[os.PathLike, Project]] = None,
     args_or_path: Sequence[str] | Path = None,
     invoke_oracle: bool = False,
     report: Optional[RunReport] = None,
@@ -90,7 +90,7 @@ def _get_systemtest_runs(
 
 
 def systemtest_generate(
-    work_dir_or_project: Optional[Union[Path, Project]] = None,
+    work_dir_or_project: Optional[Union[os.PathLike, Project]] = None,
     path: Path = None,
     n: int = 1,
     p: Union[int, float] = 1,
@@ -185,7 +185,7 @@ def clean_results(
 
 
 def systemtest_test(
-    work_dir_or_project: Optional[Union[Path, Project]] = None,
+    work_dir_or_project: Optional[Union[os.PathLike, Project]] = None,
     path_or_str: Path | str = None,
     diversity: bool = False,
     output: Path = None,
@@ -250,7 +250,7 @@ def systemtest_test(
 
 
 def unittest_generate(
-    work_dir_or_project: Optional[Union[Path, Project]] = None,
+    work_dir_or_project: Optional[Union[os.PathLike, Project]] = None,
     path: Path = None,
     n: int = 1,
     p: Union[int, float] = 0.5,
@@ -346,7 +346,7 @@ def unittest_generate(
 
 
 def unittest_test(
-    work_dir_or_project: Optional[Union[Path, Project]] = None,
+    work_dir_or_project: Optional[Union[os.PathLike, Project]] = None,
     path: Path = None,
     diversity: bool = True,
     output: Path = None,
