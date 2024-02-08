@@ -53,13 +53,17 @@ def run(
         environ = activate_venv(work_dir, environ)
         if not isinstance(args_or_path, Path):
             args_or_path = [args.replace("\\-", "-") for args in args_or_path]
-        result, feedback = project.api.run(
+        result, feedback, stdout, stderr = project.api.run(
             args_or_path, environ, work_dir=work_dir, invoke_oracle=invoke_oracle
         )
         if invoke_oracle:
             LOGGER.info(f"Input was identified as {result}")
+        LOGGER.info(f"Output: \n{stdout}")
+        LOGGER.info(f"Error: \n{stderr}")
         report.test_result = result
         report.feedback = feedback
+        report.stdout = stdout
+        report.stderr = stderr
         report.successful = True
     except BaseException as e:
         report.raised = e

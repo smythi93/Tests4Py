@@ -107,6 +107,8 @@ class RunReport(LocationReport):
         self.input: Optional[str] = None
         self.test_result: Optional[TestResult] = None
         self.feedback: Optional[str] = None
+        self.stdout: Optional[str] = None
+        self.stderr: Optional[str] = None
         super().__init__(RUN)
 
     def to_dict(self):
@@ -117,6 +119,10 @@ class RunReport(LocationReport):
             dictionary["test_result"] = self.test_result.name
         if self.feedback:
             dictionary["feedback"] = self.feedback
+        if self.feedback:
+            dictionary["stdout"] = self.stdout
+        if self.feedback:
+            dictionary["stderr"] = self.stderr
         return dictionary
 
 
