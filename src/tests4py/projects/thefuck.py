@@ -13,7 +13,6 @@ from tests4py.grammars.fuzzer import srange
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
-from subprocess import DEVNULL, Popen, STDOUT
 
 PROJECT_MAME = "thefuck"
 
@@ -297,6 +296,9 @@ def register():
         test_cases=[
             "tests/test_types.py::TestSortedCorrectedCommandsSequence::test_with_blank"
         ],
+        api=TheFuckAPI22(),
+        unittests=TheFuckUnittestGenerator22(),
+        systemtests=TheFuckSystemtestGenerator22(),
     )
     TheFuck(
         bug_id=23,
@@ -308,6 +310,9 @@ def register():
             "tests/test_utils.py::TestCache::test_with_filled_cache",
             "tests/test_utils.py::TestCache::test_with_blank_cache",
         ],
+        api=TheFuckAPI23(),
+        unittests=TheFuckUnittestGenerator23(),
+        systemtests=TheFuckSystemtestGenerator23(),
     )
     TheFuck(
         bug_id=24,
@@ -696,9 +701,8 @@ class TheFuckAPI17(API):
         expected = process.args[2]
         result = process.stdout.decode("utf8")
         result = result.strip()
-        print("expected:", expected)
-        print("result:", result)
-        print("args:", args)
+        expected = expected[1:]
+        expected = expected[:-1]
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -775,9 +779,50 @@ class TheFuckAPI21(API):
         result = result.strip()
         expected = expected.replace("(", "")
         expected = expected[:-1]
-        #print("args:", args)
-        #print("expected:", expected)
-        #print("result:", result)
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class TheFuckAPI22(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        expected = expected[1:]
+        expected = expected[:-1]
+        print("expected:", expected)
+        print("result:", result)
+        print("args:", args)
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class TheFuckAPI23(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        expected = expected[1:]
+        expected = expected[:-1]
+        print("expected:", expected)
+        print("result:", result)
+        print("args:", args)
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -1531,11 +1576,12 @@ To push the current branch and set the remote as upstream, use
 
     @staticmethod
     def thefuck17_generate_():
-        # raw_aliases = os.environ.get('TF_SHELL_ALIASES', '').split('\n')
-        # print(raw_aliases)
-        # for key, value in a.items():
-        # print(key, value)
-        return ""
+        alias_name = TheFuckTestGenerator.generate_random_string()
+        passing_ = (
+            (f"alias {alias_name}", alias_name),
+            (f"TF_ALIAS={alias_name}", alias_name))
+        failing_ = (f"the{alias_name}", alias_name)
+        return passing_[random.randint(0, 1)], failing_
 
     @staticmethod
     def thefuck18_generate_():
@@ -1652,6 +1698,16 @@ To push the current branch and set the remote as upstream, use
         failing_match_ = (True, f"git {stash_commands[random.randint(0, len(stash_commands)-1)]} {randomise}", git_stash_err)
 
         return passing_match_, failing_match_
+
+    @staticmethod
+    def thefuck22_generate_():
+        randomise = TheFuckTestGenerator.generate_random_string()
+        return ""
+
+    @staticmethod
+    def thefuck23_generate_():
+        randomise = TheFuckTestGenerator.generate_random_string()
+        return randomise
 
 
 class TheFuckUnittestGenerator1(
@@ -2902,10 +2958,11 @@ class TheFuckUnittestGenerator17(
     @staticmethod
     def _get_assert(
             result: Any,
+            alias: Any
     ) -> list[Assign | Expr]:
         return [
             ast.Assign(
-                targets=[ast.Name(id="b")],
+                targets=[ast.Name(id="bash")],
                 value=ast.Call(
                     func=ast.Name(id="Bash"),
                     args=[],
@@ -2920,44 +2977,10 @@ class TheFuckUnittestGenerator17(
                         ast.Constant(value=result),
                         ast.Call(
                             func=ast.Attribute(
-                                value=ast.Name(id="b"),
-                                attr="get_aliases",
+                                value=ast.Name(id="bash"),
+                                attr="app_alias",
                             ),
-                            args=[],
-                            keywords=[],
-                        ),
-                    ],
-                    keywords=[],
-                ),
-                lineno=2,
-            ),
-        ]
-
-    @staticmethod
-    def _get_assert_2(
-            result: Any,
-    ) -> list[Assign | Expr]:
-        return [
-            ast.Assign(
-                targets=[ast.Name(id="z")],
-                value=ast.Call(
-                    func=ast.Name(id="Zsh"),
-                    args=[],
-                    keywords=[],
-                ),
-                lineno=1,
-            ),
-            ast.Expr(
-                value=ast.Call(
-                    func=ast.Attribute(value=ast.Name(id="self"), attr="assertIn"),
-                    args=[
-                        ast.Constant(value=result),
-                        ast.Call(
-                            func=ast.Attribute(
-                                value=ast.Name(id="z"),
-                                attr="get_aliases",
-                            ),
-                            args=[],
+                            args=[ast.Constant(value=alias)],
                             keywords=[],
                         ),
                     ],
@@ -2982,23 +3005,17 @@ class TheFuckUnittestGenerator17(
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        fail_ = self._generate_one()
+        _, fail_ = self._generate_one()
+        result, alias = fail_
         test = self.get_empty_test()
-        dice = random.randint(0, 1)
-        if dice == 0:
-            test.body = self._get_assert(fail_)
-        if dice == 1:
-            test.body = self._get_assert_2(fail_)
+        test.body = self._get_assert(result, alias)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass_ = self._generate_one()
+        pass_, _ = self._generate_one()
+        result, alias = pass_
         test = self.get_empty_test()
-        dice = random.randint(0, 1)
-        if dice == 0:
-            test.body = self._get_assert(pass_)
-        if dice == 1:
-            test.body = self._get_assert_2(pass_)
+        test.body = self._get_assert(result, alias)
         return test, TestResult.PASSING
 
 
@@ -3365,6 +3382,127 @@ class TheFuckUnittestGenerator21(
         return test, TestResult.PASSING
 
 
+class TheFuckUnittestGenerator22(
+    python.PythonGenerator, UnittestGenerator, TheFuckTestGenerator
+):
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.thefuck22_generate_)
+
+    @staticmethod
+    def _get_assert(
+            result: Any,
+    ) -> list[Assign | Expr]:
+        return [
+            ast.Assign(
+                targets=[ast.Name(id="command_sequence")],
+                value=ast.Call(
+                    func=ast.Name(id="SortedCorrectedCommandsSequence"),
+                    args=[],
+                    keywords=[],
+                ),
+                lineno=1,
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="self"), attr="assertIn"),
+                    args=[
+                        ast.Constant(value=result),
+                        ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id="command_sequence"),
+                                attr="_realise",
+                            ),
+                            args=[],
+                            keywords=[],
+                        ),
+                    ],
+                    keywords=[],
+                ),
+                lineno=2,
+            ),
+        ]
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            ast.ImportFrom(
+                module="thefuck.types",
+                names=[ast.alias(name="SortedCorrectedCommandsSequence")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="thefuck.types",
+                names=[ast.alias(name="Command")],
+                level=0,
+            ),
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        fail_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert("")
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert("")
+        return test, TestResult.PASSING
+
+
+class TheFuckUnittestGenerator23(
+    python.PythonGenerator, UnittestGenerator, TheFuckTestGenerator
+):
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.thefuck23_generate_)
+
+    @staticmethod
+    def _get_assert(
+            expected: Any,
+            input_: Tuple,
+    ) -> list[Call]:
+        return [
+            ast.Call(
+                func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
+                args=[
+                    ast.Constant(value=expected),
+                    ast.Call(
+                        func=ast.Name(id="cache"),
+                        args=[ast.Constant(value=input_),
+
+                        ],
+                        keywords=[],
+                    ),
+                ],
+                keywords=[],
+            )
+        ]
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            ast.ImportFrom(
+                module="thefuck.utils",
+                names=[ast.alias(name="cache")],
+                level=0,
+            ),
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        fail_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert("_cache at", ("A", "A"))
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert("", ("", ""))
+        return test, TestResult.PASSING
+
+
 class TheFuckSystemtestGenerator1(SystemtestGenerator, TheFuckTestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
         _, fail_ = self.generate_values(self.thefuck1_generate_)
@@ -3625,6 +3763,26 @@ class TheFuckSystemtestGenerator21(SystemtestGenerator, TheFuckTestGenerator):
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
         pass_, _ = self.generate_values(self.thefuck21_generate_)
+        return f"{pass_}", TestResult.PASSING
+
+
+class TheFuckSystemtestGenerator22(SystemtestGenerator, TheFuckTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.thefuck22_generate_)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.thefuck22_generate_)
+        return f"{pass_}", TestResult.PASSING
+
+
+class TheFuckSystemtestGenerator23(SystemtestGenerator, TheFuckTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.thefuck23_generate_)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.thefuck23_generate_)
         return f"{pass_}", TestResult.PASSING
 
 
