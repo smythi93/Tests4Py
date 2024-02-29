@@ -116,10 +116,12 @@ class OracleInputRunner(Runner):
     def __init__(
         self,
         project: Project,
+        relative: bool = False,
         timeout: int = DEFAULT_TIMEOUT,
     ):
         super().__init__(timeout=timeout)
         self.project = project
+        self.relative = relative
 
     def get_tests(
         self,
@@ -131,8 +133,14 @@ class OracleInputRunner(Runner):
         if not files:
             return []
         if isinstance(files, list):
-            return map(lambda test: os.path.join(directory, test), self.files)
-        files = directory / files
+            if self.relative:
+                return map(lambda test: os.path.join(directory, test), files)
+            else:
+                return files
+        if self.relative:
+            files = directory / files
+        else:
+            files = Path(files)
         if files.exists():
             if files.is_dir():
                 return list(

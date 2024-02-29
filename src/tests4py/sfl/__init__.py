@@ -83,6 +83,7 @@ def sflkit_unittest(
 def sflkit_systemtest(
     work_dir: os.PathLike,
     tests: os.PathLike | list[os.PathLike],
+    relative: bool = False,
     output: Path = None,
     report: SFLEventsReport = None,
 ):
@@ -95,7 +96,7 @@ def sflkit_systemtest(
         report.project = project
         environ = env_on(project)
         environ = activate_venv(work_dir, environ)
-        OracleInputRunner(project=project, timeout=DEFAULT_TIME_OUT).run(
+        OracleInputRunner(project=project, relative=relative, timeout=DEFAULT_TIME_OUT).run(
             work_dir, output, files=tests, environ=environ
         )
         report.successful = True
