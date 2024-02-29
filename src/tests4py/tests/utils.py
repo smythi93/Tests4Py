@@ -97,12 +97,12 @@ class API:
 
     def run(
         self,
-        args_or_path: Sequence[str] | PathLike,
+        args_or_path: List[str] | PathLike,
         environ: Environment,
         invoke_oracle: bool = False,
         work_dir: Optional[Path] = None,
     ) -> Tuple[TestResult, str, str, str]:
-        if isinstance(args_or_path, Sequence):
+        if isinstance(args_or_path, list):
             args = self.prepare_args(args_or_path, work_dir)
         else:
             system_tests_path = Path(args_or_path)
