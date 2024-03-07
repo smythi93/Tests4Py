@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Set
 
 import sflkit
 from sflkit.analysis.suggestion import Suggestion
@@ -31,6 +31,9 @@ class SFLInstrumentReport(ProjectReport):
 class SFLEventsReport(ProjectReport):
     def __init__(self):
         super().__init__(command=SFL, subcommand=EVENTS)
+        self.passing: Set[str] = set()
+        self.failing: Set[str] = set()
+        self.undefined: Set[str] = set()
 
 
 class SFLAnalyzeReport(ProjectReport):

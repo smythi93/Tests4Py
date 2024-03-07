@@ -66,7 +66,8 @@ def sflkit_unittest(
         report.project = project
         environ = env_on(project)
         environ = activate_venv(work_dir, environ)
-        PytestRunner(timeout=DEFAULT_TIME_OUT).run(
+        runner = PytestRunner(timeout=DEFAULT_TIME_OUT)
+        runner.run(
             directory=work_dir,
             output=output,
             files=None if all_tests else project.relevant_test_files,
@@ -74,6 +75,9 @@ def sflkit_unittest(
             environ=environ,
         )
         report.successful = True
+        report.passing = runner.passing_tests
+        report.failing = runner.failing_tests
+        report.undefined = runner.undefined_tests
     except BaseException as e:
         report.raised = e
         report.successful = False
@@ -96,10 +100,14 @@ def sflkit_systemtest(
         report.project = project
         environ = env_on(project)
         environ = activate_venv(work_dir, environ)
-        OracleInputRunner(
+        runner = OracleInputRunner(
             project=project, relative=relative, timeout=DEFAULT_TIME_OUT
-        ).run(work_dir, output, files=tests, environ=environ)
+        )
+        runner.run(work_dir, output, files=tests, environ=environ)
         report.successful = True
+        report.passing = runner.passing_tests
+        report.failing = runner.failing_tests
+        report.undefined = runner.undefined_tests
     except BaseException as e:
         report.raised = e
         report.successful = False
