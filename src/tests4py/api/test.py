@@ -29,7 +29,7 @@ from tests4py.tests.utils import TestResult
 
 
 def run(
-    work_dir_or_project: Optional[Union[Path, Project]] = None,
+    work_dir_or_project: Optional[Union[os.PathLike, Project]] = None,
     args_or_path: Sequence[str] | Path = None,
     invoke_oracle: bool = False,
     report: Optional[RunReport] = None,
@@ -53,13 +53,17 @@ def run(
         environ = activate_venv(work_dir, environ)
         if not isinstance(args_or_path, Path):
             args_or_path = [args.replace("\\-", "-") for args in args_or_path]
-        result, feedback = project.api.run(
+        result, feedback, stdout, stderr = project.api.run(
             args_or_path, environ, work_dir=work_dir, invoke_oracle=invoke_oracle
         )
         if invoke_oracle:
             LOGGER.info(f"Input was identified as {result}")
+        LOGGER.info(f"Output: \n{stdout}")
+        LOGGER.info(f"Error: \n{stderr}")
         report.test_result = result
         report.feedback = feedback
+        report.stdout = stdout
+        report.stderr = stderr
         report.successful = True
     except BaseException as e:
         report.raised = e
@@ -86,7 +90,7 @@ def _get_systemtest_runs(
 
 
 def systemtest_generate(
-    work_dir_or_project: Optional[Union[Path, Project]] = None,
+    work_dir_or_project: Optional[Union[os.PathLike, Project]] = None,
     path: Path = None,
     n: int = 1,
     p: Union[int, float] = 1,
@@ -181,7 +185,7 @@ def clean_results(
 
 
 def systemtest_test(
-    work_dir_or_project: Optional[Union[Path, Project]] = None,
+    work_dir_or_project: Optional[Union[os.PathLike, Project]] = None,
     path_or_str: Path | str = None,
     diversity: bool = False,
     output: Path = None,
@@ -246,7 +250,7 @@ def systemtest_test(
 
 
 def unittest_generate(
-    work_dir_or_project: Optional[Union[Path, Project]] = None,
+    work_dir_or_project: Optional[Union[os.PathLike, Project]] = None,
     path: Path = None,
     n: int = 1,
     p: Union[int, float] = 0.5,
@@ -342,7 +346,7 @@ def unittest_generate(
 
 
 def unittest_test(
-    work_dir_or_project: Optional[Union[Path, Project]] = None,
+    work_dir_or_project: Optional[Union[os.PathLike, Project]] = None,
     path: Path = None,
     diversity: bool = True,
     output: Path = None,
