@@ -1,0 +1,79 @@
+Could not create aliases for Bash and Zsh thus could not create a passing test out of them.
+I used the third fix only, first two were :
+1-)
+bash = Bash()
+bash.get_aliasses()
+2-)
+zsh = Zsh()
+zsh.get_aliases
+----------------
+@staticmethod
+    def get_assert(
+            result: Any,
+    ) -> list[Assign | Expr]:
+        return [
+            ast.Assign(
+                targets=[ast.Name(id="bash")],
+                value=ast.Call(
+                    func=ast.Name(id="Bash"),
+                    args=[],
+                    keywords=[],
+                ),
+                lineno=1,
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="self"), attr="assertIn"),
+                    args=[
+                        ast.Constant(value=result),
+                        ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id="bash"),
+                                attr="get_aliases",
+                            ),
+                            args=[],
+                            keywords=[],
+                        ),
+                    ],
+                    keywords=[],
+                ),
+                lineno=2,
+            ),
+        ]
+------------------
+
+------------------
+@staticmethod
+    def get_assert(
+            result: Any,
+    ) -> list[Assign | Expr]:
+        return [
+            ast.Assign(
+                targets=[ast.Name(id="zsh")],
+                value=ast.Call(
+                    func=ast.Name(id="Zsh"),
+                    args=[],
+                    keywords=[],
+                ),
+                lineno=1,
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="self"), attr="assertIn"),
+                    args=[
+                        ast.Constant(value=result),
+                        ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id="zsh"),
+                                attr="get_aliases",
+                            ),
+                            args=[],
+                            keywords=[],
+                        ),
+                    ],
+                    keywords=[],
+                ),
+                lineno=2,
+            ),
+        ]
+-------------

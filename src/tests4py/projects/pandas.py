@@ -1790,11 +1790,11 @@ class PandasUnittestGenerator1(
 
 class PandasSystemtestGenerator1(SystemtestGenerator, PandasTestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        _, fail_ = self.generate_values(self.pandas1_generate_)
+        fail_ = self.generate_values(self.pandas1_generate_)
         return f"{fail_}", TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        pass_, _ = self.generate_values(self.pandas1_generate_)
+        pass_ = self.generate_values(self.pandas1_generate_)
         return f"{pass_}", TestResult.PASSING
 
 

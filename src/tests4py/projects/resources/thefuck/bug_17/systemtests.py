@@ -2,66 +2,64 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 
 class TestsFailing(FailingSystemtests):
-    # No input, only call of Fish alias if there is any by f = Fish() then f._get_overridden_alias()
     def test_diversity_1(self):
-        return ""
+        return "aldnjdneqdh"
 
     def test_diversity_2(self):
-        return ""
+        return "rJPIepmzRlzfQ"
 
     def test_diversity_3(self):
-        return ""
+        return "asdkqKJSA"
 
     def test_diversity_4(self):
-        return ""
+        return "SADkhadhk"
 
     def test_diversity_5(self):
-        return ""
+        return "JhgoKYT"
 
     def test_diversity_6(self):
-        return ""
+        return "ASDjhhugu"
 
     def test_diversity_7(self):
-        return ""
+        return "mFSIDJu"
 
     def test_diversity_8(self):
-        return ""
+        return "ksjjduhj"
 
     def test_diversity_9(self):
-        return ""
+        return "foDSUYDSHIQ"
 
     def test_diversity_10(self):
-        return ""
+        return "DEJKuuduywuy"
 
 
 class TestsPassing(PassingSystemtests):
-    # No input, only call of Fish alias if there is any by f = Fish() then f._get_overridden_alias()
     def test_diversity_1(self):
-        return ""
+        return "DADWEWTs"
 
     def test_diversity_2(self):
-        return ""
+        return "ljhsdhsdD"
 
     def test_diversity_3(self):
-        return ""
+        return "jkdewdh"
 
     def test_diversity_4(self):
-        return ""
+        return "FHFUQW"
 
     def test_diversity_5(self):
-        return ""
+        return "hiuguuyuuUUGU"
 
     def test_diversity_6(self):
-        return ""
+        return "jdfwefu"
 
     def test_diversity_7(self):
-        return ""
+        return "KWRJGJR"
 
     def test_diversity_8(self):
         return ""
 
     def test_diversity_9(self):
-        return ""
+        return "SDHFDU"
 
     def test_diversity_10(self):
-        return ""
+        return "OGtuUtg"

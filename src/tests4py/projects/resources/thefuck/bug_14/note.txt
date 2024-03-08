@@ -1,0 +1,5 @@
+Thefuck 14 has a function that takes self parameter of Fish class such that :
+f = Fish()
+f._get_overridden_aliases()
+Therefore there are only 5 passsing tests by default (if no overridden alias are added) or gives error if cannot get any.
+So there are 5 passing system and unittests and 1 failing test that gives the error retrieving alias message.
