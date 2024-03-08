@@ -97,12 +97,12 @@ class API:
 
     def run(
         self,
-        args_or_path: Sequence[str] | PathLike,
+        args_or_path: List[str] | PathLike,
         environ: Environment,
         invoke_oracle: bool = False,
         work_dir: Optional[Path] = None,
-    ) -> Tuple[TestResult, str]:
-        if isinstance(args_or_path, Sequence):
+    ) -> Tuple[TestResult, str, str, str]:
+        if isinstance(args_or_path, list):
             args = self.prepare_args(args_or_path, work_dir)
         else:
             system_tests_path = Path(args_or_path)
@@ -113,11 +113,19 @@ class API:
             ):
                 raise ValueError(f"{system_tests_path} does not exist or is not a file")
             args = self.prepare_args(self.get_test_arguments(args_or_path), work_dir)
-        if invoke_oracle:
-            return self.oracle(self.execute(args, environ, work_dir=work_dir))
+        process = self.execute(args, environ, work_dir=work_dir)
+        if hasattr(process, "stdout"):
+            stdout = process.stdout.decode("utf8")
         else:
-            self.execute(args, environ, work_dir=work_dir, pipe=False)
-        return TestResult.UNDEFINED, ""
+            stdout = ""
+        if hasattr(process, "stderr"):
+            stderr = process.stderr.decode("utf8")
+        else:
+            stderr = ""
+        if invoke_oracle:
+            return *self.oracle(process), stdout, stderr
+        else:
+            return TestResult.UNDEFINED, "", stdout, stderr
 
     def tests(
         self,

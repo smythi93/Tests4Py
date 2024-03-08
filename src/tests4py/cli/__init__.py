@@ -67,7 +67,10 @@ def get_parser():
     )
 
     arguments.add_argument(
-        "--version", action="version", version=importlib.metadata.version("tests4py")
+        "--version",
+        action="version",
+        version=importlib.metadata.version("tests4py"),
+        help="Show version number",
     )
 
     # The subparsers
@@ -76,24 +79,40 @@ def get_parser():
         dest="command",
         required=True,
     )
+    info_parser = commands.add_parser(
+        INFO, help="Get information of this benchmark and its projects"
+    )
     checkout_parser = commands.add_parser(CHECKOUT, help="Check out a project")
     build_parser = commands.add_parser(BUILD, help="Build a project")
     # coverage_parser = commands.add_parser(
     #    COVERAGE, help="Measure coverage of a project"
     # )
-    info_parser = commands.add_parser(INFO, help="Get information of a project")
     # mutation_parser = commands.add_parser(MUTATION, help="Mutate a project")
-    test_parser = commands.add_parser(TEST, help="Run tests on a project")
-    unittest_parser = commands.add_parser(UNITTEST, help="The unittest command")
-    systemtest_parser = commands.add_parser(SYSTEMTEST, help="The systemtest command")
-    config_parser = commands.add_parser(CONFIG, help="The config command")
-    cache_parser = commands.add_parser(CACHE, help="The cache command")
-    clear_parser = commands.add_parser(CLEAR, help="The clear command")
-    grammar_parser = commands.add_parser(GRAMMAR, help="The grammar command")
-    sfl_parser = commands.add_parser(
-        SFL, help="The sfl (statistical fault localization) command"
+    test_parser = commands.add_parser(
+        TEST, help="Run tests on a project that are included in the project"
     )
-    run_parser = commands.add_parser(RUN, help="The run command")
+    unittest_parser = commands.add_parser(UNITTEST, help="Run or generate unittests")
+    systemtest_parser = commands.add_parser(
+        SYSTEMTEST, help="Run or generate system tests"
+    )
+    config_parser = commands.add_parser(
+        CONFIG, help="Edit the configuration of this benchmark"
+    )
+    cache_parser = commands.add_parser(
+        CACHE, help="Cache a project to you local machine for faster access"
+    )
+    clear_parser = commands.add_parser(
+        CLEAR, help="Clear cached projects from your local machine"
+    )
+    grammar_parser = commands.add_parser(
+        GRAMMAR, help="Get the grammar of a project that specifies the input format"
+    )
+    sfl_parser = commands.add_parser(
+        SFL, help="Conduct sfl (statistical fault localization) on a project"
+    )
+    run_parser = commands.add_parser(
+        RUN, help="Run an input on a project and observe its result"
+    )
 
     # Checkout
     checkout_parser.add_argument(
@@ -278,7 +297,7 @@ def get_parser():
             dest="is_only_passing",
             default=False,
             action="store_true",
-            help="Set to generate only passing tests (<=> -p == 0). Cannot be set when "
+            help="Set to generate only passing tests (<=> -f == 0). Cannot be set when "
             "--failing is set",
         )
         generate.add_argument(
@@ -286,7 +305,7 @@ def get_parser():
             dest="is_only_failing",
             default=False,
             action="store_true",
-            help="Set to generate only failing tests (<=> -p == -n). Cannot be set when "
+            help="Set to generate only failing tests (<=> -f == -n). Cannot be set when "
             "--passing is set",
         )
         generate.add_argument(

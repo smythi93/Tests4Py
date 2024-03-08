@@ -53,21 +53,42 @@ from tests4py.projects import (
     Project,
     Status,
     get_project,
+    get_matching_projects,
 )
 
 
 def checkout(
-    project: Project,
+    project: Project | str,
     work_dir: Path = DEFAULT_WORK_DIR,
     update: bool = False,
     force: bool = False,
     report: Optional[CheckoutReport] = None,
     verbose: bool = False,
 ) -> CheckoutReport:
+    """
+    Performs the checkout operation for the given project.
+
+    Args:
+        project (Project | str): The project to be checked out.
+        work_dir (Path): The working directory for the checkout operation. Defaults to DEFAULT_WORK_DIR.
+        update (bool): Indicates whether to update the project. Defaults to False.
+        force (bool): Indicates whether to force the checkout. Defaults to False.
+        report (Optional[CheckoutReport]): The checkout report. Defaults to None.
+        verbose (bool): Indicates whether to display verbose output. Defaults to False.
+
+    Returns:
+        CheckoutReport: The report of the checkout operation.
+    """
     if report is None:
         report = CheckoutReport()
     config = load_config()
     try:
+        if isinstance(project, str):
+            matching_projects = get_matching_projects(project)
+            if matching_projects:
+                project = matching_projects[0]
+            else:
+                raise ValueError(f"Project {project} not found")
         report.project = project
 
         check_further = project.status is Status.OK
@@ -277,7 +298,7 @@ def checkout(
 
 
 def build(
-    work_dir_or_project: Optional[Union[Path, Project]] = None,
+    work_dir_or_project: Optional[Union[os.PathLike, Project]] = None,
     rebuild: bool = False,
     force: bool = False,
     report: Optional[CompileReport] = None,
@@ -436,7 +457,7 @@ def info(
 
 
 def test(
-    work_dir_or_project: Optional[Union[Path, Project]] = None,
+    work_dir_or_project: Optional[Union[os.PathLike, Project]] = None,
     single_test: Optional[Union[List[str], str]] = None,
     relevant_tests: bool = False,
     all_tests: bool = False,

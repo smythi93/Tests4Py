@@ -32,6 +32,7 @@ class Middle(Project):
         systemtests: Optional[SystemtestGenerator] = None,
         api: Optional[API] = None,
         loc: int = 0,
+        relevant_test_files: Optional[List[Path]] = None,
     ):
         super().__init__(
             bug_id=bug_id,
@@ -55,6 +56,7 @@ class Middle(Project):
             setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
             included_files=[os.path.join("src", PROJECT_MAME)],
             test_base=Path("tests"),
+            relevant_test_files=relevant_test_files,
         )
 
 
@@ -69,6 +71,7 @@ def register():
         test_cases=[
             os.path.join("tests", "test_middle.py::TestMiddle::test_middle_213")
         ],
+        relevant_test_files=[Path("tests", "test_middle.py")],
         unittests=MiddleUnittestGenerator(),
         systemtests=MiddleSystemtestGenerator(),
         api=Middle1API(),
@@ -84,24 +87,39 @@ def register():
         test_cases=[
             os.path.join("tests", "test_middle.py::TestMiddle::test_middle_213"),
         ],
+        relevant_test_files=[Path("tests", "test_middle.py")],
+        unittests=MiddleUnittestGenerator(),
+        systemtests=MiddleSystemtestGenerator(),
+        api=Middle2API(),
         loc=12,
     )
 
 
-class Middle1API(CLIAPI):
-    def __init__(self, default_timeout=5):
-        super().__init__(["middle"], default_timeout=default_timeout)
-
-    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+class MiddleAPI:
+    @staticmethod
+    def suport_oracle(args: Any, num_args_to_ignore: int = 1) -> Tuple[TestResult, str]:
         if args is None:
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
-        _, expected, _ = sorted(list(map(int, process.args[1:])))
+        _, expected, _ = sorted(list(map(int, process.args[num_args_to_ignore:])))
         result = int(process.stdout.decode("utf8"))
         if result == expected:
             return TestResult.PASSING, ""
         else:
             return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class Middle1API(CLIAPI, MiddleAPI):
+    def __init__(self, default_timeout=5):
+        super().__init__(["middle"], default_timeout=default_timeout)
+
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        return self.suport_oracle(args, 1)
+
+
+class Middle2API(API, MiddleAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        return self.suport_oracle(args, 2)
 
 
 class MiddleTestGenerator:

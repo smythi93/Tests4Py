@@ -88,15 +88,25 @@ class Calculator1API(API):
         super().__init__(default_timeout=default_timeout)
 
     def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        from math import sqrt, cos, sin, tan
         if args is None:
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
-        expected = process.args[2]
-        result = process.stdout.decode("utf8").strip()
-        if result == expected:
-            return TestResult.PASSING, f"Expected {expected}, but was {result}"
-        else:
-            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+        if b'ZeroDivisionError' in process.stderr:
+            return TestResult.FAILING, f"{process.stderr}"
+        try:
+            expected = eval(process.args[2], {"sqrt": sqrt, "cos": cos, "sin": sin, "tan": tan})
+            result = float(process.stdout.decode("utf8").strip())
+            if abs(result - expected) < 0.0001:
+                return TestResult.PASSING, ""
+            else:
+                return TestResult.FAILING, f"Expected {expected}, but was {result}"
+        except ValueError as e:
+            if b'ValueError' in process.stderr:
+                return TestResult.PASSING, f"Expected ValueError"
+        except NameError as e:
+            if b'NameError' in process.stderr:
+                return TestResult.PASSING, f"Expected NameError"
 
 
 class CalculatorTestGenerator:

@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return "7\n5\n10"
+        return "4 2 5"
 
     def test_diversity_2(self):
-        return "77\n32\n93"
+        return "64 63 125"
 
     def test_diversity_3(self):
-        return "-3\n-5\n-2"
+        return "-3 -45 12"
 
     def test_diversity_4(self):
-        return "-8\n-10\n-6"
+        return "2 1 3"
 
     def test_diversity_5(self):
-        return "0\n-1\n1"
+        return "0 -1 1"
 
     def test_diversity_6(self):
-        return "-2\n-3\n-1"
+        return "1 0 64"
 
     def test_diversity_7(self):
-        return "21\n12\n121"
+        return "5 4 6"
 
     def test_diversity_8(self):
-        return "0\n-1000\n1000"
+        return "0 -1000 1000"
 
     def test_diversity_9(self):
-        return "111\n11\n1111"
+        return "9 8 10"
 
     def test_diversity_10(self):
-        return "5\n3\n7"
+        return "-5 -6 -4"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return "10\n7\n5"
+        return "2 4 5"
 
     def test_diversity_2(self):
-        return "32\n77\n93"
+        return "63 125 64"
 
     def test_diversity_3(self):
-        return "-5\n-3\n-2"
+        return "12 -3 -45"
 
     def test_diversity_4(self):
-        return "-17\n-10\n-8"
+        return "2 3 1"
 
     def test_diversity_5(self):
-        return "-1\n0\n1"
+        return "0 1 -1"
 
     def test_diversity_6(self):
-        return "0\n11\n22"
+        return "0 1 64"
 
     def test_diversity_7(self):
-        return "61\n147\n245"
+        return "4 6 5"
 
     def test_diversity_8(self):
-        return "-1000\n0\n1000"
+        return "-1000 0 1000"
 
     def test_diversity_9(self):
-        return "3\n6\n7"
+        return "9 10 8"
 
     def test_diversity_10(self):
-        return "-2\n-4\n-6"
+        return "-4 -5 -6"
