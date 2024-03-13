@@ -1007,9 +1007,6 @@ class TheFuckAPI31(API):
         result = result.strip()
         expected = expected[1:]
         expected = expected[:-1]
-        print("expected:", expected)
-        print("result:", result)
-        print("args:", args)
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -1029,9 +1026,6 @@ class TheFuckAPI32(API):
         result = result.strip()
         expected = expected[1:]
         expected = expected[:-1]
-        print("expected:", expected)
-        print("result:", result)
-        print("args:", args)
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -1973,21 +1967,6 @@ To push the current branch and set the remote as upstream, use
     @staticmethod
     def thefuck28_generate_():
         randomise = TheFuckTestGenerator.generate_random_string()
-        print(os.environ)
-        return randomise
-
-    @staticmethod
-    def thefuck29_generate_():
-        random_key = TheFuckTestGenerator.generate_random_string()
-        random_value = TheFuckTestGenerator.generate_random_string()
-        passing_ = {f'{random_key}': f'{random_value}'}
-        failing_ = {f'{random_key}, {random_value}'}
-        return passing_, failing_
-
-    @staticmethod
-    def thefuck30_generate_():
-        randomise = TheFuckTestGenerator.generate_random_string()
-
         # (script, file, line, col (or None), stderr)
         tests = (
             (f'{randomise} a.c', 'a.c', 3, 1,
@@ -2045,7 +2024,7 @@ To push the current branch and set the remote as upstream, use
                 src/lib.rs:3     +
                                  ^
              Could not compile `test`.
-     
+
              To learn more, run the command again with --verbose.
              """),
 
@@ -2139,24 +2118,198 @@ To push the current branch and set the remote as upstream, use
                  at node.js:814:3
              """),
         )
-        script = tests[random.randint(0, len(tests)-1)][0]
-        error = tests[random.randint(0, len(tests)-1)][4]
+        print(os.environ)
+        script = tests[random.randint(0, len(tests) - 1)][0]
+        error = tests[random.randint(0, len(tests) - 1)][4]
+        return script, error
+
+    @staticmethod
+    def thefuck29_generate_():
+        random_key = TheFuckTestGenerator.generate_random_string()
+        random_value = TheFuckTestGenerator.generate_random_string()
+        passing_ = {f'{random_key}': f'{random_value}'}
+        failing_ = {f'{random_key}, {random_value}'}
+        return passing_, failing_
+
+    @staticmethod
+    def thefuck30_generate_():
+        randomise = TheFuckTestGenerator.generate_random_string()
+
+        # (script, file, line, col (or None), stderr)
+        tests = (
+            (f'{randomise} a.c', 'a.c', 3, 1,
+             """
+             a.c: In function 'main':
+             a.c:3:1: error: expected expression before '}' token
+              }
+               ^
+             """),
+
+            (f'{randomise} a.c', 'a.c', 3, 1,
+             """
+             a.c:3:1: error: expected expression
+             }
+             ^
+             """),
+
+            (f'{randomise} a.pl', 'a.pl', 3, None,
+             """
+             syntax error at a.pl line 3, at EOF
+             Execution of a.pl aborted due to compilation errors.
+             """),
+
+            (f'{randomise} a.pl', 'a.pl', 2, None,
+             """
+             Search pattern not terminated at a.pl line 2.
+             """),
+
+            (f'{randomise} a.sh', 'a.sh', 2, None,
+             """
+             a.sh: line 2: foo: command not found
+             """),
+
+            (f'{randomise} a.sh', 'a.sh', 2, None,
+             """
+             a.sh:2: command not found: foo
+             """),
+
+            (f'{randomise} a.sh', 'a.sh', 2, None,
+             """
+             a.sh: line 2: foo: command not found
+             """),
+
+            (f'{randomise} a.rs', 'a.rs', 2, 5,
+             """
+             a.rs:2:5: 2:6 error: unexpected token: `+`
+             a.rs:2     +
+                        ^
+             """),
+
+            (f'{randomise}', 'src/lib.rs', 3, 5,
+             """
+                Compiling test v0.1.0 (file:///tmp/fix-error/test)
+                src/lib.rs:3:5: 3:6 error: unexpected token: `+`
+                src/lib.rs:3     +
+                                 ^
+             Could not compile `test`.
+
+             To learn more, run the command again with --verbose.
+             """),
+
+            (f'{randomise} a.py', 'a.py', 2, None,
+             """
+               File "a.py", line 2
+                   +
+                       ^
+             SyntaxError: invalid syntax
+             """),
+
+            (f'{randomise} a.py', 'a.py', 8, None,
+             """
+             Traceback (most recent call last):
+               File "a.py", line 8, in <module>
+                 match("foo")
+               File "a.py", line 5, in match
+                 m = re.search(None, command)
+               File "/usr/lib/python3.4/re.py", line 170, in search
+                 return _compile(pattern, flags).search(string)
+               File "/usr/lib/python3.4/re.py", line 293, in _compile
+                 raise TypeError("first argument must be string or compiled pattern")
+             TypeError: first argument must be string or compiled pattern
+             """
+             ),
+
+            (f'{randomise} a.rb', 'a.rb', 3, None,
+             """
+             a.rb:3: syntax error, unexpected keyword_end
+             """),
+
+            (f'{randomise} a.lua', 'a.lua', 2, None,
+             """
+             lua: a.lua:2: unexpected symbol near '+'
+             """),
+
+            (f'{randomise} a.sh', '/tmp/fix-error/a.sh', 2, None,
+             """
+             fish: Unknown command 'foo'
+             /tmp/fix-error/a.sh (line 2): foo
+                                           ^
+             """),
+
+            (f'./a', './a', 2, None,
+             """
+             awk: ./a:2: BEGIN { print "Hello, world!" + }
+             awk: ./a:2:                                 ^ syntax error
+             """),
+
+            (f'{randomise} a.ll', 'a.ll', 1, None,
+             """
+             llc: a.ll:1:1: error: expected top-level entity
+             +
+             ^
+             """),
+
+            (f'{randomise} build a.go', 'a.go', 1, None,
+             """
+             can't load package:
+             a.go:1:1: expected 'package', found '+'
+             """),
+
+            (f'{randomise}', 'Makefile', 2, None,
+             """
+             bidule
+             make: bidule: Command not found
+             Makefile:2: recipe for target 'target' failed
+             make: *** [target] Error 127
+             """),
+
+            (f'{randomise} st', '/home/martin/.config/git/config', 1, None,
+             """
+             fatal: bad config file line 1 in /home/martin/.config/git/config
+             """),
+
+            (f'{randomise} fuck.js asdf qwer', '/Users/pablo/Workspace/barebones/fuck.js', '2', 5,
+             """
+             /Users/pablo/Workspace/barebones/fuck.js:2
+             conole.log(arg);  // this should read console.log(arg);
+             ^
+             ReferenceError: conole is not defined
+                 at /Users/pablo/Workspace/barebones/fuck.js:2:5
+                 at Array.forEach (native)
+                 at Object.<anonymous> (/Users/pablo/Workspace/barebones/fuck.js:1:85)
+                 at Module._compile (module.js:460:26)
+                 at Object.Module._extensions..js (module.js:478:10)
+                 at Module.load (module.js:355:32)
+                 at Function.Module._load (module.js:310:12)
+                 at Function.Module.runMain (module.js:501:10)
+                 at startup (node.js:129:16)
+                 at node.js:814:3
+             """),
+        )
+        script = tests[random.randint(0, len(tests) - 1)][0]
+        error = tests[random.randint(0, len(tests) - 1)][4]
         if 'EDITOR' in os.environ:
-            return script, error, False
-        else:
             return script, error, True
+        else:
+            return script, error, False
 
     @staticmethod
     def thefuck31_generate_():
-        randomise = TheFuckTestGenerator.generate_random_string()
-
-        return randomise
+        randomise_int = random.randint(1, 9999)
+        randomise_str = TheFuckTestGenerator.generate_random_string()
+        passing_ = (f"git diff {randomise_str} --staged", f"git diff {randomise_str}")
+        failing_ = ("Integer value cannot be used", randomise_int)
+        return passing_, failing_
 
     @staticmethod
     def thefuck32_generate_():
-        randomise = TheFuckTestGenerator.generate_random_string()
-
-        return randomise
+        randomise_str = TheFuckTestGenerator.generate_random_string()
+        dice = random.randint(0, 1)
+        passing_ = ((True, f"ls {randomise_str}.py"),
+                    (True, f"ls /{randomise_str}"))
+        failing_ = ((True, f"ls -lah /{randomise_str}"),
+                    (True, f"pacman -s {randomise_str}"))
+        return passing_[dice], failing_[dice]
 
 
 class TheFuckUnittestGenerator1(
@@ -4352,8 +4505,7 @@ class TheFuckUnittestGenerator28(
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         scr, err = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("", scr, "",
-                                     err)
+        test.body = self._get_assert("", scr, "", err)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
@@ -4501,13 +4653,13 @@ class TheFuckUnittestGenerator30(
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         scr, err, _ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert(True, scr, "", err)
+        test.body = self._get_assert(False, scr, "", err)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         scr, err, _ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert(False, scr, "", err)
+        test.body = self._get_assert(True, scr, "", err)
         return test, TestResult.PASSING
 
 
@@ -4569,7 +4721,7 @@ class TheFuckUnittestGenerator31(
                 level=0,
             ),
             ast.ImportFrom(
-                module="thefuck.rules.mkdir_p",
+                module="thefuck.rules.git_diff_staged",
                 names=[ast.alias(name="get_new_command")],
                 level=0,
             )
@@ -4611,7 +4763,7 @@ class TheFuckUnittestGenerator32(
                 args=[
                     ast.Constant(value=expected),
                     ast.Call(
-                        func=ast.Name(id="get_new_command"),
+                        func=ast.Name(id="match"),
                         args=[
                             ast.Call(
                                 func=ast.Name(id="Command"),
@@ -4648,8 +4800,8 @@ class TheFuckUnittestGenerator32(
                 level=0,
             ),
             ast.ImportFrom(
-                module="thefuck.rules.mkdir_p",
-                names=[ast.alias(name="get_new_command")],
+                module="thefuck.rules.ls_lah",
+                names=[ast.alias(name="match")],
                 level=0,
             )
         ]
