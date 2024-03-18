@@ -1914,8 +1914,10 @@ To push the current branch and set the remote as upstream, use
     @staticmethod
     def thefuck23_generate_():
         randomise = TheFuckTestGenerator.generate_random_string()
-
-        return randomise
+        passing_ = (({}, f'{randomise}', {'key': {'etag': '0', 'value': f'{randomise}'}}),
+                    ({'key': {'etag': '0', 'value': f'{randomise}'}}, f'{randomise}', {}))
+        failing_ = ({}, f'{randomise}', {})
+        return passing_[random.randint(0, len(passing_)-1)], failing_
 
     @staticmethod
     def thefuck24_generate_():
@@ -1967,9 +1969,9 @@ To push the current branch and set the remote as upstream, use
     @staticmethod
     def thefuck28_generate_():
         randomise = TheFuckTestGenerator.generate_random_string()
-        # (script, file, line, col (or None), stderr)
+        # (script, file, line, col (or None), stdout, stderr)
         tests = (
-            (f'{randomise} a.c', 'a.c', 3, 1,
+            ('gcc a.c', 'a.c', 3, 1, '',
              """
              a.c: In function 'main':
              a.c:3:1: error: expected expression before '}' token
@@ -1977,58 +1979,58 @@ To push the current branch and set the remote as upstream, use
                ^
              """),
 
-            (f'{randomise} a.c', 'a.c', 3, 1,
+            ('clang a.c', 'a.c', 3, 1, '',
              """
              a.c:3:1: error: expected expression
              }
              ^
              """),
 
-            (f'{randomise} a.pl', 'a.pl', 3, None,
+            ('perl a.pl', 'a.pl', 3, None, '',
              """
              syntax error at a.pl line 3, at EOF
              Execution of a.pl aborted due to compilation errors.
              """),
 
-            (f'{randomise} a.pl', 'a.pl', 2, None,
+            ('perl a.pl', 'a.pl', 2, None, '',
              """
              Search pattern not terminated at a.pl line 2.
              """),
 
-            (f'{randomise} a.sh', 'a.sh', 2, None,
+            ('sh a.sh', 'a.sh', 2, None, '',
              """
              a.sh: line 2: foo: command not found
              """),
 
-            (f'{randomise} a.sh', 'a.sh', 2, None,
+            ('zsh a.sh', 'a.sh', 2, None, '',
              """
              a.sh:2: command not found: foo
              """),
 
-            (f'{randomise} a.sh', 'a.sh', 2, None,
+            ('bash a.sh', 'a.sh', 2, None, '',
              """
              a.sh: line 2: foo: command not found
              """),
 
-            (f'{randomise} a.rs', 'a.rs', 2, 5,
+            ('rustc a.rs', 'a.rs', 2, 5, '',
              """
              a.rs:2:5: 2:6 error: unexpected token: `+`
              a.rs:2     +
                         ^
              """),
 
-            (f'{randomise}', 'src/lib.rs', 3, 5,
+            ('cargo build', 'src/lib.rs', 3, 5, '',
              """
                 Compiling test v0.1.0 (file:///tmp/fix-error/test)
                 src/lib.rs:3:5: 3:6 error: unexpected token: `+`
                 src/lib.rs:3     +
                                  ^
              Could not compile `test`.
-
+     
              To learn more, run the command again with --verbose.
              """),
 
-            (f'{randomise} a.py', 'a.py', 2, None,
+            ('python a.py', 'a.py', 2, None, '',
              """
                File "a.py", line 2
                    +
@@ -2036,7 +2038,7 @@ To push the current branch and set the remote as upstream, use
              SyntaxError: invalid syntax
              """),
 
-            (f'{randomise} a.py', 'a.py', 8, None,
+            ('python a.py', 'a.py', 8, None, '',
              """
              Traceback (most recent call last):
                File "a.py", line 8, in <module>
@@ -2048,46 +2050,45 @@ To push the current branch and set the remote as upstream, use
                File "/usr/lib/python3.4/re.py", line 293, in _compile
                  raise TypeError("first argument must be string or compiled pattern")
              TypeError: first argument must be string or compiled pattern
-             """
-             ),
+             """),
 
-            (f'{randomise} a.rb', 'a.rb', 3, None,
+            ('ruby a.rb', 'a.rb', 3, None, '',
              """
              a.rb:3: syntax error, unexpected keyword_end
              """),
 
-            (f'{randomise} a.lua', 'a.lua', 2, None,
+            ('lua a.lua', 'a.lua', 2, None, '',
              """
              lua: a.lua:2: unexpected symbol near '+'
              """),
 
-            (f'{randomise} a.sh', '/tmp/fix-error/a.sh', 2, None,
+            ('fish a.sh', '/tmp/fix-error/a.sh', 2, None, '',
              """
              fish: Unknown command 'foo'
              /tmp/fix-error/a.sh (line 2): foo
                                            ^
              """),
 
-            (f'./a', './a', 2, None,
+            ('./a', './a', 2, None, '',
              """
              awk: ./a:2: BEGIN { print "Hello, world!" + }
              awk: ./a:2:                                 ^ syntax error
              """),
 
-            (f'{randomise} a.ll', 'a.ll', 1, None,
+            ('llc a.ll', 'a.ll', 1, 2, '',
              """
-             llc: a.ll:1:1: error: expected top-level entity
+             llc: a.ll:1:2: error: expected top-level entity
              +
              ^
              """),
 
-            (f'{randomise} build a.go', 'a.go', 1, None,
+            ('go build a.go', 'a.go', 1, 2, '',
              """
              can't load package:
-             a.go:1:1: expected 'package', found '+'
+             a.go:1:2: expected 'package', found '+'
              """),
 
-            (f'{randomise}', 'Makefile', 2, None,
+            ('make', 'Makefile', 2, None, '',
              """
              bidule
              make: bidule: Command not found
@@ -2095,12 +2096,12 @@ To push the current branch and set the remote as upstream, use
              make: *** [target] Error 127
              """),
 
-            (f'{randomise} st', '/home/martin/.config/git/config', 1, None,
+            ('git st', '/home/martin/.config/git/config', 1, None, '',
              """
              fatal: bad config file line 1 in /home/martin/.config/git/config
              """),
 
-            (f'{randomise} fuck.js asdf qwer', '/Users/pablo/Workspace/barebones/fuck.js', '2', 5,
+            ('node fuck.js asdf qwer', '/Users/pablo/Workspace/barebones/fuck.js', '2', 5, '',
              """
              /Users/pablo/Workspace/barebones/fuck.js:2
              conole.log(arg);  // this should read console.log(arg);
@@ -2117,11 +2118,35 @@ To push the current branch and set the remote as upstream, use
                  at startup (node.js:129:16)
                  at node.js:814:3
              """),
+
+            ('pep8', './tests/rules/test_systemctl.py', 17, 80,
+             """
+             ./tests/rules/test_systemctl.py:17:80: E501 line too long (93 > 79 characters)
+             ./tests/rules/test_systemctl.py:18:80: E501 line too long (103 > 79 characters)
+             ./tests/rules/test_whois.py:20:80: E501 line too long (89 > 79 characters)
+             ./tests/rules/test_whois.py:22:80: E501 line too long (83 > 79 characters)
+             """, ''),
+
+            ('py.test', '/home/thefuck/tests/rules/test_fix_file.py', 218, None,
+             """
+             monkeypatch = <_pytest.monkeypatch.monkeypatch object at 0x7fdb76a25b38>
+             test = ('fish a.sh', '/tmp/fix-error/a.sh', 2, None, '', "\\nfish: Unknown command 'foo'\\n/tmp/fix-error/a.sh (line 2): foo\\n                              ^\\n")
+     
+                 @pytest.mark.parametrize('test', tests)
+                 @pytest.mark.usefixtures('no_memoize')
+                 def test_get_new_command(monkeypatch, test):
+             >       mocker.patch('os.path.isfile', return_value=True)
+             E       NameError: name 'mocker' is not defined
+     
+             /home/thefuck/tests/rules/test_fix_file.py:218: NameError
+             """, ''),
         )
-        print(os.environ)
+
+        # print(os.environ)
         script = tests[random.randint(0, len(tests) - 1)][0]
-        error = tests[random.randint(0, len(tests) - 1)][4]
-        return script, error
+        out = tests[random.randint(0, len(tests) - 1)][4]
+        error = tests[random.randint(0, len(tests) - 1)][5]
+        return script, out, error
 
     @staticmethod
     def thefuck29_generate_():
@@ -4001,6 +4026,19 @@ class TheFuckUnittestGenerator22(
     ) -> list[Assign | Expr]:
         return [
             ast.Assign(
+                targets=[ast.Name(id="corrected_command")],
+                value=ast.Call(
+                    func=ast.Name(id="CorrectedCommand"),
+                    args=[
+                        ast.Constant(value=script),
+                        ast.Constant(value=side_effect),
+                        ast.Constant(value=priority),
+                    ],
+                    keywords=[],
+                ),
+                lineno=1,
+            ),
+            ast.Assign(
                 targets=[ast.Name(id="sort_corr_cmd_seq")],
                 value=ast.Call(
                     func=ast.Name(id="SortedCorrectedCommandsSequence"),
@@ -4013,15 +4051,17 @@ class TheFuckUnittestGenerator22(
                                 ast.Constant(value=priority),
                             ],
                             keywords=[],
-                        ), ast.Call(
+                        ),
+                        ast.Call(
                             func=ast.Name(id="Settings"),
                             args=[
                             ],
                             keywords=[],
-                        )],
+                        )
+                    ],
                     keywords=[],
                 ),
-                lineno=1,
+                lineno=2,
             ),
             ast.Expr(
                 value=ast.Call(
@@ -4039,7 +4079,7 @@ class TheFuckUnittestGenerator22(
                     ],
                     keywords=[],
                 ),
-                lineno=2,
+                lineno=3,
             ),
         ]
 
@@ -4065,13 +4105,13 @@ class TheFuckUnittestGenerator22(
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         fail_ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("", ["git commit", "ls -l", "script.py"], ["", "", ""], [100, 50, 65])
+        test.body = self._get_assert("", ("ls", "sf", "tf"), (None, None, None), (100, 200, 300))
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("", [], [], [])
+        test.body = self._get_assert("", "", "", "")
         return test, TestResult.PASSING
 
 
@@ -4085,18 +4125,44 @@ class TheFuckUnittestGenerator23(
 
     @staticmethod
     def _get_assert(
-            expected: Any,
-            input_: Tuple,
+            shelve: Any,
+            fn: Any,
+            key: dict,
+    ) -> list[Call]:
+        return [
+            ast.Call(
+                func=ast.Attribute(value=ast.Name(id="self"), attr="assertIsNotNone"),
+                args=[
+                    ast.Call(
+                        func=ast.Name(id="cache"),
+
+                        args=[ast.Constant(value=shelve),
+                              ast.Constant(value=fn),
+                              ast.Constant(value=key)],
+                        keywords=[],
+
+                    ),
+                ],
+                keywords=[],
+            )
+        ]
+
+    @staticmethod
+    def _get_assert_2(
+            shelve: Any,
+            fn: Any,
+            key: dict,
     ) -> list[Call]:
         return [
             ast.Call(
                 func=ast.Attribute(value=ast.Name(id="self"), attr="assertIsNone"),
                 args=[
-                    ast.Constant(value=expected),
                     ast.Call(
                         func=ast.Name(id="cache"),
 
-                        args=[ast.Constant(value=input_)],
+                        args=[ast.Constant(value=shelve),
+                              ast.Constant(value=fn),
+                              ast.Constant(value=key)],
                         keywords=[],
 
                     ),
@@ -4115,15 +4181,17 @@ class TheFuckUnittestGenerator23(
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        fail_ = self._generate_one()
+        _, fail_ = self._generate_one()
+        shelve, fn, key = fail_
         test = self.get_empty_test()
-        test.body = self._get_assert("function _cache at", ({}, 'test'))
+        test.body = self._get_assert_2(shelve, fn, key)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass_ = self._generate_one()
+        pass_, _ = self._generate_one()
+        shelve, fn, key = pass_
         test = self.get_empty_test()
-        test.body = self._get_assert("", ({'etag': '0', 'value': 'test'}, 'test'))
+        test.body = self._get_assert(shelve, fn, key)
         return test, TestResult.PASSING
 
 
@@ -4455,11 +4523,48 @@ class TheFuckUnittestGenerator28(
     ) -> list[Call]:
         return [
             ast.Call(
-                func=ast.Attribute(value=ast.Name(id="self"), attr="assertIn"),
+                func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
                 args=[
                     ast.Constant(value=expected),
                     ast.Call(
                         func=ast.Name(id="get_new_command"),
+                        args=[
+                            ast.Call(
+                                func=ast.Name(id="Command"),
+                                args=[
+                                    ast.Constant(value=script),
+                                    ast.Constant(value=std_out),
+                                    ast.Constant(value=std_err),
+                                ],
+                                keywords=[],
+                            ),
+                            ast.Call(
+                                func=ast.Name(id="Settings"),
+                                args=[],
+                                keywords=[],
+                            ),
+                        ],
+                        keywords=[],
+                    ),
+                ],
+                keywords=[],
+            )
+        ]
+
+    @staticmethod
+    def _get_assert_2(
+            expected: Any,
+            script: str,
+            std_out: str,
+            std_err: str,
+    ) -> list[Call]:
+        return [
+            ast.Call(
+                func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
+                args=[
+                    ast.Constant(value=expected),
+                    ast.Call(
+                        func=ast.Name(id="match"),
                         args=[
                             ast.Call(
                                 func=ast.Name(id="Command"),
@@ -4499,19 +4604,24 @@ class TheFuckUnittestGenerator28(
                 module="thefuck.rules.fix_file",
                 names=[ast.alias(name="get_new_command")],
                 level=0,
-            )
+            ),
+            ast.ImportFrom(
+                module="thefuck.rules.fix_file",
+                names=[ast.alias(name="match")],
+                level=0,
+            ),
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        scr, err = self._generate_one()
+        script, out, error = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("", scr, "", err)
+        test.body = self._get_assert("", script, out, error)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        scr, err = self._generate_one()
+        script, out, error = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("", "", "", "")
+        test.body = self._get_assert_2(False, script, "", error)
         return test, TestResult.PASSING
 
 
