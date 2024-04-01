@@ -324,7 +324,13 @@ def unittest_generate(
             environ = env_on(project)
             environ = activate_venv(work_dir, environ)
 
-            command = [PYTHON, "-m", TestingFramework.PYTEST.value, path]
+            command = [
+                PYTHON,
+                "-m",
+                TestingFramework.PYTEST.value,
+                f"--rootdir={work_dir}",
+                path,
+            ]
             output = subprocess.run(
                 command, stdout=subprocess.PIPE, env=environ, cwd=work_dir
             ).stdout
@@ -375,7 +381,12 @@ def unittest_test(
         environ = env_on(project)
         environ = activate_venv(work_dir, environ)
 
-        command = [PYTHON, "-m", TestingFramework.PYTEST.value]
+        command = [
+            PYTHON,
+            "-m",
+            TestingFramework.PYTEST.value,
+            f"--rootdir={work_dir}",
+        ]
         if output:
             command.append(f"--junit-xml={output.absolute()}")
         if diversity and (work_dir / DEFAULT_UNITTESTS_DIVERSITY_PATH).exists():
