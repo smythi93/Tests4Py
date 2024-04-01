@@ -847,9 +847,6 @@ class TheFuckAPI23(API):
         result = result.strip()
         expected = expected[1:]
         expected = expected[:-1]
-        print("expected:", expected)
-        print("result:", result)
-        print("args:", args)
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -945,9 +942,6 @@ class TheFuckAPI28(API):
         result = result.strip()
         expected = expected[1:]
         expected = expected[:-1]
-        print("expected:", expected)
-        print("result:", result)
-        print("args:", args)
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -1914,10 +1908,9 @@ To push the current branch and set the remote as upstream, use
     @staticmethod
     def thefuck23_generate_():
         randomise = TheFuckTestGenerator.generate_random_string()
-        passing_ = (({}, f'{randomise}', {'key': {'etag': '0', 'value': f'{randomise}'}}),
-                    ({'key': {'etag': '0', 'value': f'{randomise}'}}, f'{randomise}', {}))
+        passing_ = ({'key': {'etag': '0', 'value': f'{randomise}'}}, f'{randomise}', {})
         failing_ = ({}, f'{randomise}', {})
-        return passing_[random.randint(0, len(passing_)-1)], failing_
+        return passing_, failing_
 
     @staticmethod
     def thefuck24_generate_():
@@ -1968,10 +1961,11 @@ To push the current branch and set the remote as upstream, use
 
     @staticmethod
     def thefuck28_generate_():
-        randomise = TheFuckTestGenerator.generate_random_string()
+        randomise_int = random.randint(1, 101)
+        randomise_int_2 = random.randint(1, 101)
         # (script, file, line, col (or None), stdout, stderr)
         tests = (
-            ('gcc a.c', 'a.c', 3, 1, '',
+            ('gcc a.c', 'a.c', randomise_int, randomise_int_2, '',
              """
              a.c: In function 'main':
              a.c:3:1: error: expected expression before '}' token
@@ -1979,47 +1973,47 @@ To push the current branch and set the remote as upstream, use
                ^
              """),
 
-            ('clang a.c', 'a.c', 3, 1, '',
+            ('clang a.c', 'a.c', randomise_int, randomise_int_2, '',
              """
              a.c:3:1: error: expected expression
              }
              ^
              """),
 
-            ('perl a.pl', 'a.pl', 3, None, '',
+            ('perl a.pl', 'a.pl', randomise_int, randomise_int_2, '',
              """
              syntax error at a.pl line 3, at EOF
              Execution of a.pl aborted due to compilation errors.
              """),
 
-            ('perl a.pl', 'a.pl', 2, None, '',
+            ('perl a.pl', 'a.pl', randomise_int, randomise_int_2, '',
              """
              Search pattern not terminated at a.pl line 2.
              """),
 
-            ('sh a.sh', 'a.sh', 2, None, '',
+            ('sh a.sh', 'a.sh', randomise_int, randomise_int_2, '',
              """
              a.sh: line 2: foo: command not found
              """),
 
-            ('zsh a.sh', 'a.sh', 2, None, '',
+            ('zsh a.sh', 'a.sh', randomise_int, randomise_int_2, '',
              """
              a.sh:2: command not found: foo
              """),
 
-            ('bash a.sh', 'a.sh', 2, None, '',
+            ('bash a.sh', 'a.sh', randomise_int, randomise_int_2, '',
              """
              a.sh: line 2: foo: command not found
              """),
 
-            ('rustc a.rs', 'a.rs', 2, 5, '',
+            ('rustc a.rs', 'a.rs', randomise_int, randomise_int_2, '',
              """
              a.rs:2:5: 2:6 error: unexpected token: `+`
              a.rs:2     +
                         ^
              """),
 
-            ('cargo build', 'src/lib.rs', 3, 5, '',
+            ('cargo build', 'src/lib.rs', randomise_int, randomise_int_2, '',
              """
                 Compiling test v0.1.0 (file:///tmp/fix-error/test)
                 src/lib.rs:3:5: 3:6 error: unexpected token: `+`
@@ -2030,7 +2024,7 @@ To push the current branch and set the remote as upstream, use
              To learn more, run the command again with --verbose.
              """),
 
-            ('python a.py', 'a.py', 2, None, '',
+            ('python a.py', 'a.py', randomise_int, randomise_int_2, '',
              """
                File "a.py", line 2
                    +
@@ -2038,7 +2032,7 @@ To push the current branch and set the remote as upstream, use
              SyntaxError: invalid syntax
              """),
 
-            ('python a.py', 'a.py', 8, None, '',
+            ('python a.py', 'a.py', randomise_int, randomise_int_2, '',
              """
              Traceback (most recent call last):
                File "a.py", line 8, in <module>
@@ -2052,43 +2046,43 @@ To push the current branch and set the remote as upstream, use
              TypeError: first argument must be string or compiled pattern
              """),
 
-            ('ruby a.rb', 'a.rb', 3, None, '',
+            ('ruby a.rb', 'a.rb', randomise_int, randomise_int_2, '',
              """
              a.rb:3: syntax error, unexpected keyword_end
              """),
 
-            ('lua a.lua', 'a.lua', 2, None, '',
+            ('lua a.lua', 'a.lua', randomise_int, randomise_int_2, '',
              """
              lua: a.lua:2: unexpected symbol near '+'
              """),
 
-            ('fish a.sh', '/tmp/fix-error/a.sh', 2, None, '',
+            ('fish a.sh', '/tmp/fix-error/a.sh', randomise_int, randomise_int_2, '',
              """
              fish: Unknown command 'foo'
              /tmp/fix-error/a.sh (line 2): foo
                                            ^
              """),
 
-            ('./a', './a', 2, None, '',
+            ('./a', './a', randomise_int_2, randomise_int_2, '',
              """
              awk: ./a:2: BEGIN { print "Hello, world!" + }
              awk: ./a:2:                                 ^ syntax error
              """),
 
-            ('llc a.ll', 'a.ll', 1, 2, '',
+            ('llc a.ll', 'a.ll', randomise_int, randomise_int_2, '',
              """
              llc: a.ll:1:2: error: expected top-level entity
              +
              ^
              """),
 
-            ('go build a.go', 'a.go', 1, 2, '',
+            ('go build a.go', 'a.go', randomise_int, randomise_int_2, '',
              """
              can't load package:
              a.go:1:2: expected 'package', found '+'
              """),
 
-            ('make', 'Makefile', 2, None, '',
+            ('make', 'Makefile', randomise_int, randomise_int_2, '',
              """
              bidule
              make: bidule: Command not found
@@ -2096,12 +2090,12 @@ To push the current branch and set the remote as upstream, use
              make: *** [target] Error 127
              """),
 
-            ('git st', '/home/martin/.config/git/config', 1, None, '',
+            ('git st', '/home/martin/.config/git/config', randomise_int, randomise_int_2, '',
              """
              fatal: bad config file line 1 in /home/martin/.config/git/config
              """),
 
-            ('node fuck.js asdf qwer', '/Users/pablo/Workspace/barebones/fuck.js', '2', 5, '',
+            ('node fuck.js asdf qwer', '/Users/pablo/Workspace/barebones/fuck.js', f'{randomise_int}', randomise_int_2, '',
              """
              /Users/pablo/Workspace/barebones/fuck.js:2
              conole.log(arg);  // this should read console.log(arg);
@@ -2117,36 +2111,16 @@ To push the current branch and set the remote as upstream, use
                  at Function.Module.runMain (module.js:501:10)
                  at startup (node.js:129:16)
                  at node.js:814:3
-             """),
-
-            ('pep8', './tests/rules/test_systemctl.py', 17, 80,
-             """
-             ./tests/rules/test_systemctl.py:17:80: E501 line too long (93 > 79 characters)
-             ./tests/rules/test_systemctl.py:18:80: E501 line too long (103 > 79 characters)
-             ./tests/rules/test_whois.py:20:80: E501 line too long (89 > 79 characters)
-             ./tests/rules/test_whois.py:22:80: E501 line too long (83 > 79 characters)
-             """, ''),
-
-            ('py.test', '/home/thefuck/tests/rules/test_fix_file.py', 218, None,
-             """
-             monkeypatch = <_pytest.monkeypatch.monkeypatch object at 0x7fdb76a25b38>
-             test = ('fish a.sh', '/tmp/fix-error/a.sh', 2, None, '', "\\nfish: Unknown command 'foo'\\n/tmp/fix-error/a.sh (line 2): foo\\n                              ^\\n")
-     
-                 @pytest.mark.parametrize('test', tests)
-                 @pytest.mark.usefixtures('no_memoize')
-                 def test_get_new_command(monkeypatch, test):
-             >       mocker.patch('os.path.isfile', return_value=True)
-             E       NameError: name 'mocker' is not defined
-     
-             /home/thefuck/tests/rules/test_fix_file.py:218: NameError
-             """, ''),
+             """)
         )
 
         # print(os.environ)
         script = tests[random.randint(0, len(tests) - 1)][0]
         out = tests[random.randint(0, len(tests) - 1)][4]
         error = tests[random.randint(0, len(tests) - 1)][5]
-        return script, out, error
+        failing = True, script, out, error
+        passing = False, script, out, error
+        return passing, failing
 
     @staticmethod
     def thefuck29_generate_():
@@ -4516,7 +4490,7 @@ class TheFuckUnittestGenerator28(
 
     @staticmethod
     def _get_assert(
-            expected: str,
+            expected: bool,
             script: str,
             std_out: str,
             std_err: str,
@@ -4553,7 +4527,7 @@ class TheFuckUnittestGenerator28(
 
     @staticmethod
     def _get_assert_2(
-            expected: Any,
+            expected: bool,
             script: str,
             std_out: str,
             std_err: str,
@@ -4613,15 +4587,17 @@ class TheFuckUnittestGenerator28(
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        script, out, error = self._generate_one()
+        _, fail_ = self._generate_one()
+        _, script, out, error = fail_
         test = self.get_empty_test()
-        test.body = self._get_assert("", script, out, error)
+        test.body = self._get_assert(True, script, out, error)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        script, out, error = self._generate_one()
+        pass_, _ = self._generate_one()
+        _, script, out, error = pass_
         test = self.get_empty_test()
-        test.body = self._get_assert_2(False, script, "", error)
+        test.body = self._get_assert_2(False, script, out, error)
         return test, TestResult.PASSING
 
 

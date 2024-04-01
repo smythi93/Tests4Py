@@ -1,4 +1,9 @@
 import unittest
+from thefuck.types import Command
+from thefuck.types import Settings
+from thefuck.rules.fix_file import get_new_command
+from thefuck.rules.fix_file import match
+
 
 class TestsFailing(unittest.TestCase):
 
@@ -71,6 +76,7 @@ class TestsPassing(unittest.TestCase):
         self.assertEqual(False, match(Command('perl a.pl', '',
                                               '\n             fatal: bad config file line 1 in /home/martin/.config/git/config\n             '),
                                       Settings()))
+
     def test_diversity_6(self):
         self.assertEqual(False, match(
             Command('perl a.pl', '', '\n             Search pattern not terminated at a.pl line 2.\n             '),
@@ -95,5 +101,3 @@ class TestsPassing(unittest.TestCase):
         self.assertEqual(False, match(Command('go build a.go', '',
                                               "\n             can't load package:\n             a.go:1:2: expected 'package', found '+'\n             "),
                                       Settings()))
-
-
