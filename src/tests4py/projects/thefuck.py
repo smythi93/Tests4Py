@@ -1036,7 +1036,7 @@ class TheFuckTestGenerator:
         return "".join(random.choices(string.ascii_letters, k=random.randint(5, 15)))
 
     @staticmethod
-    def thefuck1_generate_() -> tuple:
+    def thefuck1_generate_():
         pip_commands = (
             "install",
             "uninstall",
@@ -1122,42 +1122,41 @@ class TheFuckTestGenerator:
             "~deBUG",
         )
 
-        dice_ = random.randint(0, 13)
-        python_lib = TheFuckTestGenerator.generate_random_string()
-        pip_failing = (
+        randomise_int = random.randint(0, 13)
+        randomise_string = TheFuckTestGenerator.generate_random_string()
+        failing = (
             (
-                f"pip {pip_commands[dice_]} {python_lib}",
-                f"pip {pip_failing_inputs[dice_]} {python_lib}",
-                f'ERROR: unknown command "{pip_failing_inputs[dice_]}", maybe you meant "{pip_commands[dice_]}"',
+                f"pip {pip_commands[randomise_int]} {randomise_string}",
+                f"pip {pip_failing_inputs[randomise_int]} {randomise_string}",
+                f'ERROR: unknown command "{pip_failing_inputs[randomise_int]}", maybe you meant "{pip_commands[randomise_int]}"',
             ),
             (
-                f"pip {pip_commands[dice_]} {python_lib}",
-                f"pip {pip_failing_inputs_2[dice_]} {python_lib}",
-                f'ERROR: unknown command "{pip_failing_inputs_2[dice_]}", maybe you meant "{pip_commands[dice_]}"',
+                f"pip {pip_commands[randomise_int]} {randomise_string}",
+                f"pip {pip_failing_inputs_2[randomise_int]} {randomise_string}",
+                f'ERROR: unknown command "{pip_failing_inputs_2[randomise_int]}", maybe you meant "{pip_commands[randomise_int]}"',
             ),
         )
 
-        pip_passing = (
+        passing = (
             (
-                f"pip {pip_commands[dice_]} {python_lib}",
-                f"pip {pip_passing_inputs[dice_]} {python_lib}",
-                f'ERROR: unknown command "{pip_passing_inputs[dice_]}", maybe you meant "{pip_commands[dice_]}"',
+                f"pip {pip_commands[randomise_int]} {randomise_string}",
+                f"pip {pip_passing_inputs[randomise_int]} {randomise_string}",
+                f'ERROR: unknown command "{pip_passing_inputs[randomise_int]}", maybe you meant "{pip_commands[randomise_int]}"',
             ),
             (
-                f"pip {pip_commands[dice_]} {python_lib}",
-                f"pip {pip_passing_inputs_2[dice_]} {python_lib}",
-                f'ERROR: unknown command "{pip_passing_inputs_2[dice_]}", maybe you meant "{pip_commands[dice_]}"',
+                f"pip {pip_commands[randomise_int]} {randomise_string}",
+                f"pip {pip_passing_inputs_2[randomise_int]} {randomise_string}",
+                f'ERROR: unknown command "{pip_passing_inputs_2[randomise_int]}", maybe you meant "{pip_commands[randomise_int]}"',
             ),
         )
-        dice_lists = random.randint(0, 1)
-        return pip_passing[dice_lists], pip_failing[dice_lists]
+        return passing[random.randint(0, len(passing)-1)], failing[random.randint(0, len(failing)-1)]
 
     @staticmethod
     def thefuck2_generate_():
         executables = []
         executable_paths = []
-
         path_dirs = os.environ.get("PATH", "").split(os.pathsep)
+
         for path_dir in path_dirs:
             for filename in os.listdir(path_dir):
                 executables.append(filename)
@@ -1165,14 +1164,10 @@ class TheFuckTestGenerator:
                 if os.path.isfile(file_path) and os.access(file_path, os.X_OK):
                     executable_paths.append(file_path)
 
-        dice_ = random.randint(0, len(executables))
-        passing_ = executables[dice_]
-        username = "".join(random.choices(string.ascii_letters, k=random.randint(5, 20)))
-        file_name_ = "".join(random.choices(string.ascii_letters, k=random.randint(5, 15)))
-
-        failing_ = f"C:\\Windows\\System32;C:\\Windows;C:\\Program Files\\{file_name_}\\bin;C:\\Program Files (x86)\\{username}\\bin"
-
-        return passing_, failing_
+        passing = executables[random.randint(0, len(executables))]
+        randomise = "".join(random.choices(string.ascii_letters, k=random.randint(5, 20)))
+        failing = randomise
+        return passing, failing
 
     @staticmethod
     def thefuck3_generate_():
@@ -1189,7 +1184,7 @@ class TheFuckTestGenerator:
     @staticmethod
     def thefuck4_generate_():
         alias = {}
-        overridden = []
+        overriddens = []
         try:
             proc = subprocess.run(
                 ["fish", "-ic", "alias"],
@@ -1208,125 +1203,125 @@ class TheFuckTestGenerator:
                     second_ = k[1]
                     first_ = first_.replace(" ", "")
                     alias[first_] = second_
-                    overridden = list(alias)
+                    overriddens = list(alias)
         except SystemError:
             "Cannot retrieve Fish Shell overridden"
 
-        for every in overridden:
-            if every == "ls":
-                overridden.remove(every)
-        return overridden[random.randint(0, len(overridden) - 1)]
+        for overridden in overriddens:
+            if overridden == "ls":
+                overriddens.remove(overridden)
+        return overriddens[random.randint(0, len(overriddens) - 1)]
 
     @staticmethod
     def thefuck5_generate_():
-        branch_name = TheFuckTestGenerator.generate_random_string()
-        passing_ = (
+        randomise_branch_name = TheFuckTestGenerator.generate_random_string()
+        passing = (
             (
                 True,
-                f"git push --set-upstream <remote> <{branch_name}>",
-                f"fatal: The current branch [{branch_name}] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [{branch_name}]",
+                f"git push --set-upstream <remote> <{randomise_branch_name}>",
+                f"fatal: The current branch [{randomise_branch_name}] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [{randomise_branch_name}]",
             ),
             (
                 False,
-                f"git pull --set-upstream <remote> <{branch_name}>",
-                f"fatal: The current branch [{branch_name}] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [{branch_name}]",
+                f"git pull --set-upstream <remote> <{randomise_branch_name}>",
+                f"fatal: The current branch [{randomise_branch_name}] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [{randomise_branch_name}]",
             ),
         )
 
-        failing_ = (
+        failing = (
             (
                 True,
-                f"git pushpull --set-upstream <remote> <{branch_name}>",
-                f"fatal: The current branch [{branch_name}] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [{branch_name}]",
+                f"git pushpull --set-upstream <remote> <{randomise_branch_name}>",
+                f"fatal: The current branch [{randomise_branch_name}] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [{randomise_branch_name}]",
             ),
             (
                 False,
-                f"git push --set-upstream <remote> <{branch_name}> SELECT * FROM users",
-                f"fatal: The current branch [{branch_name}] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [{branch_name}]",
+                f"git push --set-upstream <remote> <{randomise_branch_name}> SELECT * FROM users",
+                f"fatal: The current branch [{randomise_branch_name}] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [{randomise_branch_name}]",
             ),
         )
 
-        return passing_[random.randint(0, 1)], failing_[random.randint(0, 1)]
+        return passing[random.randint(0, 1)], failing[random.randint(0, 1)]
 
     @staticmethod
     def thefuck6_generate_():
-        branch_ = TheFuckTestGenerator.generate_random_string()
-        # Passing 1 and Failing 1 for def match() function, the others are for def get_command() function
+        randomise_branch_name = TheFuckTestGenerator.generate_random_string()
+        # Passing 1 and Failing 1 for match() function, the others are for get_command() function
         failing_ = (
             (
                 False,
-                f"git branch -d {branch_} SELECT * FROM database",
-                f"fatal: A branch named '{branch_}' already exists.",
+                f"git branch -d {randomise_branch_name} SELECT * FROM database",
+                f"fatal: A branch named '{randomise_branch_name}' already exists.",
             ),
             (
                 False,
-                f"git branch -D {branch_} SELECT * FROM database",
-                f"fatal: A branch named '{branch_}' already exists.",
+                f"git branch -D {randomise_branch_name} SELECT * FROM database",
+                f"fatal: A branch named '{randomise_branch_name}' already exists.",
             ),
         )
 
         failing2_ = (
             (
-                [f"git branch -d {branch_}, git branch {branch_}"],
-                f"git branch -d {branch_}",
-                f"fatal: A branch named '{branch_}' already exists.",
+                [f"git branch -d {randomise_branch_name}, git branch {randomise_branch_name}"],
+                f"git branch -d {randomise_branch_name}",
+                f"fatal: A branch named '{randomise_branch_name}' already exists.",
             ),
             (
-                [f"git branch -d {branch_}, git checkout -b {branch_}"],
-                f"git branch -d {branch_}",
-                f"fatal: A branch named '{branch_}' already exists.",
+                [f"git branch -d {randomise_branch_name}, git checkout -b {randomise_branch_name}"],
+                f"git branch -d {randomise_branch_name}",
+                f"fatal: A branch named '{randomise_branch_name}' already exists.",
             ),
         )
 
         passing_ = (
             (
                 True,
-                f"git branch -d {branch_}",
-                f"fatal: A branch named '{branch_} already exists.",
+                f"git branch -d {randomise_branch_name}",
+                f"fatal: A branch named '{randomise_branch_name} already exists.",
             ),
             (
                 True,
-                f"git branch -D {branch_}",
-                f"fatal: A branch named '{branch_} already exists.",
+                f"git branch -D {randomise_branch_name}",
+                f"fatal: A branch named '{randomise_branch_name} already exists.",
             ),
         )
 
         passing2_ = (
             (
-                f"git branch -d {branch_} && git branch {branch_}",
-                f"git branch -d {branch_}",
-                f"fatal: A branch named '{branch_}' already exists.",
+                f"git branch -d {randomise_branch_name} && git branch {randomise_branch_name}",
+                f"git branch -d {randomise_branch_name}",
+                f"fatal: A branch named '{randomise_branch_name}' already exists.",
             ),
             (
-                f"git branch -d {branch_} && git checkout -b {branch_}",
-                f"git branch -d {branch_}",
-                f"fatal: A branch named '{branch_}' already exists.",
+                f"git branch -d {randomise_branch_name} && git checkout -b {randomise_branch_name}",
+                f"git branch -d {randomise_branch_name}",
+                f"fatal: A branch named '{randomise_branch_name}' already exists.",
             ),
         )
 
         passing2_windows_ = (
             (
-                f"(git branch -d {branch_}) -and (git branch {branch_})",
-                f"git branch -d {branch_}",
-                f"fatal: A branch named '{branch_}' already exists.",
+                f"(git branch -d {randomise_branch_name}) -and (git branch {randomise_branch_name})",
+                f"git branch -d {randomise_branch_name}",
+                f"fatal: A branch named '{randomise_branch_name}' already exists.",
             ),
             (
-                f"(git branch -d {branch_}) -and (git checkout -b {branch_})",
-                f"git branch -d {branch_}",
-                f"fatal: A branch named '{branch_}' already exists.",
+                f"(git branch -d {randomise_branch_name}) -and (git checkout -b {randomise_branch_name})",
+                f"git branch -d {randomise_branch_name}",
+                f"fatal: A branch named '{randomise_branch_name}' already exists.",
             ),
         )
 
         failing2_windows_ = (
             (
-                [f"git branch -d {branch_}, git branch {branch_}"],
-                f"git branch -d {branch_}",
-                f"fatal: A branch named '{branch_}' already exists.",
+                [f"git branch -d {randomise_branch_name}, git branch {randomise_branch_name}"],
+                f"git branch -d {randomise_branch_name}",
+                f"fatal: A branch named '{randomise_branch_name}' already exists.",
             ),
             (
-                [f"git branch -d {branch_}, git checkout -b {branch_}"],
-                f"git branch -d {branch_}",
-                f"fatal: A branch named '{branch_}' already exists.",
+                [f"git branch -d {randomise_branch_name}, git checkout -b {randomise_branch_name}"],
+                f"git branch -d {randomise_branch_name}",
+                f"fatal: A branch named '{randomise_branch_name}' already exists.",
             ),
         )
         # If system is Windows, we need to use like : (git branch -d branch_name) -and (git checkout -b branch_name)
@@ -1348,26 +1343,26 @@ class TheFuckTestGenerator:
 
     @staticmethod
     def thefuck7_generate_():
-        host_no_ = random.randint(50, 5000)
+        randomise_port_no = random.randint(50, 5000)
         passing_ = (
-            f"php -s 127.0.0.0:{host_no_}",
-            f"php -s 127.1.1.1:{host_no_}",
-            f"php -s 127.1.0.1:{host_no_}",
-            f"php -s 127.0.1.0:{host_no_}",
-            f"php -s localhost:{host_no_}",
-            f"php -s localhost:{host_no_} -c /path/to/php.ini",
-            f"php -s localhost:{host_no_} -t /path/to/your/project",
-            f"php -s localhost:{host_no_} router.php",
+            f"php -s 127.0.0.0:{randomise_port_no}",
+            f"php -s 127.1.1.1:{randomise_port_no}",
+            f"php -s 127.1.0.1:{randomise_port_no}",
+            f"php -s 127.0.1.0:{randomise_port_no}",
+            f"php -s localhost:{randomise_port_no}",
+            f"php -s localhost:{randomise_port_no} -c /path/to/php.ini",
+            f"php -s localhost:{randomise_port_no} -t /path/to/your/project",
+            f"php -s localhost:{randomise_port_no} router.php",
         )
         failing_ = (
-            f"PHP -s 127.0.0.0:{host_no_}",
-            f"php -S 127.1.1.1:{host_no_}",
-            f"PHP -s 127.1.0.1:{host_no_}",
-            f"php -S 127.0.1.0:{host_no_}",
-            f"PHP -s localhost:{host_no_}",
-            f"php -S localhost:{host_no_} -c /path/to/php.ini",
-            f"PHP -s localhost:{host_no_} -t /path/to/your/project",
-            f"php -S localhost:{host_no_} router.php",
+            f"PHP -s 127.0.0.0:{randomise_port_no}",
+            f"php -S 127.1.1.1:{randomise_port_no}",
+            f"PHP -s 127.1.0.1:{randomise_port_no}",
+            f"php -S 127.0.1.0:{randomise_port_no}",
+            f"PHP -s localhost:{randomise_port_no}",
+            f"php -S localhost:{randomise_port_no} -c /path/to/php.ini",
+            f"PHP -s localhost:{randomise_port_no} -t /path/to/your/project",
+            f"php -S localhost:{randomise_port_no} router.php",
         )
         return (
             passing_[random.randint(0, len(passing_) - 1)],
@@ -1414,112 +1409,112 @@ class TheFuckTestGenerator:
 
     @staticmethod
     def thefuck9_generate_():
-        branch_name = TheFuckTestGenerator.generate_random_string()
-        stderr_ = f'''fatal: The current branch {branch_name} has no upstream branch.
+        randomise_branch_name = TheFuckTestGenerator.generate_random_string()
+        stderr = f'''fatal: The current branch {randomise_branch_name} has no upstream branch.
 To push the current branch and set the remote as upstream, use
 
-    git push --set-upstream origin {branch_name}
+    git push --set-upstream origin {randomise_branch_name}
 
 '''
-        passing_match_ = (
+        passing = (
             (
-                f"git push --set-upstream origin {branch_name}",
+                f"git push --set-upstream origin {randomise_branch_name}",
                 "git push",
                 "",
-                stderr_
+                stderr
             ),
             (
-                f"git push --set-upstream origin {branch_name}",
+                f"git push --set-upstream origin {randomise_branch_name}",
                 "git push -u origin",
                 "",
-                stderr_
+                stderr
             ),
             (
-                f"git push --set-upstream origin {branch_name}",
+                f"git push --set-upstream origin {randomise_branch_name}",
                 "git push --set-upstream origin",
                 "",
-                stderr_
+                stderr
             ),
             (
-                f"git push --set-upstream origin {branch_name} --quiet",
+                f"git push --set-upstream origin {randomise_branch_name} --quiet",
                 "git push --quiet",
                 "",
-                stderr_
+                stderr
             ),
         )
 
-        failing_match_ = (
+        failing = (
             (
-                f"git push --set-upstream origin {branch_name}",
+                f"git push --set-upstream origin {randomise_branch_name}",
                 "git push -u",
                 "",
-                stderr_
+                stderr
             ),
             (
-                f"git push --set-upstream origin {branch_name}",
+                f"git push --set-upstream origin {randomise_branch_name}",
                 "git push --force",
                 "",
-                stderr_
+                stderr
             ),
         )
 
         return (
-            passing_match_[random.randint(0, len(passing_match_) - 1)],
-            failing_match_[random.randint(0, len(failing_match_) - 1)],
+            passing[random.randint(0, len(passing) - 1)],
+            failing[random.randint(0, len(failing) - 1)],
         )
 
     @staticmethod
     def thefuck10_generate_():
-        stdout_ = "Output Message: " + TheFuckTestGenerator.generate_random_string()
-        passing_ = (
-            ('man 3 read', 'man 2 read', stdout_, ""),
-            ('man 2 read', 'man 3 read', stdout_, ""),
-            ('man -s3 read', 'man -s2 read', stdout_, ""),
-            ('man -s2 read', 'man -s3 read', stdout_, ""),
-            ('man -s 3 read', 'man -s 2 read', stdout_, ""),
-            ('man -s 2 read', 'man -s 3 read', stdout_, ""),
-            ('man 3 write', 'man 2 write', stdout_, ""),
-            ('man 2 write', 'man 3 write', stdout_, ""),
-            ('man -s3 write', 'man -s2 write', stdout_, ""),
-            ('man -s2 write', 'man -s3 write', stdout_, ""),
-            ('man -s 3 write', 'man -s 2 write', stdout_, ""),
-            ('man -s 2 write', 'man -s 3 write', stdout_, ""),
-            (['read --help', 'man 3 read', 'man 2 read'], 'man read', stdout_, ""),
-            (['missing --help', 'man 3 missing', 'man 2 missing'], 'man missing', stdout_,
+        stdout = "Output Message: " + TheFuckTestGenerator.generate_random_string()
+        passing = (
+            ('man 3 read', 'man 2 read', stdout, ""),
+            ('man 2 read', 'man 3 read', stdout, ""),
+            ('man -s3 read', 'man -s2 read', stdout, ""),
+            ('man -s2 read', 'man -s3 read', stdout, ""),
+            ('man -s 3 read', 'man -s 2 read', stdout, ""),
+            ('man -s 2 read', 'man -s 3 read', stdout, ""),
+            ('man 3 write', 'man 2 write', stdout, ""),
+            ('man 2 write', 'man 3 write', stdout, ""),
+            ('man -s3 write', 'man -s2 write', stdout, ""),
+            ('man -s2 write', 'man -s3 write', stdout, ""),
+            ('man -s 3 write', 'man -s 2 write', stdout, ""),
+            ('man -s 2 write', 'man -s 3 write', stdout, ""),
+            (['read --help', 'man 3 read', 'man 2 read'], 'man read', stdout, ""),
+            (['missing --help', 'man 3 missing', 'man 2 missing'], 'man missing', stdout,
              'No manual entry for missing\n'),
 
         )
-        failing_ = (
-            ('man 5 read', 'man 4 read', stdout_, ""),
-            ('man 4 read', 'man 5 read', stdout_, ""),
-            ('man -s5 read', 'man -s4 read', stdout_, ""),
-            ('man -s4 read', 'man -s5 read', stdout_, ""),
-            ('man -s 5 read', 'man -s 4 read', stdout_, ""),
-            ('man -s 4 read', 'man -s 5 read', stdout_, ""),
-            ('man 5 write', 'man 4 write', stdout_, ""),
-            ('man 4 write', 'man 5 write', stdout_, ""),
-            ('man -s5 write', 'man -s4 write', stdout_, ""),
-            ('man -s4 write', 'man -s5 write', stdout_, ""),
-            ('man -s 5 write', 'man -s 4 write', stdout_, ""),
-            ('man -s 4 write', 'man -s 5 write', stdout_, ""),
-            (['read --help', 'man 5 read', 'man 4 read'], 'man read', stdout_, ""),
-            (['missing --help', 'man 5 missing', 'man 4 missing'], 'man missing', stdout_,
+        failing = (
+            ('man 5 read', 'man 4 read', stdout, ""),
+            ('man 4 read', 'man 5 read', stdout, ""),
+            ('man -s5 read', 'man -s4 read', stdout, ""),
+            ('man -s4 read', 'man -s5 read', stdout, ""),
+            ('man -s 5 read', 'man -s 4 read', stdout, ""),
+            ('man -s 4 read', 'man -s 5 read', stdout, ""),
+            ('man 5 write', 'man 4 write', stdout, ""),
+            ('man 4 write', 'man 5 write', stdout, ""),
+            ('man -s5 write', 'man -s4 write', stdout, ""),
+            ('man -s4 write', 'man -s5 write', stdout, ""),
+            ('man -s 5 write', 'man -s 4 write', stdout, ""),
+            ('man -s 4 write', 'man -s 5 write', stdout, ""),
+            (['read --help', 'man 5 read', 'man 4 read'], 'man read', stdout, ""),
+            (['missing --help', 'man 5 missing', 'man 4 missing'], 'man missing', stdout,
              'No manual entry for missing\n')
         )
 
-        return passing_[random.randint(0, len(passing_) - 1)], failing_[random.randint(0, len(failing_) - 1)],
+        return passing[random.randint(0, len(passing) - 1)], failing[random.randint(0, len(failing) - 1)],
 
     @staticmethod
     def thefuck11_generate_():
-        branch_name = TheFuckTestGenerator.generate_random_string()
+        randomise_branch_name = TheFuckTestGenerator.generate_random_string()
 
-        std_err = f'''fatal: The current branch has no upstream {branch_name}.
+        std_err = f'''fatal: The current branch has no upstream {randomise_branch_name}.
         To push the current branch and set the remote as upstream, use
 
             git push --set-upstream origin master
 
         '''
-        passing_ = (
+        passing = (
             (
                 f"git push --set-upstream origin master",
                 "git push",
@@ -1542,7 +1537,7 @@ To push the current branch and set the remote as upstream, use
             ),
         )
 
-        failing_ = (
+        failing = (
             (
                 f"git push --set-upstream origin master",
                 std_err,
@@ -1564,37 +1559,37 @@ To push the current branch and set the remote as upstream, use
                 'git push --quiet',
             ),
         )
-        return passing_[random.randint(0, len(passing_) - 1)], failing_[random.randint(0, len(failing_) - 1)]
+        return passing[random.randint(0, len(passing) - 1)], failing[random.randint(0, len(failing) - 1)]
 
     @staticmethod
     def thefuck12_generate_():
-        random_str = TheFuckTestGenerator.generate_random_string()
-        passing_ = (
+        randomise_string = TheFuckTestGenerator.generate_random_string()
+        passing = (
             (
                 True,
-                f"got commit -m {random_str} [branch_name]",
+                f"got commit -m {randomise_string}",
                 'got: not found, maybe you meant "git"'
             ),
             (
                 True,
-                f"sudo fucck {random_str}",
+                f"sudo fucck {randomise_string}",
                 'fuckk: not found, maybe you meant "fsck"'
             ),
             (
                 True,
-                f"vom {random_str}.py",
+                f"vom {randomise_string}.py",
                 'vom: not found, maybe you meant "vim"'
             ),
         )
 
-        failing_ = (
+        failing = (
             (
                 True,
-                f"gu run {random_str}.go",
+                f"gu run {randomise_string}.go",
                 'gu: not found, maybe you meant "go"'
             ),
         )
-        return passing_[random.randint(0, len(passing_) - 1)], failing_[0]
+        return passing[random.randint(0, len(passing) - 1)], failing[0]
 
     @staticmethod
     def thefuck13_generate_():
@@ -1773,12 +1768,12 @@ To push the current branch and set the remote as upstream, use
 
     @staticmethod
     def thefuck17_generate_():
-        alias_name = TheFuckTestGenerator.generate_random_string()
-        passing_ = (
-            (f"alias {alias_name}", alias_name),
-            (f"TF_ALIAS={alias_name}", alias_name))
-        failing_ = (f"the{alias_name}", alias_name)
-        return passing_[random.randint(0, 1)], failing_
+        randomise_alias_name = TheFuckTestGenerator.generate_random_string()
+        passing = (
+            (f"alias {randomise_alias_name}", randomise_alias_name),
+            (f"TF_ALIAS={randomise_alias_name}", randomise_alias_name))
+        failing = (f"the{randomise_alias_name}", randomise_alias_name)
+        return passing[random.randint(0, 1)], failing
 
     @staticmethod
     def thefuck18_generate_():
@@ -1811,7 +1806,7 @@ To push the current branch and set the remote as upstream, use
 
     @staticmethod
     def thefuck19_generate_():
-        randomise_ = TheFuckTestGenerator.generate_random_string()
+        randomise = TheFuckTestGenerator.generate_random_string()
         git_err = '''
         To /tmp/foo
          ! [rejected]        master -> master (non-fast-forward)
@@ -1831,16 +1826,16 @@ To push the current branch and set the remote as upstream, use
         To /tmp/bar
            514eed3..f269c79  master -> master
         '''
-        passing_match_ = (True, f"git push {randomise_}", "", git_err)
+        passing_match_ = (True, f"git push {randomise}", "", git_err)
 
         failing_match_ = (
-            (True, f"git push {randomise_}", "", it_uptodate),
-            (True, f"git push {randomise_}", "", git_ok))
+            (True, f"git push {randomise}", "", it_uptodate),
+            (True, f"git push {randomise}", "", git_ok))
 
-        passing_get_new_command_ = (f"git push --force {randomise_}", f"git push {randomise_}", "", "")
+        passing_get_new_command_ = (f"git push --force {randomise}", f"git push {randomise}", "", "")
 
         failing_get_new_command_ = (
-            (f"git push --force {randomise_}", f"git PUSH {randomise_}", "", ""))
+            (f"git push --force {randomise}", f"git PUSH {randomise}", "", ""))
 
         return (passing_match_, passing_get_new_command_,
                 failing_match_[random.randint(0, len(failing_match_) - 1)], failing_get_new_command_)
@@ -1902,8 +1897,7 @@ To push the current branch and set the remote as upstream, use
 
     @staticmethod
     def thefuck22_generate_():
-        randomise = TheFuckTestGenerator.generate_random_string()
-        return ""
+        pass
 
     @staticmethod
     def thefuck23_generate_():
@@ -2095,7 +2089,8 @@ To push the current branch and set the remote as upstream, use
              fatal: bad config file line 1 in /home/martin/.config/git/config
              """),
 
-            ('node fuck.js asdf qwer', '/Users/pablo/Workspace/barebones/fuck.js', f'{randomise_int}', randomise_int_2, '',
+            ('node fuck.js asdf qwer', '/Users/pablo/Workspace/barebones/fuck.js', f'{randomise_int}', randomise_int_2,
+             '',
              """
              /Users/pablo/Workspace/barebones/fuck.js:2
              conole.log(arg);  // this should read console.log(arg);
@@ -4000,19 +3995,6 @@ class TheFuckUnittestGenerator22(
     ) -> list[Assign | Expr]:
         return [
             ast.Assign(
-                targets=[ast.Name(id="corrected_command")],
-                value=ast.Call(
-                    func=ast.Name(id="CorrectedCommand"),
-                    args=[
-                        ast.Constant(value=script),
-                        ast.Constant(value=side_effect),
-                        ast.Constant(value=priority),
-                    ],
-                    keywords=[],
-                ),
-                lineno=1,
-            ),
-            ast.Assign(
                 targets=[ast.Name(id="sort_corr_cmd_seq")],
                 value=ast.Call(
                     func=ast.Name(id="SortedCorrectedCommandsSequence"),
@@ -4035,7 +4017,7 @@ class TheFuckUnittestGenerator22(
                     ],
                     keywords=[],
                 ),
-                lineno=2,
+                lineno=1,
             ),
             ast.Expr(
                 value=ast.Call(
@@ -4053,7 +4035,7 @@ class TheFuckUnittestGenerator22(
                     ],
                     keywords=[],
                 ),
-                lineno=3,
+                lineno=2,
             ),
         ]
 
@@ -4079,13 +4061,13 @@ class TheFuckUnittestGenerator22(
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         fail_ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("", ("ls", "sf", "tf"), (None, None, None), (100, 200, 300))
+        test.body = self._get_assert(fail_, ("ls", "sf", "tf"), (None, None, None), (100, 200, 300))
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("", "", "", "")
+        test.body = self._get_assert(pass_, "ls", None, 1000)
         return test, TestResult.PASSING
 
 
@@ -5172,11 +5154,11 @@ class TheFuckSystemtestGenerator21(SystemtestGenerator, TheFuckTestGenerator):
 
 class TheFuckSystemtestGenerator22(SystemtestGenerator, TheFuckTestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        _, fail_ = self.generate_values(self.thefuck22_generate_)
+        fail_ = self.generate_values(self.thefuck22_generate_)
         return f"{fail_}", TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        pass_, _ = self.generate_values(self.thefuck22_generate_)
+        pass_ = self.generate_values(self.thefuck22_generate_)
         return f"{pass_}", TestResult.PASSING
 
 
