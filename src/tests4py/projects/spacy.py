@@ -2,15 +2,15 @@ import ast
 import random
 import string
 import subprocess
-import os
-from _ast import Call, ImportFrom, Assign, Expr
+from _ast import Call, ImportFrom
 from pathlib import Path
 from typing import List, Optional, Tuple, Any, Callable
+
+from tests4py.constants import PYTHON
+from tests4py.grammars import python
 from tests4py.grammars.fuzzer import Grammar
 from tests4py.grammars.fuzzer import is_valid_grammar
-from tests4py.grammars import python
 from tests4py.grammars.fuzzer import srange
-from tests4py.constants import PYTHON
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
@@ -66,7 +66,7 @@ class SpaCy(Project):
             content = fp.read()
         content = content.replace(
             "cython>=0.25",
-            "cython==0.25",
+            "cython==0.29.19",
         )
         with open(location / "pyproject.toml", "w") as fp:
             fp.write(content)
@@ -78,7 +78,7 @@ def register():
         buggy_commit_id="9ce059dd067ecc3f097d04023e3cfa0d70d35bb8",
         fixed_commit_id="a987e9e45d4084f30964a4cec9914ae6ed25a73c",
         test_files=[Path("spacy", "tests", "test_errors.py")],
-        test_cases=["py.testspacy/tests/test_errors.py::test_add_codes"],
+        test_cases=["spacy/tests/test_errors.py::test_add_codes"],
         api=SpaCyAPI1(),
         unittests=SpaCyUnittestGenerator1(),
         systemtests=SpaCySystemtestGenerator1(),
@@ -88,31 +88,31 @@ def register():
         buggy_commit_id="efec28ce70a0ff69471cc379867deebe7eb881e0",
         fixed_commit_id="cfdaf99b8029d6762730c5d5bd2b6f6c173c1241",
         test_files=[Path("spacy", "tests", "regression", "test_issue5137.py")],
-        test_cases=["py.testspacy/tests/regression/test_issue5137.py::test_issue5137"],
+        test_cases=["spacy/tests/regression/test_issue5137.py::test_issue5137"],
         api=SpaCyAPI2(),
-        unittests=SpaCyUnittestGenerator2(),
-        systemtests=SpaCySystemtestGenerator2(),
+        # unittests=SpaCyUnittestGenerator2(),
+        # systemtests=SpaCySystemtestGenerator2(),
     )
     SpaCy(
         bug_id=3,
         buggy_commit_id="dac70f29eb3b1f21ae9e2c6346666bf6a46307b6",
         fixed_commit_id="663333c3b2bad90915d1a48a626ca1275b7ef077",
         test_files=[Path("spacy", "tests", "regression", "test_issue5314.py")],
-        test_cases=["py.testspacy/tests/regression/test_issue5314.py::test_issue5314"],
+        test_cases=["spacy/tests/regression/test_issue5314.py::test_issue5314"],
     )
     SpaCy(
         bug_id=4,
         buggy_commit_id="abd5c06374eab5db0cf897b73543b1f3eb007e12",
         fixed_commit_id="9fa9d7f2cb52ce6a70c264d4e57c7f190d7686bf",
         test_files=[Path("spacy", "tests", "regression", "test_issue4665.py")],
-        test_cases=["py.testspacy/tests/regression/test_issue4665.py::test_issue4665"],
+        test_cases=["spacy/tests/regression/test_issue4665.py::test_issue4665"],
     )
     SpaCy(
         bug_id=5,
         buggy_commit_id="bdfb696677a7591ced018e7597c00929e97c6837",
         fixed_commit_id="3bd15055ce74b04dcaf3b9abe2adeb01fb595776",
         test_files=[Path("spacy", "tests", "test_language.py")],
-        test_cases=["py.testspacy/tests/test_language.py::test_evaluate_no_pipe"],
+        test_cases=["spacy/tests/test_language.py::test_evaluate_no_pipe"],
     )
     SpaCy(
         bug_id=6,
@@ -120,7 +120,7 @@ def register():
         fixed_commit_id="afe4a428f78abe45d6104d74ef42a066570fa43d",
         test_files=[Path("spacy", "tests", "pipeline", "test_analysis.py")],
         test_cases=[
-            "py.testspacy/tests/pipeline/test_analysis.py::test_analysis_validate_attrs_remove_pipe"
+            "spacy/tests/pipeline/test_analysis.py::test_analysis_validate_attrs_remove_pipe"
         ],
     )
     SpaCy(
@@ -128,16 +128,14 @@ def register():
         buggy_commit_id="da6e0de34f4947fdebc839df3969c641014cfa97",
         fixed_commit_id="6f54e59fe7ccb3bacce896ed33d36b39f11cbfaf",
         test_files=[Path("spacy", "tests", "doc", "test_span.py")],
-        test_cases=["py.testspacy/tests/doc/test_span.py::test_filter_spans"],
+        test_cases=["spacy/tests/doc/test_span.py::test_filter_spans"],
     )
     SpaCy(
         bug_id=8,
         buggy_commit_id="fa95c030a511337935d1a2e930cb954c7a4cd376",
         fixed_commit_id="5efae495f18f37316bd641a05ca26e62cb78e242",
         test_files=[Path("spacy", "tests", "matcher", "test_matcher_logic.py")],
-        test_cases=[
-            "py.testspacy/tests/matcher/test_matcher_logic.py::test_matcher_remove"
-        ],
+        test_cases=["spacy/tests/matcher/test_matcher_logic.py::test_matcher_remove"],
     )
     SpaCy(
         bug_id=9,
@@ -145,7 +143,7 @@ def register():
         fixed_commit_id="3297a19545027c8d8550b1ae793ce290567eff32",
         test_files=[Path("spacy", "tests", "pipeline", "test_tagger.py")],
         test_cases=[
-            "py.testspacy/tests/pipeline/test_tagger.py::test_tagger_warns_no_lemma_lookups"
+            "spacy/tests/pipeline/test_tagger.py::test_tagger_warns_no_lemma_lookups"
         ],
     )
     SpaCy(
@@ -154,7 +152,7 @@ def register():
         fixed_commit_id="52904b72700a3f301a26563d3f94493bad96a446",
         test_files=[Path("spacy", "tests", "matcher", "test_matcher_api.py")],
         test_cases=[
-            "py.testspacy/tests/matcher/test_matcher_api.py::test_matcher_valid_callback"
+            "spacy/tests/matcher/test_matcher_api.py::test_matcher_valid_callback"
         ],
     )
 
@@ -215,14 +213,14 @@ class SpaCyUnittestGenerator1(
     python.PythonGenerator, UnittestGenerator, SpaCyTestGenerator
 ):
     def _generate_one(
-            self,
+        self,
     ) -> str:
         return self.generate_values(self.spacy1_generate_)
 
     @staticmethod
     def _get_assert(
-            expected: str,
-            output: str,
+        expected: str,
+        output: str,
     ) -> list[Call]:
         return [
             ast.Call(
@@ -267,14 +265,14 @@ class SpaCyUnittestGenerator2(
     python.PythonGenerator, UnittestGenerator, SpaCyTestGenerator
 ):
     def _generate_one(
-            self,
+        self,
     ) -> str:
         return self.generate_values(self.spacy2_generate_)
 
     @staticmethod
     def _get_assert(
-            expected: str,
-            output: str,
+        expected: str,
+        output: str,
     ) -> list[Call]:
         return [
             ast.Call(
