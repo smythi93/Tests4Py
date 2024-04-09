@@ -90,8 +90,9 @@ def register():
         test_files=[Path("spacy", "tests", "regression", "test_issue5137.py")],
         test_cases=["spacy/tests/regression/test_issue5137.py::test_issue5137"],
         api=SpaCyAPI2(),
-        # unittests=SpaCyUnittestGenerator2(),
-        # systemtests=SpaCySystemtestGenerator2(),
+        unittests=SpaCyUnittestGenerator2(),
+        systemtests=SpaCySystemtestGenerator2(),
+
     )
     SpaCy(
         bug_id=3,
@@ -202,7 +203,16 @@ class SpaCyTestGenerator:
 
     @staticmethod
     def spacy1_generate_():
-        return ""
+        warnings_randomised1 = random.randint(1, 9)
+        warnings_randomised2 = random.randint(10, 29)
+        errors_randomised1 = random.randint(1, 9)
+        errors_randomised2 = random.randint(10, 100)
+        errors_randomised3 = random.randint(100, 197)
+
+        passing = (f"W00{warnings_randomised1}", f"W0{warnings_randomised2}",
+                   f"E00{errors_randomised1}", f"E0{errors_randomised2}", f"E{errors_randomised3}",
+                   f"T003", f"T004", f"T007", f"T008")
+        return passing[random.randint(0, len(passing)-1)]
 
     @staticmethod
     def spacy2_generate_():
@@ -219,19 +229,17 @@ class SpaCyUnittestGenerator1(
 
     @staticmethod
     def _get_assert(
-        expected: str,
-        output: str,
+            expected: str,
+            script: str,
     ) -> list[Call]:
         return [
             ast.Call(
-                func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
+                func=ast.Attribute(value=ast.Name(id="self"), attr="assertIn"),
                 args=[
                     ast.Constant(value=expected),
                     ast.Call(
                         func=ast.Name(id="add_codes"),
-                        args=[
-                            ast.Constant(value=output),
-                        ],
+                        args=[ast.Constant(value=script)],
                         keywords=[],
                     ),
                 ],
@@ -245,19 +253,22 @@ class SpaCyUnittestGenerator1(
                 module="spacy.errors",
                 names=[ast.alias(name="add_codes")],
                 level=0,
-            ),
+            )
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         fail_ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("", fail_)
+        test.body = self._get_assert("", "As of spaCy v2.0, the keyword argument `path=` is deprecated. "
+            "You can now call spacy.load with the path as its first argument, "
+            "and the model's meta.json will be used to determine the language "
+            "to load. For example:\nnlp = spacy.load('{path}')")
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("", pass_)
+        test.body = self._get_assert("", "E179")
         return test, TestResult.PASSING
 
 
@@ -280,7 +291,7 @@ class SpaCyUnittestGenerator2(
                 args=[
                     ast.Constant(value=expected),
                     ast.Call(
-                        func=ast.Name(id="add_codes"),
+                        func=ast.Name(id="load_model_from_path"),
                         args=[
                             ast.Constant(value=output),
                         ],
@@ -294,8 +305,8 @@ class SpaCyUnittestGenerator2(
     def get_imports(self) -> list[ImportFrom]:
         return [
             ast.ImportFrom(
-                module="spacy.errors",
-                names=[ast.alias(name="add_codes")],
+                module="spacy.util",
+                names=[ast.alias(name="load_model_from_path")],
                 level=0,
             ),
         ]
