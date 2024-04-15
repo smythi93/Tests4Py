@@ -1149,7 +1149,7 @@ class TheFuckTestGenerator:
                 f'ERROR: unknown command "{pip_passing_inputs_2[randomise_int]}", maybe you meant "{pip_commands[randomise_int]}"',
             ),
         )
-        return passing[random.randint(0, len(passing)-1)], failing[random.randint(0, len(failing)-1)]
+        return passing[random.randint(0, len(passing) - 1)], failing[random.randint(0, len(failing) - 1)]
 
     @staticmethod
     def thefuck2_generate_():
@@ -1897,7 +1897,18 @@ To push the current branch and set the remote as upstream, use
 
     @staticmethod
     def thefuck22_generate_():
-        pass
+        randomise_script1 = TheFuckTestGenerator.generate_random_string()
+        randomise_script2 = TheFuckTestGenerator.generate_random_string()
+        randomise_script3 = TheFuckTestGenerator.generate_random_string()
+        randomise_priority1 = random.randint(1, 1000)
+        randomise_priority2 = random.randint(1, 1000)
+        randomise_priority3 = random.randint(1, 1000)
+
+        script1 = f"git commit {randomise_script1}"
+        script2 = f"git checkout {randomise_script2}"
+        script3 = f"git branch {randomise_script3}"
+
+        return script1, randomise_priority1, script2, randomise_priority2, script3, randomise_priority3
 
     @staticmethod
     def thefuck23_generate_():
@@ -3989,32 +4000,67 @@ class TheFuckUnittestGenerator22(
     @staticmethod
     def _get_assert(
             expected: Any,
-            script: Any,
-            side_effect: Any,
-            priority: Any,
-    ) -> list[Assign | Expr]:
+            script1: Any,
+            side_effect1: Any,
+            priority1: int,
+            script2: Any,
+            side_effect2: Any,
+            priority2: int,
+            script3: Any,
+            side_effect3: Any,
+            priority3: int,
+            debug: Any,
+
+    ) -> list[ast.Assign | ast.Expr]:
+        command_calls = [
+            ast.Call(
+                func=ast.Name(id="CorrectedCommand"),
+                args=[
+                    ast.Constant(value=script1),
+                    ast.Constant(value=side_effect1),
+                    ast.Constant(value=priority1),
+                ],
+                keywords=[],
+            ),
+            ast.Call(
+                func=ast.Name(id="CorrectedCommand"),
+                args=[
+                    ast.Constant(value=script2),
+                    ast.Constant(value=side_effect2),
+                    ast.Constant(value=priority2),
+                ],
+                keywords=[],
+            ),
+            ast.Call(
+                func=ast.Name(id="CorrectedCommand"),
+                args=[
+                    ast.Constant(value=script3),
+                    ast.Constant(value=side_effect3),
+                    ast.Constant(value=priority3),
+                ],
+                keywords=[],
+            )
+        ]
+
+        iter_command_call = ast.Call(
+            func=ast.Name(id="iter"),
+            args=[ast.List(elts=command_calls, ctx=ast.Load())],
+            keywords=[],
+        )
+
+        args_list = [iter_command_call,  ast.Call(
+                func=ast.Name(id="Settings"),
+                args=[
+                    ast.Constant(value=debug),
+                ],
+                keywords=[],)]
+
         return [
             ast.Assign(
                 targets=[ast.Name(id="sort_corr_cmd_seq")],
                 value=ast.Call(
                     func=ast.Name(id="SortedCorrectedCommandsSequence"),
-                    args=[
-                        ast.Call(
-                            func=ast.Name(id="CorrectedCommand"),
-                            args=[
-                                ast.Constant(value=script),
-                                ast.Constant(value=side_effect),
-                                ast.Constant(value=priority),
-                            ],
-                            keywords=[],
-                        ),
-                        ast.Call(
-                            func=ast.Name(id="Settings"),
-                            args=[
-                            ],
-                            keywords=[],
-                        )
-                    ],
+                    args=args_list,
                     keywords=[],
                 ),
                 lineno=1,
@@ -4060,14 +4106,24 @@ class TheFuckUnittestGenerator22(
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         fail_ = self._generate_one()
+        script1, priority1, script2, priority2, script3, priority3 = fail_
         test = self.get_empty_test()
-        test.body = self._get_assert(fail_, ("ls", "sf", "tf"), (None, None, None), (100, 200, 300))
+        test.body = self._get_assert(None,
+                                     script1, None, priority1,
+                                     script2, None, priority2,
+                                     script3, None, priority3,
+                                     {'key': 'val'})
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_ = self._generate_one()
+        script1, priority1, script2, priority2, script3, priority3 = pass_
         test = self.get_empty_test()
-        test.body = self._get_assert(pass_, "ls", None, 1000)
+        test.body = self._get_assert(None,
+                                     script1, None, priority1,
+                                     script2, None, priority2,
+                                     script3, None, priority3,
+                                     {'': ''})
         return test, TestResult.PASSING
 
 
