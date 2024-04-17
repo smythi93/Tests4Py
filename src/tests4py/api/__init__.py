@@ -4,6 +4,7 @@ from typing import List
 from sflkit.analysis.suggestion import Location
 from unidiff import PatchSet
 
+from tests4py.api import logging
 from tests4py.api.default import (
     checkout,
     build,
@@ -143,4 +144,5 @@ __all__ = [
     "systemtest_test",
     "unittest_generate",
     "unittest_test",
+    "logging",
 ]

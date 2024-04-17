@@ -2,15 +2,15 @@ import ast
 import random
 import string
 import subprocess
-import os
-from _ast import Call, ImportFrom, Assign, Expr
+from _ast import Call, ImportFrom
 from pathlib import Path
 from typing import List, Optional, Tuple, Any, Callable
+
+from tests4py.constants import PYTHON
+from tests4py.grammars import python
 from tests4py.grammars.fuzzer import Grammar
 from tests4py.grammars.fuzzer import is_valid_grammar
-from tests4py.grammars import python
 from tests4py.grammars.fuzzer import srange
-from tests4py.constants import PYTHON
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
@@ -1733,21 +1733,21 @@ class PandasTestGenerator:
     @staticmethod
     def pandas1_generate_():
         values = (5, "hello there", ["a", "b"], [1, 2])
-        return values[random.randint(0, len(values)-1)]
+        return values[random.randint(0, len(values) - 1)]
 
 
 class PandasUnittestGenerator1(
     python.PythonGenerator, UnittestGenerator, PandasTestGenerator
 ):
     def _generate_one(
-            self,
+        self,
     ) -> str:
         return self.generate_values(self.pandas1_generate_)
 
     @staticmethod
     def _get_assert(
-            expected: str,
-            output: str,
+        expected: str,
+        output: str,
     ) -> list[Call]:
         return [
             ast.Call(
