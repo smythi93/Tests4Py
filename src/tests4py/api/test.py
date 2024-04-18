@@ -75,6 +75,7 @@ def run(
 def get_tests(
     work_dir_or_project: Optional[Union[os.PathLike, Project]] = None,
     report: Optional[GetTestReport] = None,
+    as_strings: bool = False,
 ):
     report = report or GetTestReport()
     try:
@@ -93,11 +94,25 @@ def get_tests(
             getattr(getattr(resources, project.project_name), f"bug_{project.bug_id}"),
             "systemtests",
         )
-        report.passing_tests = list(
-            map(project.api.get_test_arguments_from_string, module.TestsPassing().tests)
+        report.passing_tests = (
+            list(module.TestsPassing().tests)
+            if as_strings
+            else list(
+                map(
+                    project.api.get_test_arguments_from_string,
+                    module.TestsPassing().tests,
+                )
+            )
         )
-        report.failing_tests = list(
-            map(project.api.get_test_arguments_from_string, module.TestsFailing().tests)
+        report.failing_tests = (
+            list(module.TestsFailing().tests)
+            if as_strings
+            else list(
+                map(
+                    project.api.get_test_arguments_from_string,
+                    module.TestsFailing().tests,
+                )
+            )
         )
         report.successful = True
     except BaseException as e:
