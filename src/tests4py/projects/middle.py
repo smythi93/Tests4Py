@@ -97,7 +97,9 @@ def register():
 
 class MiddleAPI:
     @staticmethod
-    def suport_oracle(args: Any, num_args_to_ignore: int = 1) -> Tuple[TestResult, str]:
+    def support_oracle(
+        args: Any, num_args_to_ignore: int = 1
+    ) -> Tuple[TestResult, str]:
         if args is None:
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
@@ -114,12 +116,12 @@ class Middle1API(CLIAPI, MiddleAPI):
         super().__init__(["middle"], default_timeout=default_timeout)
 
     def oracle(self, args: Any) -> Tuple[TestResult, str]:
-        return self.suport_oracle(args, 1)
+        return self.support_oracle(args, 1)
 
 
 class Middle2API(API, MiddleAPI):
     def oracle(self, args: Any) -> Tuple[TestResult, str]:
-        return self.suport_oracle(args, 2)
+        return self.support_oracle(args, 2)
 
 
 class MiddleTestGenerator:
