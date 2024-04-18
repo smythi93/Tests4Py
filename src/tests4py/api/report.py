@@ -176,8 +176,8 @@ class GrammarReport(ProjectReport):
 class GetTestReport(ProjectReport):
     def __init__(self):
         super().__init__(GET_TESTS)
-        self.passing_tests: Optional[List[List[str]]] = None
-        self.failing_tests: Optional[List[List[str]]] = None
+        self.passing_tests: Optional[List[List[str]] | List[str]] = None
+        self.failing_tests: Optional[List[List[str]] | List[str]] = None
 
 
 class GenerateReport(TestingReport):
