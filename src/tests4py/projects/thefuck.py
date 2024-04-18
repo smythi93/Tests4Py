@@ -825,9 +825,6 @@ class TheFuckAPI22(API):
         result = result.strip()
         expected = expected[1:]
         expected = expected[:-1]
-        print("expected:", expected)
-        print("result:", result)
-        print("args:", args)
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -1897,18 +1894,37 @@ To push the current branch and set the remote as upstream, use
 
     @staticmethod
     def thefuck22_generate_():
-        randomise_script1 = TheFuckTestGenerator.generate_random_string()
-        randomise_script2 = TheFuckTestGenerator.generate_random_string()
-        randomise_script3 = TheFuckTestGenerator.generate_random_string()
-        randomise_priority1 = random.randint(1, 1000)
-        randomise_priority2 = random.randint(1, 1000)
-        randomise_priority3 = random.randint(1, 1000)
+        randomise1 = TheFuckTestGenerator.generate_random_string()
+        randomise2 = TheFuckTestGenerator.generate_random_string()
+        randomise3 = TheFuckTestGenerator.generate_random_string()
 
-        script1 = f"git commit {randomise_script1}"
-        script2 = f"git checkout {randomise_script2}"
-        script3 = f"git branch {randomise_script3}"
+        randomise_script1 = f"git commit {randomise1}"
+        randomise_script2 = f"git checkout {randomise2}"
+        randomise_script3 = f"git branch {randomise3}"
 
-        return script1, randomise_priority1, script2, randomise_priority2, script3, randomise_priority3
+        randomise_priority_passing1 = random.randint(1, 1000)
+        randomise_priority_passing2 = random.randint(1, 1000)
+        randomise_priority_passing3 = random.randint(1, 1000)
+
+        side_effect = None
+        expected = None
+
+        passing_ = (expected,
+                    randomise_script1, side_effect, randomise_priority_passing1,
+                    randomise_script2, side_effect, randomise_priority_passing2,
+                    randomise_script3, side_effect, randomise_priority_passing3)
+        # failing test has priority of None or string
+        failing_ = (
+            (expected,
+             randomise_script1, side_effect, "",
+             randomise_script2, side_effect, "",
+             randomise_script3, side_effect, ""),
+            (expected,
+             randomise_script1, side_effect, None,
+             randomise_script2, side_effect, None,
+             randomise_script3, side_effect, None))
+
+        return passing_, failing_[random.randint(0, 1)]
 
     @staticmethod
     def thefuck23_generate_():
@@ -3999,17 +4015,17 @@ class TheFuckUnittestGenerator22(
 
     @staticmethod
     def _get_assert(
-            expected: Any,
-            script1: Any,
-            side_effect1: Any,
-            priority1: int,
-            script2: Any,
-            side_effect2: Any,
-            priority2: int,
-            script3: Any,
-            side_effect3: Any,
-            priority3: int,
-            debug: Any,
+            expected: None,
+            script1: str,
+            side_effect1: None,
+            priority1: Any,
+            script2: str,
+            side_effect2: None,
+            priority2: Any,
+            script3: str,
+            side_effect3: None,
+            priority3: Any,
+            debug: dict,
 
     ) -> list[ast.Assign | ast.Expr]:
         command_calls = [
@@ -4048,12 +4064,12 @@ class TheFuckUnittestGenerator22(
             keywords=[],
         )
 
-        args_list = [iter_command_call,  ast.Call(
-                func=ast.Name(id="Settings"),
-                args=[
-                    ast.Constant(value=debug),
-                ],
-                keywords=[],)]
+        args_list = [iter_command_call, ast.Call(
+            func=ast.Name(id="Settings"),
+            args=[
+                ast.Constant(value=debug),
+            ],
+            keywords=[], )]
 
         return [
             ast.Assign(
@@ -4105,25 +4121,25 @@ class TheFuckUnittestGenerator22(
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        fail_ = self._generate_one()
-        script1, priority1, script2, priority2, script3, priority3 = fail_
+        _, fail_ = self._generate_one()
+        expected, script1, side_effect1, priority1, script2, side_effect2, priority2, script3, side_effect3, priority3 = fail_
         test = self.get_empty_test()
-        test.body = self._get_assert(None,
-                                     script1, None, priority1,
-                                     script2, None, priority2,
-                                     script3, None, priority3,
+        test.body = self._get_assert(expected,
+                                     script1, side_effect1, priority1,
+                                     script2, side_effect2, priority2,
+                                     script3, side_effect3, priority3,
                                      {'key': 'val'})
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass_ = self._generate_one()
-        script1, priority1, script2, priority2, script3, priority3 = pass_
+        pass_, _ = self._generate_one()
+        expected, script1, side_effect1, priority1, script2, side_effect2, priority2, script3, side_effect3, priority3 = pass_
         test = self.get_empty_test()
-        test.body = self._get_assert(None,
-                                     script1, None, priority1,
-                                     script2, None, priority2,
-                                     script3, None, priority3,
-                                     {'': ''})
+        test.body = self._get_assert(expected,
+                                     script1, side_effect1, priority1,
+                                     script2, side_effect2, priority2,
+                                     script3, side_effect3, priority3,
+                                     {'key': 'val'})
         return test, TestResult.PASSING
 
 
@@ -5210,11 +5226,11 @@ class TheFuckSystemtestGenerator21(SystemtestGenerator, TheFuckTestGenerator):
 
 class TheFuckSystemtestGenerator22(SystemtestGenerator, TheFuckTestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        fail_ = self.generate_values(self.thefuck22_generate_)
+        _, fail_ = self.generate_values(self.thefuck22_generate_)
         return f"{fail_}", TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        pass_ = self.generate_values(self.thefuck22_generate_)
+        pass_, _ = self.generate_values(self.thefuck22_generate_)
         return f"{pass_}", TestResult.PASSING
 
 
