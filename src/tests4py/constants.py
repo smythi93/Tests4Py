@@ -26,6 +26,7 @@ CACHE = "cache"
 CLEAR = "clear"
 CONFIG = "config"
 GRAMMAR = "grammar"
+GET_TESTS = "get"
 RUN = "run"
 
 # ~~~~~~ FILES ~~~~~~ #

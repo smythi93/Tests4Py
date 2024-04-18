@@ -13,6 +13,7 @@ from tests4py.api.default import (
 )
 from tests4py.api.test import (
     run,
+    get_tests,
     systemtest_generate,
     systemtest_test,
     unittest_generate,
@@ -145,4 +146,5 @@ __all__ = [
     "unittest_generate",
     "unittest_test",
     "logging",
+    "get_tests",
 ]

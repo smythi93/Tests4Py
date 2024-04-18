@@ -17,6 +17,7 @@ from tests4py.constants import (
     UNITTEST,
     RUN,
     CLEAR,
+    GET_TESTS,
 )
 from tests4py.projects import Project
 from tests4py.tests.utils import TestResult
@@ -172,6 +173,13 @@ class GrammarReport(ProjectReport):
         super().__init__(GRAMMAR)
 
 
+class GetTestReport(ProjectReport):
+    def __init__(self):
+        super().__init__(GET_TESTS)
+        self.passing_tests: Optional[List[List[str]]] = None
+        self.failing_tests: Optional[List[List[str]]] = None
+
+
 class GenerateReport(TestingReport):
     def __init__(self, command: str, subcommand: str = None):
         self.verify_passing: Optional[int] = None
@@ -185,6 +193,8 @@ class SystemtestGenerateReport(GenerateReport):
             SYSTEMTEST,
             subcommand=GENERATE,
         )
+        self.passing_tests: Optional[List[List[str]]] = None
+        self.failing_tests: Optional[List[List[str]]] = None
 
 
 class SystemtestTestReport(TestingReport):
