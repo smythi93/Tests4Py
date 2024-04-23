@@ -2,66 +2,64 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 
 class TestsFailing(FailingSystemtests):
-    # It takes system executables with get_all_executables(), so there is no input.
     def test_diversity_1(self):
-        return ""
+        return 'pacman -s HFHVmaOqWC' '' ''
 
     def test_diversity_2(self):
-        return ""
+        return 'pacman -s KLoJB' '' ''
 
     def test_diversity_3(self):
-        return ""
+        return 'ls -lah /eEMxDtiSSax' '' ''
 
     def test_diversity_4(self):
-        return ""
+        return 'pacman -s AlBRyzupjzgrLRA' '' ''
 
     def test_diversity_5(self):
-        return ""
+        return 'pacman -s DVYLqlk' '' ''
 
     def test_diversity_6(self):
-        return ""
+        return 'pacman -s NusUKSYMLtnU' '' ''
 
     def test_diversity_7(self):
-        return ""
+        return 'ls -lah /FiQpHo' '' ''
 
     def test_diversity_8(self):
-        return ""
+        return 'ls -lah /MogVyDnZ' '' ''
 
     def test_diversity_9(self):
-        return ""
+        return 'ls -lah /psgFYKEzqF' '' ''
 
     def test_diversity_10(self):
-        return ""
+        return 'pacman -s pVYUyYePFxWQoG' '' ''
 
 
 class TestsPassing(PassingSystemtests):
-    # It takes system executables with get_all_executables(), so there is no input.
     def test_diversity_1(self):
-        return ""
+        return 'ls /ZxcOuynZ' '' ''
 
     def test_diversity_2(self):
-        return ""
+        return 'ls /pSgyKXzfG' '' ''
 
     def test_diversity_3(self):
-        return ""
+        return 'ls /AcTLgjkjBED' '' ''
 
     def test_diversity_4(self):
-        return ""
+        return 'ls uafJvV.py' '' ''
 
     def test_diversity_5(self):
-        return ""
+        return 'ls /uDkSFC' '' ''
 
     def test_diversity_6(self):
-        return ""
+        return 'ls NHAocGOiySe.py' '' ''
 
     def test_diversity_7(self):
-        return ""
+        return 'ls /WMnoU' '' ''
 
     def test_diversity_8(self):
-        return ""
+        return 'ls /rtIFvYTc' '' ''
 
     def test_diversity_9(self):
-        return ""
+        return 'ls /nXzgoA' '' ''
 
     def test_diversity_10(self):
-        return ""
+        return 'ls QZopNAY.py' '' ''

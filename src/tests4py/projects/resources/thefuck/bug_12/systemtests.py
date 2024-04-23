@@ -35,10 +35,10 @@ class TestsFailing(FailingSystemtests):
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return 'got commit -m jBgySrnKjrlVUN [branch_name]' '' 'got: not found, maybe you meant "git"'
+        return 'got commit -m jBgySrnKjrlVUN' '' 'got: not found, maybe you meant "git"'
 
     def test_diversity_2(self):
-        return 'got commit -m IEogeEW [branch_name]' '' 'got: not found, maybe you meant "git"'
+        return 'got commit -m IEogeEW' '' 'got: not found, maybe you meant "git"'
 
     def test_diversity_3(self):
         return 'vom INxwxW.py' '' 'vom: not found, maybe you meant "vim"'
@@ -53,7 +53,7 @@ class TestsPassing(PassingSystemtests):
         return 'vom RlhNFbBtbO.py' '' 'vom: not found, maybe you meant "vim"'
 
     def test_diversity_7(self):
-        return 'got commit -m oVUZgKT [branch_name]' '' 'got: not found, maybe you meant "git"'
+        return 'got commit -m oVUZgKT' '' 'got: not found, maybe you meant "git"'
 
     def test_diversity_8(self):
         return 'vom aabaJUO.py' '' 'vom: not found, maybe you meant "vim"'

@@ -2,66 +2,64 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 
 class TestsFailing(FailingSystemtests):
-    # It takes system executables with get_all_executables(), so there is no input.
     def test_diversity_1(self):
-        return ""
+        return "500" '' ''
 
     def test_diversity_2(self):
-        return ""
+        return "111" '' ''
 
     def test_diversity_3(self):
-        return ""
+        return "321" '' ''
 
     def test_diversity_4(self):
-        return ""
+        return "1" '' ''
 
     def test_diversity_5(self):
-        return ""
+        return "6545" '' ''
 
     def test_diversity_6(self):
-        return ""
+        return "322" '' ''
 
     def test_diversity_7(self):
-        return ""
+        return "1299" '' ''
 
     def test_diversity_8(self):
-        return ""
+        return "32" '' ''
 
     def test_diversity_9(self):
-        return ""
+        return "43" '' ''
 
     def test_diversity_10(self):
-        return ""
+        return "766" '' ''
 
 
 class TestsPassing(PassingSystemtests):
-    # It takes system executables with get_all_executables(), so there is no input.
     def test_diversity_1(self):
-        return ""
+        return "git diff jdjdsgs" '' ''
 
     def test_diversity_2(self):
-        return ""
+        return "git diff wefssw" '' ''
 
     def test_diversity_3(self):
-        return ""
+        return "git diff werqsads" '' ''
 
     def test_diversity_4(self):
-        return ""
+        return "git diff FDFWEFSA" '' ''
 
     def test_diversity_5(self):
-        return ""
+        return "git diff FWEDSA" '' ''
 
     def test_diversity_6(self):
-        return ""
+        return "git diff ergefSF" '' ''
 
     def test_diversity_7(self):
-        return ""
+        return "git diff ferfYJYTJ" '' ''
 
     def test_diversity_8(self):
-        return ""
+        return "git diff TRYRFD" '' ''
 
     def test_diversity_9(self):
-        return ""
+        return "git diff HNRTGFVD" '' ''
 
     def test_diversity_10(self):
-        return ""
+        return "git diff WERQFERF" '' ''
