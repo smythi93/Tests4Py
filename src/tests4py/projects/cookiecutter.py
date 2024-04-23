@@ -69,6 +69,19 @@ class CookieCutter(Project):
             relevant_test_files=relevant_test_files,
         )
 
+    def patch(self, location: Path):
+        if self.bug_id == 4:
+            with open(location / "setup.py", "r") as fp:
+                content = fp.read()
+            content = content.replace("PyYAML>=3.10", "PyYAML>=3.10")
+            content = content.replace(
+                "    requirements.append('ruamel.yaml>=0.10.12')",
+                "    requirements.append('ruamel.yaml.clib==0.2.7')\n"
+                "    requirements.append('ruamel.yaml>=0.10.12')",
+            )
+            with open(location / "setup.py", "w") as fp:
+                fp.write(content)
+
 
 def register():
     CookieCutter(
