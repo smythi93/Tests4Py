@@ -2,66 +2,64 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 
 class TestsFailing(FailingSystemtests):
-    # It takes system executables with get_all_executables(), so there is no input.
     def test_diversity_1(self):
-        return ""
+        return 'mnfjsdfds, weqdas'
 
     def test_diversity_2(self):
-        return ""
+        return 'NRALZctkaukjHs, FbYTY'
 
     def test_diversity_3(self):
-        return ""
+        return 'fdsfwe, gegerf'
 
     def test_diversity_4(self):
-        return ""
+        return 'dsfwefew, wewefgD'
 
     def test_diversity_5(self):
-        return ""
+        return 'lrlJHKR, dalal'
 
     def test_diversity_6(self):
-        return ""
+        return 'groKHHS, hgf'
 
     def test_diversity_7(self):
-        return ""
+        return 'ADhjghjEGF, FbYTY'
 
     def test_diversity_8(self):
-        return ""
+        return 'eretewds, YTJT'
 
     def test_diversity_9(self):
-        return ""
+        return 'fghfghf, FEWFEW'
 
     def test_diversity_10(self):
-        return ""
+        return 'GWEEUUad, FbYTY'
 
 
 class TestsPassing(PassingSystemtests):
-    # It takes system executables with get_all_executables(), so there is no input.
     def test_diversity_1(self):
-        return ""
+        return 'nrgrtgt: EWRWsdas'
 
     def test_diversity_2(self):
-        return ""
+        return 'asdrwDSD: grerefe'
 
     def test_diversity_3(self):
-        return ""
+        return 'rtwerewc: FbYTY'
 
     def test_diversity_4(self):
-        return ""
+        return 'wqsada: qweqweqw'
 
     def test_diversity_5(self):
-        return ""
+        return 'erwfdf: WDSAS'
 
     def test_diversity_6(self):
-        return ""
+        return 'sdfwew: GFRWS'
 
     def test_diversity_7(self):
-        return ""
+        return 'fewewsdSFSE: FDSFSF'
 
     def test_diversity_8(self):
-        return ""
+        return 'WERSADSFW: ewrwerw'
 
     def test_diversity_9(self):
-        return ""
+        return 'NRALZctkaukjHs: GQWE'
 
     def test_diversity_10(self):
-        return ""
+        return 'kewbfjkw: FbYTY'
