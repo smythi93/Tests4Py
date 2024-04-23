@@ -15,7 +15,7 @@ class TestsFailing(FailingSystemtests):
         return "-otest4.log -vx,y"
 
     def test_diversity_5(self):
-        return "-otest5.log -vw -d2"
+        return "-otest5.log -d2 -vw"
 
     def test_diversity_6(self):
         return "-otest6.log -ptest"
@@ -24,7 +24,7 @@ class TestsFailing(FailingSystemtests):
         return "-otest7.log -d1 -ptest"
 
     def test_diversity_8(self):
-        return "-otest8.log -vx -ptest"
+        return "-otest8.log -ptest -vx"
 
     def test_diversity_9(self):
         return "-otest9.log -d1 -vw,x,y,z"
@@ -47,7 +47,7 @@ class TestsPassing(PassingSystemtests):
         return "-o -vx,y"
 
     def test_diversity_5(self):
-        return "-vw -d2"
+        return "-d2 -vw"
 
     def test_diversity_6(self):
         return "-o -ptest"
@@ -56,7 +56,7 @@ class TestsPassing(PassingSystemtests):
         return "-d1 -ptest"
 
     def test_diversity_8(self):
-        return "-o -vx -ptest"
+        return "-o -ptest -vx"
 
     def test_diversity_9(self):
         return "-d1 -vw,x,y,z"
