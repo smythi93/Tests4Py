@@ -2,7 +2,10 @@ import os.path
 
 from sflkit.analysis.suggestion import Location
 
-from tests4py.api import get_faulty_lines, get_projects, setup
+import tests4py.api as t4p
+from tests4py.constants import DEFAULT_WORK_DIR
+from tests4py.projects import Project
+from tests4py.tests.utils import TestResult
 from utils import BaseTest
 
 
@@ -10,10 +13,10 @@ class CommandTests(BaseTest):
     @classmethod
     def setUpClass(cls) -> None:
         super().setUpClass()
-        setup()
+        t4p.setup()
 
     def test_faulty_lines_3(self):
-        faulty_lines = get_faulty_lines(get_projects("pysnooper", 3)[0])
+        faulty_lines = t4p.get_faulty_lines(t4p.get_projects("pysnooper", 3)[0])
         expected_lines = [
             Location(file=os.path.join("pysnooper", "pysnooper.py"), line=26)
         ]
@@ -31,7 +34,7 @@ class CommandTests(BaseTest):
             )
 
     def test_faulty_lines_2(self):
-        faulty_lines = get_faulty_lines(get_projects("pysnooper", 2)[0])
+        faulty_lines = t4p.get_faulty_lines(t4p.get_projects("pysnooper", 2)[0])
         expected_lines = [
             Location(file=os.path.join("pysnooper", "tracer.py"), line=7),
             Location(file=os.path.join("pysnooper", "tracer.py"), line=16),
@@ -64,7 +67,7 @@ class CommandTests(BaseTest):
             )
 
     def test_faulty_lines_1(self):
-        faulty_lines = get_faulty_lines(get_projects("pysnooper", 1)[0])
+        faulty_lines = t4p.get_faulty_lines(t4p.get_projects("pysnooper", 1)[0])
         expected_lines = [
             Location(file=os.path.join("pysnooper", "pycompat.py"), line=10),
             Location(file=os.path.join("pysnooper", "tracer.py"), line=16),
@@ -83,3 +86,24 @@ class CommandTests(BaseTest):
                 expected_lines,
                 f"Faulty line {line} not in expected lines {expected_lines}.",
             )
+
+    def test_get_system_tests(self):
+        project: Project = t4p.middle_1
+        report = t4p.get_tests(project)
+        self.assertEqual(10, len(report.passing_tests))
+        self.assertEqual(10, len(report.failing_tests))
+        work_dir = DEFAULT_WORK_DIR / project.get_identifier()
+        r = t4p.checkout(project, DEFAULT_WORK_DIR)
+        if r.raised:
+            raise r.raised
+        r = t4p.build(work_dir)
+        if r.raised:
+            raise r.raised
+        for tests, expected in (
+            (report.passing_tests, TestResult.PASSING),
+            (report.failing_tests, TestResult.FAILING),
+        ):
+            for test in tests:
+                r = t4p.run(work_dir, test, invoke_oracle=True)
+                self.assertTrue(r.successful)
+                self.assertEqual(expected, r.test_result)

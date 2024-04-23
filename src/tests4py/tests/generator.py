@@ -4,7 +4,7 @@ import os
 import shutil
 from abc import abstractmethod
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 from tests4py.constants import DEFAULT_SYSTEMTESTS_DIVERSITY_PATH
 from tests4py.tests.utils import TestResult
@@ -15,9 +15,15 @@ class GenerationFailed(RuntimeWarning):
 
 
 class GenerationResult:
-    def __init__(self, passing: int = 0, failing: int = 0):
+    def __init__(
+        self,
+        passing: int = 0,
+        failing: int = 0,
+        tests: Optional[List[Tuple[str, TestResult]]] = None,
+    ):
         self.passing = passing
         self.failing = failing
+        self.tests: List[Tuple[str, TestResult]] = tests or list()
 
 
 class TestGenerator:
@@ -38,9 +44,9 @@ class TestGenerator:
     ) -> GenerationResult:
         tmp_probability = self.failing_probability
         self.failing_probability = 1
-        self.generate_tests(n, path.with_suffix("_failing"), append)
+        result = self.generate_tests(n, path.with_suffix("_failing"), append)
         self.failing_probability = tmp_probability
-        return GenerationResult(failing=n)
+        return GenerationResult(failing=n, tests=result.tests)
 
     def generate_tests(
         self, n: int, path: Path, append: bool = False
@@ -189,10 +195,12 @@ class SystemtestGenerator(TestGenerator):
         f = int(n * self.failing_probability)
         p = n - f
         tests = {None}
+        result_tests = list()
         for _ in range(p):
             test, result, name = "", TestResult.UNDEFINED, None
             while name in tests:
                 test, result = self.generate_passing_test()
+                result_tests.append((test, result))
                 name = self.get_name(test, result, path)
             tests.add(name)
             with open(name, "w") as fp:
@@ -201,8 +209,9 @@ class SystemtestGenerator(TestGenerator):
             test, result, name = "", TestResult.UNDEFINED, None
             while name in tests:
                 test, result = self.generate_failing_test()
+                result_tests.append((test, result))
                 name = self.get_name(test, result, path)
             tests.add(name)
             with open(self.get_name(test, result, path), "w") as fp:
                 fp.write(test)
-        return GenerationResult(passing=p, failing=f)
+        return GenerationResult(passing=p, failing=f, tests=result_tests)

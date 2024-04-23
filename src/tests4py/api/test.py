@@ -11,6 +11,7 @@ from tests4py.api.report import (
     UnittestGenerateReport,
     UnittestTestReport,
     RunReport,
+    GetTestReport,
 )
 from tests4py.api.utils import get_work_dir, load_project
 from tests4py.constants import (
@@ -24,7 +25,7 @@ from tests4py.constants import (
 )
 from tests4py.environment import env_on, activate_venv
 from tests4py.logger import LOGGER
-from tests4py.projects import Project, TestingFramework
+from tests4py.projects import Project, TestingFramework, resources
 from tests4py.tests.utils import TestResult
 
 
@@ -64,6 +65,55 @@ def run(
         report.feedback = feedback
         report.stdout = stdout
         report.stderr = stderr
+        report.successful = True
+    except BaseException as e:
+        report.raised = e
+        report.successful = False
+    return report
+
+
+def get_tests(
+    work_dir_or_project: Optional[Union[os.PathLike, Project]] = None,
+    report: Optional[GetTestReport] = None,
+    as_strings: bool = False,
+):
+    report = report or GetTestReport()
+    try:
+        if work_dir_or_project is not None and isinstance(work_dir_or_project, Project):
+            project = work_dir_or_project
+        else:
+            work_dir = get_work_dir(work_dir_or_project)
+            project = load_project(work_dir, only_project=True)
+        report.project = project
+
+        if project.systemtests is None or project.api is None:
+            raise NotImplementedError(
+                f"Systemtests are not enabled for {project.project_name}_{project.bug_id}"
+            )
+        module = getattr(
+            getattr(getattr(resources, project.project_name), f"bug_{project.bug_id}"),
+            "systemtests",
+        )
+        report.passing_tests = (
+            list(module.TestsPassing().tests)
+            if as_strings
+            else list(
+                map(
+                    project.api.get_test_arguments_from_string,
+                    module.TestsPassing().tests,
+                )
+            )
+        )
+        report.failing_tests = (
+            list(module.TestsFailing().tests)
+            if as_strings
+            else list(
+                map(
+                    project.api.get_test_arguments_from_string,
+                    module.TestsFailing().tests,
+                )
+            )
+        )
         report.successful = True
     except BaseException as e:
         report.raised = e
@@ -150,6 +200,20 @@ def systemtest_generate(
                 f"{project.systemtests.failing_probability} for {project.project_name}_{project.bug_id} to {path}"
             )
             result = project.systemtests.generate_tests(n=n, path=path, append=append)
+
+        if project.api is not None and result.tests:
+            passing_tests = [
+                test for test, r in result.tests if r == TestResult.PASSING
+            ]
+            failing_tests = [
+                test for test, r in result.tests if r == TestResult.FAILING
+            ]
+            report.passing_tests = list(
+                map(project.api.get_test_arguments_from_string, passing_tests)
+            )
+            report.failing_tests = list(
+                map(project.api.get_test_arguments_from_string, failing_tests)
+            )
 
         report.passing = result.passing
         report.failing = result.failing
