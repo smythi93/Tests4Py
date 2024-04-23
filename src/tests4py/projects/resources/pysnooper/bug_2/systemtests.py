@@ -12,16 +12,16 @@ class TestsFailing(Systemtests):
         return "-cint=str"
 
     def test_diversity_3(self):
-        return "-d1 -T -cint=repr"
+        return "-T -d1 -cint=repr"
 
     def test_diversity_4(self):
         return "-o -d1 -cbool=str"
 
     def test_diversity_5(self):
-        return "-otest.log -O -cint=repr,bool=str"
+        return "-O -otest.log -cint=repr,bool=str"
 
     def test_diversity_6(self):
-        return "-wx -d1 -cfloat=str"
+        return "-d1 -wx -cfloat=str"
 
     def test_diversity_7(self):
         return "-wy -cstr=str"
@@ -33,7 +33,7 @@ class TestsFailing(Systemtests):
         return "-ptest -cbool=int"
 
     def test_diversity_10(self):
-        return "-wx -ptest -cint=str"
+        return "-ptest -wx -cint=str"
 
 
 class TestsPassing(Systemtests):
@@ -47,16 +47,16 @@ class TestsPassing(Systemtests):
         return ""
 
     def test_diversity_3(self):
-        return "-d1 -T"
+        return "-T -d1"
 
     def test_diversity_4(self):
         return "-o -d1"
 
     def test_diversity_5(self):
-        return "-otest.log -O"
+        return "-O -otest.log"
 
     def test_diversity_6(self):
-        return "-wx -d1"
+        return "-d1 -wx"
 
     def test_diversity_7(self):
         return "-wy"
@@ -68,4 +68,4 @@ class TestsPassing(Systemtests):
         return "-ptest"
 
     def test_diversity_10(self):
-        return "-wx -ptest"
+        return "-ptest -wx"
