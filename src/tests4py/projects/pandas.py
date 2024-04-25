@@ -68,6 +68,11 @@ class Pandas(Project):
         content = content.replace("Cython>=0.29.16", "Cython==0.29.16")
         with open(location / "pyproject.toml", "w") as fp:
             fp.write(content)
+        with open(location / "setup.cfg", "r") as fp:
+            content = fp.read()
+        content = content.replace("\naddopts = --strict-data-files", "")
+        with open(location / "setup.cfg", "w") as fp:
+            fp.write(content)
 
 
 def register():
