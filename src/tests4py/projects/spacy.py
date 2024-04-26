@@ -396,7 +396,6 @@ class SpaCyUnittestGenerator2(
     def _get_assert(
             expected: str,
             model_path: str,
-            meta: bool,
     ) -> list[Call]:
         return [
             ast.Call(
@@ -407,7 +406,6 @@ class SpaCyUnittestGenerator2(
                         func=ast.Name(id="load_model_from_path"),
                         args=[
                             ast.Constant(value=model_path),
-                            #ast.Constant(value=meta),
                         ],
                         keywords=[],
                     ),
@@ -483,17 +481,8 @@ class SpaCyUnittestGenerator3(
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         fail_ = self._generate_one()
-        article_title = "Artificial intelligence"  # Title of the Wikipedia article
-        article_text = """
-            <text xml:space="preserve">
-                Artificial intelligence (AI), sometimes called machine intelligence, is intelligence demonstrated by machines, in contrast to the natural intelligence displayed by humans and animals.
-                Leading AI textbooks define the field as the study of "intelligent agents": any device that perceives its environment and takes actions that maximize its chance of successfully achieving its goals.
-                Colloquially, the term "artificial intelligence" is often used to describe machines (or computers) that mimic "cognitive" functions that humans associate with the human mind, such as "learning" and "problem solving".
-            </text>
-        """  # Raw text content of the Wikipedia article
-        wp_to_id = {"Artificial intelligence": "Q11660", "Machine learning": "Q2539"}  # Dictionary mapping Wikipedia page titles to IDs
         test = self.get_empty_test()
-        test.body = self._get_assert("", article_title, article_text, wp_to_id)
+        test.body = self._get_assert("", "", "", "")
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
