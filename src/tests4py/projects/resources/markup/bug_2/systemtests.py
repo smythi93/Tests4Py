@@ -3,34 +3,34 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return '""aZhhGAuRzG""'
+        return '"aZhhGAuRzG"'
 
     def test_diversity_2(self):
-        return '""WTDYcMlJGGouhwwmnwMsJF""'
+        return '"<a>"WTDYcMlJGGouhwwmnwMsJF"</a>'
 
     def test_diversity_3(self):
-        return '""LPuRcKppHdFrwESGrftbpIBgvYau""'
+        return '"LPuRcKppHdFrwESGrftbpIBgvYau"'
 
     def test_diversity_4(self):
-        return '""PFjpbYODHaAKtuMyDrTXHHO""'
+        return '"<a>PFjpbYODHaAKtuMyDrTXHHO</a>"'
 
     def test_diversity_5(self):
-        return '""XadJLoyKcWHBHXPcSHQJyHstIeUMG""'
+        return '"XadJLoyKcWHBHXP"cSHQJyHstIeUMG'
 
     def test_diversity_6(self):
-        return '""cecpQLBVBzDVeycWLgrjTJhqa""'
+        return '""cecpQLBVBzDVeycWLgrjTJhqa'
 
     def test_diversity_7(self):
-        return '""jQJnQXVcgjVvxBGjHYjXNReFFxm""'
+        return 'jQJnQXVcgjVvxBGjHYjXNReFFxm""'
 
     def test_diversity_8(self):
-        return '""MtAbGRtdFGKaSZDoUsZHNMeawY""'
+        return '"<a>b</a>"MtAbGRtdFGKaSZDoUsZHNMeawY""'
 
     def test_diversity_9(self):
-        return '""neHVLaSzKNsPOsKpWZYGIxiSfzNSF""'
+        return '"neHVLaS"zKNsPOs"KpWZYGIxiSfzNSF"'
 
     def test_diversity_10(self):
-        return '""jFqhKwgAmJHfAcuhhxAalvH""'
+        return '"<a "abc">"jFqhKwgAmJHfAcuhhxAalvH"</a>'
 
 
 class TestsPassing(PassingSystemtests):
@@ -47,7 +47,7 @@ class TestsPassing(PassingSystemtests):
         return "<suprqo>ASwEXrsUrbdMpEmidMmJZcKXW</suprqo>"
 
     def test_diversity_5(self):
-        return "<zmcytjrhdd>IbXMFocpXLguFvGtxEqZxmH</zmcytjrhdd>"
+        return '<zmcytjrhdd "abc">IbXMFocpXLguFvGtxEqZxmH</zmcytjrhdd>'
 
     def test_diversity_6(self):
         return "<pnufclccpw>kojZEXvCqkEZHkfRAZxS</pnufclccpw>"
