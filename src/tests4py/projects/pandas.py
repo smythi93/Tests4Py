@@ -1750,9 +1750,6 @@ class PandasAPI2(API):
         expected = expected[:-1]
         result = process.stdout.decode("utf8")
         result = result.strip()
-        print("args: ", args)
-        print("result: ", result)
-        print("expected: ", expected)
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -1823,17 +1820,35 @@ class PandasTestGenerator:
 
     @staticmethod
     def pandas2_generate():
-        return None
+        random_letter = "".join(random.choices(string.ascii_lowercase, k=random.randint(1, 1)))
+        random_int_1 = random.randint(1, 999)
+        random_int_2 = random.randint(1, 999)
+        random_int_3 = random.randint(1, 999)
+        random_int_4 = random.randint(1, 999)
+
+        # Case 1 : expected : 1, input : {"a": [1, 2]}, [(1, 2), (3, 4)])
+        # Case 2 : expected : 1, input : {"a": [1, 2]}, [(1, 2), (3, 4)], 1, 2, "a")
+        passing_case_1 = (1, {random_letter: [random_int_1, random_int_2]}, [(random_int_1, random_int_2), (random_int_3, random_int_4)])
+        passing_case_2 = (random_int_1, {f"{random_letter}": [random_int_1, random_int_2]}, [(random_int_1, random_int_2), (random_int_3, random_int_4)], random_int_1, random_int_2, f"{random_letter}")
+        failing_case_1 = (2, {f"{random_letter}": [random_int_1, random_int_2]}, [(random_int_1, random_int_2), (random_int_3, random_int_4)])
+        failing_case_2 = (random_int_2, {f"{random_letter}": [random_int_1, random_int_2]}, [(random_int_1, random_int_2), (random_int_3, random_int_4)], random_int_1, random_int_2, f"{random_letter}")
+
+        return passing_case_1, passing_case_2, failing_case_1, failing_case_2
 
     @staticmethod
     def pandas3_generate():
         random_string = PandasTestGenerator.generate_random_string()
         random_int = random.randint(2011, 2091)
-        failing = ((random_string, "D", "1/1/2001", f"1/1/{random_int}", random_string, "1/1/2001", f"1/1/{random_int}", "D", "end"),
-                   (random_string, "A", "1/1/2001", f"1/1/{random_int}", random_string, "1/1/2001", f"1/1/{random_int}", "A", "end"),
-                   (random_string, "A", "1/1/2001", f"1/1/{random_int}", random_string, "1/1/2001", f"1/1/{random_int}", "A", "start"))
-        passing = (random_string, "D", "1/1/2001", f"1/1/{random_int}", random_string, "1/1/2001", f"1/1/{random_int}", "D", "start")
-        return passing, failing[random.randint(0, len(failing)-1)]
+        failing = ((random_string, "D", "1/1/2001", f"1/1/{random_int}", random_string, "1/1/2001", f"1/1/{random_int}",
+                    "D", "end"),
+                   (random_string, "A", "1/1/2001", f"1/1/{random_int}", random_string, "1/1/2001", f"1/1/{random_int}",
+                    "A", "end"),
+                   (random_string, "A", "1/1/2001", f"1/1/{random_int}", random_string, "1/1/2001", f"1/1/{random_int}",
+                    "A", "start"))
+        passing = (
+            random_string, "D", "1/1/2001", f"1/1/{random_int}", random_string, "1/1/2001", f"1/1/{random_int}", "D",
+            "start")
+        return passing, failing[random.randint(0, len(failing) - 1)]
 
     @staticmethod
     def pandas4_generate():
@@ -1865,85 +1880,7 @@ class PandasUnittestGenerator1(
                     ast.Constant(value=expected),
                     ast.Call(
                         func=ast.Name(id="is_string_dtype"),
-                        args=[
-                            ast.Constant(value=value),
-                        ],
-                        keywords=[],
-                    ),
-                ],
-                keywords=[],
-            )
-        ]
-
-    @staticmethod
-    def _get_assert2(
-            expected: bool,
-            value: Any,
-    ) -> list[Call]:
-        return [
-            ast.Call(
-                func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
-                args=[
-                    ast.Constant(value=expected),
-                    ast.Call(
-                        func=ast.Name(id="is_string_dtype"),
-                        args=[
-                            ast.Call(
-                                func=ast.Attribute(value=ast.Name(id="pandas"), attr="Series"),
-                                args=[ast.Constant(value=value),
-                                      ],
-                                keywords=[],
-                            )],
-                        keywords=[],
-                    ),
-                ],
-                keywords=[],
-            )
-        ]
-
-    @staticmethod
-    def _get_assert3(
-            expected: bool,
-            value: Any,
-    ) -> list[Call]:
-        return [
-            ast.Call(
-                func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
-                args=[
-                    ast.Constant(value=expected),
-                    ast.Call(
-                        func=ast.Name(id="is_string_dtype"),
-                        args=[
-                            ast.Call(
-                                func=ast.Attribute(value=ast.Name(id="pandas"), attr="array"),
-                                args=[ast.Constant(value=value)],
-                                keywords=[],
-                            )],
-                        keywords=[],
-                    ),
-                ],
-                keywords=[],
-            )
-        ]
-
-    @staticmethod
-    def _get_assert4(
-            expected: bool,
-            value: Any,
-    ) -> list[Call]:
-        return [
-            ast.Call(
-                func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
-                args=[
-                    ast.Constant(value=expected),
-                    ast.Call(
-                        func=ast.Name(id="is_string_dtype"),
-                        args=[
-                            ast.Call(
-                                func=ast.Attribute(value=ast.Name(id="np"), attr="array"),
-                                args=[ast.Constant(value=value)],
-                                keywords=[],
-                            )],
+                        args=[ast.Constant(value=value)],
                         keywords=[],
                     ),
                 ],
@@ -1957,16 +1894,6 @@ class PandasUnittestGenerator1(
                 module="pandas.core.dtypes.common",
                 names=[ast.alias(name="is_string_dtype")],
                 level=0,
-            ),
-            ast.ImportFrom(
-                module="pandas.core.dtypes.common",
-                names=[ast.alias(name="np")],
-                level=0,
-            ),
-            ast.Import(
-                module="pandas",
-                names=[ast.alias(name="pandas")],
-                level=0,
             )
         ]
 
@@ -1978,12 +1905,12 @@ class PandasUnittestGenerator1(
         dice = 0
         if dice == 0:
             test.body = self._get_assert(expected, case1)
-        elif dice == 1:
-            test.body = self._get_assert2(expected, case2)
-        elif dice == 2:
-            test.body = self._get_assert3(expected, case3_4)
-        elif dice == 3:
-            test.body = self._get_assert4(expected, case3_4)
+        # elif dice == 1:
+        #     test.body = self._get_assert2(expected, case2)
+        # elif dice == 2:
+        #     test.body = self._get_assert3(expected, case3_4)
+        # elif dice == 3:
+        #     test.body = self._get_assert4(expected, case3_4)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
@@ -1994,12 +1921,12 @@ class PandasUnittestGenerator1(
         dice = 0
         if dice == 0:
             test.body = self._get_assert(expected, case1)
-        elif dice == 1:
-            test.body = self._get_assert2(expected, case2)
-        elif dice == 2:
-            test.body = self._get_assert3(expected, case3_4)
-        elif dice == 3:
-            test.body = self._get_assert4(expected, case3_4)
+        # elif dice == 1:
+        #     test.body = self._get_assert2(expected, case2)
+        # elif dice == 2:
+        #     test.body = self._get_assert3(expected, case3_4)
+        # elif dice == 3:
+        #     test.body = self._get_assert4(expected, case3_4)
         return test, TestResult.PASSING
 
 
@@ -2064,7 +1991,9 @@ class PandasUnittestGenerator2(
                         ast.Subscript(
                             value=ast.Attribute(value=ast.Name(id="df"), attr="at"),
                             slice=ast.Index(value=ast.Tuple(elts=[
-                                ast.Tuple(elts=[ast.Constant(value=data_frame_int1), ast.Constant(value=data_frame_int2)], ctx=ast.Load()),
+                                ast.Tuple(
+                                    elts=[ast.Constant(value=data_frame_int1), ast.Constant(value=data_frame_int2)],
+                                    ctx=ast.Load()),
                                 ast.Constant(value=data_frame_str, ctx=ast.Load())
                             ], ctx=ast.Load())),
                             ctx=ast.Load()
@@ -2085,19 +2014,33 @@ class PandasUnittestGenerator2(
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        fail_ = self._generate_one()
+        _, _, fail_, fail_2 = self._generate_one()
+        dice = random.randint(0, 1)
         test = self.get_empty_test()
-        #test.body = self._get_assert(2, {"a": [1, 2]}, [(1, 2), (3, 4)])
-        test.body = self._get_assert2(2, {"a": [1, 2]}, [(1, 2), (3, 4)], 1, 2, "a")
-
+        if dice == 0:
+            expected, data_frame_tuple, data_frame_index = fail_
+            test.body = self._get_assert(expected, data_frame_tuple, data_frame_index)
+        elif dice == 1:
+            expected, data_frame_tuple, data_frame_index, data_frame_int1, data_frame_int2, data_frame_str = fail_2
+            test.body = self._get_assert2(expected, data_frame_tuple, data_frame_index, data_frame_int1,
+                                          data_frame_int2, data_frame_str)
+        else:
+            print("There are only two assertion cases!")
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass_ = self._generate_one()
+        pass_, pass_2, _, _ = self._generate_one()
+        dice = random.randint(0, 1)
         test = self.get_empty_test()
-        #test.body = self._get_assert(1, {"a": [1, 2]}, [(1, 2), (3, 4)])
-        test.body = self._get_assert2(1, {"a": [1, 2]}, [(1, 2), (3, 4)], 1, 2, "a")
-
+        if dice == 0:
+            expected, data_frame_tuple, data_frame_index = pass_
+            test.body = self._get_assert(1, data_frame_tuple, data_frame_index)
+        elif dice == 1:
+            expected, data_frame_tuple, data_frame_index, data_frame_int1, data_frame_int2, data_frame_str = pass_2
+            test.body = self._get_assert2(expected, data_frame_tuple, data_frame_index, data_frame_int1,
+                                          data_frame_int2, data_frame_str)
+        else:
+            print("There are only two assertion cases!")
         return test, TestResult.PASSING
 
 
@@ -2228,14 +2171,16 @@ class PandasUnittestGenerator3(
         _, fail_ = self._generate_one()
         expected, freq_period_range, start_period_range, end_period_range, series_name, date_range_start, date_range_end, date_range_freq, series_to_timestamp = fail_
         test = self.get_empty_test()
-        test.body = self._get_assert(expected, freq_period_range, start_period_range, end_period_range, series_name, date_range_start, date_range_end, date_range_freq, series_to_timestamp)
+        test.body = self._get_assert(expected, freq_period_range, start_period_range, end_period_range, series_name,
+                                     date_range_start, date_range_end, date_range_freq, series_to_timestamp)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
         expected, freq_period_range, start_period_range, end_period_range, series_name, date_range_start, date_range_end, date_range_freq, series_to_timestamp = pass_
         test = self.get_empty_test()
-        test.body = self._get_assert(expected, freq_period_range, start_period_range, end_period_range, series_name, date_range_start, date_range_end, date_range_freq, series_to_timestamp)
+        test.body = self._get_assert(expected, freq_period_range, start_period_range, end_period_range, series_name,
+                                     date_range_start, date_range_end, date_range_freq, series_to_timestamp)
         return test, TestResult.PASSING
 
 
@@ -2331,12 +2276,24 @@ class PandasSystemtestGenerator1(SystemtestGenerator, PandasTestGenerator):
 
 class PandasSystemtestGenerator2(SystemtestGenerator, PandasTestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        fail_ = self.generate_values(self.pandas2_generate)
-        return f"{fail_}", TestResult.FAILING
+        _, _, fail_, fail_2 = self.generate_values(self.pandas2_generate)
+        dice = random.randint(0, 1)
+        if dice == 0:
+            return f"{fail_}", TestResult.FAILING
+        elif dice == 1:
+            return f"{fail_2}", TestResult.FAILING
+        else:
+            print("There are only two assertion cases!")
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        pass_ = self.generate_values(self.pandas2_generate)
-        return f"{pass_}", TestResult.PASSING
+        pass_, pass_2, _, _ = self.generate_values(self.pandas2_generate)
+        dice = random.randint(0, 1)
+        if dice == 0:
+            return f"{pass_}", TestResult.PASSING
+        elif dice == 1:
+            return f"{pass_2}", TestResult.PASSING
+        else:
+            print("There are only two assertion cases!")
 
 
 class PandasSystemtestGenerator3(SystemtestGenerator, PandasTestGenerator):
@@ -2344,9 +2301,11 @@ class PandasSystemtestGenerator3(SystemtestGenerator, PandasTestGenerator):
         _, fail_ = self.generate_values(self.pandas3_generate)
         return f"{fail_}", TestResult.FAILING
 
+
     def generate_passing_test(self) -> Tuple[str, TestResult]:
         pass_, _ = self.generate_values(self.pandas3_generate)
         return f"{pass_}", TestResult.PASSING
+
 
 
 class PandasSystemtestGenerator4(SystemtestGenerator, PandasTestGenerator):
