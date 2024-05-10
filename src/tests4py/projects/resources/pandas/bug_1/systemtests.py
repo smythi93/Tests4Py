@@ -35,31 +35,31 @@ class TestsFailing(FailingSystemtests):
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return "akaskHJEi"
+        return "-9695D"
 
     def test_diversity_2(self):
-        return "SAKjhkdui"
+        return "-4405A"
 
     def test_diversity_3(self):
-        return "SDFJSDksd"
+        return "3088A"
 
     def test_diversity_4(self):
-        return "LWLAsere"
+        return "3030H"
 
     def test_diversity_5(self):
-        return "fweweSDER"
+        return "2125A"
 
     def test_diversity_6(self):
-        return "ASDseffa"
+        return "7980A"
 
     def test_diversity_7(self):
-        return "freferiIADIA"
+        return "2772S"
 
     def test_diversity_8(self):
-        return "SADAjhsadjJ"
+        return "7834T"
 
     def test_diversity_9(self):
-        return "ASDAKadkkAD"
+        return "8521S"
 
     def test_diversity_10(self):
-        return "ylQtOPVYFmC"
+        return "-9922W"
