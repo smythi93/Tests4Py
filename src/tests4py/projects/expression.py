@@ -88,6 +88,13 @@ class ExpressionAPI(API):
         if args is None:
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
+        if process.returncode != 0 and "ValueError" not in process.stderr:
+            return TestResult.FAILING, f"Process failed with {process.returncode}"
+        elif process.returncode != 0:
+            return (
+                TestResult.PASSING,
+                f"Process failed with ValueError and code {process.returncode}",
+            )
         expected = process.args[2:]
         expected = "".join(expected).strip()
         result = process.stdout.decode("utf8")
@@ -95,10 +102,10 @@ class ExpressionAPI(API):
         try:
             eval(expected)
         except ZeroDivisionError:
-            result = "ZeroDivisionError"
-        if result != "ZeroDivisionError":
-            expected = str(eval(expected))
-
+            return (
+                TestResult.FAILING,
+                "ZeroDivisionError for evaluation but no ValueError for subject.",
+            )
         if result == expected:
             return TestResult.PASSING, f"Expected {expected}, and was {result}"
         else:
