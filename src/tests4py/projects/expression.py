@@ -84,21 +84,31 @@ class ExpressionAPI(API):
     def __init__(self, default_timeout=5):
         super().__init__(default_timeout=default_timeout)
 
+    def get_test_arguments_from_string(self, s: str) -> List[str]:
+        return [s]
+
     def oracle(self, args: Any) -> Tuple[TestResult, str]:
         if args is None:
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
-        expected = process.args[2:]
+        if process.returncode != 0 and b"ValueError" not in process.stderr:
+            return TestResult.FAILING, f"Process failed with {process.returncode}"
+        elif process.returncode != 0:
+            return (
+                TestResult.PASSING,
+                f"Process failed with ValueError and code {process.returncode}",
+            )
+        expected = process.args[2]
         expected = "".join(expected).strip()
         result = process.stdout.decode("utf8")
-        result = result.strip()
+        result = float(result)
         try:
-            eval(expected)
+            expected = eval(expected)
         except ZeroDivisionError:
-            result = "ZeroDivisionError"
-        if result != "ZeroDivisionError":
-            expected = str(eval(expected))
-
+            return (
+                TestResult.FAILING,
+                "ZeroDivisionError for evaluation but no ValueError for subject.",
+            )
         if result == expected:
             return TestResult.PASSING, f"Expected {expected}, and was {result}"
         else:
