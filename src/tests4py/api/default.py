@@ -1,3 +1,7 @@
+"""
+This module includes the default API functions for the Tests4Py package.
+"""
+
 import importlib.resources
 import os
 import shutil
@@ -66,18 +70,15 @@ def checkout(
     verbose: bool = False,
 ) -> CheckoutReport:
     """
-    Performs the checkout operation for the given project.
-
-    Args:
-        project (Project | str): The project to be checked out.
-        work_dir (Path): The working directory for the checkout operation. Defaults to DEFAULT_WORK_DIR.
-        update (bool): Indicates whether to update the project. Defaults to False.
-        force (bool): Indicates whether to force the checkout. Defaults to False.
-        report (Optional[CheckoutReport]): The checkout report. Defaults to None.
-        verbose (bool): Indicates whether to display verbose output. Defaults to False.
-
-    Returns:
-        CheckoutReport: The report of the checkout operation.
+    Performs the checkout of a project.
+    :param Project | str project: The project to check out.
+    :param Path work_dir: The working directory.
+    :param bool update: The update flag, which indicates if the project should be updated.
+    :param bool force: The force flag, which indicates if the project should be checked out from source instead of the
+    cache.
+    :param Optional[CheckoutReport] report: The report for the Tests4Py pipeline.
+    :param bool verbose: The verbose flag, which indicates if the output should be verbose.
+    :return CheckoutReport: The report for the Tests4Py pipeline.
     """
     if report is None:
         report = CheckoutReport()
@@ -305,6 +306,16 @@ def build(
     sfl: bool = False,
     verbose: bool = False,
 ) -> CompileReport:
+    """
+    Perform the build of a project.
+    :param Union[os.PathLike, Project] work_dir_or_project: The working directory or the project.
+    :param bool rebuild: The rebuild flag, which indicates if the project should be rebuilt.
+    :param bool force: The force flag, which indicates if the project should be built from source instead of the cache.
+    :param Optional[CompileReport] report: The report for the Tests4Py pipeline.
+    :param bool sfl: The SFL flag, which indicates if SFLKit should be integrated in the project.
+    :param bool verbose: The verbose flag, which indicates if the output should be verbose.
+    :return CompileReport: The report for the Tests4Py pipeline.
+    """
     if not PYENV_EXISTS:
         install_pyenv()
     report = report or CompileReport()
@@ -379,7 +390,14 @@ def info(
     project_name: Optional[str] = None,
     bug_id: Optional[int] = None,
     report: Optional[InfoReport] = None,
-):
+) -> InfoReport:
+    """
+    Get information about a Tests4Py, a project, or a certain bug.
+    :param Optional[str] project_name: The name of the project.
+    :param Optional[int] bug_id: The id of the bug.
+    :param Optional[InfoReport] report: The report for the Tests4Py pipeline.
+    :return InfoReport: The report for the Tests4Py pipeline.
+    """
     report = report or InfoReport()
     try:
         if not project_name:
@@ -465,6 +483,18 @@ def test(
     coverage: bool = False,
     report: Optional[TestReport] = None,
 ) -> TestReport:
+    """
+    Execute unittests that come with the project.
+    :param Union[os.PathLike, Project] work_dir_or_project: The working directory or the project.
+    :param Optional[Union[List[str], str]] single_test: The test or tests to run. This parameter is directly passed to
+    the unittest or pytest framework so please use their respective naming specifications.
+    :param bool relevant_tests: The relevant tests flag, which indicates if only the relevant tests should be run.
+    :param bool all_tests: The all tests flag, which indicates if all tests should be run.
+    :param Optional[Path] xml_output: The path to the XML output file.
+    :param bool coverage: The coverage flag, which indicates if coverage should be calculated.
+    :param Optional[TestReport] report: The report for the Tests4Py pipeline.
+    :return TestReport: The report for the Tests4Py pipeline.
+    """
     if report is None:
         report = TestReport()
     work_dir = get_work_dir(work_dir_or_project)

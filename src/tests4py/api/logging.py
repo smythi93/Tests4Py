@@ -1,3 +1,7 @@
+"""
+This module provides functions to change the log level of the logger.
+"""
+
 import logging
 
 from tests4py.logger import LOGGER

@@ -1,3 +1,7 @@
+"""
+This module provides the API for running and generating tests for a project.
+"""
+
 import json
 import os
 import subprocess
@@ -35,6 +39,14 @@ def run(
     invoke_oracle: bool = False,
     report: Optional[RunReport] = None,
 ):
+    """
+    Run the system test with the given arguments or path.
+    :param Optional[Union[os.PathLike, Project]] work_dir_or_project: The working directory or project.
+    :param Union[Sequence[str], Path] args_or_path: The arguments or path to run the system test.
+    :param bool invoke_oracle: The flag to invoke the oracle.
+    :param Optional[RunReport] report: The report to update.
+    :return RunReport: The report of the run.
+    """
     report = report or RunReport()
     try:
         work_dir = get_work_dir(work_dir_or_project)
@@ -76,7 +88,14 @@ def get_tests(
     work_dir_or_project: Optional[Union[os.PathLike, Project]] = None,
     report: Optional[GetTestReport] = None,
     as_strings: bool = False,
-):
+) -> GetTestReport:
+    """
+    Get the tests for the project.
+    :param Optional[Union[os.PathLike, Project]] work_dir_or_project: The working directory or project.
+    :param Optional[GetTestReport] report: The report to update.
+    :param bool as_strings: The flag to return the tests as strings.
+    :return GetTestReport: The report of the tests.
+    """
     report = report or GetTestReport()
     try:
         if work_dir_or_project is not None and isinstance(work_dir_or_project, Project):
@@ -127,6 +146,15 @@ def _get_systemtest_runs(
     environ: Dict[str, str],
     work_dir: Optional[Path] = None,
 ) -> Tuple[int, int, int, Dict[str, Tuple[TestResult, str]]]:
+    """
+    Execute systemtests and collect the results.
+    :param Project project: The project.
+    :param os.PathLike path: The path to the system tests.
+    :param Dict[str, str] environ: The environment to run the tests in.
+    :param Optional[Path] work_dir: The working directory.
+    :return Tuple[int, int, int, Dict[str, Tuple[TestResult, str]]]: The total number of tests, the number of passing,
+    the number of failing tests, and the results for each test, including feedback.
+    """
     total, passing, failing = 0, 0, 0
     results: Dict[str, Tuple[TestResult, str]] = dict()
     for test, result, feedback in project.api.tests(path, environ, work_dir=work_dir):
@@ -150,6 +178,19 @@ def systemtest_generate(
     verify: bool = False,
     report: Optional[SystemtestGenerateReport] = None,
 ) -> SystemtestGenerateReport:
+    """
+    Generate system tests for a project.
+    :param Optional[Union[os.PathLike, Project]] work_dir_or_project: The working directory or project.
+    :param Path path: The path to the system tests.
+    :param int n: The number of tests to generate.
+    :param Union[int, float] p: The failing probability of the tests (< 1) or the total number of failing tests (>= 1).
+    :param bool is_only_passing: The flag to generate only passing tests.
+    :param bool is_only_failing: The flag to generate only failing tests.
+    :param bool append: The flag to append the tests to the existing tests.
+    :param bool verify: The flag to verify the generated tests by executing them and aggregate their results.
+    :param Optional[SystemtestGenerateReport] report: The report to update.
+    :return SystemtestGenerateReport: The report of the generation.
+    """
     report = report or SystemtestGenerateReport()
 
     work_dir = get_work_dir(work_dir_or_project)
@@ -241,6 +282,11 @@ def systemtest_generate(
 def clean_results(
     results: Dict[str, Tuple[TestResult, str]]
 ) -> Dict[str, Tuple[str, str]]:
+    """
+    Clean the results.
+    :param Dict[str, Tuple[TestResult, str]] results: The results.
+    :return Dict[str, Tuple[str, str]]: The cleaned results.
+    """
     cleaned_results = dict()
     for test in results:
         result, feedback = results[test]
@@ -255,6 +301,15 @@ def systemtest_test(
     output: Path = None,
     report: Optional[SystemtestTestReport] = None,
 ) -> SystemtestTestReport:
+    """
+    Run system tests for a project.
+    :param Optional[Union[os.PathLike, Project]] work_dir_or_project: The working directory or project.
+    :param Union[Path, str] path_or_str: The path or string to the system tests.
+    :param bool diversity: The flag to run the diversity tests.
+    :param Path output: The path to the output file.
+    :param Optional[SystemtestTestReport] report: The report to update.
+    :return SystemtestTestReport: The report of the tests.
+    """
     if report is None:
         report = SystemtestTestReport()
 
@@ -324,6 +379,19 @@ def unittest_generate(
     verify: bool = False,
     report: Optional[UnittestGenerateReport] = None,
 ) -> UnittestGenerateReport:
+    """
+    Generate unittests for a project.
+    :param Optional[Union[os.PathLike, Project]] work_dir_or_project: The working directory or project.
+    :param Path path: The path to the system tests.
+    :param int n: The number of tests to generate.
+    :param Union[int, float] p: The failing probability of the tests (< 1) or the total number of failing tests (>= 1).
+    :param bool is_only_passing: The flag to generate only passing tests.
+    :param bool is_only_failing: The flag to generate only failing tests.
+    :param bool append: The flag to append the tests to the existing tests.
+    :param bool verify: The flag to verify the generated tests by executing them and aggregate their results.
+    :param Optional[UnittestGenerateReport] report: The report to update.
+    :return UnittestGenerateReport: The report of the generation.
+    """
     if report is None:
         report = UnittestTestReport()
 
@@ -422,6 +490,15 @@ def unittest_test(
     output: Path = None,
     report: Optional[UnittestTestReport] = None,
 ) -> UnittestTestReport:
+    """
+    Run system tests for a project.
+    :param Optional[Union[os.PathLike, Project]] work_dir_or_project: The working directory or project.
+    :param Path path: The path to the system tests.
+    :param bool diversity: The flag to run the diversity tests.
+    :param Path output: The path to the output file.
+    :param Optional[SystemtestTestReport] report: The report to update.
+    :return SystemtestTestReport: The report of the tests.
+    """
     if report is None:
         report = UnittestTestReport()
     work_dir = get_work_dir(work_dir_or_project)
@@ -477,6 +554,12 @@ def unittest_test(
 def get_pytest_result(
     output: bytes,
 ) -> tuple[bool, Optional[int], Optional[int], Optional[int]]:
+    """
+    Get aggregated results for the pytest framework.
+    :param bytes output: The output of the pytest command.
+    :return tuple[bool, Optional[int], Optional[int], Optional[int]]: The flag if the tests were successful, the total
+    number of tests, the number of failing tests, and the number of passing tests.
+    """
     match = PYTEST_PATTERN.search(output)
     if match:
         if match.group("f"):
@@ -491,7 +574,12 @@ def get_pytest_result(
     return False, None, None, None
 
 
-def replace_important_in_test_report(s: str):
+def replace_important_in_test_report(s: str) -> str:
+    """
+    Replace important parts in the test report.
+    :param str s: The string to replace the important parts in.
+    :return str: The string with the important parts replaced.
+    """
     important = False
     result = ""
     escaped = False
@@ -530,6 +618,13 @@ def replace_important_in_test_report(s: str):
 def get_test_results(
     project: Project, working_directory: os.PathLike, report_file: os.PathLike
 ) -> List[Tuple[str, TestResult]]:
+    """
+    Get the test results from the report file.
+    :param Project project: The project.
+    :param os.PathLike working_directory: The working directory.
+    :param os.PathLike report_file: The report file.
+    :return List[Tuple[str, TestResult]]: The test results.
+    """
     test_results = list()
     is_unittest_ = project.testing_framework == TestingFramework.UNITTEST
     try:

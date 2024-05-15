@@ -1,5 +1,27 @@
+"""
+This module provides the API for the Tests4Py package. The API provides the following functionalities:
+
+checkout: Checkout the source code of a project.
+build: Build the environment of a project.
+test: Test a project with provided unit tests.
+info: Get the information of a project.
+run: Run a system test from a file or as a string.
+systemtest_generate: Generate a system test for a project.
+systemtest_test: Test a project with a system test.
+unittest_generate: Generate a unit test for a project.
+unittest_test: Test a project with a unit test.
+
+Besides, the API provides the following utility functions:
+
+get_bugs: Get the number of bugs in a project.
+get_projects: Get the projects that match the provided criteria.
+get_faulty_lines: Get the faulty lines in a project.
+get_loc: Get the lines of code in a project.
+get_tests: Get the tests of a project.
+"""
+
 import importlib.resources
-from typing import List
+from typing import List, Optional
 
 from sflkit.analysis.suggestion import Location
 from unidiff import PatchSet
@@ -31,6 +53,10 @@ setup()
 
 
 def load_projects():
+    """
+    Load all the projects.
+    :return: None
+    """
     for project in get_matching_projects():
         globals()[project.get_identifier()] = project
 
@@ -39,27 +65,57 @@ load_projects()
 
 
 def get_bugs(project_name: str) -> int:
+    """
+    Get the number of bugs in a project.
+    :param str project_name: The name of the project.
+    :return int: The number of bugs in the project.
+    """
     project_name = project_name.lower()
     return get_number_of_bugs(project_name)
 
 
-def get_projects(project_name: str = None, bug_id: int = None) -> List[Project]:
+def get_projects(
+    project_name: Optional[str] = None, bug_id: Optional[int] = None
+) -> List[Project]:
+    """
+    Get the projects that match the provided criteria.
+    :param Optional[str] project_name: The name of the project.
+    :param Optional[int] bug_id: The id of the bug.
+    :return List[Project]: The projects that match the provided criteria.
+    """
     return get_matching_projects(project_name=project_name, bug_id=bug_id)
 
 
-def get_loc(project: Project):
+def get_loc(project: Project) -> int:
+    """
+    Get the lines of code in a project.
+    :param Project project: The project.
+    :return int: The lines of code in the project.
+    """
     return project.loc
 
 
 class _BlankLine:
+    """
+    A utility class to represent a blank line.
+    """
+
     def __init__(self):
+        """
+        Initialize the blank line.
+        """
         self.is_added = False
         self.is_context = False
         self.is_removed = False
         self.source_line_no = 1
 
 
-def get_faulty_lines(project: Project):
+def get_faulty_lines(project: Project) -> List[Location]:
+    """
+    Get the faulty lines in a project.
+    :param Project project: The project.
+    :return List[Location]: The faulty lines in the project.
+    """
     locations = list()
     project_resources = importlib.resources.files(
         getattr(getattr(resources, project.project_name), f"bug_{project.bug_id}")
