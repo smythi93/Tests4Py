@@ -1786,8 +1786,8 @@ class PandasAPI4(API):
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
         expected = process.args[2]
-        # expected = expected[1:]
-        # expected = expected[:-1]
+        expected = expected[1:]
+        expected = expected[:-1]
         result = process.stdout.decode("utf8")
         result = result.strip()
         print("args: ", args)
@@ -1859,12 +1859,10 @@ class PandasTestGenerator:
 
     @staticmethod
     def pandas4_generate():
-        random_string = PandasTestGenerator.generate_random_string()
-        random_string2 = PandasTestGenerator.generate_random_string()
-        failing_hashable = ([random.randint(1, 1000), random.randint(1, 1000)], (random_string, random_string2))
-        passing_hashable = (random_string, random.randint(1, 1000))
-        dice = random.randint(0, 1)
-        return passing_hashable[dice], failing_hashable[dice]
+        randomise = random.randint(1, 9999)
+        failing = None, [1, 2, randomise], [0, 1, 0, 1, 0, 1, 0, 1], [0, 1, 0, 1, 0, 1, 0, 1]
+        passing = None, [1, 2, randomise], [1, 2, 5, 6, 9, 10, 13, 14], [0, 1, 0, 1, 0, 1, 0, 1]
+        return passing, failing
 
 
 class PandasUnittestGenerator1(
@@ -2338,7 +2336,7 @@ class PandasUnittestGenerator4(
         return [
             ast.ImportFrom(
                 module="pandas",
-                names=[ast.alias(name="pandas"), ast.alias(name="Index"), ast.alias(name="MultiIndex")],
+                names=[ast.alias(name="pandas")],
                 level=0,
             ),
             ast.Import(
@@ -2354,17 +2352,17 @@ class PandasUnittestGenerator4(
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        fail_ = self._generate_one()
-        fail_ = "", "", "", "", "", "", "", "", ""
+        _, fail_ = self._generate_one()
+        expected, list1, list2, list3 = fail_
         test = self.get_empty_test()
-        test.body = self._get_assert(None, [1, 2, 5], [1, 2, 5, 6, 9, 10, 13, 14], [0, 1, 0, 1, 0, 1, 0, 1])
+        test.body = self._get_assert(expected, list1, list2, list3)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass_ = self._generate_one()
-        pass_ = "", "", "", "", "", "", "", "", ""
+        pass_, _ = self._generate_one()
+        expected, list1, list2, list3 = pass_
         test = self.get_empty_test()
-        test.body = self._get_assert(None, [1, 2, 5], [1, 2, 5, 6, 9, 10, 13, 14], [0, 1, 0, 1, 0, 1, 0, 1])
+        test.body = self._get_assert(expected, list1, list2, list3)
         return test, TestResult.PASSING
 
 
