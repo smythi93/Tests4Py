@@ -103,7 +103,7 @@ class ExpressionAPI(API):
         result = process.stdout.decode("utf8")
         result = float(result)
         try:
-            expected = eval(expected)
+            expected = eval(expected.replace("~", "-"))
         except ZeroDivisionError:
             return (
                 TestResult.FAILING,
@@ -299,7 +299,7 @@ grammar: Grammar = {
         "<integers_> <symbol_> (<integers_> <symbol_> <integers_>)",
     ],
     "<symbol_>": ["+", "-", "/", "*"],
-    "<integers_>": ["<integer_>", "-<integer_>"],
+    "<integers_>": ["<integer_>", "~ <integer_>"],
     "<integer_>": ["<digit_><integer_>", "<digit_>"],
     "<digit_>": srange(string.digits),
 }
