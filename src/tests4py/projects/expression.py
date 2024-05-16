@@ -103,7 +103,7 @@ class ExpressionAPI(API):
         result = process.stdout.decode("utf8")
         result = float(result)
         try:
-            expected = eval(expected)
+            expected = eval(expected.replace("~", "-"))
         except ZeroDivisionError:
             return (
                 TestResult.FAILING,
