@@ -299,7 +299,7 @@ grammar: Grammar = {
         "<integers_> <symbol_> (<integers_> <symbol_> <integers_>)",
     ],
     "<symbol_>": ["+", "-", "/", "*"],
-    "<integers_>": ["<integer_>", "-<integer_>"],
+    "<integers_>": ["<integer_>", "~ <integer_>"],
     "<integer_>": ["<digit_><integer_>", "<digit_>"],
     "<digit_>": srange(string.digits),
 }
