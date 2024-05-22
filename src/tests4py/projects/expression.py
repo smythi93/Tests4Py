@@ -291,7 +291,7 @@ class ExpressionSystemtestGenerator(SystemtestGenerator, ExpressionTestGenerator
 
 grammar: Grammar = {
     "<start>": ["<add_term>"],
-    "<add_term>" : ["<add_term> <add> <mul_term>", "<mul_term>"],
+    "<add_term>": ["<add_term> <add> <mul_term>", "<mul_term>"],
     "<mul_term>": ["<mul_term> <mul> <neg_term>", "<neg_term>"],
     "<neg_term>": ["<terminal>", "~ <terminal>"],
     "<terminal>": ["<int>", "(<add_term>)"],
