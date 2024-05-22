@@ -129,31 +129,35 @@ class API:
 
     def tests(
         self,
-        system_tests: PathLike | str,
+        system_tests: PathLike | str | List[PathLike | str],
         environ: Environment,
         work_dir: Optional[Path] = None,
     ) -> List[Tuple[PathLike | str, TestResult, str]]:
-        system_tests_path = Path(system_tests)
         tests = list()
-        if len(str(system_tests_path)) > 256 or not system_tests_path.exists():
-            LOGGER.info(
-                f"Path {repr(system_tests)} does not exist, try to execute it as test case"
-            )
-            with tempfile.NamedTemporaryFile(mode="w") as tmp:
-                tmp.write(system_tests)
-                tmp.flush()
-                _, test_result, feedback = self.test(
-                    tmp.name, environ, work_dir=work_dir
-                )
-                tests.append((system_tests, test_result, feedback))
-        elif not system_tests_path.is_dir():
-            LOGGER.info(f"Path {system_tests_path} is a file")
-            tests.append(self.test(system_tests_path, environ, work_dir=work_dir))
+        if isinstance(system_tests, List):
+            for test in system_tests:
+                tests.append(self.test(test, environ, work_dir=work_dir))
         else:
-            for dir_path, _, files in os.walk(system_tests_path):
-                for file in files:
-                    path = Path(dir_path, file)
-                    tests.append(self.test(path, environ, work_dir=work_dir))
+            system_tests_path = Path(system_tests)
+            if len(str(system_tests_path)) > 256 or not system_tests_path.exists():
+                LOGGER.info(
+                    f"Path {repr(system_tests)} does not exist, try to execute it as test case"
+                )
+                with tempfile.NamedTemporaryFile(mode="w") as tmp:
+                    tmp.write(system_tests)
+                    tmp.flush()
+                    _, test_result, feedback = self.test(
+                        tmp.name, environ, work_dir=work_dir
+                    )
+                    tests.append((system_tests, test_result, feedback))
+            elif not system_tests_path.is_dir():
+                LOGGER.info(f"Path {system_tests_path} is a file")
+                tests.append(self.test(system_tests_path, environ, work_dir=work_dir))
+            else:
+                for dir_path, _, files in os.walk(system_tests_path):
+                    for file in files:
+                        path = Path(dir_path, file)
+                        tests.append(self.test(path, environ, work_dir=work_dir))
         return tests
 
     def prepare_args(self, args: List[str], work_dir: Path) -> List[str]:

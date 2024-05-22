@@ -290,18 +290,15 @@ class ExpressionSystemtestGenerator(SystemtestGenerator, ExpressionTestGenerator
 
 
 grammar: Grammar = {
-    "<start>": ["<expression_>"],
-    "<expression_>": [
-        "<integers_> <symbol_> <integers_>",
-        "(<integers_> <symbol_> <integers_>)",
-        "<integers_> <symbol_> <integers_> <symbol_> <integers_>",
-        "(<integers_> <symbol_> <integers_>) <symbol_> <integers_>",
-        "<integers_> <symbol_> (<integers_> <symbol_> <integers_>)",
-    ],
-    "<symbol_>": ["+", "-", "/", "*"],
-    "<integers_>": ["<integer_>", "~ <integer_>"],
-    "<integer_>": ["<digit_><integer_>", "<digit_>"],
-    "<digit_>": srange(string.digits),
+    "<start>": ["<add_term>"],
+    "<add_term>": ["<add_term> <add> <mul_term>", "<mul_term>"],
+    "<mul_term>": ["<mul_term> <mul> <neg_term>", "<neg_term>"],
+    "<neg_term>": ["<terminal>", "~ <terminal>"],
+    "<terminal>": ["<int>", "(<add_term>)"],
+    "<add>": srange("+-"),
+    "<mul>": srange("*/"),
+    "<int>": ["<digit><int>", "<digit>"],
+    "<digit>": srange(string.digits),
 }
 
 assert is_valid_grammar(grammar)
