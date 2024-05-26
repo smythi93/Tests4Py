@@ -1881,9 +1881,6 @@ class PandasAPI8(API):
         expected = expected[:-1]
         result = process.stdout.decode("utf8")
         result = result.strip()
-        print("args: ", args)
-        print("result: ", result)
-        print("expected: ", expected)
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -1975,7 +1972,12 @@ class PandasTestGenerator:
 
     @staticmethod
     def pandas8_generate():
-        return "", ""
+        random_int = random.randint(1, 499)
+        random_str_passing = ("int64", "Int64", "boolean")
+        random_str_failing = ("float", "float64")
+        passing = (None, random_int, random_str_passing[random.randint(0, len(random_str_passing)-1)])
+        failing = (None, random_int, random_str_failing[random.randint(0, len(random_str_failing)-1)])
+        return passing, failing
 
 
 class PandasUnittestGenerator1(
@@ -2604,6 +2606,7 @@ class PandasUnittestGenerator6(
     @staticmethod
     def _get_assert(
             expected: Any,
+            period_value: Any,
     ) -> list[ast.Assign | ast.Expr]:
         return [
             ast.Assign(
@@ -2621,7 +2624,7 @@ class PandasUnittestGenerator6(
                             value=ast.Call(
                                 func=ast.Name(id='PeriodIndex'),
                                 args=[
-                                    ast.List(elts=[ast.Constant(value="2000")])
+                                    ast.List(elts=[ast.Constant(value=period_value)])
                                 ],
                                 keywords=[
                                     ast.keyword(arg='name', value=ast.Constant(value='A')),
@@ -2688,13 +2691,13 @@ class PandasUnittestGenerator6(
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("expected")
+        test.body = self._get_assert("expected", "2000")
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("expected")
+        test.body = self._get_assert("expected", "1000")
         return test, TestResult.PASSING
 
 
@@ -2823,55 +2826,46 @@ class PandasUnittestGenerator8(
     @staticmethod
     def _get_assert(
             expected: Any,
+            numpy_eye_value: int,
+            value_type: str,
     ) -> list[ast.Assign | ast.Expr]:
-
         return [
             ast.Assign(
-                targets=[
-                    ast.Name(id="ser")
-                ],
+                targets=[ast.Name(id="df")],
                 value=ast.Call(
-                    func=ast.Name(id="Series"),
-                    args=[
-                        ast.List(elts=[ast.Constant(value=1)])
-                    ],
-                    keywords=[
-                        ast.keyword(
-                            arg='index',
-                            value=ast.Call(
-                                func=ast.Name(id='PeriodIndex'),
-                                args=[
-                                    ast.List(elts=[ast.Constant(value="20130101")])
-                                ],
-                                keywords=[
-                                    ast.keyword(arg='name', value=ast.Constant(value='A')),
-                                    ast.keyword(arg='freq', value=ast.Constant(value='D'))
-                                ]
-                            )
-                        )
-                    ]
+                    func=ast.Attribute(value=ast.Name(id="pandas"), attr="DataFrame"),
+                    args=[ast.Call(
+                        func=ast.Attribute(value=ast.Name(id="numpy"), attr="eye"),
+                        args=[ast.Constant(value=numpy_eye_value)],
+                        keywords=[],
+                    ), ],
+                    keywords=[ast.keyword(arg="dtype", value=ast.Constant(value=value_type))],
                 ),
                 lineno=1,
             ),
             ast.Assign(
-                targets=[ast.Name(id="grp")],
-                value=ast.Call(
-                    func=ast.Attribute(value=ast.Name(id="ser"), attr="groupby"),
-                    args=[],
-                    keywords=[
-                        ast.keyword(arg="level", value=ast.Constant(value="A"))
-                    ],
-                ),
-                lineno=2,
-            ),
-            ast.Assign(
                 targets=[ast.Name(id="result")],
                 value=ast.Call(
-                    func=ast.Attribute(value=ast.Name(id="grp"), attr="size"),
+                    func=ast.Attribute(
+                        value=ast.Name(id="df"),
+                        attr="replace",
+                    ),
                     args=[],
-                    keywords=[],
+                    keywords=[
+                        ast.keyword(
+                            arg="to_replace",
+                            value=ast.List(
+                                elts=[
+                                    ast.Constant(value=None),
+                                    ast.UnaryOp(op=ast.USub(),
+                                                operand=ast.Attribute(value=ast.Name(id="numpy"), attr="inf")),
+                                    ast.Attribute(value=ast.Name(id="numpy"), attr="inf")
+                                ],
+                            )
+                        ),
+                        ast.keyword(arg="value", value=ast.Attribute(value=ast.Name(id="numpy"), attr="nan"))]
                 ),
-                lineno=3,
+                lineno=2,
             ),
             ast.Expr(
                 value=ast.Call(
@@ -2879,43 +2873,50 @@ class PandasUnittestGenerator8(
                     args=[
                         ast.Constant(value=expected),
                         ast.Call(
-                            func=ast.Name(id="assert_series_equal"),
+                            func=ast.Name(id="assert_frame_equal"),
                             args=[
                                 ast.Name(id="result"),
-                                ast.Name(id="ser"),
+                                ast.Name(id="df"),
                             ],
                             keywords=[],
                         )],
                     keywords=[]
                 )
             )
+
         ]
 
     def get_imports(self) -> list[ImportFrom]:
         return [
-            ast.ImportFrom(
+            ast.Import(
                 module="pandas",
-                names=[ast.alias(name="pandas"), ast.alias(name="DataFrame"), ast.alias(name="Index"),
-                       ast.alias(name="PeriodIndex"), ast.alias(name="Series")],
+                names=[ast.alias(name="pandas")],
+                level=0,
+            ),
+            ast.Import(
+                module="numpy",
+                names=[ast.alias(name="numpy")],
                 level=0,
             ),
             ast.ImportFrom(
                 module="pandas._testing",
-                names=[ast.alias(name="assert_series_equal")],
+                names=[ast.alias(name="assert_frame_equal")],
                 level=0,
             )
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
+        expected, numpy_eye_value, value_type = fail_
         test = self.get_empty_test()
-        test.body = self._get_assert("expected")
+        test.body = self._get_assert(expected, numpy_eye_value, value_type)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
+        expected, numpy_eye_value, value_type = pass_
         test = self.get_empty_test()
-        test.body = self._get_assert("expected")
+        test.body = self._get_assert(expected, numpy_eye_value, value_type)
         return test, TestResult.PASSING
 
 
