@@ -184,6 +184,9 @@ def register():
         test_cases=[
             "pandas/tests/indexes/categorical/test_indexing.py::TestContains::test_contains_na_dtype"
         ],
+        api=PandasAPI9(),
+        unittests=PandasUnittestGenerator9(),
+        systemtests=PandasSystemtestGenerator9(),
     )
     Pandas(
         bug_id=10,
@@ -1887,6 +1890,25 @@ class PandasAPI8(API):
             return TestResult.FAILING, f"Expected {expected}, but was {result}"
 
 
+class PandasAPI9(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        expected = expected[1:]
+        expected = expected[:-1]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
 class PandasTestGenerator:
     @staticmethod
     def generate_values(producer: Callable) -> str:
@@ -1975,8 +1997,18 @@ class PandasTestGenerator:
         random_int = random.randint(1, 499)
         random_str_passing = ("int64", "Int64", "boolean")
         random_str_failing = ("float", "float64")
-        passing = (None, random_int, random_str_passing[random.randint(0, len(random_str_passing)-1)])
-        failing = (None, random_int, random_str_failing[random.randint(0, len(random_str_failing)-1)])
+        passing = (None, random_int, random_str_passing[random.randint(0, len(random_str_passing) - 1)])
+        failing = (None, random_int, random_str_failing[random.randint(0, len(random_str_failing) - 1)])
+        return passing, failing
+
+    @staticmethod
+    def pandas9_generate():
+        date_range_year = random.randint(1700, 2099)
+        date_range_year_2 = random.randint(1000, 1600)
+        date_range_month = random.randint(1, 12)
+        date_range_day = random.randint(1, 31)
+        passing = f"{date_range_year}-{date_range_month}-{date_range_day}"
+        failing = f"{date_range_year}-{date_range_month}-{date_range_day}"
         return passing, failing
 
 
@@ -2662,13 +2694,15 @@ class PandasUnittestGenerator6(
                     args=[
                         ast.Constant(value=expected),
                         ast.Call(
-                            func=ast.Name(id="assert_series_equal"),
+                            func=ast.Name(id='assert_series_equal'),
                             args=[
                                 ast.Name(id="result"),
                                 ast.Name(id="ser"),
                             ],
-                            keywords=[],
-                        )],
+                            keywords=[
+                            ]
+                        )
+                    ],
                     keywords=[]
                 )
             )
@@ -2678,7 +2712,7 @@ class PandasUnittestGenerator6(
         return [
             ast.ImportFrom(
                 module="pandas",
-                names=[ast.alias(name="PeriodIndex"), ast.alias(name="Series")],
+                names=[ast.alias(name="PeriodIndex"), ast.alias(name="Series"), ast.alias(name="Index")],
                 level=0,
             ),
             ast.ImportFrom(
@@ -2691,13 +2725,13 @@ class PandasUnittestGenerator6(
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("expected", "2000")
+        test.body = self._get_assert("A", "2000")
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("expected", "1000")
+        test.body = self._get_assert("A", "2000")
         return test, TestResult.PASSING
 
 
@@ -2920,6 +2954,116 @@ class PandasUnittestGenerator8(
         return test, TestResult.PASSING
 
 
+class PandasUnittestGenerator9(
+    python.PythonGenerator, UnittestGenerator, PandasTestGenerator
+):
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.pandas9_generate)
+
+    @staticmethod
+    def _get_assert(
+            date_range: Any,
+    ) -> list[ast.Assign | ast.Expr]:
+        return [
+            ast.Assign(
+                targets=[ast.Name(id="dti")],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id="pandas"),
+                                attr="date_range",
+                            ),
+                            args=[ast.Constant(value=date_range)],
+                            keywords=[ast.keyword(arg="periods", value=ast.Constant(value=100))],
+                        ),
+                        attr="insert",
+                    ),
+                    args=[ast.Constant(value=0),
+                          ast.Attribute(value=ast.Name(id="pandas"), attr="NaT")],
+                    keywords=[],
+                ),
+                lineno=2,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="pi")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="dti"), attr="to_period"),
+                    args=[ast.Constant(value="D")],
+                    keywords=[]
+                ),
+                lineno=2,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="tdi")],
+                value=ast.BinOp(
+                    left=ast.Name(id="dti"),
+                    op=ast.Sub(),
+                    right=ast.Subscript(
+                        value=ast.Name(id="dti"),
+                        slice=ast.Index(value=ast.Constant(value=-1)),
+                    ),
+                ),
+                lineno=3,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="ci")],
+                value=ast.Call(
+                    func=ast.Name(id="CategoricalIndex"),
+                    args=[
+                        ast.Name(id="dti"),
+                    ],
+                    keywords=[],
+                ),
+                lineno=4,
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="self"), attr="assertIn"),
+                    args=[
+                        ast.Constant(value=None),
+                        #ast.Attribute(value=ast.Name(id="numpy"), attr="nan"),
+                        ast.Name(id="ci")
+                    ],
+                    keywords=[]
+                )
+            )
+        ]
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            ast.ImportFrom(
+                module="pandas",
+                names=[ast.alias(name="pandas"), ast.alias(name="CategoricalIndex")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="pandas._testing",
+                names=[ast.alias(name="assert_index_equal")],
+                level=0,
+            ),
+            ast.Import(
+                module="numpy",
+                names=[ast.alias(name="numpy")],
+                level=0,
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        _, fail_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert(fail_)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_, _ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert(pass_)
+        return test, TestResult.PASSING
+
+
 class PandasSystemtestGenerator1(SystemtestGenerator, PandasTestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
         _, fail_ = self.generate_values(self.pandas1_generate)
@@ -3009,6 +3153,16 @@ class PandasSystemtestGenerator8(SystemtestGenerator, PandasTestGenerator):
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
         pass_, _ = self.generate_values(self.pandas8_generate)
+        return f"{pass_}", TestResult.PASSING
+
+
+class PandasSystemtestGenerator9(SystemtestGenerator, PandasTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.pandas9_generate)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.pandas9_generate)
         return f"{pass_}", TestResult.PASSING
 
 
