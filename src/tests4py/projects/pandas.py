@@ -1919,11 +1919,10 @@ class PandasAPI10(API):
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
         expected = process.args[2]
+        expected = expected[1:]
+        expected = expected[:-1]
         result = process.stdout.decode("utf8")
         result = result.strip()
-        print("args: ", args)
-        print("result: ", result)
-        print("expected: ", expected)
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -2040,13 +2039,8 @@ class PandasTestGenerator:
             random_float = random_int + random.random()
             values.append(random_float)
         v1, v2, v3, v4, v5 = sorted(values)
-        # s = 1.5, numpy.nan, 3.0, 4.0, numpy.nan
-        # s2= numpy.nan, 3.5, numpy.nan, 5.0
-        # expected = 1.5, 3.5, 3.0, 5.0, numpy.nan
-        # passing = (1, v2, v4, v3, v5)
-        # failing = (v1, v2, v3, v4, v5)
-        passing = (1.5, 3.0, 4.0, 3.5, 5.0)
-        failing = (v1, v2, v3, v4, v5)
+        passing = (v1, v2, v4, v3, v5, v1, v3, v2, v4)
+        failing = (v1, v2, v4, v3, v5, v1, v3, v2, v5)
         return passing, failing
 
 
@@ -3207,6 +3201,10 @@ class PandasUnittestGenerator10(
             s_value3: int | float,
             s2_value1: int | float,
             s2_value2: int | float,
+            expected1: int | float,
+            expected2: int | float,
+            expected3: int | float,
+            expected4: int | float,
 
     ) -> list[ast.Assign | ast.Expr]:
         return [
@@ -3265,10 +3263,10 @@ class PandasUnittestGenerator10(
                     func=ast.Name(id="Series"),
                     args=[
                         ast.List(elts=[
-                            ast.Constant(value=s_value1),
-                            ast.Constant(value=s2_value1),
-                            ast.Constant(value=s_value3),
-                            ast.Constant(value=s2_value2),
+                            ast.Constant(value=expected1),
+                            ast.Constant(value=expected2),
+                            ast.Constant(value=expected3),
+                            ast.Constant(value=expected4),
                             ast.Attribute(value=ast.Name(id="numpy"), attr="nan"),
 
                         ])
@@ -3318,13 +3316,13 @@ class PandasUnittestGenerator10(
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert(fail_[0], fail_[1], fail_[2], fail_[3], fail_[4])
+        test.body = self._get_assert(fail_[0], fail_[1], fail_[2], fail_[3], fail_[4], fail_[5], fail_[6], fail_[7], fail_[8])
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert(pass_[0], pass_[1], pass_[2], pass_[3], pass_[4])
+        test.body = self._get_assert(pass_[0], pass_[1], pass_[2], pass_[3], pass_[4], pass_[5], pass_[6], pass_[7], pass_[8])
         return test, TestResult.PASSING
 
 
