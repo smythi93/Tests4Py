@@ -2095,14 +2095,11 @@ class PandasTestGenerator:
 
     @staticmethod
     def pandas11_generate():
-        values = []
-        for i in range(5):
-            random_int = random.randint(0, 3)
-            random_float = random_int + random.random()
-            values.append(random_float)
-        v1, v2, v3, v4, v5 = sorted(values)
-        passing = (v1, v2, v4, v3, v5, v1, v3, v2, v4)
-        failing = (v1, v2, v4, v3, v5, v1, v3, v2, v5)
+
+        passing = (None, {"a": [1, 2, 3], "b": [4, 5, 6]}, [7, 8, 9], [10, 11, 12],
+                   [[1, 4, 7, 10], [2, 5, 8, 11], [3, 6, 9, 12]])
+        failing = (None, {"a": [1, 2, 3], "b": [4, 5, 6]}, [7, 8, 9], [10, 11, 12],
+                   [[1, 4, 7, 10], [2, 5, 8, 11], [3, 6, 9, 12]])
         return passing, failing
 
     @staticmethod
@@ -3412,66 +3409,135 @@ class PandasUnittestGenerator11(
 
     @staticmethod
     def _get_assert(
-            dict1: Any | dict,
-            dict2: Any | dict,
-            tuple1: Any | tuple,
-            tuple2: Any | tuple,
-
+            expected: None,
+            values1_2: Any | dict,
+            values3: Any | tuple,
+            values4: Any | tuple,
     ) -> list[ast.Assign | ast.Expr]:
         return [
+            ast.Assign(
+                targets=[ast.Name(id="keys")],
+                value=ast.Constant(value=["f", "e", "f"]),
+                lineno=1,
+            ),
             ast.Assign(
                 targets=[ast.Name(id="df")],
                 value=ast.Call(
                     func=ast.Name(id="DataFrame"),
-                    args=[ast.Constant(value=dict1),
-                          ast.Constant(value=dict2)],
+                    args=[ast.Constant(value=values1_2)],
                     keywords=[]),
-                lineno=1,
+                lineno=2,
             ),
             ast.Assign(
                 targets=[ast.Name(id="s1")],
                 value=ast.Call(
                     func=ast.Name(id="Series"),
-                    args=[ast.Constant(value=tuple1)],
-                    keywords=[ast.keyword(arg="name", value=ast.Constant(name="c"))]),
-                lineno=2,
+                    args=[ast.Constant(value=values3)],
+                    keywords=[ast.keyword(arg="name", value=ast.Constant(value="c"))]),
+                lineno=3,
             ),
             ast.Assign(
                 targets=[ast.Name(id="s2")],
                 value=ast.Call(
                     func=ast.Name(id="Series"),
-                    args=[ast.Constant(value=tuple2)],
-                    keywords=[ast.keyword(arg="name", value=ast.Constant(name="d"))]),
-                lineno=3,
+                    args=[ast.Constant(value=values4)],
+                    keywords=[ast.keyword(arg="name", value=ast.Constant(value="d"))]),
+                lineno=4,
             ),
             ast.Assign(
                 targets=[ast.Name(id="result")],
                 value=ast.Call(
                     func=ast.Name(id="concat"),
-                    args=[ast.Tuple(elts=[
-                          ast.Name(id="df"),
-                          ast.Name(id="s1"),
-                          ast.Name(id="s2")])],
+                    args=[ast.List(elts=[
+                        ast.Name(id="df"),
+                        ast.Name(id="s1"),
+                        ast.Name(id="s2")])],
                     keywords=[ast.keyword(arg="axis", value=ast.Constant(value=1)),
-                              ast.keyword(arg="keys", value=ast.Constant(value=[["e", "f", "f"], ["f", "e", "f"]]))]),
-                lineno=3,
+                              ast.keyword(arg="keys", value=ast.Name(id="keys"))]),
+                lineno=5,
             ),
-            # ast.Assign(
-            #     targets=[ast.Name(id="expected_values")],
-            #     args=[
-            #             ast.Name(id="df"),
-            #             ast.Name(id="s1"),
-            #             ast.Name(id="s2")
-            #         ],
-            #     lineno=3,
-            # ),
+            ast.Assign(
+                targets=[ast.Name(id="expected_values")],
+                value=ast.List(elts=[ast.Constant(value=[1,4,7,10]),
+                                     ast.Constant(value=[2,5,8,11]),
+                                     ast.Constant(value=[3,6,9,12])]),
+                lineno=6,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="expected_columns")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Attribute(value=ast.Name(id="pandas"), attr="MultiIndex"),
+                                       attr="from_tuples"),
+                    args=[
+                        ast.List(elts=[
+                            ast.Tuple(elts=[
+                                ast.Subscript(
+                                    value=ast.Name(id="keys"),
+                                    slice=ast.Index(value=ast.Constant(value=0)),
+                                ),
+                                ast.Constant(value="a")
+                            ]),
+                            ast.Tuple(elts=[
+                                ast.Subscript(
+                                    value=ast.Name(id="keys"),
+                                    slice=ast.Index(value=ast.Constant(value=0)),
+                                ),
+                                ast.Constant(value="b")
+                            ]),
+                            ast.Tuple(elts=[
+                                ast.Subscript(
+                                    value=ast.Name(id="keys"),
+                                    slice=ast.Index(value=ast.Constant(value=1)),
+                                ),
+                                ast.Constant(value="c")
+                            ]),
+                            ast.Tuple(elts=[
+                                ast.Subscript(
+                                    value=ast.Name(id="keys"),
+                                    slice=ast.Index(value=ast.Constant(value=2)),
+                                ),
+                                ast.Constant(value="d")
+                            ]),
+                        ])
+                    ],
+                    keywords=[]
+                ),
+                lineno=7,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="expected")],
+                value=ast.Call(
+                    func=ast.Name(id="DataFrame"),
+                    args=[
+                        ast.Name(id="expected_values")
+                    ],
+                    keywords=[ast.keyword(arg="columns", value=ast.Name(id="expected_columns"))]),
+                lineno=8,
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
+                    args=[
+                        ast.Constant(value=expected),
+                        ast.Call(
+                            func=ast.Name(id="assert_frame_equal"),
+                            args=[
+                                ast.Name(id="result"),
+                                ast.Name(id="expected"),
+                            ],
+                            keywords=[]
+                        )
+                    ],
+                    keywords=[]
+                )
+            )
         ]
 
     def get_imports(self) -> list[ImportFrom]:
         return [
             ast.Import(
-                module="numpy",
-                names=[ast.alias(name="numpy")],
+                module="pandas",
+                names=[ast.alias(name="pandas")],
                 level=0,
             ),
             ast.ImportFrom(
@@ -3491,14 +3557,16 @@ class PandasUnittestGenerator11(
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
+        expected, values1_2, values3, values4, result = fail_
         test = self.get_empty_test()
-        test.body = self._get_assert("", "", "", "")
+        test.body = self._get_assert(expected, values1_2, values3, values4)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
+        expected, values1_2, values3, values4, result = pass_
         test = self.get_empty_test()
-        test.body = self._get_assert("", "", "", "")
+        test.body = self._get_assert(expected, values1_2, values3, values4)
         return test, TestResult.PASSING
 
 
@@ -3512,119 +3580,133 @@ class PandasUnittestGenerator12(
 
     @staticmethod
     def _get_assert(
-            s_value1: int | float,
-            s_value2: int | float,
-            s_value3: int | float,
-            s2_value1: int | float,
-            s2_value2: int | float,
-            expected1: int | float,
-            expected2: int | float,
-            expected3: int | float,
-            expected4: int | float,
-
+            expected: None
     ) -> list[ast.Assign | ast.Expr]:
         return [
             ast.Assign(
-                targets=[
-                    ast.Name(id="s")
-                ],
+                targets=[ast.Name(id="other_column")],
                 value=ast.Call(
-                    func=ast.Name(id="Series"),
-                    args=[
-                        ast.List(elts=[
-                            ast.Constant(value=s_value1),
-                            ast.Attribute(value=ast.Name(id="numpy"), attr="nan"),
-                            ast.Constant(value=s_value2),
-                            ast.Constant(value=s_value3),
-                            ast.Attribute(value=ast.Name(id="numpy"), attr="nan"),
-
-                        ])
-                    ],
-                    keywords=[
-                    ]
+                    func=ast.Attribute(
+                        value=ast.Name(id="numpy"),
+                        attr="array",
+                    ),
+                    args=[ast.Constant(value=[1.0, 2.0, 3.0])],
+                    keywords=[],
                 ),
+
                 lineno=1,
             ),
             ast.Assign(
-                targets=[
-                    ast.Name(id="s2")
-                ],
+                targets=[ast.Name(id="data")],
                 value=ast.Call(
-                    func=ast.Name(id="Series"),
+                    func=ast.Attribute(
+                        value=ast.Name(id="pandas"),
+                        attr="DataFrame",
+                    ),
                     args=[
-                        ast.List(elts=[
-                            ast.Attribute(value=ast.Name(id="numpy"), attr="nan"),
-                            ast.Constant(value=s2_value1),
-                            ast.Attribute(value=ast.Name(id="numpy"), attr="nan"),
-                            ast.Constant(value=s2_value2),
-                        ])
+                        ast.Dict(
+                            keys=[
+                                ast.Constant(value="a"),
+                                ast.Constant(value="b")
+                            ],
+                            values=[
+                                ast.Call(
+                                    func=ast.Attribute(
+                                        value=ast.Name(id="pandas"),
+                                        attr="array",
+                                    ),
+                                    args=[
+                                        ast.List(
+                                            elts=[
+                                                ast.Constant(value=1.0),
+                                                ast.Constant(value=2.0),
+                                                ast.Attribute(value=ast.Name(id="numpy"), attr="nan")
+                                            ],
+                                        )
+                                    ],
+                                    keywords=[]
+                                ),
+                                ast.Name(id="other_column")
+                            ]
+                        )
                     ],
-                    keywords=[
-                    ]
+                    keywords=[]
                 ),
                 lineno=2,
             ),
-            ast.Expr(
-                value=ast.Call(
-                    func=ast.Attribute(value=ast.Name(id="s"), attr="update"),
-                    args=[ast.Name(id="s2")],
-                    keywords=[]
-                )
-            ),
             ast.Assign(
-                targets=[
-                    ast.Name(id="expected")
-                ],
+                targets=[ast.Name(id="result")],
                 value=ast.Call(
-                    func=ast.Name(id="Series"),
-                    args=[
-                        ast.List(elts=[
-                            ast.Constant(value=expected1),
-                            ast.Constant(value=expected2),
-                            ast.Constant(value=expected3),
-                            ast.Constant(value=expected4),
-                            ast.Attribute(value=ast.Name(id="numpy"), attr="nan"),
-
-                        ])
-                    ],
-                    keywords=[
-                    ]
+                    func=ast.Attribute(
+                        value=ast.Name(id="data"),
+                        attr="cov",
+                    ),
+                    args=[],
+                    keywords=[],
                 ),
                 lineno=3,
             ),
+            ast.Assign(
+                targets=[ast.Name(id="arr")],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id="numpy"),
+                        attr="array",
+                    ),
+                    args=[ast.List(elts=[ast.Constant(value=[0.5, 0.5]),
+                                         ast.Constant(value=[0.5, 1.0])
+                                         ])],
+                    keywords=[],
+                ),
+                lineno=4,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="expected")],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id="pandas"),
+                        attr="DataFrame",
+                    ),
+                    args=[ast.Name(id="arr")],
+                    keywords=[ast.keyword(arg="columns", value=ast.Constant(value=["a", "b"])),
+                              ast.keyword(arg="index", value=ast.Constant(value=["a", "b"]))],
+                ),
+                lineno=5,
+            ),
             ast.Expr(
                 value=ast.Call(
-                    func=ast.Attribute(value=ast.Name(id="self"), attr="assertIsNone"),
+                    func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
                     args=[
+                        ast.Constant(value=expected),
                         ast.Call(
-                            func=ast.Name(id="assert_series_equal"),
+                            func=ast.Name(id="assert_frame_equal"),
                             args=[
-                                ast.Name(id="s"),
+                                ast.Name(id="result"),
                                 ast.Name(id="expected"),
                             ],
-                            keywords=[],
-                        )],
+                            keywords=[]
+                        ),
+                    ],
                     keywords=[]
                 )
             )
-
         ]
 
     def get_imports(self) -> list[ImportFrom]:
         return [
+            ast.Import(
+                module="pandas",
+                names=[ast.alias(name="pandas")],
+                level=0,
+            ),
             ast.Import(
                 module="numpy",
                 names=[ast.alias(name="numpy")],
                 level=0,
             ),
             ast.ImportFrom(
-                module="pandas",
-                names=[ast.alias(name="Series")],
-                level=0,
-            ),
-            ast.ImportFrom(
                 module="pandas._testing",
-                names=[ast.alias(name="assert_series_equal")],
+                names=[ast.alias(name="assert_frame_equal")],
                 level=0,
             )
         ]
@@ -3632,15 +3714,13 @@ class PandasUnittestGenerator12(
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert(fail_[0], fail_[1], fail_[2], fail_[3], fail_[4], fail_[5], fail_[6], fail_[7],
-                                     fail_[8])
+        test.body = self._get_assert(None)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert(pass_[0], pass_[1], pass_[2], pass_[3], pass_[4], pass_[5], pass_[6], pass_[7],
-                                     pass_[8])
+        test.body = self._get_assert(None)
         return test, TestResult.PASSING
 
 
