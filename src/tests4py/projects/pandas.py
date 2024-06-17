@@ -1948,9 +1948,6 @@ class PandasAPI11(API):
         expected = expected[:-1]
         result = process.stdout.decode("utf8")
         result = result.strip()
-        print("args: ", args)
-        print("result: ", result)
-        print("expected: ", expected)
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -1970,9 +1967,6 @@ class PandasAPI12(API):
         expected = expected[:-1]
         result = process.stdout.decode("utf8")
         result = result.strip()
-        print("args: ", args)
-        print("result: ", result)
-        print("expected: ", expected)
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -2095,23 +2089,27 @@ class PandasTestGenerator:
 
     @staticmethod
     def pandas11_generate():
-
-        passing = (None, {"a": [1, 2, 3], "b": [4, 5, 6]}, [7, 8, 9], [10, 11, 12],
-                   [[1, 4, 7, 10], [2, 5, 8, 11], [3, 6, 9, 12]])
-        failing = (None, {"a": [1, 2, 3], "b": [4, 5, 6]}, [7, 8, 9], [10, 11, 12],
-                   [[1, 4, 7, 10], [2, 5, 8, 11], [3, 6, 9, 12]])
+        random_int = random.randint(1, 5000)
+        random_keys = (["e", "f", "f"], ["f", "e", "f"])
+        passing = (None, ["f", "e", "g"], {"a": [random_int, random_int + 1, random_int + 2],
+                                           "b": [random_int + 3, random_int + 4, random_int + 5]},
+                   [random_int + 6, random_int + 7, random_int + 8], [random_int + 9, random_int + 10, random_int + 11],
+                   [[random_int, random_int + 3, random_int + 6, random_int + 9],
+                    [random_int + 1, random_int + 4, random_int + 7, random_int + 10],
+                    [random_int + 2, random_int + 5, random_int + 8, random_int + 11]])
+        failing = (None, random_keys[random.randint(0, 1)], {"a": [random_int, random_int + 1, random_int + 2],
+                                                             "b": [random_int + 3, random_int + 4, random_int + 5]},
+                   [random_int + 6, random_int + 7, random_int + 8], [random_int + 9, random_int + 10, random_int + 11],
+                   [[random_int, random_int + 3, random_int + 6, random_int + 9],
+                    [random_int + 1, random_int + 4, random_int + 7, random_int + 10],
+                    [random_int + 2, random_int + 5, random_int + 8, random_int + 11]])
         return passing, failing
 
     @staticmethod
     def pandas12_generate():
-        values = []
-        for i in range(5):
-            random_int = random.randint(0, 3)
-            random_float = random_int + random.random()
-            values.append(random_float)
-        v1, v2, v3, v4, v5 = sorted(values)
-        passing = (v1, v2, v4, v3, v5, v1, v3, v2, v4)
-        failing = (v1, v2, v4, v3, v5, v1, v3, v2, v5)
+        random_float = float(random.randint(1, 9997))
+        passing = (None, [random_float, random_float+1, random_float+2])
+        failing = (None, [random_float+2, random_float+1, random_float])
         return passing, failing
 
 
@@ -2763,7 +2761,7 @@ class PandasUnittestGenerator6(
                                 ],
                                 keywords=[
                                     ast.keyword(arg='name', value=ast.Constant(value='A')),
-                                    ast.keyword(arg='freq', value=ast.Constant(value='D'))
+                                    ast.keyword(arg='freq', value=ast.Constant(value='M'))
                                 ]
                             )
                         )
@@ -2828,13 +2826,13 @@ class PandasUnittestGenerator6(
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("A", "2000")
+        test.body = self._get_assert(None, "2000-01-01")
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("A", "2000")
+        test.body = self._get_assert(None, "2000-01")
         return test, TestResult.PASSING
 
 
@@ -3410,14 +3408,16 @@ class PandasUnittestGenerator11(
     @staticmethod
     def _get_assert(
             expected: None,
-            values1_2: Any | dict,
-            values3: Any | tuple,
-            values4: Any | tuple,
+            keys: Tuple,
+            values1_2: dict,
+            values3: tuple,
+            values4: tuple,
+            expected_values: tuple,
     ) -> list[ast.Assign | ast.Expr]:
         return [
             ast.Assign(
                 targets=[ast.Name(id="keys")],
-                value=ast.Constant(value=["f", "e", "f"]),
+                value=ast.Constant(value=keys),
                 lineno=1,
             ),
             ast.Assign(
@@ -3458,9 +3458,7 @@ class PandasUnittestGenerator11(
             ),
             ast.Assign(
                 targets=[ast.Name(id="expected_values")],
-                value=ast.List(elts=[ast.Constant(value=[1,4,7,10]),
-                                     ast.Constant(value=[2,5,8,11]),
-                                     ast.Constant(value=[3,6,9,12])]),
+                value=ast.Constant(value=expected_values),
                 lineno=6,
             ),
             ast.Assign(
@@ -3544,7 +3542,6 @@ class PandasUnittestGenerator11(
                 module="pandas",
                 names=[ast.alias(name="Series"),
                        ast.alias(name="DataFrame"),
-                       ast.alias(name="MultiIndex"),
                        ast.alias(name="concat")],
                 level=0,
             ),
@@ -3557,16 +3554,16 @@ class PandasUnittestGenerator11(
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
-        expected, values1_2, values3, values4, result = fail_
+        expected, keys, values1_2, values3, values4, expected_values = fail_
         test = self.get_empty_test()
-        test.body = self._get_assert(expected, values1_2, values3, values4)
+        test.body = self._get_assert(expected, keys, values1_2, values3, values4, expected_values)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
-        expected, values1_2, values3, values4, result = pass_
+        expected, keys, values1_2, values3, values4, expected_values = pass_
         test = self.get_empty_test()
-        test.body = self._get_assert(expected, values1_2, values3, values4)
+        test.body = self._get_assert(expected, keys, values1_2, values3, values4, expected_values)
         return test, TestResult.PASSING
 
 
@@ -3580,7 +3577,8 @@ class PandasUnittestGenerator12(
 
     @staticmethod
     def _get_assert(
-            expected: None
+        expected: None,
+        array1: tuple,
     ) -> list[ast.Assign | ast.Expr]:
         return [
             ast.Assign(
@@ -3590,7 +3588,7 @@ class PandasUnittestGenerator12(
                         value=ast.Name(id="numpy"),
                         attr="array",
                     ),
-                    args=[ast.Constant(value=[1.0, 2.0, 3.0])],
+                    args=[ast.Constant(value=array1)],
                     keywords=[],
                 ),
 
@@ -3713,14 +3711,16 @@ class PandasUnittestGenerator12(
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
+        expected, array = fail_
         test = self.get_empty_test()
-        test.body = self._get_assert(None)
+        test.body = self._get_assert(expected, array)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
+        expected, array = pass_
         test = self.get_empty_test()
-        test.body = self._get_assert(None)
+        test.body = self._get_assert(expected, array)
         return test, TestResult.PASSING
 
 
