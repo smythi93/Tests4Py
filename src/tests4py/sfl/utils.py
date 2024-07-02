@@ -91,7 +91,7 @@ def create_config(
         working=str(dst.absolute()),
         include='"' + '","'.join(includes) + '"',
         exclude='"' + '","'.join(excludes) + '"',
-        mapping_path=str(mapping.absolute()),
+        mapping_path=str(mapping.absolute()) if mapping else "",
     )
 
 
