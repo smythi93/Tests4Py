@@ -290,6 +290,9 @@ def register():
         test_cases=[
             "pandas/tests/indexes/datetimes/test_insert.py::TestInsert::test_insert_mismatched_types_raises"
         ],
+        api=PandasAPI17(),
+        unittests=PandasUnittestGenerator17(),
+        systemtests=PandasSystemtestGenerator17(),
     )
     Pandas(
         bug_id=18,
@@ -2067,6 +2070,28 @@ class PandasAPI16(API):
             return TestResult.FAILING, f"Expected {expected}, but was {result}"
 
 
+class PandasAPI17(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        expected = expected[1:]
+        expected = expected[:-1]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        print("args: ", args)
+        print("result: ", result)
+        print("expected: ", expected)
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
 class PandasTestGenerator:
     @staticmethod
     def generate_values(producer: Callable) -> str:
@@ -2227,8 +2252,23 @@ class PandasTestGenerator:
     @staticmethod
     def pandas16_generate():
         random_int = random.randint(1000, 9998)
-        passing = (None, [f"{random_int}-01", f"{random_int}-02", f"{random_int}-03", f"{random_int}-04"], f'{random_int+1}-01')
-        failing = (None, [f"{random_int}-09", f"{random_int}-10", f"{random_int}-11", f"{random_int}-12"], f'{random_int+1}-12')
+        passing = (
+            None, [f"{random_int}-01", f"{random_int}-02", f"{random_int}-03", f"{random_int}-04"],
+            f'{random_int + 1}-01')
+        failing = (
+            None, [f"{random_int}-09", f"{random_int}-10", f"{random_int}-11", f"{random_int}-12"],
+            f'{random_int + 1}-12')
+        return passing, failing
+
+    @staticmethod
+    def pandas17_generate():
+        random_year = random.randint(1700, 2199)
+        random_year_f = random.randint(1000, 1599)
+        random_month = random.randint(1, 12)
+        random_day = random.randint(1, 28)
+        timezones = random.choice(["UTC", "US/Eastern", "Asia/Tokyo", "dateutil/Asia/Singapore", "dateutil/US/Pacific"])
+        passing = (f"{random_year}-{random_month}-{random_day}", timezones)
+        failing = (f"{random_year_f}-{random_month}-{random_day}", timezones)
         return passing, failing
 
 
@@ -4524,6 +4564,119 @@ class PandasUnittestGenerator16(
         return test, TestResult.PASSING
 
 
+class PandasUnittestGenerator17(
+    python.PythonGenerator, UnittestGenerator, PandasTestGenerator
+):
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.pandas17_generate)
+
+    @staticmethod
+    def _get_assert(
+            date: str,
+            timezone: str,
+    ) -> list[ast.Assign | ast.Expr]:
+        return [
+            ast.Assign(
+                targets=[ast.Name(id="tz")],
+                value=ast.Constant(value=timezone),
+                lineno=2,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="dti")],
+                value=ast.Call(
+                    func=ast.Name(id="date_range"),
+                    args=[ast.Constant(value=date)],
+                    keywords=[ast.keyword(arg="periods", value=ast.Constant(value=9)),
+                              ast.keyword(arg="freq", value=ast.Constant(value="-1D")),
+                              ast.keyword(arg="name", value=ast.Constant(value=9)),
+                              ast.keyword(arg="tz", value=ast.Name(id="tz"))]),
+                lineno=3,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="msg")],
+                value=ast.Constant(value="incompatible label"),
+                lineno=4,
+            ),
+            ast.With(
+                items=[
+                    ast.withitem(
+                        context_expr=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id='pytest'),
+                                attr='raises',
+                            ),
+                            args=[
+                                ast.Name(id='TypeError')
+                            ],
+                            keywords=[
+                                ast.keyword(
+                                    arg='match',
+                                    value=ast.Name(id='msg')
+                                )
+                            ]
+                        ),
+                        optional_vars=None
+                    )
+                ],
+                body=[
+                    ast.Expr(
+                        value=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id='dti'),
+                                attr='insert',
+                            ),
+                            args=[
+                                ast.Constant(value=1),
+                                ast.Attribute(value=ast.Name(id="np"), attr="int64"),],
+                            keywords=[]
+                        )
+                    )
+                ],
+                lineno=4
+            ),
+        ]
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            ast.Import(
+                module="pandas",
+                names=[ast.alias(name="pandas")],
+                level=0,
+            ),
+            ast.Import(
+                module="pytest",
+                names=[ast.alias(name="pytest")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="pandas._testing",
+                names=[ast.alias(name="assert_index_equal")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="pandas",
+                names=[ast.alias(name="date_range")],
+                level=0,
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        _, fail_ = self._generate_one()
+        date, timezone = fail_
+        test = self.get_empty_test()
+        test.body = self._get_assert(date, timezone)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_, _ = self._generate_one()
+        date, timezone = pass_
+        test = self.get_empty_test()
+        test.body = self._get_assert(date, timezone)
+        return test, TestResult.PASSING
+
+
 class PandasSystemtestGenerator1(SystemtestGenerator, PandasTestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
         _, fail_ = self.generate_values(self.pandas1_generate)
@@ -4693,6 +4846,16 @@ class PandasSystemtestGenerator16(SystemtestGenerator, PandasTestGenerator):
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
         pass_, _ = self.generate_values(self.pandas16_generate)
+        return f"{pass_}", TestResult.PASSING
+
+
+class PandasSystemtestGenerator17(SystemtestGenerator, PandasTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.pandas17_generate)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.pandas17_generate)
         return f"{pass_}", TestResult.PASSING
 
 
