@@ -27,6 +27,7 @@ def sflkit_instrument(
     dst: os.PathLike,
     work_dir_or_project: Optional[Union[os.PathLike, Project]] = None,
     events: str = None,
+    mapping: os.PathLike = None,
     report: SFLInstrumentReport = None,
 ):
     report = report or SFLInstrumentReport()
@@ -42,6 +43,7 @@ def sflkit_instrument(
                 work_dir,
                 Path(dst),
                 events=events,
+                mapping=Path(mapping) if mapping else None,
             ),
         )
         report.successful = True

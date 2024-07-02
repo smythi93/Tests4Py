@@ -65,6 +65,7 @@ def create_config(
     metrics: str = None,
     predicates: str = None,
     events_path: Optional[Path] = None,
+    mapping: Optional[Path] = None,
 ):
     if project.included_files:
         includes = project.included_files
@@ -90,6 +91,7 @@ def create_config(
         working=str(dst.absolute()),
         include='"' + '","'.join(includes) + '"',
         exclude='"' + '","'.join(excludes) + '"',
+        mapping_path=str(mapping.absolute()) if mapping else "",
     )
 
 
