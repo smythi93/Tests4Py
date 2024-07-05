@@ -2083,9 +2083,6 @@ class PandasAPI17(API):
         expected = expected[:-1]
         result = process.stdout.decode("utf8")
         result = result.strip()
-        print("args: ", args)
-        print("result: ", result)
-        print("expected: ", expected)
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -2262,13 +2259,14 @@ class PandasTestGenerator:
 
     @staticmethod
     def pandas17_generate():
+        random_int = random.randint(1, 9999)
         random_year = random.randint(1700, 2199)
         random_year_f = random.randint(1000, 1599)
         random_month = random.randint(1, 12)
         random_day = random.randint(1, 28)
         timezones = random.choice(["UTC", "US/Eastern", "Asia/Tokyo", "dateutil/Asia/Singapore", "dateutil/US/Pacific"])
-        passing = (f"{random_year}-{random_month}-{random_day}", timezones)
-        failing = (f"{random_year_f}-{random_month}-{random_day}", timezones)
+        passing = (random_int, f"{random_year}-{random_month}-{random_day}", timezones)
+        failing = (random_int, f"{random_year_f}-{random_month}-{random_day}", timezones)
         return passing, failing
 
 
@@ -4574,6 +4572,7 @@ class PandasUnittestGenerator17(
 
     @staticmethod
     def _get_assert(
+            value: int,
             date: str,
             timezone: str,
     ) -> list[ast.Assign | ast.Expr]:
@@ -4629,7 +4628,8 @@ class PandasUnittestGenerator17(
                             ),
                             args=[
                                 ast.Constant(value=1),
-                                ast.Attribute(value=ast.Name(id="np"), attr="int64"),],
+                                ast.Constant(value=value),
+                            ],
                             keywords=[]
                         )
                     )
@@ -4641,18 +4641,8 @@ class PandasUnittestGenerator17(
     def get_imports(self) -> list[ImportFrom]:
         return [
             ast.Import(
-                module="pandas",
-                names=[ast.alias(name="pandas")],
-                level=0,
-            ),
-            ast.Import(
                 module="pytest",
                 names=[ast.alias(name="pytest")],
-                level=0,
-            ),
-            ast.ImportFrom(
-                module="pandas._testing",
-                names=[ast.alias(name="assert_index_equal")],
                 level=0,
             ),
             ast.ImportFrom(
@@ -4664,16 +4654,16 @@ class PandasUnittestGenerator17(
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
-        date, timezone = fail_
+        value, date, timezone = fail_
         test = self.get_empty_test()
-        test.body = self._get_assert(date, timezone)
+        test.body = self._get_assert(value, date, timezone)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
-        date, timezone = pass_
+        value, date, timezone = pass_
         test = self.get_empty_test()
-        test.body = self._get_assert(date, timezone)
+        test.body = self._get_assert(value, date, timezone)
         return test, TestResult.PASSING
 
 
