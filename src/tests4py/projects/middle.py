@@ -240,7 +240,8 @@ grammar: Grammar = clean_up(
         CLI_GRAMMAR,
         **{
             "<start>": ["<arg> <arg> <arg>"],
-            "<escaped>": ["<integer>"],
+            "<escaped_double>": ["<integer>"],
+            "<escaped_single>": ["<integer>"],
             "<unescaped>": ["<integer>"],
         },
         **INTEGER,

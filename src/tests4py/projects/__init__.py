@@ -56,6 +56,7 @@ class Project:
         loc: int = 0,
         included_files: Optional[List[str]] = None,
         excluded_files: Optional[List[str]] = None,
+        skip_tests: Optional[List[str]] = None,
     ):
         if project_name not in bugs:
             bugs[project_name] = dict()
@@ -99,6 +100,7 @@ class Project:
         self.excluded_files = excluded_files or list()
         self.loc = loc
         self.test_base = test_base
+        self.skip_tests = skip_tests or list()
 
     def write_bug_info(self, path: Path):
         config = ConfigParser()

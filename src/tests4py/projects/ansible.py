@@ -26,6 +26,7 @@ class Ansible(Project):
         api: Optional[API] = None,
         loc: int = 0,
         relevant_test_files: Optional[List[Path]] = None,
+        skip_tests: Optional[List[str]] = None,
     ):
         super().__init__(
             bug_id=bug_id,
@@ -50,6 +51,7 @@ class Ansible(Project):
             test_base=Path("test", "units"),
             included_files=[os.path.join("lib", PROJECT_MAME)],
             relevant_test_files=relevant_test_files,
+            skip_tests=skip_tests,
         )
 
 
@@ -167,16 +169,13 @@ def register():
                 "test",
                 "units",
                 "galaxy",
-                "test_collection_install.py::test_build_requirement_from_path_no_version",
-            ),
-            os.path.join(
-                "test",
-                "units",
-                "galaxy",
                 "test_collection_install.py::test_add_collection_requirement_to_unknown_installed_version",
             ),
         ],
-        test_status_fixed=TestStatus.FAILING,
+        skip_tests=[
+            "test_build_requirement_from_path_no_version",
+        ],
+        # test_status_fixed=TestStatus.FAILING,
         loc=718675,
     )
     Ansible(
