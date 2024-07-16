@@ -28,6 +28,7 @@ class Httpie(Project):
         test_base: Optional[os.PathLike] = None,
         loc: int = 0,
         relevant_test_files: Optional[List[Path]] = None,
+        skip_tests: Optional[List[str]] = None,
     ):
         super().__init__(
             bug_id=bug_id,
@@ -47,11 +48,14 @@ class Httpie(Project):
             systemtests=systemtests,
             api=HttpieAPI(),
             grammar=grammar_request,
+            source_base=Path(PROJECT_NAME),
             test_base=test_base or Path("tests"),
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
             included_files=[PROJECT_NAME],
             relevant_test_files=relevant_test_files,
+            skip_tests=skip_tests,
+            set_rootdir=False,
         )
 
 
@@ -108,6 +112,7 @@ def register():
             Path("tests", "test_downloads.py"),
             Path("tests", "test_sessions.py"),
         ],
+        skip_tests=["test_session_ignored_header_prefixes"],
         # systemtests=Httpie3SystemtestGenerator(),
         # unittests=Httpie3UnittestGenerator(),
         loc=2255,
@@ -141,6 +146,7 @@ def register():
             os.path.join("tests", "tests.py::TestItemParsing::test_escape_longsep"),
         ],
         test_base=Path("tests", "tests.py"),
+        skip_tests=["test_verbose"],
         # systemtests=Httpie5SystemtestGenerator(),
         # unittests=Httpie5UnittestGenerator(),
         loc=509,

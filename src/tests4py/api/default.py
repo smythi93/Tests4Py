@@ -499,7 +499,8 @@ def test(
 
         if project.testing_framework == TestingFramework.PYTEST:
             command.append(TestingFramework.PYTEST.value)
-            command.append(f"--rootdir={work_dir}")
+            if project.set_rootdir:
+                command.append(f"--rootdir={work_dir}")
             if xml_output:
                 command.append(f"--junit-xml={xml_output.absolute()}")
         elif project.testing_framework == TestingFramework.UNITTEST:
