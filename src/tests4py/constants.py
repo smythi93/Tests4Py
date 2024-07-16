@@ -80,7 +80,7 @@ NEWLINE_TOKEN = "TESTS4PYNEWLINETOKEN"
 
 # ~~~~~~ PYENV ~~~~~~ #
 
-PYTHON = "python"
+PYTHON = "python3"
 
 
 def check_pyenv(pyenv):
