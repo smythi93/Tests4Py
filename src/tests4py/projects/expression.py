@@ -55,6 +55,7 @@ class Expression(Project):
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
             included_files=[os.path.join("src", PROJECT_MAME)],
+            source_base=Path("src"),
             test_base=Path("tests"),
         )
 
