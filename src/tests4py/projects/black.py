@@ -47,6 +47,8 @@ class Black(Project):
             grammar=None,
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
+            source_base=[Path("black.py"), Path("blib2to3")]
+            + ([Path("blackd.py")] if blackd else []),
             test_base=Path("tests"),
             included_files=["black.py"] + (["blackd.py"] if blackd else list()),
             relevant_test_files=[Path("tests", "test_black.py")],

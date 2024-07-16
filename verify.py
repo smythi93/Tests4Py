@@ -1,4 +1,6 @@
 import argparse
+import os
+import subprocess
 
 import tests4py.api as t4p
 from tests4py.projects import Project
@@ -11,6 +13,17 @@ def main(project: Project):
         raise RuntimeError(
             f"bug: checkout of {project.get_identifier()}", report.raised
         )
+    lines = subprocess.run(
+        ["cloc", "--include-lang=Python"]
+        + [os.path.join(report.location, s) for s in project.source_base],
+        stdout=subprocess.PIPE,
+    )
+    if lines.returncode != 0:
+        raise RuntimeError(f"bug: cloc of {project.get_identifier()}")
+    project.loc = int(
+        lines.stdout.split(b"SUM")[1].split(b"\n")[0].split(b" ")[-1].strip()
+    )
+    print(f"loc: {project.loc}")
     report = t4p.build(project)
     if report.raised:
         raise RuntimeError(f"bug: build of {project.get_identifier()}", report.raised)

@@ -57,6 +57,7 @@ class Project:
         included_files: Optional[List[str]] = None,
         excluded_files: Optional[List[str]] = None,
         skip_tests: Optional[List[str]] = None,
+        source_base: Optional[os.PathLike | List[os.PathLike]] = None,
     ):
         if project_name not in bugs:
             bugs[project_name] = dict()
@@ -101,6 +102,10 @@ class Project:
         self.loc = loc
         self.test_base = test_base
         self.skip_tests = skip_tests or list()
+        source_base = source_base or Path("src")
+        if not isinstance(source_base, list):
+            source_base = [source_base]
+        self.source_base = source_base
 
     def write_bug_info(self, path: Path):
         config = ConfigParser()

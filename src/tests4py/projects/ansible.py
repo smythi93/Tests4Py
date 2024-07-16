@@ -48,6 +48,7 @@ class Ansible(Project):
             grammar=None,
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
+            source_base=[Path("lib", "ansible")],
             test_base=Path("test", "units"),
             included_files=[os.path.join("lib", PROJECT_MAME)],
             relevant_test_files=relevant_test_files,
