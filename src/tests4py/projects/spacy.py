@@ -15,28 +15,28 @@ from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
 
-PROJECT_MAME = "spacy"
+PROJECT_NAME = "spacy"
 
 
 class SpaCy(Project):
     def __init__(
-            self,
-            bug_id: int,
-            buggy_commit_id: str,
-            fixed_commit_id: str,
-            test_files: List[Path],
-            test_cases: List[str],
-            test_status_fixed: TestStatus = TestStatus.PASSING,
-            test_status_buggy: TestStatus = TestStatus.FAILING,
-            unittests: Optional[UnittestGenerator] = None,
-            systemtests: Optional[SystemtestGenerator] = None,
-            api: Optional[API] = None,
-            loc: int = 0,
-            relevant_test_files: Optional[List[Path]] = None,
+        self,
+        bug_id: int,
+        buggy_commit_id: str,
+        fixed_commit_id: str,
+        test_files: List[Path],
+        test_cases: List[str],
+        test_status_fixed: TestStatus = TestStatus.PASSING,
+        test_status_buggy: TestStatus = TestStatus.FAILING,
+        unittests: Optional[UnittestGenerator] = None,
+        systemtests: Optional[SystemtestGenerator] = None,
+        api: Optional[API] = None,
+        loc: int = 0,
+        relevant_test_files: Optional[List[Path]] = None,
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name=PROJECT_MAME,
+            project_name=PROJECT_NAME,
             github_url="https://github.com/explosion/spaCy",
             status=Status.OK,
             python_version="3.7.7",
@@ -92,7 +92,6 @@ def register():
         api=SpaCyAPI2(),
         unittests=SpaCyUnittestGenerator2(),
         systemtests=SpaCySystemtestGenerator2(),
-
     )
     SpaCy(
         bug_id=3,
@@ -249,9 +248,17 @@ class SpaCyTestGenerator:
         errors_randomised2 = random.randint(10, 100)
         errors_randomised3 = random.randint(100, 197)
 
-        passing = (f"W00{warnings_randomised1}", f"W0{warnings_randomised2}",
-                   f"E00{errors_randomised1}", f"E0{errors_randomised2}", f"E{errors_randomised3}",
-                   f"T003", f"T004", f"T007", f"T008")
+        passing = (
+            f"W00{warnings_randomised1}",
+            f"W0{warnings_randomised2}",
+            f"E00{errors_randomised1}",
+            f"E0{errors_randomised2}",
+            f"E{errors_randomised3}",
+            f"T003",
+            f"T004",
+            f"T007",
+            f"T008",
+        )
         return passing[random.randint(0, len(passing) - 1)]
 
     @staticmethod
@@ -271,13 +278,13 @@ class SpaCyUnittestGenerator1(
     python.PythonGenerator, UnittestGenerator, SpaCyTestGenerator
 ):
     def _generate_one(
-            self,
+        self,
     ) -> str:
         return self.generate_values(self.spacy1_generate)
 
     @staticmethod
     def _get_assert(
-            expected: str,
+        expected: str,
     ) -> list[Assign | Expr]:
         return [
             ast.Assign(
@@ -327,25 +334,23 @@ class SpaCyUnittestGenerator1(
             ),
             ast.Expr(
                 value=ast.Call(
-                    func=ast.Attribute(
-                        value=ast.Name(id="self"),
-                        attr="assertEqual"
-                    ),
+                    func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
                     args=[
                         ast.Constant(value=""),
                         ast.Call(
                             func=ast.Name(id="__getattribute__"),
                             args=[
                                 ast.Name(id="errors_with_codes"),
-                                ast.Constant(value="E001")
+                                ast.Constant(value="E001"),
                             ],
-                            keywords=[]
-                        )
+                            keywords=[],
+                        ),
                     ],
-                    keywords=[]
+                    keywords=[],
                 ),
-                lineno=4
-            )]
+                lineno=4,
+            ),
+        ]
 
     def get_imports(self) -> list[ImportFrom]:
         return [
@@ -368,7 +373,7 @@ class SpaCyUnittestGenerator1(
                 module="spacy.errors",
                 names=[ast.alias(name="TempErrors")],
                 level=0,
-            )
+            ),
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
@@ -388,15 +393,15 @@ class SpaCyUnittestGenerator2(
     python.PythonGenerator, UnittestGenerator, SpaCyTestGenerator
 ):
     def _generate_one(
-            self,
+        self,
     ) -> str:
         return self.generate_values(self.spacy2_generate)
 
     @staticmethod
     def _get_assert(
-            expected: str,
-            model_path: str,
-            meta: bool,
+        expected: str,
+        model_path: str,
+        meta: bool,
     ) -> list[Call]:
         return [
             ast.Call(
@@ -407,7 +412,7 @@ class SpaCyUnittestGenerator2(
                         func=ast.Name(id="load_model_from_path"),
                         args=[
                             ast.Constant(value=model_path),
-                            #ast.Constant(value=meta),
+                            # ast.Constant(value=meta),
                         ],
                         keywords=[],
                     ),
@@ -442,16 +447,16 @@ class SpaCyUnittestGenerator3(
     python.PythonGenerator, UnittestGenerator, SpaCyTestGenerator
 ):
     def _generate_one(
-            self,
+        self,
     ) -> str:
         return self.generate_values(self.spacy3_generate)
 
     @staticmethod
     def _get_assert(
-            expected: str,
-            article_title: str,
-            article_text: str,
-            wp_to_id: dict,
+        expected: str,
+        article_title: str,
+        article_text: str,
+        wp_to_id: dict,
     ) -> list[Call]:
         return [
             ast.Call(
@@ -463,7 +468,7 @@ class SpaCyUnittestGenerator3(
                         args=[
                             ast.Constant(value=article_title),
                             ast.Constant(value=article_text),
-                            ast.Constant(value=wp_to_id)
+                            ast.Constant(value=wp_to_id),
                         ],
                         keywords=[],
                     ),
@@ -491,7 +496,10 @@ class SpaCyUnittestGenerator3(
                 Colloquially, the term "artificial intelligence" is often used to describe machines (or computers) that mimic "cognitive" functions that humans associate with the human mind, such as "learning" and "problem solving".
             </text>
         """  # Raw text content of the Wikipedia article
-        wp_to_id = {"Artificial intelligence": "Q11660", "Machine learning": "Q2539"}  # Dictionary mapping Wikipedia page titles to IDs
+        wp_to_id = {
+            "Artificial intelligence": "Q11660",
+            "Machine learning": "Q2539",
+        }  # Dictionary mapping Wikipedia page titles to IDs
         test = self.get_empty_test()
         test.body = self._get_assert("", article_title, article_text, wp_to_id)
         return test, TestResult.FAILING
@@ -507,16 +515,16 @@ class SpaCyUnittestGenerator4(
     python.PythonGenerator, UnittestGenerator, SpaCyTestGenerator
 ):
     def _generate_one(
-            self,
+        self,
     ) -> str:
         return self.generate_values(self.spacy4_generate)
 
     @staticmethod
     def _get_assert(
-            expected: str,
-            article_title: str,
-            article_text: str,
-            wp_to_id: str,
+        expected: str,
+        article_title: str,
+        article_text: str,
+        wp_to_id: str,
     ) -> list[Call]:
         return [
             ast.Call(
@@ -528,7 +536,7 @@ class SpaCyUnittestGenerator4(
                         args=[
                             ast.Constant(value=article_title),
                             ast.Constant(value=article_text),
-                            ast.Constant(value=wp_to_id)
+                            ast.Constant(value=wp_to_id),
                         ],
                         keywords=[],
                     ),

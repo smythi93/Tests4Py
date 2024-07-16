@@ -5,7 +5,7 @@ from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
 
-PROJECT_MAME = "tornado"
+PROJECT_NAME = "tornado"
 
 
 class Tornado(Project):
@@ -26,7 +26,7 @@ class Tornado(Project):
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name=PROJECT_MAME,
+            project_name=PROJECT_NAME,
             github_url="https://github.com/tornadoweb/tornado",
             status=Status.OK,
             python_version="3.7.0",

@@ -19,7 +19,7 @@ from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
 
-PROJECT_MAME = "calculator"
+PROJECT_NAME = "calculator"
 
 
 class Calculator(Project):
@@ -39,7 +39,7 @@ class Calculator(Project):
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name=PROJECT_MAME,
+            project_name=PROJECT_NAME,
             github_url="https://github.com/smythi93/calculator",
             status=Status.OK,
             python_version="3.10.9",

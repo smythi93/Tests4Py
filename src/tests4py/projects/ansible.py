@@ -8,7 +8,7 @@ from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
 
-PROJECT_MAME = "ansible"
+PROJECT_NAME = "ansible"
 
 
 class Ansible(Project):
@@ -30,11 +30,11 @@ class Ansible(Project):
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name=PROJECT_MAME,
+            project_name=PROJECT_NAME,
             github_url="https://github.com/ansible/ansible",
             status=Status.OK,
             python_version="3.6.15",
-            python_path=os.path.join(PROJECT_MAME, "build", "lib"),
+            python_path=os.path.join(PROJECT_NAME, "build", "lib"),
             buggy_commit_id=buggy_commit_id,
             fixed_commit_id=fixed_commit_id,
             testing_framework=TestingFramework.PYTEST,
@@ -50,7 +50,7 @@ class Ansible(Project):
             setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
             source_base=[Path("lib", "ansible")],
             test_base=Path("test", "units"),
-            included_files=[os.path.join("lib", PROJECT_MAME)],
+            included_files=[os.path.join("lib", PROJECT_NAME)],
             relevant_test_files=relevant_test_files,
             skip_tests=skip_tests,
         )

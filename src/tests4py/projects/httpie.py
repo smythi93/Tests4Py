@@ -10,7 +10,7 @@ from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
 
-PROJECT_MAME = "httpie"
+PROJECT_NAME = "httpie"
 
 
 class Httpie(Project):
@@ -31,7 +31,7 @@ class Httpie(Project):
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name=PROJECT_MAME,
+            project_name=PROJECT_NAME,
             github_url="https://github.com/jakubroztocil/httpie/",
             status=Status.OK,
             python_version="3.7.8",
@@ -50,7 +50,7 @@ class Httpie(Project):
             test_base=test_base or Path("tests"),
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
-            included_files=[PROJECT_MAME],
+            included_files=[PROJECT_NAME],
             relevant_test_files=relevant_test_files,
         )
 

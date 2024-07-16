@@ -20,7 +20,7 @@ from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult, SpecificationError
 
-PROJECT_MAME = "cookiecutter"
+PROJECT_NAME = "cookiecutter"
 
 
 class CookieCutter(Project):
@@ -44,7 +44,7 @@ class CookieCutter(Project):
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name=PROJECT_MAME,
+            project_name=PROJECT_NAME,
             github_url="https://github.com/cookiecutter/cookiecutter",
             status=Status.OK,
             python_version=python_version,
@@ -64,9 +64,9 @@ class CookieCutter(Project):
             grammar=grammar,
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
-            source_base=Path("cookiecutter"),
+            source_base=Path(PROJECT_NAME),
             test_base=Path("tests"),
-            included_files=[PROJECT_MAME],
+            included_files=[PROJECT_NAME],
             relevant_test_files=relevant_test_files,
         )
 
