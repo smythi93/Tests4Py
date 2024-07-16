@@ -16,7 +16,7 @@ from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
 
-PROJECT_MAME = "expression"
+PROJECT_NAME = "expression"
 
 
 class Expression(Project):
@@ -36,7 +36,7 @@ class Expression(Project):
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name=PROJECT_MAME,
+            project_name=PROJECT_NAME,
             github_url="https://github.com/smythi93/expression",
             status=Status.OK,
             python_version="3.10.9",
@@ -54,7 +54,8 @@ class Expression(Project):
             grammar=grammar,
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
-            included_files=[os.path.join("src", PROJECT_MAME)],
+            included_files=[os.path.join("src", PROJECT_NAME)],
+            source_base=Path("src"),
             test_base=Path("tests"),
         )
 
@@ -69,9 +70,10 @@ def register():
             Path("tests", "test_expression.py"),
         ],
         test_cases=[
-            os.path.join("tests", "test_evaluate.py")
-            + "::TestEvaluate::test_eval_div_error",
-            os.path.join("tests", "test_expression.py") + "::TestExpr::test_div_error",
+            os.path.join(
+                "tests", "test_evaluate.py::TestEvaluate::test_eval_div_error"
+            ),
+            os.path.join("tests", "test_expression.py::TestExpr::test_div_error"),
         ],
         loc=108,
         unittests=ExpressionUnittestGenerator(),

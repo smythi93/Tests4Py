@@ -5,7 +5,7 @@ from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, ExpectErrAPI
 
-PROJECT_MAME = "youtubedl"
+PROJECT_NAME = "youtubedl"
 
 
 class YoutubeDL(Project):
@@ -26,7 +26,7 @@ class YoutubeDL(Project):
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name=PROJECT_MAME,
+            project_name=PROJECT_NAME,
             github_url="https://github.com/ytdl-org/youtube-dl",
             status=Status.OK,
             python_version="3.7.0",

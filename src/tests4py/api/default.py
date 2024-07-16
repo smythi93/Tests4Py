@@ -499,7 +499,8 @@ def test(
 
         if project.testing_framework == TestingFramework.PYTEST:
             command.append(TestingFramework.PYTEST.value)
-            command.append(f"--rootdir={work_dir}")
+            if project.set_rootdir:
+                command.append(f"--rootdir={work_dir}")
             if xml_output:
                 command.append(f"--junit-xml={xml_output.absolute()}")
         elif project.testing_framework == TestingFramework.UNITTEST:
@@ -516,19 +517,32 @@ def test(
             raise NotImplementedError(
                 f"No command found for {project.testing_framework.value}"
             )
+        skips = []
+        tests = []
         if not relevant_tests and not all_tests and not single_test:
             LOGGER.info(f"Run relevant tests {project.test_cases}")
-            command += project.test_cases
+            tests += project.test_cases
         elif all_tests:
             if project.test_base:
-                command.append(project.test_base)
+                tests.append(project.test_base)
         elif relevant_tests:
-            command += project.relevant_test_files
+            tests += project.relevant_test_files
+            if (
+                project.skip_tests
+                and project.testing_framework == TestingFramework.PYTEST
+            ):
+                skips = [
+                    "-k",
+                    " and ".join([f"not {skip}" for skip in project.skip_tests]),
+                ]
         elif single_test:
             if isinstance(single_test, str):
-                command.append(single_test)
+                tests.append(single_test)
             else:
-                command += single_test
+                tests += single_test
+
+        command += skips
+        command += tests
 
         LOGGER.info(f"Run tests with command {command}")
         output = subprocess.run(

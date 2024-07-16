@@ -52,7 +52,7 @@ PYTEST_PATTERN = re.compile(
     rb"((?P<f>\d+) failed)|"
     rb"((?P<p>\d+) passed)|"
     rb"(\d+ (skipped|warning(s?)|"
-    rb"(error(s?)))))"
+    rb"error(s?)|deselected)))"
     rb"(( |\x1b\[\d+m)*,( |\x1b\[\d+m)+)?)+( |\x1b\[\d+m)+in( |\x1b\[\d+m)+"
 )
 UNITTEST_TOTAL_PATTERN = re.compile(rb"Ran (?P<t>\d+) tests? in")

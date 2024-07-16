@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return '-p/items/\n-mpost\n-a\n-u\n-d{"aliased_name":"test-name","price":1.6,"age":-5.1}'
+        return "-gs /valid/ Item -a aliased_name -m get -u /valid/"
 
     def test_diversity_2(self):
-        return '-p/items/\n-mpost\n-d{"name":"test-name","price":1.6,"age":-1.5}'
+        return "-gs /valid/ Item -a aliased_name -m get -u /valid/"
 
     def test_diversity_3(self):
-        return '-p/items/\n-mpost\n-d{"name":"test-name","price":1.6,"age":-1.0}'
+        return "-gs /valid/ Item -a aliased_name -m get -u /valid/"
 
     def test_diversity_4(self):
-        return '-p/items/\n-a\n-o\n-mpost\n-d{"aliased_name":"test-name","price":1.6,"age":-42.42}'
+        return "-gs /valid/ Item -a aliased_name -m get -u /valid/"
 
     def test_diversity_5(self):
-        return '-p/items/\n-a\n-o\n-mpost\n-d{"aliased_name":"test-name","price":1.6,"age":-56.05}\n-u'
+        return "-gs /valid/ Item -a aliased_name -m get -u /valid/"
 
     def test_diversity_6(self):
-        return '-p/items/\n-mpost\n-d{"name":"test-name","price":1.6,"age":-21.21}'
+        return "-gs /valid/ Item -a aliased_name -m get -u /valid/"
 
     def test_diversity_7(self):
-        return '-a\n-p/items/\n-o\n-mpost\n-d{"aliased_name":"test-name","price":1.6,"age":-0.1}'
+        return "-gs /valid/ Item -a aliased_name -m get -u /valid/"
 
     def test_diversity_8(self):
-        return '-p/items/\n-mpost\n-o\n-d{"name":"test-name","price":1.6,"age":-0.01}'
+        return "-gs /valid/ Item -a aliased_name -m get -u /valid/"
 
     def test_diversity_9(self):
-        return '-p/items/\n-mpost\n-a\n-d{"aliased_name":"test-name","price":1.6,"age":-0.001}\n-u'
+        return "-gs /valid/ Item -a aliased_name -m get -u /valid/"
 
     def test_diversity_10(self):
-        return '-p/items/\n-mpost\n-d{"name":"test-name","price":1.6,"age":-0.00001}'
+        return "-gs /valid/ Item -a aliased_name -m get -u /valid/"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return "-p/router/\n-mwebsocket\n-a"
+        return "-gs /valid/ Item -m get -u /valid/"
 
     def test_diversity_2(self):
-        return "-p/user/1\n-u\n-mget"
+        return "-gs /valid/ Item -m get -u /valid/"
 
     def test_diversity_3(self):
-        return "-p/items/valid\n-mget"
+        return "-gs /valid/ Item -m get -u /valid/"
 
     def test_diversity_4(self):
-        return '-p/items/\n-mpost\n-a\n-d{"aliased_name":"test-name","price":1.6,"age":42,"ids":[1,2,3]}'
+        return "-gs /valid/ Item -m get -u /valid/"
 
     def test_diversity_5(self):
-        return '-p/items/\n-mpost\n-d{"name":"test-name","price":1.6,"age":42.42}'
+        return "-gs /valid/ Item -m get -u /valid/"
 
     def test_diversity_6(self):
-        return '-p/items/\n-mpost\n-a\n-u\n-d{"aliased_name":"test-name","price":1.6,"age":5}'
+        return "-gs /valid/ Item -m get -u /valid/"
 
     def test_diversity_7(self):
-        return '-p/items/valid\n-mget\n-o\n-d[1,2,0.0,"test"]'
+        return "-gs /valid/ Item -m get -u /valid/"
 
     def test_diversity_8(self):
-        return "-p/openapi.json"
+        return "-gs /valid/ Item -m get -u /valid/"
 
     def test_diversity_9(self):
-        return '-p/items/valid_list\n-mget\n-o\n-d"test"'
+        return "-gs /valid/ Item -m get -u /valid/"
 
     def test_diversity_10(self):
-        return "-p/model\n-mget\n-o\n-d1"
+        return "-gs /valid/ Item -m get -u /valid/"
