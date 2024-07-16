@@ -9,7 +9,6 @@ gast==0.3.3
 grpcio==1.29.0
 h5py==2.10.0
 importlib-metadata==1.6.1
--e git+https://github.com/keras-team/keras@c08ef613af27da896cee168daeee5c6fad1980b6#egg=Keras
 Keras-Applications==1.0.8
 Keras-Preprocessing==1.1.2
 Markdown==3.2.2

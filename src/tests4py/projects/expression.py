@@ -70,9 +70,10 @@ def register():
             Path("tests", "test_expression.py"),
         ],
         test_cases=[
-            os.path.join("tests", "test_evaluate.py")
-            + "::TestEvaluate::test_eval_div_error",
-            os.path.join("tests", "test_expression.py") + "::TestExpr::test_div_error",
+            os.path.join(
+                "tests", "test_evaluate.py::TestEvaluate::test_eval_div_error"
+            ),
+            os.path.join("tests", "test_expression.py::TestExpr::test_div_error"),
         ],
         loc=108,
         unittests=ExpressionUnittestGenerator(),

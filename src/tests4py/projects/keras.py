@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from typing import List, Optional, Tuple
 
+from tests4py.constants import PYTHON
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
@@ -24,6 +25,7 @@ class Keras(Project):
         api: Optional[API] = None,
         loc: int = 0,
         relevant_test_files: Optional[List[Path]] = None,
+        skip_tests: Optional[List[str]] = None,
     ):
         super().__init__(
             bug_id=bug_id,
@@ -45,8 +47,11 @@ class Keras(Project):
             grammar=None,
             loc=loc,
             included_files=[PROJECT_NAME],
+            source_base=Path(PROJECT_NAME),
+            setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
             relevant_test_files=relevant_test_files,
-        )  # TODO adjust parameters
+            skip_tests=skip_tests,
+        )
 
 
 def register():
@@ -58,6 +63,7 @@ def register():
         test_cases=[
             os.path.join("tests", "keras", "initializers_test.py::test_statefulness")
         ],
+        loc=22638,
     )
     Keras(
         bug_id=2,
@@ -72,6 +78,13 @@ def register():
                 "backend_test.py::TestBackend::test_in_top_k",
             )
         ],
+        skip_tests=[
+            "test_gradient",
+            "test_elementwise_operations",
+            "test_function",
+            "test_resize_images_bilinear",
+        ],
+        loc=22758,
     )
     Keras(
         bug_id=3,
@@ -85,6 +98,7 @@ def register():
                 "test_sequential_model.py::test_clone_functional_model_with_multi_outputs",
             )
         ],
+        loc=22751,
     )
     Keras(
         bug_id=4,
@@ -98,6 +112,7 @@ def register():
                 "optimizers_test.py::test_tfoptimizer_pass_correct_named_params_to_native_tensorflow_optimizer",
             )
         ],
+        loc=22459,
     )
     Keras(
         bug_id=5,
@@ -109,13 +124,20 @@ def register():
                 "tests", "keras", "utils", "data_utils_test.py::test_data_utils"
             )
         ],
+        loc=22261,
     )
     Keras(
         bug_id=6,
         buggy_commit_id="88af7d0c97497b5c3a198ee9416b2accfbc72c36",
         fixed_commit_id="4b54657ab4806b0aaef8f8eeb973edb83c3d3483",
-        test_files=[Path("tests", "test_loss_masking.py")],
-        test_cases=["tests", "test_loss_masking.py::test_masking_is_all_zeros"],
+        test_files=[
+            Path("tests", "test_loss_masking.py"),
+            Path("tests", "test_loss_weighting.py"),
+        ],
+        test_cases=[
+            os.path.join("tests", "test_loss_masking.py::test_masking_is_all_zeros")
+        ],
+        loc=22060,
     )
     Keras(
         bug_id=7,
@@ -130,6 +152,8 @@ def register():
                 "scikit_learn_test.py::test_regression_predict_shape_correct_num_test_1",
             )
         ],
+        test_status_fixed=TestStatus.FAILING,
+        loc=21990,
     )
     Keras(
         bug_id=8,
@@ -144,16 +168,25 @@ def register():
                 "test_topology.py::test_layer_sharing_at_heterogeneous_depth_order",
             )
         ],
+        skip_tests=[
+            "test_recursion",
+            "test_constant_initializer_with_numpy",
+        ],
+        loc=22427,
     )
     Keras(
         bug_id=9,
         buggy_commit_id="0cd3b07eb5de1aaaad84d1ff7f7c2ed7dab4b23c",
         fixed_commit_id="0505393746d56ddacc34bb1c016dba79429c9ac9",
-        test_files=[Path("tests", "test_doc_auto_generation.py")],
+        test_files=[
+            Path("tests", "test_doc_auto_generation.py"),
+            Path("tests", "test_documentation.py"),
+        ],
         test_cases=[
             "tests",
             "test_doc_auto_generation.py::test_doc_lists[docs_descriptor1]",
         ],
+        loc=22278,
     )
     Keras(
         bug_id=10,
@@ -165,6 +198,7 @@ def register():
                 "tests", "keras", "engine", "test_training.py::test_sample_weights"
             )
         ],
+        loc=22083,
     )
     Keras(
         bug_id=11,
