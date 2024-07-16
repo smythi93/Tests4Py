@@ -64,6 +64,7 @@ class CookieCutter(Project):
             grammar=grammar,
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
+            source_base=Path("cookiecutter"),
             test_base=Path("tests"),
             included_files=[PROJECT_MAME],
             relevant_test_files=relevant_test_files,
