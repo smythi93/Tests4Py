@@ -20,9 +20,14 @@ def main(project: Project):
     )
     if lines.returncode != 0:
         raise RuntimeError(f"bug: cloc of {project.get_identifier()}")
-    project.loc = int(
-        lines.stdout.split(b"SUM")[1].split(b"\n")[0].split(b" ")[-1].strip()
-    )
+    if b"SUM" not in lines.stdout:
+        project.loc = int(
+            lines.stdout.split(b"Python")[1].split(b"\n")[0].split(b" ")[-1].strip()
+        )
+    else:
+        project.loc = int(
+            lines.stdout.split(b"SUM")[1].split(b"\n")[0].split(b" ")[-1].strip()
+        )
     print(f"loc: {project.loc}")
     report = t4p.build(project)
     if report.raised:
