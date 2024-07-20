@@ -45,8 +45,14 @@ class Scrapy(Project):
             api=api,
             grammar=None,
             loc=loc,
+            source_base=Path(PROJECT_NAME),
+            test_base=Path("tests"),
+            included_files=[PROJECT_NAME],
+            setup=[
+                ["python", "-m", "pip", "install", "-e", "."],
+            ],
             relevant_test_files=relevant_test_files,
-        )  # TODO adjust parameters
+        )
 
 
 def register():
@@ -56,9 +62,11 @@ def register():
         fixed_commit_id="9d9dea0d69709ef0f7aef67ddba1bd7bda25d273",
         test_files=[Path("tests", "test_spidermiddleware_offsite.py")],
         test_cases=[
-            "tests.test_spidermiddleware_offsite.TestOffsiteMiddleware4._get_spiderargs",
             "tests.test_spidermiddleware_offsite.TestOffsiteMiddleware4.test_process_spider_output",
+            "tests.test_spidermiddleware_offsite.TestOffsiteMiddleware5.test_get_host_regex",
+            "tests.test_spidermiddleware_offsite.TestOffsiteMiddleware5.test_process_spider_output",
         ],
+        loc=11497,
     )
     Scrapy(
         bug_id=2,
@@ -68,6 +76,7 @@ def register():
         test_cases=[
             "tests.test_utils_datatypes.LocalCacheTest.test_cache_without_limit"
         ],
+        loc=11308,
     )
     Scrapy(
         bug_id=3,
@@ -77,6 +86,7 @@ def register():
         test_cases=[
             "tests.test_downloadermiddleware_redirect.RedirectMiddlewareTest.test_redirect_302_relative"
         ],
+        loc=11360,
     )
     Scrapy(
         bug_id=4,
@@ -84,6 +94,7 @@ def register():
         fixed_commit_id="16dad81715d3970149c0cf7a318e73a0d84be1ff",
         test_files=[Path("tests", "test_contracts.py")],
         test_cases=["tests.test_contracts.ContractsManagerTest.test_errback"],
+        loc=10929,
     )
     Scrapy(
         bug_id=5,
@@ -91,6 +102,8 @@ def register():
         fixed_commit_id="acd2b8d43b5ebec7ffd364b6f335427041a0b98d",
         test_files=[Path("tests", "test_http_response.py")],
         test_cases=["tests.test_http_response.BaseResponseTest.test_follow_None_url"],
+        test_status_buggy=TestStatus.PASSING,
+        loc=11279,
     )
     Scrapy(
         bug_id=6,
@@ -100,6 +113,8 @@ def register():
         test_cases=[
             "tests.test_pipeline_images.ImagesPipelineTestCase.test_convert_image"
         ],
+        test_status_buggy=TestStatus.PASSING,
+        loc=11094,
     )
     Scrapy(
         bug_id=7,
@@ -107,6 +122,7 @@ def register():
         fixed_commit_id="074caf434e255bc96f106e57e3e288028f372485",
         test_files=[Path("tests", "test_http_request.py")],
         test_cases=["tests.test_http_request.FormRequestTest.test_spaces_in_action"],
+        loc=0,
     )
     Scrapy(
         bug_id=8,
@@ -117,6 +133,7 @@ def register():
             "tests.test_item.ItemMetaTest.test_new_method_propagates_classcell",
             "tests.test_item.ItemMetaClassCellRegression.test_item_meta_classcell_regression",
         ],
+        loc=0,
     )
     Scrapy(
         bug_id=9,
@@ -124,6 +141,7 @@ def register():
         fixed_commit_id="ff3aec661355a82a6f77355a95e1f391fa586c2b",
         test_files=[Path("tests", "test_mail.py")],
         test_cases=["tests.test_mail.MailSenderTest.test_send_single_values_to_and_cc"],
+        loc=0,
     )
     Scrapy(
         bug_id=10,
@@ -134,6 +152,7 @@ def register():
             "tests.test_downloadermiddleware_redirect.RedirectMiddlewareTest.test_latin1_location",
             "tests.test_downloadermiddleware_redirect.RedirectMiddlewareTest.test_utf8_location",
         ],
+        loc=0,
     )
     Scrapy(
         bug_id=11,
@@ -141,6 +160,7 @@ def register():
         fixed_commit_id="9de6f1ca757b7f200d15e94840c9d431cf202276",
         test_files=[Path("tests", "test_utils_gz.py")],
         test_cases=["tests.test_utils_gz.GunzipTest.test_gunzip_illegal_eof"],
+        loc=0,
     )
     Scrapy(
         bug_id=12,
@@ -148,6 +168,7 @@ def register():
         fixed_commit_id="2c9a38d1f54a12c33d7c9a19e021c840c4a32dee",
         test_files=[Path("tests", "test_selector.py")],
         test_cases=["tests.test_selector.SelectorTestCase.test_selector_bad_args"],
+        loc=0,
     )
     Scrapy(
         bug_id=13,
@@ -155,6 +176,7 @@ def register():
         fixed_commit_id="414857a593ad5b82fa21d6344928f43f93dc9f14",
         test_files=[Path("tests", "test_pipeline_images.py")],
         test_cases=["tests.test_pipeline_images.ImagesPipelineTestCaseCustomSettings"],
+        loc=0,
     )
     Scrapy(
         bug_id=14,
@@ -165,6 +187,7 @@ def register():
             "tests.test_utils_gz.GunzipTest.test_is_gzipped_case_insensitive",
             "tests.test_utils_gz.GunzipTest.test_is_gzipped_with_charset",
         ],
+        loc=0,
     )
     Scrapy(
         bug_id=15,
@@ -174,6 +197,7 @@ def register():
         test_cases=[
             "tests.test_utils_url.CanonicalizeUrlTest.test_canonicalize_url_idna_exceptions"
         ],
+        loc=0,
     )
     Scrapy(
         bug_id=16,
@@ -188,6 +212,7 @@ def register():
             "tests.test_utils_url.CanonicalizeUrlTest.test_canonicalize_urlparsed",
             "tests.test_utils_url.CanonicalizeUrlTest.test_canonicalize_parse_url",
         ],
+        loc=0,
     )
     Scrapy(
         bug_id=17,
@@ -197,6 +222,7 @@ def register():
         test_cases=[
             "tests.test_utils_response.ResponseUtilsTest.test_response_status_message"
         ],
+        loc=0,
     )
     Scrapy(
         bug_id=18,
@@ -206,6 +232,7 @@ def register():
         test_cases=[
             "tests.test_responsetypes.ResponseTypesTest.test_from_content_disposition"
         ],
+        loc=0,
     )
     Scrapy(
         bug_id=19,
@@ -218,6 +245,7 @@ def register():
             "tests.test_http_cookies.WrappedRequestTest.test_get_type",
             "tests.test_http_cookies.WrappedRequestTest.test_get_origin_req_host",
         ],
+        loc=0,
     )
     Scrapy(
         bug_id=20,
@@ -227,6 +255,7 @@ def register():
         test_cases=[
             "tests.test_spider.SitemapSpiderTest.test_get_sitemap_urls_from_robotstxt"
         ],
+        loc=0,
     )
     Scrapy(
         bug_id=21,
@@ -236,6 +265,7 @@ def register():
         test_cases=[
             "tests.test_downloadermiddleware_robotstxt.RobotsTxtMiddlewareTest.test_robotstxt_immediate_error"
         ],
+        loc=0,
     )
     Scrapy(
         bug_id=22,
@@ -245,6 +275,7 @@ def register():
         test_cases=[
             "tests.test_exporters.XmlItemExporterTest.test_nonstring_types_item"
         ],
+        loc=0,
     )
     Scrapy(
         bug_id=23,
@@ -255,6 +286,7 @@ def register():
             "tests.test_downloadermiddleware_httpproxy.TestDefaultHeadersMiddleware.test_proxy_auth",
             "tests.test_downloadermiddleware_httpproxy.TestDefaultHeadersMiddleware.test_proxy_auth_empty_passwd",
         ],
+        loc=0,
     )
     Scrapy(
         bug_id=24,
@@ -264,6 +296,7 @@ def register():
         test_cases=[
             "tests.test_downloader_handlers.HttpProxyTestCase.test_download_with_proxy_https_timeout"
         ],
+        loc=0,
     )
     Scrapy(
         bug_id=25,
@@ -273,6 +306,7 @@ def register():
         test_cases=[
             "tests.test_http_request.FormRequestTest.test_html_base_form_action"
         ],
+        loc=0,
     )
     Scrapy(
         bug_id=26,
@@ -280,6 +314,7 @@ def register():
         fixed_commit_id="03f1720afb4a437314659a306286f440df664a0b",
         test_files=[Path("tests", "test_settings", "__init__.py")],
         test_cases=["tests.test_settings.__init__.BaseSettingsTest.test_getcomposite"],
+        loc=0,
     )
     Scrapy(
         bug_id=27,
@@ -289,6 +324,7 @@ def register():
         test_cases=[
             "tests.test_downloadermiddleware_redirect.RedirectMiddlewareTest.test_request_meta_handling"
         ],
+        loc=0,
     )
     Scrapy(
         bug_id=28,
@@ -296,6 +332,7 @@ def register():
         fixed_commit_id="457b97c13ccf9a84f3dc7800c180cf059822c09a",
         test_files=[Path("tests", "test_dupefilters.py")],
         test_cases=["tests.test_dupefilters.RFPDupeFilterTest.test_dupefilter_path"],
+        loc=0,
     )
     Scrapy(
         bug_id=29,
@@ -305,6 +342,7 @@ def register():
         test_cases=[
             "tests.test_utils_request.UtilsRequestTest.test_request_httprepr_for_non_http_request"
         ],
+        loc=0,
     )
     Scrapy(
         bug_id=30,
@@ -312,6 +350,7 @@ def register():
         fixed_commit_id="3e6d6c43ac0763adf2cd92efdb4a1dc2ba165440",
         test_files=[Path("tests", "test_command_version.py")],
         test_cases=["tests.test_command_version.VersionTest.test_output"],
+        loc=0,
     )
     Scrapy(
         bug_id=31,
@@ -321,6 +360,7 @@ def register():
         test_cases=[
             "tests.test_downloadermiddleware_cookies.CookiesMiddlewareTest.test_do_not_break_on_non_utf8_header"
         ],
+        loc=0,
     )
     Scrapy(
         bug_id=32,
@@ -330,6 +370,7 @@ def register():
         test_cases=[
             "tests.test_crawler.CrawlerProcessTest.test_crawler_process_accepts_dict"
         ],
+        loc=0,
     )
     Scrapy(
         bug_id=33,
@@ -344,6 +385,7 @@ def register():
             "tests.test_utils_log.FailureToExcInfoTest.test_failure",
             "tests.test_utils_log.FailureToExcInfoTest.test_non_failure",
         ],
+        loc=0,
     )
     Scrapy(
         bug_id=34,
@@ -355,6 +397,7 @@ def register():
             "tests.test_item.ItemTest.test_metaclass_multiple_inheritance_simple",
             "tests.test_item.ItemTest.test_metaclass_multiple_inheritance_diamond",
         ],
+        loc=0,
     )
     Scrapy(
         bug_id=35,
@@ -364,6 +407,7 @@ def register():
         test_cases=[
             "tests.test_crawler.CrawlerRunnerTestCase.test_spidermanager_deprecation"
         ],
+        loc=0,
     )
     Scrapy(
         bug_id=36,
@@ -373,6 +417,7 @@ def register():
         test_cases=[
             "tests.test_utils_misc.__init__.UtilsMiscTestCase.test_create_instance"
         ],
+        loc=0,
     )
     Scrapy(
         bug_id=37,
@@ -380,6 +425,7 @@ def register():
         fixed_commit_id="f701f5b0db10faef08e4ed9a21b98fd72f9cfc9a",
         test_files=[Path("tests", "test_http_request.py")],
         test_cases=["tests.test_http_request.RequestTest.test_url_no_scheme"],
+        loc=0,
     )
     Scrapy(
         bug_id=38,
@@ -389,6 +435,7 @@ def register():
         test_cases=[
             "tests.test_http_request.FormRequestTest.test_from_response_clickdata_does_not_ignore_image"
         ],
+        loc=0,
     )
     Scrapy(
         bug_id=39,
@@ -398,6 +445,7 @@ def register():
         test_cases=[
             "tests.test_spider.DeprecationTest.test_make_requests_from_url_deprecated"
         ],
+        loc=0,
     )
     Scrapy(
         bug_id=40,
@@ -407,6 +455,7 @@ def register():
         test_cases=[
             "tests.test_exporters.PythonItemExporterTest.test_other_python_types_item"
         ],
+        loc=0,
     )
 
 

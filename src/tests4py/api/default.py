@@ -545,9 +545,14 @@ def test(
         command += tests
 
         LOGGER.info(f"Run tests with command {command}")
-        output = subprocess.run(
-            command, stdout=subprocess.PIPE, env=environ, cwd=work_dir
-        ).stdout
+        process = subprocess.run(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=environ,
+            cwd=work_dir,
+        )
+        output = process.stdout or process.stderr
         LOGGER.info(output.decode("utf-8"))
 
         successful = False
@@ -563,9 +568,10 @@ def test(
             failed_match = UNITTEST_FAILED_PATTERN.search(output)
             if number_match:
                 report.total = int(number_match.group("n"))
-            if failed_match:
-                report.failing = int(number_match.group("f"))
-            if number_match and failed_match:
+                if failed_match:
+                    report.failing = int(failed_match.group("f"))
+                else:
+                    report.failing = 0
                 report.passing = report.total - report.failing
                 successful = True
         else:
