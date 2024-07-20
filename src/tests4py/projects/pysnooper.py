@@ -63,6 +63,7 @@ class PySnooper(Project):
             setup=[[PYTHON, "-m", "pip", "install", "."]],
             included_files=[PROJECT_NAME],
             test_base=Path("tests"),
+            source_base=Path(PROJECT_NAME),
             relevant_test_files=relevant_test_files,
         )
 
@@ -93,6 +94,7 @@ def register():
         test_cases=[
             os.path.join("tests", "test_pysnooper.py::test_custom_repr_single"),
             os.path.join("tests", "test_pysnooper.py::test_custom_repr"),
+            os.path.join("tests", "test_pysnooper.py::test_disable"),
         ],
         relevant_test_files=[
             Path("tests", "test_pysnooper.py"),
