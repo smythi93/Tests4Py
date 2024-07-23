@@ -51,7 +51,7 @@ PYTEST_PATTERN = re.compile(
     rb"=( |\x1b\[\d+m)+(("
     rb"((?P<f>\d+) failed)|"
     rb"((?P<p>\d+) passed)|"
-    rb"(\d+ (skipped|warning(s?)|"
+    rb"(\d+ (xfailed|skipped|warning(s?)|"
     rb"error(s?)|deselected)))"
     rb"(( |\x1b\[\d+m)*,( |\x1b\[\d+m)+)?)+( |\x1b\[\d+m)+in( |\x1b\[\d+m)+"
 )

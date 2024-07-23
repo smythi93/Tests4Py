@@ -1,4 +1,5 @@
 import ast
+import os.path
 import random
 import string
 import subprocess
@@ -33,6 +34,7 @@ class SpaCy(Project):
         api: Optional[API] = None,
         loc: int = 0,
         relevant_test_files: Optional[List[Path]] = None,
+        skip_tests: Optional[List[str]] = None,
     ):
         super().__init__(
             bug_id=bug_id,
@@ -55,11 +57,15 @@ class SpaCy(Project):
             api=api,
             grammar=None,
             loc=loc,
-            relevant_test_files=relevant_test_files,
+            source_base=Path(PROJECT_NAME),
+            test_base=Path(PROJECT_NAME, "tests"),
+            included_files=[PROJECT_NAME],
             setup=[
-                [PYTHON, "-m", "pip", "install", "-e", "."],
+                [PYTHON, "setup.py", "build_ext", "--inplace"],
             ],
-        )  # TODO adjust parameters
+            relevant_test_files=relevant_test_files,
+            skip_tests=skip_tests,
+        )
 
     def patch(self, location: Path):
         with open(location / "pyproject.toml", "r") as fp:
@@ -70,6 +76,21 @@ class SpaCy(Project):
         )
         with open(location / "pyproject.toml", "w") as fp:
             fp.write(content)
+        if self.bug_id in (4, 5, 6, 7, 8, 9):
+            with open(location / "setup.cfg", "r") as fp:
+                content = fp.read()
+            if self.bug_id == 9:
+                content = content.replace(
+                    "spacy_lookups_data>=0.0.4<0.2.0",
+                    "spacy_lookups_data>=0.0.4,<0.2.0",
+                )
+            else:
+                content = content.replace(
+                    "spacy_lookups_data>=0.0.5<0.2.0",
+                    "spacy_lookups_data>=0.0.5,<0.2.0",
+                )
+            with open(location / "setup.cfg", "w") as fp:
+                fp.write(content)
 
 
 def register():
@@ -77,48 +98,80 @@ def register():
         bug_id=1,
         buggy_commit_id="9ce059dd067ecc3f097d04023e3cfa0d70d35bb8",
         fixed_commit_id="a987e9e45d4084f30964a4cec9914ae6ed25a73c",
-        test_files=[Path("spacy", "tests", "test_errors.py")],
-        test_cases=["spacy/tests/test_errors.py::test_add_codes"],
+        test_files=[
+            Path("spacy", "tests", "test_errors.py"),
+            Path("spacy", "tests", "test_architectures.py"),
+        ],
+        test_cases=[os.path.join("spacy", "tests", "test_errors.py::test_add_codes")],
         api=SpaCyAPI1(),
         unittests=SpaCyUnittestGenerator1(),
         systemtests=SpaCySystemtestGenerator1(),
+        loc=92802,
     )
     SpaCy(
         bug_id=2,
         buggy_commit_id="efec28ce70a0ff69471cc379867deebe7eb881e0",
         fixed_commit_id="cfdaf99b8029d6762730c5d5bd2b6f6c173c1241",
-        test_files=[Path("spacy", "tests", "regression", "test_issue5137.py")],
-        test_cases=["spacy/tests/regression/test_issue5137.py::test_issue5137"],
-        api=SpaCyAPI2(),
-        unittests=SpaCyUnittestGenerator2(),
-        systemtests=SpaCySystemtestGenerator2(),
+        test_files=[
+            Path("spacy", "tests", "regression", "test_issue5137.py"),
+            Path("spacy", "tests", "pipeline", "test_analysis.py"),
+        ],
+        test_cases=[
+            os.path.join(
+                "spacy", "tests", "regression", "test_issue5137.py::test_issue5137"
+            )
+        ],
+        skip_tests=[
+            "test_component_decorator_assigns",
+            "test_component_factories_from_nlp",
+        ],
+        # api=SpaCyAPI2(),
+        # unittests=SpaCyUnittestGenerator2(),
+        # systemtests=SpaCySystemtestGenerator2(),
+        loc=92506,
     )
     SpaCy(
         bug_id=3,
         buggy_commit_id="dac70f29eb3b1f21ae9e2c6346666bf6a46307b6",
         fixed_commit_id="663333c3b2bad90915d1a48a626ca1275b7ef077",
         test_files=[Path("spacy", "tests", "regression", "test_issue5314.py")],
-        test_cases=["spacy/tests/regression/test_issue5314.py::test_issue5314"],
-        api=SpaCyAPI3(),
-        unittests=SpaCyUnittestGenerator3(),
-        systemtests=SpaCySystemtestGenerator3(),
+        test_cases=[
+            os.path.join(
+                "spacy", "tests", "regression", "test_issue5314.py::test_issue5314"
+            )
+        ],
+        # api=SpaCyAPI3(),
+        # unittests=SpaCyUnittestGenerator3(),
+        # systemtests=SpaCySystemtestGenerator3(),
+        loc=92038,
     )
     SpaCy(
         bug_id=4,
         buggy_commit_id="abd5c06374eab5db0cf897b73543b1f3eb007e12",
         fixed_commit_id="9fa9d7f2cb52ce6a70c264d4e57c7f190d7686bf",
-        test_files=[Path("spacy", "tests", "regression", "test_issue4665.py")],
-        test_cases=["spacy/tests/regression/test_issue4665.py::test_issue4665"],
-        api=SpaCyAPI4(),
-        unittests=SpaCyUnittestGenerator4(),
-        systemtests=SpaCySystemtestGenerator4(),
+        test_files=[
+            Path("spacy", "tests", "regression", "test_issue4665.py"),
+            Path("spacy", "tests", "test_cli.py"),
+        ],
+        test_cases=[
+            os.path.join(
+                "spacy", "tests", "regression", "test_issue4665.py::test_issue4665"
+            )
+        ],
+        # api=SpaCyAPI4(),
+        # unittests=SpaCyUnittestGenerator4(),
+        # systemtests=SpaCySystemtestGenerator4(),
+        loc=85716,
     )
     SpaCy(
         bug_id=5,
         buggy_commit_id="bdfb696677a7591ced018e7597c00929e97c6837",
         fixed_commit_id="3bd15055ce74b04dcaf3b9abe2adeb01fb595776",
         test_files=[Path("spacy", "tests", "test_language.py")],
-        test_cases=["spacy/tests/test_language.py::test_evaluate_no_pipe"],
+        test_cases=[
+            os.path.join("spacy", "tests", "test_language.py::test_evaluate_no_pipe")
+        ],
+        loc=84629,
     )
     SpaCy(
         bug_id=6,
@@ -126,31 +179,58 @@ def register():
         fixed_commit_id="afe4a428f78abe45d6104d74ef42a066570fa43d",
         test_files=[Path("spacy", "tests", "pipeline", "test_analysis.py")],
         test_cases=[
-            "spacy/tests/pipeline/test_analysis.py::test_analysis_validate_attrs_remove_pipe"
+            os.path.join(
+                "spacy",
+                "tests",
+                "pipeline",
+                "test_analysis.py::test_analysis_validate_attrs_remove_pipe",
+            )
         ],
+        test_status_fixed=TestStatus.FAILING,
+        loc=84224,
     )
     SpaCy(
         bug_id=7,
         buggy_commit_id="da6e0de34f4947fdebc839df3969c641014cfa97",
         fixed_commit_id="6f54e59fe7ccb3bacce896ed33d36b39f11cbfaf",
         test_files=[Path("spacy", "tests", "doc", "test_span.py")],
-        test_cases=["spacy/tests/doc/test_span.py::test_filter_spans"],
+        test_cases=[
+            os.path.join("spacy", "tests", "doc", "test_span.py::test_filter_spans")
+        ],
+        loc=83083,
     )
     SpaCy(
         bug_id=8,
         buggy_commit_id="fa95c030a511337935d1a2e930cb954c7a4cd376",
         fixed_commit_id="5efae495f18f37316bd641a05ca26e62cb78e242",
         test_files=[Path("spacy", "tests", "matcher", "test_matcher_logic.py")],
-        test_cases=["spacy/tests/matcher/test_matcher_logic.py::test_matcher_remove"],
+        test_cases=[
+            os.path.join(
+                "spacy",
+                "tests",
+                "matcher",
+                "test_matcher_logic.py::test_matcher_remove",
+            )
+        ],
+        loc=83075,
     )
     SpaCy(
         bug_id=9,
         buggy_commit_id="bc7e7db208d351fae2982afbcdff7633f9636779",
         fixed_commit_id="3297a19545027c8d8550b1ae793ce290567eff32",
-        test_files=[Path("spacy", "tests", "pipeline", "test_tagger.py")],
-        test_cases=[
-            "spacy/tests/pipeline/test_tagger.py::test_tagger_warns_no_lemma_lookups"
+        test_files=[
+            Path("spacy", "tests", "pipeline", "test_tagger.py"),
+            Path("spacy", "tests", "regression", "test_issue2501-3000.py"),
         ],
+        test_cases=[
+            os.path.join(
+                "spacy",
+                "tests",
+                "pipeline",
+                "test_tagger.py::test_tagger_warns_no_lemma_lookups",
+            )
+        ],
+        loc=82814,
     )
     SpaCy(
         bug_id=10,
@@ -158,8 +238,14 @@ def register():
         fixed_commit_id="52904b72700a3f301a26563d3f94493bad96a446",
         test_files=[Path("spacy", "tests", "matcher", "test_matcher_api.py")],
         test_cases=[
-            "spacy/tests/matcher/test_matcher_api.py::test_matcher_valid_callback"
+            os.path.join(
+                "spacy",
+                "tests",
+                "matcher",
+                "test_matcher_api.py::test_matcher_valid_callback",
+            )
         ],
+        loc=82947,
     )
 
 
@@ -282,6 +368,7 @@ class SpaCyUnittestGenerator1(
     ) -> str:
         return self.generate_values(self.spacy1_generate)
 
+    # noinspection PyUnusedLocal
     @staticmethod
     def _get_assert(
         expected: str,
@@ -377,13 +464,13 @@ class SpaCyUnittestGenerator1(
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        fail_ = self._generate_one()
+        self._generate_one()
         test = self.get_empty_test()
         test.body = self._get_assert("")
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass_ = self._generate_one()
+        self._generate_one()
         test = self.get_empty_test()
         test.body = self._get_assert("")
         return test, TestResult.PASSING
@@ -401,7 +488,6 @@ class SpaCyUnittestGenerator2(
     def _get_assert(
         expected: str,
         model_path: str,
-        meta: bool,
     ) -> list[Call]:
         return [
             ast.Call(
@@ -431,13 +517,13 @@ class SpaCyUnittestGenerator2(
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        fail_ = self._generate_one()
+        self._generate_one()
         test = self.get_empty_test()
         test.body = self._get_assert("", "")
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass_ = self._generate_one()
+        self._generate_one()
         test = self.get_empty_test()
         test.body = self._get_assert("", "")
         return test, TestResult.PASSING
@@ -486,16 +572,25 @@ class SpaCyUnittestGenerator3(
             ),
         ]
 
+    @property
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        fail_ = self._generate_one()
+        self._generate_one()
         article_title = "Artificial intelligence"  # Title of the Wikipedia article
-        article_text = """
-            <text xml:space="preserve">
-                Artificial intelligence (AI), sometimes called machine intelligence, is intelligence demonstrated by machines, in contrast to the natural intelligence displayed by humans and animals.
-                Leading AI textbooks define the field as the study of "intelligent agents": any device that perceives its environment and takes actions that maximize its chance of successfully achieving its goals.
-                Colloquially, the term "artificial intelligence" is often used to describe machines (or computers) that mimic "cognitive" functions that humans associate with the human mind, such as "learning" and "problem solving".
-            </text>
-        """  # Raw text content of the Wikipedia article
+        article_text = (
+            "\n"
+            '            <text xml:space="preserve">\n'
+            "                Artificial intelligence (AI), sometimes called machine intelligence, is "
+            "intelligence demonstrated by machines, in contrast to the natural intelligence displayed by "
+            "humans and animals.\n"
+            '                Leading AI textbooks define the field as the study of "intelligent agents": '
+            "any device that perceives its environment and takes actions that maximize its chance of "
+            "successfully achieving its goals.\n"
+            '                Colloquially, the term "artificial intelligence" is often used to describe '
+            'machines (or computers) that mimic "cognitive" functions that humans associate with the '
+            'human mind, such as "learning" and "problem solving".\n'
+            "            </text>\n"
+            "        "
+        )  # Raw text content of the Wikipedia article
         wp_to_id = {
             "Artificial intelligence": "Q11660",
             "Machine learning": "Q2539",
@@ -505,7 +600,7 @@ class SpaCyUnittestGenerator3(
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass_ = self._generate_one()
+        self._generate_one()
         test = self.get_empty_test()
         test.body = self._get_assert("", "", "", "")
         return test, TestResult.PASSING
@@ -555,14 +650,13 @@ class SpaCyUnittestGenerator4(
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        fail_ = self._generate_one()
-
+        self._generate_one()
         test = self.get_empty_test()
         test.body = self._get_assert("", "", "", "")
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass_ = self._generate_one()
+        self._generate_one()
         test = self.get_empty_test()
         test.body = self._get_assert("", "", "", "")
         return test, TestResult.PASSING
