@@ -99,7 +99,9 @@ def checkout(
             project_verify = load_project(work_location, only_project=True)
             project.compiled = project_verify.compiled
         else:
-            tmp_location = (work_dir / f"tmp_{project.project_name}").absolute()
+            tmp_location = (
+                work_dir / f"tmp_{project.project_name}_{project.bug_id}"
+            ).absolute()
 
             if check_further:
                 if force or not config.cache or not check_cache_exists(project):
