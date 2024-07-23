@@ -56,7 +56,9 @@ PYTEST_PATTERN = re.compile(
     rb"(( |\x1b\[\d+m)*,( |\x1b\[\d+m)+)?)+( |\x1b\[\d+m)+in( |\x1b\[\d+m)+"
 )
 UNITTEST_TOTAL_PATTERN = re.compile(rb"Ran (?P<n>\d+) tests? in")
-UNITTEST_FAILED_PATTERN = re.compile(rb"FAILED \((failures|errors)=(?P<f>\d+)\)")
+UNITTEST_FAILED_PATTERN = re.compile(
+    rb"FAILED \(((failures=(?P<f>\d+)|errors=(?P<e>\d+)|skipped=(?P<s>\d+))(, )?)*\)"
+)
 SYSTEMTESTS_FAILING_CLASS = "TestsFailing"
 SYSTEMTESTS_PASSING_CLASS = "TestsPassing"
 DEFAULT_SUB_PATH_SYSTEMTESTS = "tests4py_systemtests"

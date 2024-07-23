@@ -331,7 +331,7 @@ def build(
 
         if not env_exists:
             LOGGER.info("Installing utilities")
-            update_env(environ)
+            update_env(environ, force=force)
 
             LOGGER.info("Installing requirements")
             subprocess.check_call(
@@ -517,6 +517,8 @@ def test(
             raise NotImplementedError(
                 f"No command found for {project.testing_framework.value}"
             )
+        if project.test_command_arguments:
+            command += project.test_command_arguments
         skips = []
         tests = []
         if not relevant_tests and not all_tests and not single_test:
@@ -527,10 +529,7 @@ def test(
                 tests.append(project.test_base)
         elif relevant_tests:
             tests += project.relevant_test_files
-            if (
-                project.skip_tests
-                and project.testing_framework == TestingFramework.PYTEST
-            ):
+            if project.skip_tests:
                 skips = [
                     "-k",
                     " and ".join([f"not {skip}" for skip in project.skip_tests]),
@@ -569,7 +568,13 @@ def test(
             if number_match:
                 report.total = int(number_match.group("n"))
                 if failed_match:
-                    report.failing = int(failed_match.group("f"))
+                    failed = failed_match.group("f")
+                    errors = failed_match.group("e")
+                    report.failing = 0
+                    if failed:
+                        report.failing += int(failed)
+                    if errors:
+                        report.failing += int(errors)
                 else:
                     report.failing = 0
                 report.passing = report.total - report.failing
