@@ -13,9 +13,23 @@ def main(project: Project):
         raise RuntimeError(
             f"bug: checkout of {project.get_identifier()}", report.raised
         )
-    lines = subprocess.run(
+    cloc = (
         ["cloc", "--include-lang=Python"]
-        + [os.path.join(report.location, s) for s in project.source_base],
+        + (
+            [
+                "--fullpath",
+                "--not-match-d="
+                + "|".join(
+                    [os.path.join(report.location, s) for s in project.excluded_files]
+                ),
+            ]
+            if project.excluded_files
+            else []
+        )
+        + [os.path.join(report.location, s) for s in project.source_base]
+    )
+    lines = subprocess.run(
+        cloc,
         stdout=subprocess.PIPE,
     )
     if lines.returncode != 0:

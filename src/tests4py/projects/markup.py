@@ -74,6 +74,7 @@ def register():
         unittests=MarkupUnittestGenerator(),
         systemtests=MarkupSystemtestGenerator(),
         api=MarkupAPI(),
+        loc=14,
     )
     Markup(
         bug_id=2,
@@ -89,6 +90,7 @@ def register():
         unittests=MarkupUnittestGenerator(),
         systemtests=MarkupSystemtestGenerator(),
         api=MarkupAPI(),
+        loc=14,
     )
 
 

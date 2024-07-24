@@ -1,14 +1,16 @@
 import ast
+import os
 import random
 import string
 import subprocess
-import os
 from _ast import Call, ImportFrom, Assign, Expr
 from pathlib import Path
 from typing import List, Optional, Tuple, Any, Callable
+
+from tests4py.constants import PYTHON
+from tests4py.grammars import python
 from tests4py.grammars.fuzzer import Grammar
 from tests4py.grammars.fuzzer import is_valid_grammar
-from tests4py.grammars import python
 from tests4py.grammars.fuzzer import srange
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
@@ -32,6 +34,7 @@ class TheFuck(Project):
         api: Optional[API] = None,
         loc: int = 0,
         relevant_test_files: Optional[List[Path]] = None,
+        skip_tests: Optional[List[str]] = None,
     ):
         super().__init__(
             bug_id=bug_id,
@@ -54,7 +57,15 @@ class TheFuck(Project):
             api=api,
             grammar=None,
             loc=loc,
+            source_base=Path(PROJECT_NAME),
+            test_base=Path(PROJECT_NAME, "tests"),
+            included_files=[PROJECT_NAME],
+            excluded_files=[os.path.join(PROJECT_NAME, "tests")],
+            setup=[
+                [PYTHON, "-m", "pip", "install", "-e", "."],
+            ],
             relevant_test_files=relevant_test_files,
+            skip_tests=skip_tests,
         )
 
 
@@ -64,70 +75,94 @@ def register():
         buggy_commit_id="2ced7a7f33ae0bec3ffc7a43ce95330bdf6cfcb9",
         fixed_commit_id="444908ce1c17767ef4aaf9e0b4950497914f7f63",
         test_files=[Path("tests", "rules", "test_pip_unknown_command.py")],
-        test_cases=["tests/rules/test_pip_unknown_command.py::test_get_new_command"],
+        test_cases=[
+            os.path.join(
+                "tests", "rules", "test_pip_unknown_command.py::test_get_new_command"
+            )
+        ],
         api=TheFuckAPI1(),
         unittests=TheFuckUnittestGenerator1(),
         systemtests=TheFuckSystemtestGenerator1(),
+        loc=4249,
     )
     TheFuck(
         bug_id=2,
         buggy_commit_id="40ab4eb62db57627bff10cf029d29c94704086a2",
         fixed_commit_id="78ef9eec88f43d5727986be2237f6e0e250cbbbc",
         test_files=[Path("tests", "test_utils.py")],
-        test_cases=["tests/test_utils.py::test_get_all_executables_pathsep"],
+        test_cases=[
+            os.path.join("tests", "test_utils.py::test_get_all_executables_pathsep")
+        ],
         api=TheFuckAPI2(),
         unittests=TheFuckUnittestGenerator2(),
         systemtests=TheFuckSystemtestGenerator2(),
+        loc=4028,
     )
     TheFuck(
         bug_id=3,
         buggy_commit_id="ac343fb1bd7dadbb9e1a9fd7e3071f5778e338a4",
         fixed_commit_id="ce5feaebf7fd5c1190b5e14fbc1e962cc8db5f39",
         test_files=[Path("tests", "shells", "test_fish.py")],
-        test_cases=["tests/shells/test_fish.py::TestFish::test_info"],
+        test_cases=[
+            os.path.join("tests", "shells", "test_fish.py::TestFish::test_info")
+        ],
         api=TheFuckAPI3(),
         unittests=TheFuckUnittestGenerator3(),
         systemtests=TheFuckSystemtestGenerator3(),
+        loc=3982,
     )
     TheFuck(
         bug_id=4,
         buggy_commit_id="68949a592248913b52bfd50036893553153fcddb",
         fixed_commit_id="8db3cf604865e559090412ce80b0640e290ad83a",
         test_files=[Path("tests", "shells", "test_fish.py")],
-        test_cases=["tests/shells/test_fish.py::TestFish::test_get_aliases"],
+        test_cases=[
+            os.path.join("tests", "shells", "test_fish.py::TestFish::test_get_aliases"),
+            os.path.join("tests", "shells", "test_fish.py::TestFish::test_from_shell"),
+        ],
         api=TheFuckAPI4(),
         unittests=TheFuckUnittestGenerator4(),
         systemtests=TheFuckSystemtestGenerator4(),
+        loc=3834,
     )
     TheFuck(
         bug_id=5,
         buggy_commit_id="7c858fadb3458be829d3d43666ccb46c3ed5b8a0",
         fixed_commit_id="c205683a8df8a57e2db1e9816a5a7ce3255b08fc",
         test_files=[Path("tests", "rules", "test_git_push.py")],
-        test_cases=["tests/rules/test_git_push.py::test_match_bitbucket"],
+        test_cases=[
+            os.path.join("tests", "rules", "test_git_push.py::test_match_bitbucket")
+        ],
         api=TheFuckAPI5(),
         unittests=TheFuckUnittestGenerator5(),
         systemtests=TheFuckSystemtestGenerator5(),
+        loc=3791,
     )
     TheFuck(
         bug_id=6,
         buggy_commit_id="797ca1c5647c565f62e21a8e29515c8b0fbe275f",
         fixed_commit_id="7c858fadb3458be829d3d43666ccb46c3ed5b8a0",
         test_files=[Path("tests", "rules", "test_git_branch_exists.py")],
-        test_cases=["tests/rules/test_git_branch_exists.py::test_get_new_command"],
+        test_cases=[
+            os.path.join(
+                "tests", "rules", "test_git_branch_exists.py::test_get_new_command"
+            )
+        ],
         api=TheFuckAPI6(),
         unittests=TheFuckUnittestGenerator6(),
         systemtests=TheFuckSystemtestGenerator6(),
+        loc=3790,
     )
     TheFuck(
         bug_id=7,
         buggy_commit_id="64d6835e15a22cf8803d398cbb593f748c550e8a",
         fixed_commit_id="75d2c43997ca703150cbdb4c46ed7b2e2e71fd11",
         test_files=[Path("tests", "rules", "test_php_s.py")],
-        test_cases=["tests/rules/test_php_s.py::test_match"],
+        test_cases=[os.path.join("tests", "rules", "test_php_s.py::test_match")],
         api=TheFuckAPI7(),
         unittests=TheFuckUnittestGenerator7(),
         systemtests=TheFuckSystemtestGenerator7(),
+        loc=3658,
     )
     TheFuck(
         bug_id=8,
@@ -135,42 +170,57 @@ def register():
         fixed_commit_id="be48f027847161f907def8987706041c65a1fd58",
         test_files=[Path("tests", "rules", "test_dnf_no_such_command.py")],
         test_cases=[
-            "tests/rules/test_dnf_no_such_command.py::test_get_new_command",
-            "tests/rules/test_dnf_no_such_command.py::test_get_operations",
+            os.path.join(
+                "tests", "rules", "test_dnf_no_such_command.py::test_get_new_command"
+            ),
+            os.path.join(
+                "tests", "rules", "test_dnf_no_such_command.py::test_get_operations"
+            ),
         ],
         api=TheFuckAPI8(),
         unittests=TheFuckUnittestGenerator8(),
         systemtests=TheFuckSystemtestGenerator8(),
+        loc=3523,
     )
     TheFuck(
         bug_id=9,
         buggy_commit_id="ce6b82c92d78ae283cb3db001766b76f6647bc47",
         fixed_commit_id="feb36ede5c518fdc3b6eddf945b2d8b1e2294d15",
         test_files=[Path("tests", "rules", "test_git_push.py")],
-        test_cases=["tests/rules/test_git_push.py::test_get_new_command"],
+        test_cases=[
+            os.path.join("tests", "rules", "test_git_push.py::test_get_new_command")
+        ],
         api=TheFuckAPI9(),
         unittests=TheFuckUnittestGenerator9(),
         systemtests=TheFuckSystemtestGenerator9(),
+        loc=2735,
     )
     TheFuck(
         bug_id=10,
         buggy_commit_id="8bd6c5da67e55c64257345efa4e3cc454c42475c",
         fixed_commit_id="0c84eefa55fc1b4bc4940b41d74568884344e35c",
         test_files=[Path("tests", "rules", "test_man.py")],
-        test_cases=["tests/rules/test_man.py::test_get_new_command"],
+        test_cases=[
+            os.path.join("tests", "rules", "test_man.py::test_get_new_command")
+        ],
         api=TheFuckAPI10(),
         unittests=TheFuckUnittestGenerator10(),
         systemtests=TheFuckSystemtestGenerator10(),
+        loc=2727,
     )
     TheFuck(
         bug_id=11,
         buggy_commit_id="92f3c8fb52b32b79005b4864c31a5c2d8c45f4b1",
         fixed_commit_id="db7dffdb44ae5c7be8de088765463fbda96197d1",
         test_files=[Path("tests", "rules", "test_git_push.py")],
-        test_cases=["tests/rules/test_git_push.py::test_get_new_command"],
+        test_cases=[
+            os.path.join("tests", "rules", "test_git_push.py::test_get_new_command")
+        ],
+        test_status_fixed=TestStatus.FAILING,
         api=TheFuckAPI11(),
         unittests=TheFuckUnittestGenerator11(),
         systemtests=TheFuckSystemtestGenerator11(),
+        loc=2710,
     )
     TheFuck(
         bug_id=12,
@@ -178,12 +228,13 @@ def register():
         fixed_commit_id="ca787a1cba3cc9b26b43919c5e60acb40ebcd919",
         test_files=[Path("tests", "rules", "test_no_command.py")],
         test_cases=[
-            "tests/rules/test_no_command.py::test_not_match",
-            "tests/rules/test_no_command.py::test_match",
+            os.path.join("tests", "rules", "test_no_command.py::test_not_match"),
+            os.path.join("tests", "rules", "test_no_command.py::test_match"),
         ],
         api=TheFuckAPI12(),
         unittests=TheFuckUnittestGenerator12(),
         systemtests=TheFuckSystemtestGenerator12(),
+        loc=2452,
     )
     TheFuck(
         bug_id=13,
@@ -191,32 +242,41 @@ def register():
         fixed_commit_id="237bc579994de633fe104714156ddfa925a50b6e",
         test_files=[Path("tests", "rules", "test_git_branch_exists.py")],
         test_cases=[
-            "tests/rules/test_git_branch_exists.py::test_match",
-            "tests/rules/test_git_branch_exists.py::test_get_new_command",
+            os.path.join("tests", "rules", "test_git_branch_exists.py::test_match"),
+            os.path.join(
+                "tests", "rules", "test_git_branch_exists.py::test_get_new_command"
+            ),
         ],
         api=TheFuckAPI13(),
         unittests=TheFuckUnittestGenerator13(),
         systemtests=TheFuckSystemtestGenerator13(),
+        loc=2431,
     )
     TheFuck(
         bug_id=14,
         buggy_commit_id="183b70c8b8885843efefd2bd4e74dc0a7d42d173",
         fixed_commit_id="db6053b301e2b3f4363401e457b5dc4ad2e8429b",
         test_files=[Path("tests", "shells", "test_fish.py")],
-        test_cases=["tests/shells/test_fish.py::TestFish::test_get_overridden_aliases"],
+        test_cases=[
+            os.path.join(
+                "tests", "shells", "test_fish.py::TestFish::test_get_overridden_aliases"
+            )
+        ],
         api=TheFuckAPI14(),
         unittests=TheFuckUnittestGenerator14(),
         systemtests=TheFuckSystemtestGenerator14(),
+        loc=2348,
     )
     TheFuck(
         bug_id=15,
         buggy_commit_id="3a39deb485995e67afb1919972cd1c9aaedf4c32",
         fixed_commit_id="41707b80c61acadb7c87b0efcbf10f4186dc5937",
         test_files=[Path("tests", "rules", "test_git_add.py")],
-        test_cases=["tests/rules/test_git_add.py::test_match"],
+        test_cases=[os.path.join("tests", "rules", "test_git_add.py::test_match")],
         api=TheFuckAPI15(),
         unittests=TheFuckUnittestGenerator15(),
         systemtests=TheFuckSystemtestGenerator15(),
+        loc=2328,
     )
     TheFuck(
         bug_id=16,
@@ -227,12 +287,21 @@ def register():
             Path("tests", "shells", "test_zsh.py"),
         ],
         test_cases=[
-            "tests/shells/test_bash.py::TestBash::test_app_alias_variables_correctly_set",
-            "tests/shells/test_zsh.py::TestZsh::test_app_alias_variables_correctly_set",
+            os.path.join(
+                "tests",
+                "shells",
+                "test_bash.py::TestBash::test_app_alias_variables_correctly_set",
+            ),
+            os.path.join(
+                "tests",
+                "shells",
+                "test_zsh.py::TestZsh::test_app_alias_variables_correctly_set",
+            ),
         ],
         api=TheFuckAPI16(),
         unittests=TheFuckUnittestGenerator16(),
         systemtests=TheFuckSystemtestGenerator16(),
+        loc=2269,
     )
     TheFuck(
         bug_id=17,
@@ -240,52 +309,65 @@ def register():
         fixed_commit_id="7ce4307c87c1e2e4106db2c961e48e249be987be",
         test_files=[Path("tests", "shells", "test_bash.py")],
         test_cases=[
-            "tests/shells/test_bash.py::TestBash::test_get_aliases",
-            "tests/shells/test_bash.py::TestBash::test_from_shell",
+            os.path.join("tests", "shells", "test_bash.py::TestBash::test_get_aliases"),
+            os.path.join("tests", "shells", "test_bash.py::TestBash::test_from_shell"),
         ],
         api=TheFuckAPI17(),
         unittests=TheFuckUnittestGenerator17(),
         systemtests=TheFuckSystemtestGenerator17(),
+        loc=2256,
     )
     TheFuck(
         bug_id=18,
         buggy_commit_id="b65a9a0a4fd9bef394b45a1d367d29aa1e1c403e",
         fixed_commit_id="c3b1ba763708b8faaaf55717c436c4cd4c57a7ea",
         test_files=[Path("tests", "rules", "test_sudo.py")],
-        test_cases=["tests/rules/test_sudo.py::test_not_match"],
+        test_cases=[os.path.join("tests", "rules", "test_sudo.py::test_not_match")],
         api=TheFuckAPI18(),
         unittests=TheFuckUnittestGenerator18(),
         systemtests=TheFuckSystemtestGenerator18(),
+        loc=2123,
     )
     TheFuck(
         bug_id=19,
         buggy_commit_id="959b96cf6ec8cedda05dc58efe0e0f3bd6ed2f4e",
         fixed_commit_id="dc23d67a42dad54308a753639edd1ea0d15cb2e7",
         test_files=[Path("tests", "rules", "test_git_push_force.py")],
-        test_cases=["tests/rules/test_git_push_force.py::test_get_new_command"],
+        test_cases=[
+            os.path.join(
+                "tests", "rules", "test_git_push_force.py::test_get_new_command"
+            )
+        ],
         api=TheFuckAPI19(),
         unittests=TheFuckUnittestGenerator19(),
         systemtests=TheFuckSystemtestGenerator19(),
+        loc=2047,
     )
     TheFuck(
         bug_id=20,
         buggy_commit_id="0a6a3db65d2fc480c5b2f1135137f34c9f06b742",
         fixed_commit_id="280751b36e715b006c631ba6c08de99ccc74f6d2",
         test_files=[Path("tests", "rules", "test_dirty_unzip.py")],
-        test_cases=["tests/rules/test_dirty_unzip.py::test_get_new_command"],
+        test_cases=[
+            os.path.join("tests", "rules", "test_dirty_unzip.py::test_get_new_command")
+        ],
         api=TheFuckAPI20(),
         unittests=TheFuckUnittestGenerator20(),
         systemtests=TheFuckSystemtestGenerator20(),
+        loc=2034,
     )
     TheFuck(
         bug_id=21,
         buggy_commit_id="71dc2666ccf62e653291d9a7a08e2c6c3320425b",
         fixed_commit_id="213791d3c2af379ffa37a140735998736b41912e",
         test_files=[Path("tests", "rules", "test_git_fix_stash.py")],
-        test_cases=["tests/rules/test_git_fix_stash.py::test_not_match"],
+        test_cases=[
+            os.path.join("tests", "rules", "test_git_fix_stash.py::test_not_match")
+        ],
         api=TheFuckAPI21(),
         unittests=TheFuckUnittestGenerator21(),
         systemtests=TheFuckSystemtestGenerator21(),
+        loc=1980,
     )
     TheFuck(
         bug_id=22,
@@ -293,11 +375,15 @@ def register():
         fixed_commit_id="e2e8b6fc865452b4cfc1bed70e5b9b49807258ae",
         test_files=[Path("tests", "test_types.py")],
         test_cases=[
-            "tests/test_types.py::TestSortedCorrectedCommandsSequence::test_with_blank"
+            os.path.join(
+                "tests",
+                "test_types.py::TestSortedCorrectedCommandsSequence::test_with_blank",
+            )
         ],
         api=TheFuckAPI22(),
         unittests=TheFuckUnittestGenerator22(),
         systemtests=TheFuckSystemtestGenerator22(),
+        loc=1871,
     )
     TheFuck(
         bug_id=23,
@@ -305,13 +391,15 @@ def register():
         fixed_commit_id="9a02e821cdc58a4aba2c0acc521fb25cacab87a5",
         test_files=[Path("tests", "test_utils.py")],
         test_cases=[
-            "tests/test_utils.py::TestCache::test_when_etag_changed",
-            "tests/test_utils.py::TestCache::test_with_filled_cache",
-            "tests/test_utils.py::TestCache::test_with_blank_cache",
+            os.path.join("tests", "test_utils.py::TestCache::test_when_etag_changed"),
+            os.path.join("tests", "test_utils.py::TestCache::test_with_filled_cache"),
+            os.path.join("tests", "test_utils.py::TestCache::test_with_blank_cache"),
         ],
+        skip_tests=["test_get_all_callables"],
         api=TheFuckAPI23(),
         unittests=TheFuckUnittestGenerator23(),
         systemtests=TheFuckSystemtestGenerator23(),
+        loc=1870,
     )
     TheFuck(
         bug_id=24,
@@ -319,52 +407,67 @@ def register():
         fixed_commit_id="5d74344994da89ed01afd448f1c9d86b85e85351",
         test_files=[Path("tests", "test_types.py")],
         test_cases=[
-            "tests/test_types.py::TestCorrectedCommand::test_equality",
-            "tests/test_types.py::TestCorrectedCommand::test_hashable",
+            os.path.join("tests", "test_types.py::TestCorrectedCommand::test_equality"),
+            os.path.join("tests", "test_types.py::TestCorrectedCommand::test_hashable"),
         ],
         api=TheFuckAPI24(),
         unittests=TheFuckUnittestGenerator24(),
         systemtests=TheFuckSystemtestGenerator24(),
+        loc=1852,
     )
     TheFuck(
         bug_id=25,
         buggy_commit_id="42a8b4f639269886e468762e6d100b6f01aad8ab",
         fixed_commit_id="298c04f89c081dc16c8653aa017ca85dd14bfad6",
         test_files=[Path("tests", "rules", "test_mkdir_p.py")],
-        test_cases=["tests/rules/test_mkdir_p.py::test_get_new_command"],
+        test_cases=[
+            os.path.join("tests", "rules", "test_mkdir_p.py::test_get_new_command")
+        ],
         api=TheFuckAPI25(),
         unittests=TheFuckUnittestGenerator25(),
         systemtests=TheFuckSystemtestGenerator25(),
+        loc=1716,
     )
     TheFuck(
         bug_id=26,
         buggy_commit_id="7cb0388ed0845545e878b29783bbf8e901a02745",
         fixed_commit_id="feb3eee2a08f0cba4552373d728509bc90b561ab",
         test_files=[Path("tests", "rules", "test_vagrant_up.py")],
-        test_cases=["tests/rules/test_vagrant_up.py::test_get_new_command"],
+        test_cases=[
+            os.path.join("tests", "rules", "test_vagrant_up.py::test_get_new_command")
+        ],
         api=TheFuckAPI26(),
         unittests=TheFuckUnittestGenerator26(),
         systemtests=TheFuckSystemtestGenerator26(),
+        loc=1722,
     )
     TheFuck(
         bug_id=27,
         buggy_commit_id="bc6b107066d3f1e60b4cfcaa8cf6399e98cf1b1c",
         fixed_commit_id="1becd92b126a368d6e7d93aa8eea209414ce4aa2",
         test_files=[Path("tests", "rules", "test_open.py")],
-        test_cases=["tests/rules/test_open.py::test_get_new_command"],
+        test_cases=[
+            os.path.join("tests", "rules", "test_open.py::test_get_new_command")
+        ],
         api=TheFuckAPI27(),
         unittests=TheFuckUnittestGenerator27(),
         systemtests=TheFuckSystemtestGenerator27(),
+        loc=1705,
     )
     TheFuck(
         bug_id=28,
         buggy_commit_id="88831c424f569e6a55fc98883d3eeecc7d425b18",
         fixed_commit_id="9b30ae0424607a4e268bd26eaee8ccb91a5588f9",
         test_files=[Path("tests", "rules", "test_fix_file.py")],
-        test_cases=["tests/rules/test_fix_file.py::test_get_new_command_with_settings"],
+        test_cases=[
+            os.path.join(
+                "tests", "rules", "test_fix_file.py::test_get_new_command_with_settings"
+            )
+        ],
         api=TheFuckAPI28(),
         unittests=TheFuckUnittestGenerator28(),
         systemtests=TheFuckSystemtestGenerator28(),
+        loc=1697,
     )
     TheFuck(
         bug_id=29,
@@ -372,42 +475,51 @@ def register():
         fixed_commit_id="88831c424f569e6a55fc98883d3eeecc7d425b18",
         test_files=[Path("tests", "test_types.py"), Path("tests", "test_utils.py")],
         test_cases=[
-            "tests/test_types.py::test_update_settings",
-            "tests/test_utils.py::test_wrap_settings",
+            os.path.join("tests", "test_types.py::test_update_settings"),
+            os.path.join("tests", "test_utils.py::test_wrap_settings"),
         ],
+        skip_tests=["test_get_all_callables"],
         api=TheFuckAPI29(),
         unittests=TheFuckUnittestGenerator29(),
         systemtests=TheFuckSystemtestGenerator29(),
+        loc=1697,
     )
     TheFuck(
         bug_id=30,
         buggy_commit_id="de513cacb150049e3f95434f8d6d30b7ed1e0ea7",
         fixed_commit_id="43fead02d3a24fef71534116c5550def0f56830c",
         test_files=[Path("tests", "rules", "test_fix_file.py")],
-        test_cases=["tests/rules/test_fix_file.py::test_not_file"],
+        test_cases=[os.path.join("tests", "rules", "test_fix_file.py::test_not_file")],
         api=TheFuckAPI30(),
         unittests=TheFuckUnittestGenerator30(),
         systemtests=TheFuckSystemtestGenerator30(),
+        loc=1545,
     )
     TheFuck(
         bug_id=31,
         buggy_commit_id="66e2ec7e3f0d3f848c01d87bb3503b0ff90fc78a",
         fixed_commit_id="1285303363bc420bd7606bd5f808e3f2b4f0e83f",
         test_files=[Path("tests", "rules", "test_git_diff_staged.py")],
-        test_cases=["tests/rules/test_git_diff_staged.py::test_get_new_command"],
+        test_cases=[
+            os.path.join(
+                "tests", "rules", "test_git_diff_staged.py::test_get_new_command"
+            )
+        ],
         api=TheFuckAPI31(),
         unittests=TheFuckUnittestGenerator31(),
         systemtests=TheFuckSystemtestGenerator31(),
+        loc=1336,
     )
     TheFuck(
         bug_id=32,
         buggy_commit_id="cb33c912e5f2f4c2da6b70d708ff0437bfcd3b94",
         fixed_commit_id="25cc98a21a3450a046caf418f08713c82a290805",
         test_files=[Path("tests", "rules", "test_ls_lah.py")],
-        test_cases=["tests/rules/test_ls_lah.py::test_match"],
+        test_cases=[os.path.join("tests", "rules", "test_ls_lah.py::test_match")],
         api=TheFuckAPI32(),
         unittests=TheFuckUnittestGenerator32(),
         systemtests=TheFuckSystemtestGenerator32(),
+        loc=1067,
     )
 
 
@@ -1022,6 +1134,7 @@ class TheFuckAPI32(API):
             return TestResult.FAILING, f"Expected {expected}, but was {result}"
 
 
+# noinspection HttpUrlsUsage
 class TheFuckTestGenerator:
     @staticmethod
     def generate_values(producer: Callable) -> str:
@@ -1124,12 +1237,14 @@ class TheFuckTestGenerator:
             (
                 f"pip {pip_commands[randomise_int]} {randomise_string}",
                 f"pip {pip_failing_inputs[randomise_int]} {randomise_string}",
-                f'ERROR: unknown command "{pip_failing_inputs[randomise_int]}", maybe you meant "{pip_commands[randomise_int]}"',
+                f'ERROR: unknown command "{pip_failing_inputs[randomise_int]}", '
+                f'maybe you meant "{pip_commands[randomise_int]}"',
             ),
             (
                 f"pip {pip_commands[randomise_int]} {randomise_string}",
                 f"pip {pip_failing_inputs_2[randomise_int]} {randomise_string}",
-                f'ERROR: unknown command "{pip_failing_inputs_2[randomise_int]}", maybe you meant "{pip_commands[randomise_int]}"',
+                f'ERROR: unknown command "{pip_failing_inputs_2[randomise_int]}", '
+                f'maybe you meant "{pip_commands[randomise_int]}"',
             ),
         )
 
@@ -1137,12 +1252,14 @@ class TheFuckTestGenerator:
             (
                 f"pip {pip_commands[randomise_int]} {randomise_string}",
                 f"pip {pip_passing_inputs[randomise_int]} {randomise_string}",
-                f'ERROR: unknown command "{pip_passing_inputs[randomise_int]}", maybe you meant "{pip_commands[randomise_int]}"',
+                f'ERROR: unknown command "{pip_passing_inputs[randomise_int]}", '
+                f'maybe you meant "{pip_commands[randomise_int]}"',
             ),
             (
                 f"pip {pip_commands[randomise_int]} {randomise_string}",
                 f"pip {pip_passing_inputs_2[randomise_int]} {randomise_string}",
-                f'ERROR: unknown command "{pip_passing_inputs_2[randomise_int]}", maybe you meant "{pip_commands[randomise_int]}"',
+                f'ERROR: unknown command "{pip_passing_inputs_2[randomise_int]}", '
+                f'maybe you meant "{pip_commands[randomise_int]}"',
             ),
         )
         return (
@@ -1220,12 +1337,14 @@ class TheFuckTestGenerator:
             (
                 True,
                 f"git push --set-upstream <remote> <{randomise_branch_name}>",
-                f"fatal: The current branch [{randomise_branch_name}] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [{randomise_branch_name}]",
+                f"fatal: The current branch [{randomise_branch_name}] has no upstream branch.To push the current "
+                f"branch and set the remote as upstream, use git push --set-upstream origin [{randomise_branch_name}]",
             ),
             (
                 False,
                 f"git pull --set-upstream <remote> <{randomise_branch_name}>",
-                f"fatal: The current branch [{randomise_branch_name}] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [{randomise_branch_name}]",
+                f"fatal: The current branch [{randomise_branch_name}] has no upstream branch.To push the current "
+                f"branch and set the remote as upstream, use git push --set-upstream origin [{randomise_branch_name}]",
             ),
         )
 
@@ -1233,12 +1352,14 @@ class TheFuckTestGenerator:
             (
                 True,
                 f"git pushpull --set-upstream <remote> <{randomise_branch_name}>",
-                f"fatal: The current branch [{randomise_branch_name}] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [{randomise_branch_name}]",
+                f"fatal: The current branch [{randomise_branch_name}] has no upstream branch.To push the current "
+                f"branch and set the remote as upstream, use git push --set-upstream origin [{randomise_branch_name}]",
             ),
             (
                 False,
                 f"git push --set-upstream <remote> <{randomise_branch_name}> SELECT * FROM users",
-                f"fatal: The current branch [{randomise_branch_name}] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [{randomise_branch_name}]",
+                f"fatal: The current branch [{randomise_branch_name}] has no upstream branch.To push the current "
+                f"branch and set the remote as upstream, use git push --set-upstream origin [{randomise_branch_name}]",
             ),
         )
 

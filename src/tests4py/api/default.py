@@ -99,7 +99,9 @@ def checkout(
             project_verify = load_project(work_location, only_project=True)
             project.compiled = project_verify.compiled
         else:
-            tmp_location = (work_dir / f"tmp_{project.project_name}").absolute()
+            tmp_location = (
+                work_dir / f"tmp_{project.project_name}_{project.bug_id}"
+            ).absolute()
 
             if check_further:
                 if force or not config.cache or not check_cache_exists(project):
@@ -331,7 +333,7 @@ def build(
 
         if not env_exists:
             LOGGER.info("Installing utilities")
-            update_env(environ)
+            update_env(environ, force=force)
 
             LOGGER.info("Installing requirements")
             subprocess.check_call(
@@ -517,6 +519,8 @@ def test(
             raise NotImplementedError(
                 f"No command found for {project.testing_framework.value}"
             )
+        if project.test_command_arguments:
+            command += project.test_command_arguments
         skips = []
         tests = []
         if not relevant_tests and not all_tests and not single_test:
@@ -527,10 +531,7 @@ def test(
                 tests.append(project.test_base)
         elif relevant_tests:
             tests += project.relevant_test_files
-            if (
-                project.skip_tests
-                and project.testing_framework == TestingFramework.PYTEST
-            ):
+            if project.skip_tests:
                 skips = [
                     "-k",
                     " and ".join([f"not {skip}" for skip in project.skip_tests]),
@@ -545,9 +546,14 @@ def test(
         command += tests
 
         LOGGER.info(f"Run tests with command {command}")
-        output = subprocess.run(
-            command, stdout=subprocess.PIPE, env=environ, cwd=work_dir
-        ).stdout
+        process = subprocess.run(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=environ,
+            cwd=work_dir,
+        )
+        output = process.stdout or process.stderr
         LOGGER.info(output.decode("utf-8"))
 
         successful = False
@@ -563,9 +569,16 @@ def test(
             failed_match = UNITTEST_FAILED_PATTERN.search(output)
             if number_match:
                 report.total = int(number_match.group("n"))
-            if failed_match:
-                report.failing = int(number_match.group("f"))
-            if number_match and failed_match:
+                if failed_match:
+                    failed = failed_match.group("f")
+                    errors = failed_match.group("e")
+                    report.failing = 0
+                    if failed:
+                        report.failing += int(failed)
+                    if errors:
+                        report.failing += int(errors)
+                else:
+                    report.failing = 0
                 report.passing = report.total - report.failing
                 successful = True
         else:
