@@ -9,7 +9,7 @@ from sflkit.runners.run import Environment, DEFAULT_TIMEOUT
 from sflkit.runners.run import TestResult
 from sflkitlib.events import EventType
 
-from tests4py.api import build
+from tests4py.api import build, get_patched_files
 from tests4py.api.report import ProjectReport
 from tests4py.constants import SRC_FILE
 from tests4py.projects import Project
@@ -66,8 +66,12 @@ def create_config(
     predicates: str = None,
     events_path: Optional[Path] = None,
     mapping: Optional[Path] = None,
+    only_patched_files: bool = False,
 ):
-    if project.included_files:
+    if only_patched_files:
+        includes = get_patched_files(project)
+        excludes = list()
+    elif project.included_files:
         includes = project.included_files
         excludes = project.excluded_files
     elif project.excluded_files:

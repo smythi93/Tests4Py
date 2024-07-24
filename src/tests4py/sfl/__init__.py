@@ -28,6 +28,7 @@ def sflkit_instrument(
     work_dir_or_project: Optional[Union[os.PathLike, Project]] = None,
     events: str = None,
     mapping: os.PathLike = None,
+    only_patched_files: bool = False,
     report: SFLInstrumentReport = None,
 ):
     report = report or SFLInstrumentReport()
@@ -44,6 +45,7 @@ def sflkit_instrument(
                 Path(dst),
                 events=events,
                 mapping=Path(mapping) if mapping else None,
+                only_patched_files=only_patched_files,
             ),
         )
         report.successful = True
@@ -56,6 +58,7 @@ def sflkit_instrument(
 def sflkit_unittest(
     work_dir: os.PathLike,
     output: Path = None,
+    relevant_tests: bool = True,
     all_tests: bool = False,
     report: SFLEventsReport = None,
 ):
@@ -69,10 +72,16 @@ def sflkit_unittest(
         environ = env_on(project)
         environ = activate_venv(work_dir, environ)
         runner = PytestRunner(timeout=DEFAULT_TIME_OUT)
+        if all_tests:
+            files = None
+        elif relevant_tests:
+            files = project.relevant_test_files
+        else:
+            files = project.test_cases
         runner.run(
             directory=work_dir,
             output=output,
-            files=None if all_tests else project.relevant_test_files,
+            files=files,
             base=project.test_base,
             environ=environ,
         )
