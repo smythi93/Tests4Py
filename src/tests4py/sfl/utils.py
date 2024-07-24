@@ -44,17 +44,17 @@ class SFLAnalyzeReport(ProjectReport):
 
 
 def get_events_path(
-    project: Project, passing: Optional[bool] = None, events_path: Optional[Path] = None
+    project: Project,
+    passing: Optional[bool] = None,
+    events_path: Optional[Path] = None,
+    include_suffix=False,
 ):
-    if passing is None:
-        return (events_path or EVENTS_PATH) / project.project_name / str(project.bug_id)
-    else:
-        return (
-            (events_path or EVENTS_PATH)
-            / project.project_name
-            / str(project.bug_id)
-            / ("passing" if passing else "failing")
-        )
+    base = (events_path or EVENTS_PATH) / project.project_name / str(project.bug_id)
+    if include_suffix:
+        base /= "bug" if project.buggy else "fix"
+    if passing is not None:
+        base /= "passing" if passing else "failing"
+    return base
 
 
 def create_config(
@@ -67,6 +67,7 @@ def create_config(
     events_path: Optional[Path] = None,
     mapping: Optional[Path] = None,
     only_patched_files: bool = False,
+    include_suffix: bool = False,
 ):
     if only_patched_files:
         includes = get_patched_files(project)
@@ -87,10 +88,20 @@ def create_config(
         metrics=metrics or "",
         predicates=predicates or "",
         passing=str(
-            get_events_path(project=project, passing=True, events_path=events_path)
+            get_events_path(
+                project=project,
+                passing=True,
+                events_path=events_path,
+                include_suffix=include_suffix,
+            )
         ),
         failing=str(
-            get_events_path(project=project, passing=False, events_path=events_path)
+            get_events_path(
+                project=project,
+                passing=False,
+                events_path=events_path,
+                include_suffix=include_suffix,
+            )
         ),
         working=str(dst.absolute()),
         include='"' + '","'.join(includes) + '"',

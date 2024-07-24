@@ -157,4 +157,5 @@ out.xml
 sflkit_events
 notebooks/tmp/*
 notebooks/tmp
+mappings/
 
