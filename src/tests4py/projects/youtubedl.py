@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import List, Optional
 
+from tests4py.constants import PYTHON
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, ExpectErrAPI
@@ -23,6 +24,7 @@ class YoutubeDL(Project):
         api: Optional[API] = None,
         loc: int = 0,
         relevant_test_files: Optional[List[Path]] = None,
+        skip_tests: Optional[List[str]] = None,
     ):
         super().__init__(
             bug_id=bug_id,
@@ -31,6 +33,7 @@ class YoutubeDL(Project):
             status=Status.OK,
             python_version="3.7.0",
             darwin_python_version="3.7.12",
+            python_fallback_version="3.7.12",
             python_path="",
             buggy_commit_id=buggy_commit_id,
             fixed_commit_id=fixed_commit_id,
@@ -44,8 +47,15 @@ class YoutubeDL(Project):
             api=api,
             grammar=None,
             loc=loc,
+            source_base=Path(PROJECT_NAME),
+            test_base=Path("test"),
+            included_files=[PROJECT_NAME],
+            setup=[
+                [PYTHON, "-m", "pip", "install", "-e", "."],
+            ],
             relevant_test_files=relevant_test_files,
-        )  # TODO adjust parameters
+            skip_tests=skip_tests,
+        )
 
 
 def register():
