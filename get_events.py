@@ -1,6 +1,7 @@
 import argparse
 import json
 import os.path
+import time
 import traceback
 
 from sflkit.runners import Runner
@@ -16,8 +17,11 @@ def main(project_name, bug_id):
         identifier = project.get_identifier()
         print(identifier)
         report[identifier] = dict()
+        report[identifier]["time"] = dict()
 
+        start = time.time()
         r = t4p.checkout(project)
+        report[identifier]["time"]["checkout"] = time.time() - start
         if r.successful:
             report[identifier]["checkout"] = "successful"
         else:
@@ -27,7 +31,9 @@ def main(project_name, bug_id):
 
         mapping = os.path.join("mappings", f"{project}.json")
         sfl_path = os.path.join("tmp", f"sfl_{identifier}")
+        start = time.time()
         r = sfl.sflkit_instrument(sfl_path, project, mapping=mapping)
+        report[identifier]["time"]["instrument"] = time.time() - start
         if r.successful:
             report[identifier]["build"] = "successful"
         else:
@@ -40,9 +46,11 @@ def main(project_name, bug_id):
         with open(mapping, "w") as f:
             json.dump(mapping_content, f, indent=2)
 
+        start = time.time()
         r = sfl.sflkit_unittest(
             sfl_path, relevant_tests=True, all_tests=False, include_suffix=True
         )
+        report[identifier]["time"]["test"] = time.time() - start
         if r.successful:
             report[identifier]["test"] = "successful"
         else:
@@ -51,7 +59,9 @@ def main(project_name, bug_id):
             continue
 
         project.buggy = False
+        start = time.time()
         r = t4p.checkout(project)
+        report[identifier]["time"]["checkout_fixed"] = time.time() - start
         if r.successful:
             report[identifier]["checkout_fixed"] = "successful"
         else:
@@ -60,7 +70,9 @@ def main(project_name, bug_id):
             continue
 
         mapping = os.path.join("mappings", f"{project}.json")
+        start = time.time()
         r = sfl.sflkit_instrument(sfl_path, project, mapping=mapping)
+        report[identifier]["time"]["instrument_fixed"] = time.time() - start
         if r.successful:
             report[identifier]["build_fixed"] = "successful"
         else:
@@ -73,9 +85,11 @@ def main(project_name, bug_id):
         with open(mapping, "w") as f:
             json.dump(mapping_content, f, indent=2)
 
+        start = time.time()
         r = sfl.sflkit_unittest(
             sfl_path, relevant_tests=False, all_tests=False, include_suffix=True
         )
+        report[identifier]["time"]["test_fixed"] = time.time() - start
         if r.successful:
             report[identifier]["test_fixed"] = "successful"
         else:
