@@ -71,7 +71,7 @@ def register():
                 "lib", "matplotlib", "tests", "test_bbox_tight.py::test_noop_tight_bbox"
             )
         ],
-        loc=85019,
+        loc=63544,
     )
     Matplotlib(
         bug_id=2,
@@ -94,7 +94,7 @@ def register():
                 "test_axes.py::TestScatter",
             )
         ],
-        loc=84861,
+        loc=63506,
     )
     Matplotlib(
         bug_id=3,
@@ -106,7 +106,7 @@ def register():
                 "lib", "matplotlib", "tests", "test_marker.py::test_marker_fillstyle"
             )
         ],
-        loc=84852,
+        loc=63506,
     )
     Matplotlib(
         bug_id=4,
@@ -134,7 +134,7 @@ def register():
                 "lib", "matplotlib", "tests", "test_axes.py::test_hlines_default"
             ),
         ],
-        loc=84712,
+        loc=63462,
     )
     Matplotlib(
         bug_id=5,
@@ -157,7 +157,7 @@ def register():
                 "test_axes.py::TestScatter",
             )
         ],
-        loc=84497,
+        loc=63378,
     )
     Matplotlib(
         bug_id=6,
@@ -180,7 +180,7 @@ def register():
                 "test_axes.py::TestScatter",
             )
         ],
-        loc=84431,
+        loc=63369,
     )
     Matplotlib(
         bug_id=7,
@@ -196,7 +196,7 @@ def register():
             )
         ],
         test_status_buggy=TestStatus.PASSING,
-        loc=84323,
+        loc=63292,
     )
     Matplotlib(
         bug_id=8,
@@ -240,7 +240,7 @@ def register():
                 "lib", "matplotlib", "tests", "test_axes.py::test_autoscale_log_shared"
             ),
         ],
-        loc=84254,
+        loc=63243,
     )
     Matplotlib(
         bug_id=9,
@@ -255,7 +255,7 @@ def register():
                 "test_polar.py::test_polar_invertedylim_rorigin",
             )
         ],
-        loc=84299,
+        loc=63277,
     )
     Matplotlib(
         bug_id=10,
@@ -302,7 +302,7 @@ def register():
                 "test_axes.py::test_retain_tick_visibility",
             ),
         ],
-        loc=83392,
+        loc=62823,
     )
     Matplotlib(
         bug_id=11,
@@ -315,7 +315,7 @@ def register():
             )
         ],
         skip_tests=["test_text_repr"],
-        loc=83379,
+        loc=62827,
     )
     Matplotlib(
         bug_id=12,
@@ -358,7 +358,7 @@ def register():
                 "lib", "matplotlib", "tests", "test_axes.py::test_eventplot_colors"
             ),
         ],
-        loc=83489,
+        loc=62948,
     )
     Matplotlib(
         bug_id=13,
@@ -373,7 +373,7 @@ def register():
                 "test_path.py::test_make_compound_path_stops",
             )
         ],
-        loc=84408,
+        loc=62951,
     )
     Matplotlib(
         bug_id=14,
@@ -389,7 +389,7 @@ def register():
             )
         ],
         skip_tests=["test_text_repr"],
-        loc=84408,
+        loc=64078,
     )
     Matplotlib(
         bug_id=15,
@@ -512,7 +512,7 @@ def register():
                 "test_colors.py::test_SymLogNorm_single_zero",
             ),
         ],
-        loc=84460,
+        loc=64152,
     )
     Matplotlib(
         bug_id=16,
@@ -525,7 +525,7 @@ def register():
             ),
         ],
         skip_tests=["test_colorbar_positioning[png]"],
-        loc=86284,
+        loc=65317,
     )
     Matplotlib(
         bug_id=17,
@@ -538,7 +538,7 @@ def register():
             )
         ],
         skip_tests=["test_colorbar_positioning[png]"],
-        loc=85172,
+        loc=64261,
     )
     Matplotlib(
         bug_id=18,
@@ -581,7 +581,7 @@ def register():
                 "lib", "matplotlib", "tests", "test_axes.py::test_polar_gridlines"
             ),
         ],
-        loc=86220,
+        loc=65299,
     )
     Matplotlib(
         bug_id=19,
@@ -624,7 +624,7 @@ def register():
                 "lib", "matplotlib", "tests", "test_axes.py::test_polar_gridlines"
             ),
         ],
-        loc=85338,
+        loc=64410,
     )
     Matplotlib(
         bug_id=20,
@@ -665,7 +665,7 @@ def register():
                 "test_axes.py::test_axisbelow",
             ),
         ],
-        loc=86203,
+        loc=65299,
     )
     Matplotlib(
         bug_id=21,
@@ -740,7 +740,7 @@ def register():
                 "lib", "matplotlib", "tests", "test_axes.py::test_boxplot_not_single"
             ),
         ],
-        loc=86100,
+        loc=65200,
     )
     Matplotlib(
         bug_id=22,
@@ -813,7 +813,7 @@ def register():
                 "test_axes.py::test_hist_range_and_density",
             ),
         ],
-        loc=86058,
+        loc=65308,
     )
     Matplotlib(
         bug_id=23,
@@ -866,7 +866,7 @@ def register():
                 "test_axes.py::test_zoom_inset",
             ),
         ],
-        loc=85780,
+        loc=65354,
     )
     Matplotlib(
         bug_id=24,
@@ -889,7 +889,7 @@ def register():
                 "lib", "matplotlib", "tests", "test_axes.py::test_tick_label_update"
             ),
         ],
-        loc=86199,
+        loc=66180,
     )
     Matplotlib(
         bug_id=25,
@@ -921,7 +921,7 @@ def register():
             "test__EventCollection__set_color",
             "test_cap_and_joinstyle_image",
         ],
-        loc=86198,
+        loc=66180,
     )
     Matplotlib(
         bug_id=26,
@@ -944,7 +944,7 @@ def register():
                 "lib", "matplotlib", "tests", "test_axes.py::test_tick_label_update"
             ),
         ],
-        loc=85385,
+        loc=65354,
     )
     Matplotlib(
         bug_id=27,
@@ -960,7 +960,7 @@ def register():
             "test_colorbar_positioning",
             "test_colorbar_closed_patch",
         ],
-        loc=85386,
+        loc=65356,
     )
     Matplotlib(
         bug_id=28,
@@ -992,7 +992,7 @@ def register():
                 "test_axes.py::test_boxplot_no_weird_whisker",
             ),
         ],
-        loc=85380,
+        loc=65357,
     )
     Matplotlib(
         bug_id=29,
@@ -1010,7 +1010,7 @@ def register():
             ),
             os.path.join("lib", "matplotlib", "tests", "test_axes.py::test_twinx_cla"),
         ],
-        loc=86186,
+        loc=66175,
     )
     Matplotlib(
         bug_id=30,
@@ -1027,7 +1027,7 @@ def register():
                 "lib", "matplotlib", "tests", "test_colors.py::test_makeMappingArray"
             )
         ],
-        loc=86010,
+        loc=66111,
     )
 
 

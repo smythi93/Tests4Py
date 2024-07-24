@@ -60,6 +60,7 @@ class TheFuck(Project):
             source_base=Path(PROJECT_NAME),
             test_base=Path(PROJECT_NAME, "tests"),
             included_files=[PROJECT_NAME],
+            excluded_files=[os.path.join(PROJECT_NAME, "tests")],
             setup=[
                 [PYTHON, "-m", "pip", "install", "-e", "."],
             ],
@@ -507,6 +508,7 @@ def register():
         api=TheFuckAPI31(),
         unittests=TheFuckUnittestGenerator31(),
         systemtests=TheFuckSystemtestGenerator31(),
+        loc=1336,
     )
     TheFuck(
         bug_id=32,
@@ -517,6 +519,7 @@ def register():
         api=TheFuckAPI32(),
         unittests=TheFuckUnittestGenerator32(),
         systemtests=TheFuckSystemtestGenerator32(),
+        loc=1067,
     )
 
 

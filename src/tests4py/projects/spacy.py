@@ -60,6 +60,7 @@ class SpaCy(Project):
             source_base=Path(PROJECT_NAME),
             test_base=Path(PROJECT_NAME, "tests"),
             included_files=[PROJECT_NAME],
+            excluded_files=[os.path.join(PROJECT_NAME, "tests")],
             setup=[
                 [PYTHON, "setup.py", "build_ext", "--inplace"],
             ],
@@ -106,7 +107,7 @@ def register():
         api=SpaCyAPI1(),
         unittests=SpaCyUnittestGenerator1(),
         systemtests=SpaCySystemtestGenerator1(),
-        loc=92802,
+        loc=80165,
     )
     SpaCy(
         bug_id=2,
@@ -128,7 +129,7 @@ def register():
         # api=SpaCyAPI2(),
         # unittests=SpaCyUnittestGenerator2(),
         # systemtests=SpaCySystemtestGenerator2(),
-        loc=92506,
+        loc=80024,
     )
     SpaCy(
         bug_id=3,
@@ -143,7 +144,7 @@ def register():
         # api=SpaCyAPI3(),
         # unittests=SpaCyUnittestGenerator3(),
         # systemtests=SpaCySystemtestGenerator3(),
-        loc=92038,
+        loc=79665,
     )
     SpaCy(
         bug_id=4,
@@ -161,7 +162,7 @@ def register():
         # api=SpaCyAPI4(),
         # unittests=SpaCyUnittestGenerator4(),
         # systemtests=SpaCySystemtestGenerator4(),
-        loc=85716,
+        loc=73718,
     )
     SpaCy(
         bug_id=5,
@@ -171,7 +172,7 @@ def register():
         test_cases=[
             os.path.join("spacy", "tests", "test_language.py::test_evaluate_no_pipe")
         ],
-        loc=84629,
+        loc=73083,
     )
     SpaCy(
         bug_id=6,
@@ -187,7 +188,7 @@ def register():
             )
         ],
         test_status_fixed=TestStatus.FAILING,
-        loc=84224,
+        loc=72871,
     )
     SpaCy(
         bug_id=7,
@@ -197,7 +198,7 @@ def register():
         test_cases=[
             os.path.join("spacy", "tests", "doc", "test_span.py::test_filter_spans")
         ],
-        loc=83083,
+        loc=72264,
     )
     SpaCy(
         bug_id=8,
@@ -212,7 +213,7 @@ def register():
                 "test_matcher_logic.py::test_matcher_remove",
             )
         ],
-        loc=83075,
+        loc=72263,
     )
     SpaCy(
         bug_id=9,
@@ -230,7 +231,7 @@ def register():
                 "test_tagger.py::test_tagger_warns_no_lemma_lookups",
             )
         ],
-        loc=82814,
+        loc=72195,
     )
     SpaCy(
         bug_id=10,
@@ -245,7 +246,7 @@ def register():
                 "test_matcher_api.py::test_matcher_valid_callback",
             )
         ],
-        loc=82947,
+        loc=72240,
     )
 
 

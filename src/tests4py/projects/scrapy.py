@@ -635,7 +635,7 @@ def register():
             Path("tests", "test_utils_log.py"),
         ],
         skip_tests=["(MediaPipelineTestCase and not BaseMediaPipelineTestCase)"],
-        loc=11852,
+        loc=11839,
     )
     Scrapy(
         bug_id=34,
