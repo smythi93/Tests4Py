@@ -76,7 +76,14 @@ def sflkit_unittest(
         if all_tests:
             files = None
         elif relevant_tests:
-            files = project.relevant_test_files
+            if project.skip_tests:
+                skips = [
+                    "-k",
+                    " and ".join([f"not {skip}" for skip in project.skip_tests]),
+                ]
+            else:
+                skips = list()
+            files = skips + project.relevant_test_files
         else:
             files = project.test_cases
         runner.run(
