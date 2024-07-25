@@ -623,12 +623,6 @@ def register():
                 "tests",
                 "test_pipeline_media.py::BaseMediaPipelineTestCase::test_default_item_completed",
             ),
-            os.path.join(
-                "tests", "test_utils_log.py::FailureToExcInfoTest::test_failure"
-            ),
-            os.path.join(
-                "tests", "test_utils_log.py::FailureToExcInfoTest::test_non_failure"
-            ),
         ],
         relevant_test_files=[
             Path("tests", "test_pipeline_media.py"),
@@ -695,7 +689,7 @@ def register():
                 "tests", "test_http_request.py::RequestTest::test_url_no_scheme"
             ),
             os.path.join(
-                "tests", "test_http_request.py::FormRequest::test_url_no_scheme"
+                "tests", "test_http_request.py::FormRequestTest::test_url_no_scheme"
             ),
             os.path.join(
                 "tests", "test_http_request.py::XmlRpcRequestTest::test_url_no_scheme"

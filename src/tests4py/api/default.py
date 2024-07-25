@@ -55,6 +55,7 @@ from tests4py.projects import (
     get_project,
     get_matching_projects,
 )
+from tests4py.tests.utils import get_pytest_skip
 
 
 def checkout(
@@ -534,7 +535,7 @@ def test(
             if project.skip_tests:
                 skips = [
                     "-k",
-                    " and ".join([f"not {skip}" for skip in project.skip_tests]),
+                    get_pytest_skip(project.skip_tests),
                 ]
         elif single_test:
             if isinstance(single_test, str):

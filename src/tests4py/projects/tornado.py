@@ -82,7 +82,7 @@ def register():
             os.path.join(
                 "tornado",
                 "test",
-                "httpclient_test.py::HTTPClientCommonTestCase.test_redirect_put_without_body",
+                "httpclient_test.py::HTTPClientCommonTestCase::test_redirect_put_without_body",
             )
         ],
         loc=12025,
@@ -94,7 +94,9 @@ def register():
         test_files=[Path("tornado", "test", "httpclient_test.py")],
         test_cases=[
             os.path.join(
-                "tornado", "test", "httpclient_test.py::SyncHTTPClientSubprocessTest"
+                "tornado",
+                "test",
+                "httpclient_test.py::SyncHTTPClientSubprocessTest::test_destructor_log",
             )
         ],
         loc=11987,
@@ -130,7 +132,7 @@ def register():
             os.path.join(
                 "tornado",
                 "test",
-                "ioloop_test.py::TestPeriodicCallbackMath.test_clock_backwards",
+                "ioloop_test.py::TestPeriodicCallbackMath::test_clock_backwards",
             )
         ],
         loc=11937,
@@ -159,7 +161,7 @@ def register():
             os.path.join(
                 "tornado",
                 "test",
-                "ioloop_test.py::TestIOLoopFutures.test_run_in_executor_native",
+                "ioloop_test.py::TestIOLoopFutures::test_run_in_executor_native",
             )
         ],
         loc=11712,
@@ -187,7 +189,7 @@ def register():
             os.path.join(
                 "tornado",
                 "test",
-                "httputil_test.py::TestUrlConcat.test_url_concat_none_params",
+                "httputil_test.py::TestUrlConcat::test_url_concat_none_params",
             )
         ],
         loc=11632,
@@ -274,7 +276,7 @@ def register():
             os.path.join(
                 "tornado",
                 "test",
-                "ioloop_test.py::TestIOLoopCurrent.test_force_current",
+                "ioloop_test.py::TestIOLoopCurrent::test_force_current",
             )
         ],
         loc=10942,

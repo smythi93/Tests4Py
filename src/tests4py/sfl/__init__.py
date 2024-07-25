@@ -19,6 +19,7 @@ from tests4py.sfl.utils import (
     read_src,
     OracleInputRunner,
 )
+from tests4py.tests.utils import get_pytest_skip
 
 DEFAULT_TIME_OUT = 10
 
@@ -73,17 +74,13 @@ def sflkit_unittest(
         environ = env_on(project)
         environ = activate_venv(work_dir, environ)
         runner = PytestRunner(timeout=DEFAULT_TIME_OUT)
+        k = None
         if all_tests:
             files = None
         elif relevant_tests:
             if project.skip_tests:
-                skips = [
-                    "-k",
-                    " and ".join([f"not {skip}" for skip in project.skip_tests]),
-                ]
-            else:
-                skips = list()
-            files = skips + project.relevant_test_files
+                k = get_pytest_skip(project.skip_tests)
+            files = project.relevant_test_files
         else:
             files = project.test_cases
         runner.run(
@@ -92,6 +89,7 @@ def sflkit_unittest(
             files=files,
             base=project.test_base,
             environ=environ,
+            k=k,
         )
         report.successful = True
         report.passing = runner.passing_tests

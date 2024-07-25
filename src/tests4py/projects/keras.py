@@ -91,7 +91,25 @@ def register():
         fixed_commit_id="8e23a3ec47a2ccbf6cdd222a80886c6b9f17264f",
         test_files=[Path("tests", "keras", "initializers_test.py")],
         test_cases=[
-            os.path.join("tests", "keras", "initializers_test.py::test_statefulness")
+            os.path.join(
+                "tests", "keras", "initializers_test.py::test_statefulness[uniform]"
+            ),
+            os.path.join(
+                "tests", "keras", "initializers_test.py::test_statefulness[orthogonal]"
+            ),
+            os.path.join(
+                "tests",
+                "keras",
+                "initializers_test.py::test_statefulness[truncated_normal]",
+            ),
+            os.path.join(
+                "tests", "keras", "initializers_test.py::test_statefulness[normal]"
+            ),
+            os.path.join(
+                "tests",
+                "keras",
+                "initializers_test.py::test_statefulness[variance_scaling]",
+            ),
         ],
         loc=22638,
     )
@@ -212,8 +230,9 @@ def register():
             Path("tests", "test_doc_auto_generation.py"),
         ],
         test_cases=[
-            "tests",
-            "test_doc_auto_generation.py::test_doc_lists[docs_descriptor1]",
+            os.path.join(
+                "tests", "test_doc_auto_generation.py::test_doc_lists[docs_descriptor1]"
+            ),
         ],
         loc=22278,
     )
@@ -238,9 +257,11 @@ def register():
             Path("tests", "integration_tests", "test_temporal_data_tasks.py"),
         ],
         test_cases=[
-            "tests",
-            "integration_tests",
-            "test_image_data_tasks.py::test_image_data_generator_training",
+            os.path.join(
+                "tests",
+                "integration_tests",
+                "test_image_data_tasks.py::test_image_data_generator_training",
+            ),
         ],
         loc=21230,
     )
@@ -613,21 +634,6 @@ def register():
                 "keras",
                 "test_callbacks.py::test_ReduceLROnPlateau_backwards_compatibility",
             ),
-            os.path.join(
-                "tests",
-                "keras",
-                "test_callbacks.py::test_TensorBoard",
-            ),
-            os.path.join(
-                "tests",
-                "keras",
-                "test_callbacks.py::test_TensorBoard_multi_input_output",
-            ),
-            os.path.join(
-                "tests",
-                "keras",
-                "test_callbacks.py::test_ReduceLROnPlateau_backwards_compatibility",
-            ),
         ],
         skip_tests=["tests_RemoteMonitor"],
         loc=23124,
@@ -658,7 +664,11 @@ def register():
         buggy_commit_id="7ef5244a2f1f7f7b76e3c804b82cbb20cdf4d139",
         fixed_commit_id="4b74fc5418944c9f449eb88ed4b40ada280fa5ca",
         test_files=[Path("tests", "test_multiprocessing.py")],
-        test_cases=["tests", "test_multiprocessing.py::test_multiprocessing_training"],
+        test_cases=[
+            os.path.join(
+                "tests", "test_multiprocessing.py::test_multiprocessing_training"
+            )
+        ],
         loc=23036,
     )
     Keras(
@@ -813,8 +823,17 @@ def register():
         test_files=[Path("tests", "keras", "layers", "recurrent_test.py")],
         test_cases=[
             os.path.join(
-                "tests", "keras", "layers", "recurrent_test.py::test_trainability"
-            )
+                "tests",
+                "keras",
+                "layers",
+                "recurrent_test.py::test_trainability[SimpleRNN]",
+            ),
+            os.path.join(
+                "tests", "keras", "layers", "recurrent_test.py::test_trainability[GRU]"
+            ),
+            os.path.join(
+                "tests", "keras", "layers", "recurrent_test.py::test_trainability[LSTM]"
+            ),
         ],
         loc=20825,
     )

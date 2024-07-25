@@ -19,6 +19,10 @@ class TestResult(enum.Enum):
     UNDEFINED = "UNDEFINED"
 
 
+def get_pytest_skip(skips: List[str]) -> str:
+    return " and ".join([f"not {skip}" for skip in skips])
+
+
 class SpecificationError(ValueError):
     pass
 

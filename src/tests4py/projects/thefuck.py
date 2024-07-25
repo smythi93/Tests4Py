@@ -77,7 +77,10 @@ def register():
         test_files=[Path("tests", "rules", "test_pip_unknown_command.py")],
         test_cases=[
             os.path.join(
-                "tests", "rules", "test_pip_unknown_command.py::test_get_new_command"
+                "tests",
+                "rules",
+                "test_pip_unknown_command.py::test_get_new_command"
+                "[pip un+install thefuck-un+install-uninstall-pip uninstall thefuck]",
             )
         ],
         api=TheFuckAPI1(),
@@ -91,7 +94,11 @@ def register():
         fixed_commit_id="78ef9eec88f43d5727986be2237f6e0e250cbbbc",
         test_files=[Path("tests", "test_utils.py")],
         test_cases=[
-            os.path.join("tests", "test_utils.py::test_get_all_executables_pathsep")
+            os.path.join(
+                "tests",
+                "test_utils.py::test_get_all_executables_pathsep"
+                "[C:\\\\\\\\foo;C:\\\\\\\\bar;C:\\\\\\\\baz;C:\\\\\\\\foo\\\\\\\\bar-;]",
+            )
         ],
         api=TheFuckAPI2(),
         unittests=TheFuckUnittestGenerator2(),
@@ -118,7 +125,57 @@ def register():
         test_files=[Path("tests", "shells", "test_fish.py")],
         test_cases=[
             os.path.join("tests", "shells", "test_fish.py::TestFish::test_get_aliases"),
-            os.path.join("tests", "shells", "test_fish.py::TestFish::test_from_shell"),
+            os.path.join(
+                "tests",
+                "shells",
+                'test_fish.py::TestFish::test_from_shell[fuck-fish -ic "fuck"]',
+            ),
+            os.path.join(
+                "tests", "shells", "test_fish.py::TestFish::test_from_shell[find-find]"
+            ),
+            os.path.join(
+                "tests",
+                "shells",
+                'test_fish.py::TestFish::test_from_shell[funced-fish -ic "funced"]',
+            ),
+            os.path.join(
+                "tests", "shells", "test_fish.py::TestFish::test_from_shell[cd-cd]"
+            ),
+            os.path.join(
+                "tests", "shells", "test_fish.py::TestFish::test_from_shell[grep-grep]"
+            ),
+            os.path.join(
+                "tests", "shells", "test_fish.py::TestFish::test_from_shell[man-man]"
+            ),
+            os.path.join(
+                "tests", "shells", "test_fish.py::TestFish::test_from_shell[pwd-pwd]"
+            ),
+            os.path.join(
+                "tests", "shells", "test_fish.py::TestFish::test_from_shell[vim-vim]"
+            ),
+            os.path.join(
+                "tests", "shells", "test_fish.py::TestFish::test_from_shell[ls-ls]"
+            ),
+            os.path.join(
+                "tests", "shells", "test_fish.py::TestFish::test_from_shell[g-git]"
+            ),
+            os.path.join(
+                "tests",
+                "shells",
+                "test_fish.py::TestFish::test_from_shell"
+                '[math "2 + 2"-fish -ic "math \\\\"2 + 2\\\\""]',
+            ),
+            os.path.join(
+                "tests", "shells", "test_fish.py::TestFish::test_from_shell[open-open]"
+            ),
+            os.path.join(
+                "tests", "shells", "test_fish.py::TestFish::test_from_shell[awk-awk]"
+            ),
+            os.path.join(
+                "tests",
+                "shells",
+                'test_fish.py::TestFish::test_from_shell[ll-fish -ic "ll"]',
+            ),
         ],
         api=TheFuckAPI4(),
         unittests=TheFuckUnittestGenerator4(),
@@ -131,7 +188,11 @@ def register():
         fixed_commit_id="c205683a8df8a57e2db1e9816a5a7ce3255b08fc",
         test_files=[Path("tests", "rules", "test_git_push.py")],
         test_cases=[
-            os.path.join("tests", "rules", "test_git_push.py::test_match_bitbucket")
+            os.path.join(
+                "tests",
+                "rules",
+                "test_git_push.py::test_match_bitbucket",
+            )
         ],
         api=TheFuckAPI5(),
         unittests=TheFuckUnittestGenerator5(),
@@ -145,7 +206,10 @@ def register():
         test_files=[Path("tests", "rules", "test_git_branch_exists.py")],
         test_cases=[
             os.path.join(
-                "tests", "rules", "test_git_branch_exists.py::test_get_new_command"
+                "tests",
+                "rules",
+                "test_git_branch_exists.py::test_get_new_command"
+                "[git checkout -b \"let's-push-this\"-let's-push-this-let\\\\'s-push-this]",
             )
         ],
         api=TheFuckAPI6(),
@@ -158,7 +222,9 @@ def register():
         buggy_commit_id="64d6835e15a22cf8803d398cbb593f748c550e8a",
         fixed_commit_id="75d2c43997ca703150cbdb4c46ed7b2e2e71fd11",
         test_files=[Path("tests", "rules", "test_php_s.py")],
-        test_cases=[os.path.join("tests", "rules", "test_php_s.py::test_match")],
+        test_cases=[
+            os.path.join("tests", "rules", "test_php_s.py::test_match[command1]")
+        ],
         api=TheFuckAPI7(),
         unittests=TheFuckUnittestGenerator7(),
         systemtests=TheFuckSystemtestGenerator7(),
@@ -171,7 +237,20 @@ def register():
         test_files=[Path("tests", "rules", "test_dnf_no_such_command.py")],
         test_cases=[
             os.path.join(
-                "tests", "rules", "test_dnf_no_such_command.py::test_get_new_command"
+                "tests",
+                "rules",
+                "test_dnf_no_such_command.py::test_get_new_command"
+                "[dnf isntall vim-No such command: isntall. Please use /usr/bin/dnf --help\\n"
+                "It could be a DNF plugin command, try: \"dnf install 'dnf-command(isntall)'\"\\n"
+                "-dnf install vim]",
+            ),
+            os.path.join(
+                "tests",
+                "rules",
+                "test_dnf_no_such_command.py::test_get_new_command"
+                "[dnf saerch vim-No such command: saerch. Please use /usr/bin/dnf --help\\n"
+                "It could be a DNF plugin command, try: \"dnf install 'dnf-command(saerch)'\"\\n"
+                "-dnf search vim]",
             ),
             os.path.join(
                 "tests", "rules", "test_dnf_no_such_command.py::test_get_operations"
@@ -201,7 +280,16 @@ def register():
         fixed_commit_id="0c84eefa55fc1b4bc4940b41d74568884344e35c",
         test_files=[Path("tests", "rules", "test_man.py")],
         test_cases=[
-            os.path.join("tests", "rules", "test_man.py::test_get_new_command")
+            os.path.join(
+                "tests",
+                "rules",
+                "test_man.py::test_get_new_command[command0-new_command0]",
+            ),
+            os.path.join(
+                "tests",
+                "rules",
+                "test_man.py::test_get_new_command[command1-new_command1]",
+            ),
         ],
         api=TheFuckAPI10(),
         unittests=TheFuckUnittestGenerator10(),
@@ -228,8 +316,36 @@ def register():
         fixed_commit_id="ca787a1cba3cc9b26b43919c5e60acb40ebcd919",
         test_files=[Path("tests", "rules", "test_no_command.py")],
         test_cases=[
-            os.path.join("tests", "rules", "test_no_command.py::test_not_match"),
-            os.path.join("tests", "rules", "test_no_command.py::test_match"),
+            os.path.join(
+                "tests",
+                "rules",
+                "test_no_command.py::test_not_match[vim file.py-vim: not found-vim]",
+            ),
+            os.path.join(
+                "tests",
+                "rules",
+                "test_no_command.py::test_not_match[qweqwe-qweqwe: not found-None]",
+            ),
+            os.path.join(
+                "tests",
+                "rules",
+                "test_no_command.py::test_not_match[vom file.py-some text-None]",
+            ),
+            os.path.join(
+                "tests",
+                "rules",
+                "test_no_command.py::test_match[fucck-fucck: not found]",
+            ),
+            os.path.join(
+                "tests",
+                "rules",
+                "test_no_command.py::test_match[got commit-got: command not found]",
+            ),
+            os.path.join(
+                "tests",
+                "rules",
+                "test_no_command.py::test_match[vom file.py-vom: not found]",
+            ),
         ],
         api=TheFuckAPI12(),
         unittests=TheFuckUnittestGenerator12(),
@@ -242,9 +358,20 @@ def register():
         fixed_commit_id="237bc579994de633fe104714156ddfa925a50b6e",
         test_files=[Path("tests", "rules", "test_git_branch_exists.py")],
         test_cases=[
-            os.path.join("tests", "rules", "test_git_branch_exists.py::test_match"),
             os.path.join(
-                "tests", "rules", "test_git_branch_exists.py::test_get_new_command"
+                "tests",
+                "rules",
+                "test_git_branch_exists.py::test_match[git checkout bar-bar]",
+            ),
+            os.path.join(
+                "tests",
+                "rules",
+                "test_git_branch_exists.py::test_get_new_command[git branch foo-foo]",
+            ),
+            os.path.join(
+                "tests",
+                "rules",
+                "test_git_branch_exists.py::test_get_new_command[git checkout bar-bar]",
             ),
         ],
         api=TheFuckAPI13(),
@@ -259,8 +386,25 @@ def register():
         test_files=[Path("tests", "shells", "test_fish.py")],
         test_cases=[
             os.path.join(
-                "tests", "shells", "test_fish.py::TestFish::test_get_overridden_aliases"
-            )
+                "tests",
+                "shells",
+                "test_fish.py::TestFish::test_get_overridden_aliases[\\ncut,\\n\\ngit,\\tsed\\r]",
+            ),
+            os.path.join(
+                "tests",
+                "shells",
+                "test_fish.py::TestFish::test_get_overridden_aliases[cut, git, sed]",
+            ),
+            os.path.join(
+                "tests",
+                "shells",
+                "test_fish.py::TestFish::test_get_overridden_aliases[cut,git,sed]",
+            ),
+            os.path.join(
+                "tests",
+                "shells",
+                "test_fish.py::TestFish::test_get_overridden_aliases[ cut,\\tgit,sed\\n]",
+            ),
         ],
         api=TheFuckAPI14(),
         unittests=TheFuckUnittestGenerator14(),
@@ -272,7 +416,18 @@ def register():
         buggy_commit_id="3a39deb485995e67afb1919972cd1c9aaedf4c32",
         fixed_commit_id="41707b80c61acadb7c87b0efcbf10f4186dc5937",
         test_files=[Path("tests", "rules", "test_git_add.py")],
-        test_cases=[os.path.join("tests", "rules", "test_git_add.py::test_match")],
+        test_cases=[
+            os.path.join(
+                "tests",
+                "rules",
+                "test_git_add.py::test_match[git submodule update unknown-unknown]",
+            ),
+            os.path.join(
+                "tests",
+                "rules",
+                "test_git_add.py::test_match[git commit unknown-unknown]",
+            ),
+        ],
         api=TheFuckAPI15(),
         unittests=TheFuckUnittestGenerator15(),
         systemtests=TheFuckSystemtestGenerator15(),
@@ -310,7 +465,14 @@ def register():
         test_files=[Path("tests", "shells", "test_bash.py")],
         test_cases=[
             os.path.join("tests", "shells", "test_bash.py::TestBash::test_get_aliases"),
-            os.path.join("tests", "shells", "test_bash.py::TestBash::test_from_shell"),
+            os.path.join(
+                "tests",
+                "shells",
+                "test_bash.py::TestBash::test_from_shell[fuck-eval $(thefuck $(fc -ln -1))]",
+            ),
+            os.path.join(
+                "tests", "shells", "test_bash.py::TestBash::test_from_shell[ll-ls -alF]"
+            ),
         ],
         api=TheFuckAPI17(),
         unittests=TheFuckUnittestGenerator17(),
@@ -335,8 +497,23 @@ def register():
         test_files=[Path("tests", "rules", "test_git_push_force.py")],
         test_cases=[
             os.path.join(
-                "tests", "rules", "test_git_push_force.py::test_get_new_command"
-            )
+                "tests",
+                "rules",
+                "test_git_push_force.py::test_get_new_command"
+                "[command2-git push --force-with-lease nvbn master]",
+            ),
+            os.path.join(
+                "tests",
+                "rules",
+                "test_git_push_force.py::test_get_new_command"
+                "[command1-git push --force-with-lease nvbn]",
+            ),
+            os.path.join(
+                "tests",
+                "rules",
+                "test_git_push_force.py::test_get_new_command"
+                "[command0-git push --force-with-lease]",
+            ),
         ],
         api=TheFuckAPI19(),
         unittests=TheFuckUnittestGenerator19(),
@@ -349,7 +526,18 @@ def register():
         fixed_commit_id="280751b36e715b006c631ba6c08de99ccc74f6d2",
         test_files=[Path("tests", "rules", "test_dirty_unzip.py")],
         test_cases=[
-            os.path.join("tests", "rules", "test_dirty_unzip.py::test_get_new_command")
+            os.path.join(
+                "tests",
+                "rules",
+                "test_dirty_unzip.py::test_get_new_command"
+                "[unzip foo\\\\ bar.zip-unzip foo\\\\ bar.zip -d 'foo bar']",
+            ),
+            os.path.join(
+                "tests",
+                "rules",
+                "test_dirty_unzip.py::test_get_new_command"
+                "[unzip 'foo bar.zip'-unzip 'foo bar.zip' -d 'foo bar']",
+            ),
         ],
         api=TheFuckAPI20(),
         unittests=TheFuckUnittestGenerator20(),
@@ -421,7 +609,16 @@ def register():
         fixed_commit_id="298c04f89c081dc16c8653aa017ca85dd14bfad6",
         test_files=[Path("tests", "rules", "test_mkdir_p.py")],
         test_cases=[
-            os.path.join("tests", "rules", "test_mkdir_p.py::test_get_new_command")
+            os.path.join(
+                "tests",
+                "rules",
+                "test_mkdir_p.py::test_get_new_command[command2-./bin/hdfs dfs -mkdir -p foo/bar/baz]",
+            ),
+            os.path.join(
+                "tests",
+                "rules",
+                "test_mkdir_p.py::test_get_new_command[command1-hdfs dfs -mkdir -p foo/bar/baz]",
+            ),
         ],
         api=TheFuckAPI25(),
         unittests=TheFuckUnittestGenerator25(),
@@ -434,20 +631,54 @@ def register():
         fixed_commit_id="feb3eee2a08f0cba4552373d728509bc90b561ab",
         test_files=[Path("tests", "rules", "test_vagrant_up.py")],
         test_cases=[
-            os.path.join("tests", "rules", "test_vagrant_up.py::test_get_new_command")
+            os.path.join(
+                "tests",
+                "rules",
+                "test_vagrant_up.py::test_get_new_command[command3-new_command3]",
+            ),
+            os.path.join(
+                "tests",
+                "rules",
+                "test_vagrant_up.py::test_get_new_command[command0-vagrant up && vagrant ssh]",
+            ),
+            os.path.join(
+                "tests",
+                "rules",
+                "test_vagrant_up.py::test_get_new_command[command1-new_command1]",
+            ),
+            os.path.join(
+                "tests",
+                "rules",
+                "test_vagrant_up.py::test_get_new_command[command2-vagrant up && vagrant rdp]",
+            ),
         ],
         api=TheFuckAPI26(),
         unittests=TheFuckUnittestGenerator26(),
         systemtests=TheFuckSystemtestGenerator26(),
         loc=1722,
     )
+    # noinspection HttpUrlsUsage
     TheFuck(
         bug_id=27,
         buggy_commit_id="bc6b107066d3f1e60b4cfcaa8cf6399e98cf1b1c",
         fixed_commit_id="1becd92b126a368d6e7d93aa8eea209414ce4aa2",
         test_files=[Path("tests", "rules", "test_open.py")],
         test_cases=[
-            os.path.join("tests", "rules", "test_open.py::test_get_new_command")
+            os.path.join(
+                "tests",
+                "rules",
+                "test_open.py::test_get_new_command[command6-xdg-open http://foo.io]",
+            ),
+            os.path.join(
+                "tests",
+                "rules",
+                "test_open.py::test_get_new_command[command7-gnome-open http://foo.io]",
+            ),
+            os.path.join(
+                "tests",
+                "rules",
+                "test_open.py::test_get_new_command[command8-kde-open http://foo.io]",
+            ),
         ],
         api=TheFuckAPI27(),
         unittests=TheFuckUnittestGenerator27(),
@@ -461,8 +692,45 @@ def register():
         test_files=[Path("tests", "rules", "test_fix_file.py")],
         test_cases=[
             os.path.join(
-                "tests", "rules", "test_fix_file.py::test_get_new_command_with_settings"
-            )
+                "tests",
+                "rules",
+                "test_fix_file.py::test_get_new_command_with_settings[test0]",
+            ),
+            os.path.join(
+                "tests",
+                "rules",
+                "test_fix_file.py::test_get_new_command_with_settings[test1]",
+            ),
+            os.path.join(
+                "tests",
+                "rules",
+                "test_fix_file.py::test_get_new_command_with_settings[test7]",
+            ),
+            os.path.join(
+                "tests",
+                "rules",
+                "test_fix_file.py::test_get_new_command_with_settings[test8]",
+            ),
+            os.path.join(
+                "tests",
+                "rules",
+                "test_fix_file.py::test_get_new_command_with_settings[test15]",
+            ),
+            os.path.join(
+                "tests",
+                "rules",
+                "test_fix_file.py::test_get_new_command_with_settings[test16]",
+            ),
+            os.path.join(
+                "tests",
+                "rules",
+                "test_fix_file.py::test_get_new_command_with_settings[test19]",
+            ),
+            os.path.join(
+                "tests",
+                "rules",
+                "test_fix_file.py::test_get_new_command_with_settings[test20]",
+            ),
         ],
         api=TheFuckAPI28(),
         unittests=TheFuckUnittestGenerator28(),
@@ -476,7 +744,12 @@ def register():
         test_files=[Path("tests", "test_types.py"), Path("tests", "test_utils.py")],
         test_cases=[
             os.path.join("tests", "test_types.py::test_update_settings"),
-            os.path.join("tests", "test_utils.py::test_wrap_settings"),
+            os.path.join(
+                "tests", "test_utils.py::test_wrap_settings[override2-old2-new2]"
+            ),
+            os.path.join(
+                "tests", "test_utils.py::test_wrap_settings[override1-old1-new1]"
+            ),
         ],
         skip_tests=["test_get_all_callables"],
         api=TheFuckAPI29(),
@@ -489,7 +762,28 @@ def register():
         buggy_commit_id="de513cacb150049e3f95434f8d6d30b7ed1e0ea7",
         fixed_commit_id="43fead02d3a24fef71534116c5550def0f56830c",
         test_files=[Path("tests", "rules", "test_fix_file.py")],
-        test_cases=[os.path.join("tests", "rules", "test_fix_file.py::test_not_file")],
+        test_cases=[
+            os.path.join("tests", "rules", "test_fix_file.py::test_not_file[test1]"),
+            os.path.join("tests", "rules", "test_fix_file.py::test_not_file[test4]"),
+            os.path.join("tests", "rules", "test_fix_file.py::test_not_file[test15]"),
+            os.path.join("tests", "rules", "test_fix_file.py::test_not_file[test19]"),
+            os.path.join("tests", "rules", "test_fix_file.py::test_not_file[test13]"),
+            os.path.join("tests", "rules", "test_fix_file.py::test_not_file[test7]"),
+            os.path.join("tests", "rules", "test_fix_file.py::test_not_file[test14]"),
+            os.path.join("tests", "rules", "test_fix_file.py::test_not_file[test17]"),
+            os.path.join("tests", "rules", "test_fix_file.py::test_not_file[test18]"),
+            os.path.join("tests", "rules", "test_fix_file.py::test_not_file[test11]"),
+            os.path.join("tests", "rules", "test_fix_file.py::test_not_file[test3]"),
+            os.path.join("tests", "rules", "test_fix_file.py::test_not_file[test9]"),
+            os.path.join("tests", "rules", "test_fix_file.py::test_not_file[test6]"),
+            os.path.join("tests", "rules", "test_fix_file.py::test_not_file[test8]"),
+            os.path.join("tests", "rules", "test_fix_file.py::test_not_file[test12]"),
+            os.path.join("tests", "rules", "test_fix_file.py::test_not_file[test16]"),
+            os.path.join("tests", "rules", "test_fix_file.py::test_not_file[test5]"),
+            os.path.join("tests", "rules", "test_fix_file.py::test_not_file[test10]"),
+            os.path.join("tests", "rules", "test_fix_file.py::test_not_file[test2]"),
+            os.path.join("tests", "rules", "test_fix_file.py::test_not_file[test0]"),
+        ],
         api=TheFuckAPI30(),
         unittests=TheFuckUnittestGenerator30(),
         systemtests=TheFuckSystemtestGenerator30(),
@@ -502,7 +796,9 @@ def register():
         test_files=[Path("tests", "rules", "test_git_diff_staged.py")],
         test_cases=[
             os.path.join(
-                "tests", "rules", "test_git_diff_staged.py::test_get_new_command"
+                "tests",
+                "rules",
+                "test_git_diff_staged.py::test_get_new_command[command1-git diff --staged foo]",
             )
         ],
         api=TheFuckAPI31(),

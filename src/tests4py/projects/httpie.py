@@ -69,7 +69,54 @@ def register():
         ],
         test_cases=[
             os.path.join(
-                "tests", "test_downloads.py::TestDownloadUtils::test_unique_filename"
+                "tests",
+                "test_downloads.py::TestDownloadUtils::test_unique_filename[foo.bar-0-foo.bar]",
+            ),
+            os.path.join(
+                "tests",
+                "test_downloads.py::TestDownloadUtils::test_unique_filename[foo.bar-1-foo.bar-1]",
+            ),
+            os.path.join(
+                "tests",
+                "test_downloads.py::TestDownloadUtils::test_unique_filename[foo.bar-10-foo.bar-10]",
+            ),
+            os.path.join(
+                "tests",
+                "test_downloads.py::TestDownloadUtils::test_unique_filename[AAAAAAAAAAAAAAAAAAAA-0-AAAAAAAAAA]",
+            ),
+            os.path.join(
+                "tests",
+                "test_downloads.py::TestDownloadUtils::test_unique_filename[AAAAAAAAAAAAAAAAAAAA-1-AAAAAAAA-1]",
+            ),
+            os.path.join(
+                "tests",
+                "test_downloads.py::TestDownloadUtils::test_unique_filename"
+                "[AAAAAAAAAAAAAAAAAAAA-10-AAAAAAA-10]",
+            ),
+            os.path.join(
+                "tests",
+                "test_downloads.py::TestDownloadUtils::test_unique_filename"
+                "[AAAAAAAAAAAAAAAAAAAA.txt-0-AAAAAA.txt]",
+            ),
+            os.path.join(
+                "tests",
+                "test_downloads.py::TestDownloadUtils::test_unique_filename"
+                "[AAAAAAAAAAAAAAAAAAAA.txt-1-AAAA.txt-1]",
+            ),
+            os.path.join(
+                "tests",
+                "test_downloads.py::TestDownloadUtils::test_unique_filename"
+                "[foo.AAAAAAAAAAAAAAAAAAAA-0-foo.AAAAAA]",
+            ),
+            os.path.join(
+                "tests",
+                "test_downloads.py::TestDownloadUtils::test_unique_filename"
+                "[foo.AAAAAAAAAAAAAAAAAAAA-1-foo.AAAA-1]",
+            ),
+            os.path.join(
+                "tests",
+                "test_downloads.py::TestDownloadUtils::test_unique_filename"
+                "[foo.AAAAAAAAAAAAAAAAAAAA-10-foo.AAA-10]",
             ),
         ],
         # systemtests=Httpie1SystemtestGenerator(),

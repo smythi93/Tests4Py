@@ -138,8 +138,25 @@ def register():
         test_files=[Path("spacy", "tests", "regression", "test_issue5314.py")],
         test_cases=[
             os.path.join(
-                "spacy", "tests", "regression", "test_issue5314.py::test_issue5314"
-            )
+                "spacy",
+                "tests",
+                "regression",
+                "test_issue5314.py::test_issue5314"
+                '[<text bytes="11456" xml:space="preserve">[[Fil:Arch\\xe4ologie '
+                "schichtengrabung.jpg|thumb|Ark\\xe6ologisk [[udgravning]] med profil."
+                "]] '''Ark\\xe6ologi''' er studiet af tidligere tiders "
+                "[[menneske]]lige [[aktivitet]], prim\\xe6rt gennem studiet af "
+                "menneskets materielle levn.</text>0]",
+            ),
+            os.path.join(
+                "spacy",
+                "tests",
+                "regression",
+                "test_issue5314.py::test_issue5314"
+                '[<text bytes="11456" xml:space="preserve">[[Fil:Arch\\xe4ologie schichtengrabung.jpg|thumb|Ark'
+                "\\xe6ologisk [[udgravning]] med profil.]] '''Ark\\xe6ologi''' er studiet af tidligere tiders "
+                "[[menneske]]lige [[aktivitet]], prim\\xe6rt gennem studiet af menneskets materielle levn.</text>1]",
+            ),
         ],
         # api=SpaCyAPI3(),
         # unittests=SpaCyUnittestGenerator3(),
