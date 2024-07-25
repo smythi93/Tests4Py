@@ -259,7 +259,7 @@ def register():
             Path("tests", "data", "fmtonoff2.py"),
         ],
         test_cases=[
-            os.path.join("tests", "test_black.py::.BlackTestCase::test_fmtonoff2"),
+            os.path.join("tests", "test_black.py::BlackTestCase::test_fmtonoff2"),
         ],
         loc=4110,
     )

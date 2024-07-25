@@ -518,7 +518,7 @@ def register():
         test_cases=[
             os.path.join(
                 "test",
-                "parameter_test.py::ParameterTest::test_insignificant_param",
+                "parameter_test.py::ParameterTest::test_insignificant_parameter",
             ),
             os.path.join(
                 "test",

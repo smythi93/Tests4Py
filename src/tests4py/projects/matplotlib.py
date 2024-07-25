@@ -169,7 +169,7 @@ def register():
                 "lib",
                 "matplotlib",
                 "tests",
-                "test_axes.py::TestScatter::test_scatter_single_color_c",
+                "test_axes.py::TestScatter::test_scatter_single_color_c[png]",
             )
         ],
         relevant_test_files=[
@@ -205,10 +205,16 @@ def register():
         test_files=[Path("lib", "matplotlib", "tests", "test_axes.py")],
         test_cases=[
             os.path.join(
-                "lib", "matplotlib", "tests", "test_axes.py::test_unautoscaley"
+                "lib", "matplotlib", "tests", "test_axes.py::test_unautoscaley[True]"
             ),
             os.path.join(
-                "lib", "matplotlib", "tests", "test_axes.py::test_unautoscalex"
+                "lib", "matplotlib", "tests", "test_axes.py::test_unautoscalex[True]"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_unautoscaley[None]"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_unautoscalex[None]"
             ),
         ],
         relevant_test_files=[
@@ -252,7 +258,7 @@ def register():
                 "lib",
                 "matplotlib",
                 "tests",
-                "test_polar.py::test_polar_invertedylim_rorigin",
+                "test_polar.py::test_polar_invertedylim_rorigin[png]",
             )
         ],
         loc=63277,
@@ -311,7 +317,10 @@ def register():
         test_files=[Path("lib", "matplotlib", "tests", "test_text.py")],
         test_cases=[
             os.path.join(
-                "lib", "matplotlib", "tests", "test_text.py::test_non_default_dpi"
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_text.py::test_non_default_dpi[empty]",
             )
         ],
         skip_tests=["test_text_repr"],
@@ -324,8 +333,17 @@ def register():
         test_files=[Path("lib", "matplotlib", "tests", "test_axes.py")],
         test_cases=[
             os.path.join(
-                "lib", "matplotlib", "tests", "test_axes.py::test_lines_with_colors"
-            )
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::test_lines_with_colors[png-data0]",
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::test_lines_with_colors[png-data1]",
+            ),
         ],
         relevant_test_files=[
             os.path.join(
@@ -404,7 +422,7 @@ def register():
                 "lib",
                 "matplotlib",
                 "tests",
-                "test_colors.py::test_SymLogNorm_colorbar ",
+                "test_colors.py::test_SymLogNorm_colorbar",
             ),
             os.path.join(
                 "lib",
@@ -521,7 +539,16 @@ def register():
         test_files=[Path("lib", "matplotlib", "tests", "test_colorbar.py")],
         test_cases=[
             os.path.join(
-                "lib", "matplotlib", "tests", "test_colorbar.py::test_colorbar_int"
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_colorbar.py::test_colorbar_int[clim0]",
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_colorbar.py::test_colorbar_int[clim1]",
             ),
         ],
         skip_tests=["test_colorbar_positioning[png]"],
@@ -534,8 +561,17 @@ def register():
         test_files=[Path("lib", "matplotlib", "tests", "test_colorbar.py")],
         test_cases=[
             os.path.join(
-                "lib", "matplotlib", "tests", "test_colorbar.py::test_colorbar_int"
-            )
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_colorbar.py::test_colorbar_int[clim0]",
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_colorbar.py::test_colorbar_int[clim1]",
+            ),
         ],
         skip_tests=["test_colorbar_positioning[png]"],
         loc=64261,
@@ -752,8 +788,14 @@ def register():
                 "lib",
                 "matplotlib",
                 "tests",
-                "test_axes.py::test_hist_datetime_datasets_bins",
-            )
+                "test_axes.py::test_hist_datetime_datasets_bins[datetime.datetime]",
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::test_hist_datetime_datasets_bins[np.datetime64]",
+            ),
         ],
         relevant_test_files=[
             os.path.join("lib", "matplotlib", "tests", "test_axes.py::test_hist_log_2"),
@@ -1019,7 +1061,10 @@ def register():
         test_files=[Path("lib", "matplotlib", "tests", "test_colors.py")],
         test_cases=[
             os.path.join(
-                "lib", "matplotlib", "tests", "test_colors.py::test_makeMappingArray"
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_colors.py::test_makeMappingArray[1-result2]",
             )
         ],
         relevant_test_files=[

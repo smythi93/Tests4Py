@@ -200,7 +200,7 @@ def register():
         test_cases=[
             os.path.join(
                 "test",
-                "test_YoutubeDL.py::TestFormatSelection.test_youtube_format_selection",
+                "test_YoutubeDL.py::TestFormatSelection::test_youtube_format_selection",
             )
         ],
         relevant_test_files=[
@@ -236,7 +236,7 @@ def register():
         test_cases=[
             os.path.join(
                 "test",
-                "test_YoutubeDL.py::TestFormatSelection.test_format_selection_string_ops",
+                "test_YoutubeDL.py::TestFormatSelection::test_format_selection_string_ops",
             )
         ],
         relevant_test_files=[
