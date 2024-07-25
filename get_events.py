@@ -8,15 +8,37 @@ from sflkit.runners import Runner
 
 import tests4py.api as t4p
 from tests4py import sfl
+from tests4py.projects import TestStatus
 
 
 def main(project_name, bug_id):
-    report = dict()
+    report_file = f"report_{project_name}.json"
+    if os.path.exists(report_file):
+        with open(report_file, "r") as f:
+            report = json.load(f)
+    else:
+        report = dict()
     os.makedirs("mappings", exist_ok=True)
     for project in t4p.get_projects(project_name, bug_id):
         identifier = project.get_identifier()
         print(identifier)
+        if (
+            identifier in report
+            and "check" in report[identifier]
+            and report[identifier]["check"] == "successful"
+        ):
+            continue
         report[identifier] = dict()
+
+        if (
+            project.test_status_buggy != TestStatus.FAILING
+            or project.test_status_fixed != TestStatus.PASSING
+        ):
+            report[identifier]["status"] = "skipped"
+            continue
+        else:
+            report[identifier]["status"] = "running"
+
         report[identifier]["time"] = dict()
 
         start = time.time()
