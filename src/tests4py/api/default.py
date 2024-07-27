@@ -55,6 +55,7 @@ from tests4py.projects import (
     get_project,
     get_matching_projects,
 )
+from tests4py.tests.utils import get_pytest_skip
 
 
 def checkout(
@@ -99,7 +100,9 @@ def checkout(
             project_verify = load_project(work_location, only_project=True)
             project.compiled = project_verify.compiled
         else:
-            tmp_location = (work_dir / f"tmp_{project.project_name}").absolute()
+            tmp_location = (
+                work_dir / f"tmp_{project.project_name}_{project.bug_id}"
+            ).absolute()
 
             if check_further:
                 if force or not config.cache or not check_cache_exists(project):
@@ -331,7 +334,7 @@ def build(
 
         if not env_exists:
             LOGGER.info("Installing utilities")
-            update_env(environ)
+            update_env(environ, force=force)
 
             LOGGER.info("Installing requirements")
             subprocess.check_call(
@@ -499,7 +502,8 @@ def test(
 
         if project.testing_framework == TestingFramework.PYTEST:
             command.append(TestingFramework.PYTEST.value)
-            command.append(f"--rootdir={work_dir}")
+            if project.set_rootdir:
+                command.append(f"--rootdir={work_dir}")
             if xml_output:
                 command.append(f"--junit-xml={xml_output.absolute()}")
         elif project.testing_framework == TestingFramework.UNITTEST:
@@ -516,24 +520,41 @@ def test(
             raise NotImplementedError(
                 f"No command found for {project.testing_framework.value}"
             )
+        if project.test_command_arguments:
+            command += project.test_command_arguments
+        skips = []
+        tests = []
         if not relevant_tests and not all_tests and not single_test:
             LOGGER.info(f"Run relevant tests {project.test_cases}")
-            command += project.test_cases
+            tests += project.test_cases
         elif all_tests:
             if project.test_base:
-                command.append(project.test_base)
+                tests.append(project.test_base)
         elif relevant_tests:
-            command += project.relevant_test_files
+            tests += project.relevant_test_files
+            if project.skip_tests:
+                skips = [
+                    "-k",
+                    get_pytest_skip(project.skip_tests),
+                ]
         elif single_test:
             if isinstance(single_test, str):
-                command.append(single_test)
+                tests.append(single_test)
             else:
-                command += single_test
+                tests += single_test
+
+        command += skips
+        command += tests
 
         LOGGER.info(f"Run tests with command {command}")
-        output = subprocess.run(
-            command, stdout=subprocess.PIPE, env=environ, cwd=work_dir
-        ).stdout
+        process = subprocess.run(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=environ,
+            cwd=work_dir,
+        )
+        output = process.stdout or process.stderr
         LOGGER.info(output.decode("utf-8"))
 
         successful = False
@@ -549,9 +570,16 @@ def test(
             failed_match = UNITTEST_FAILED_PATTERN.search(output)
             if number_match:
                 report.total = int(number_match.group("n"))
-            if failed_match:
-                report.failing = int(number_match.group("f"))
-            if number_match and failed_match:
+                if failed_match:
+                    failed = failed_match.group("f")
+                    errors = failed_match.group("e")
+                    report.failing = 0
+                    if failed:
+                        report.failing += int(failed)
+                    if errors:
+                        report.failing += int(errors)
+                else:
+                    report.failing = 0
                 report.passing = report.total - report.failing
                 successful = True
         else:

@@ -62,4 +62,4 @@ class TestsPassing(PassingSystemtests):
         return "20 + 5 + 5"
 
     def test_diversity_10(self):
-        return "65 + 45 / 9"
+        return "65 + ~ 45 / 9"

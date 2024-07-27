@@ -123,19 +123,22 @@ def get_tests(
 
 def _get_systemtest_runs(
     project: Project,
-    path: os.PathLike,
+    path: os.PathLike | List[os.PathLike],
     environ: Dict[str, str],
     work_dir: Optional[Path] = None,
 ) -> Tuple[int, int, int, Dict[str, Tuple[TestResult, str]]]:
     total, passing, failing = 0, 0, 0
     results: Dict[str, Tuple[TestResult, str]] = dict()
-    for test, result, feedback in project.api.tests(path, environ, work_dir=work_dir):
-        results[str(test)] = (result, feedback)
-        if TestResult.PASSING == result:
-            passing += 1
-        elif TestResult.FAILING == result:
-            failing += 1
-        total += 1
+    if not isinstance(path, list):
+        path = [path]
+    for p in path:
+        for test, result, feedback in project.api.tests(p, environ, work_dir=work_dir):
+            results[str(test)] = (result, feedback)
+            if TestResult.PASSING == result:
+                passing += 1
+            elif TestResult.FAILING == result:
+                failing += 1
+            total += 1
     return total, passing, failing, results
 
 
@@ -250,7 +253,7 @@ def clean_results(
 
 def systemtest_test(
     work_dir_or_project: Optional[Union[os.PathLike, Project]] = None,
-    path_or_str: Path | str = None,
+    path_or_str: os.PathLike | List[os.PathLike] = None,
     diversity: bool = False,
     output: Path = None,
     report: Optional[SystemtestTestReport] = None,

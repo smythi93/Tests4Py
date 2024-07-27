@@ -181,27 +181,30 @@ def get_python_version(environ: Environment):
     )
 
 
-def update_env(environ: Environment):
+def update_env(environ: Environment, force: bool = False):
+    install = [PYTHON, "-m", "pip", "install"]
+    # if force:
+    install.append("--upgrade")
     subprocess.check_call(
-        [PYTHON, "-m", "pip", "install", "--upgrade", "pip"],
+        install + ["pip"],
         env=environ,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
     subprocess.check_call(
-        [PYTHON, "-m", "pip", "install", "--upgrade", "setuptools"],
+        install + ["setuptools"],
         env=environ,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
     subprocess.check_call(
-        [PYTHON, "-m", "pip", "install", "--upgrade", "wheel"],
+        install + ["wheel"],
         env=environ,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
     subprocess.check_call(
-        [PYTHON, "-m", "pip", "install", "--upgrade", "pytest"],
+        install + ["pytest"],
         env=environ,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,

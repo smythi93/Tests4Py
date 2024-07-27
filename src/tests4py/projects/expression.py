@@ -16,7 +16,7 @@ from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
 
-PROJECT_MAME = "expression"
+PROJECT_NAME = "expression"
 
 
 class Expression(Project):
@@ -36,7 +36,7 @@ class Expression(Project):
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name=PROJECT_MAME,
+            project_name=PROJECT_NAME,
             github_url="https://github.com/smythi93/expression",
             status=Status.OK,
             python_version="3.10.9",
@@ -54,7 +54,8 @@ class Expression(Project):
             grammar=grammar,
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
-            included_files=[os.path.join("src", PROJECT_MAME)],
+            included_files=[os.path.join("src", PROJECT_NAME)],
+            source_base=Path("src"),
             test_base=Path("tests"),
         )
 
@@ -69,9 +70,10 @@ def register():
             Path("tests", "test_expression.py"),
         ],
         test_cases=[
-            os.path.join("tests", "test_evaluate.py")
-            + "::TestEvaluate::test_eval_div_error",
-            os.path.join("tests", "test_expression.py") + "::TestExpr::test_div_error",
+            os.path.join(
+                "tests", "test_evaluate.py::TestEvaluate::test_eval_div_error"
+            ),
+            os.path.join("tests", "test_expression.py::TestExpr::test_div_error"),
         ],
         loc=108,
         unittests=ExpressionUnittestGenerator(),
@@ -84,21 +86,31 @@ class ExpressionAPI(API):
     def __init__(self, default_timeout=5):
         super().__init__(default_timeout=default_timeout)
 
+    def get_test_arguments_from_string(self, s: str) -> List[str]:
+        return [s]
+
     def oracle(self, args: Any) -> Tuple[TestResult, str]:
         if args is None:
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
-        expected = process.args[2:]
+        if process.returncode != 0 and b"ValueError" not in process.stderr:
+            return TestResult.FAILING, f"Process failed with {process.returncode}"
+        elif process.returncode != 0:
+            return (
+                TestResult.PASSING,
+                f"Process failed with ValueError and code {process.returncode}",
+            )
+        expected = process.args[2]
         expected = "".join(expected).strip()
         result = process.stdout.decode("utf8")
-        result = result.strip()
+        result = float(result)
         try:
-            eval(expected)
+            expected = eval(expected.replace("~", "-"))
         except ZeroDivisionError:
-            result = "ZeroDivisionError"
-        if result != "ZeroDivisionError":
-            expected = str(eval(expected))
-
+            return (
+                TestResult.FAILING,
+                "ZeroDivisionError for evaluation but no ValueError for subject.",
+            )
         if result == expected:
             return TestResult.PASSING, f"Expected {expected}, and was {result}"
         else:
@@ -280,18 +292,15 @@ class ExpressionSystemtestGenerator(SystemtestGenerator, ExpressionTestGenerator
 
 
 grammar: Grammar = {
-    "<start>": ["<expression_>"],
-    "<expression_>": [
-        "<integers_> <symbol_> <integers_>",
-        "(<integers_> <symbol_> <integers_>)",
-        "<integers_> <symbol_> <integers_> <symbol_> <integers_>",
-        "(<integers_> <symbol_> <integers_>) <symbol_> <integers_>",
-        "<integers_> <symbol_> (<integers_> <symbol_> <integers_>)",
-    ],
-    "<symbol_>": ["+", "-", "/", "*"],
-    "<integers_>": ["<integer_>", "-<integer_>"],
-    "<integer_>": ["<digit_><integer_>", "<digit_>"],
-    "<digit_>": srange(string.digits),
+    "<start>": ["<add_term>"],
+    "<add_term>": ["<add_term> <add> <mul_term>", "<mul_term>"],
+    "<mul_term>": ["<mul_term> <mul> <neg_term>", "<neg_term>"],
+    "<neg_term>": ["<terminal>", "~ <terminal>"],
+    "<terminal>": ["<int>", "(<add_term>)"],
+    "<add>": srange("+-"),
+    "<mul>": srange("*/"),
+    "<int>": ["<digit><int>", "<digit>"],
+    "<digit>": srange(string.digits),
 }
 
 assert is_valid_grammar(grammar)

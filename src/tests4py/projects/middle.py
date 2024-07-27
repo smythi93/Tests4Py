@@ -15,7 +15,7 @@ from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult, CLIAPI
 
-PROJECT_MAME = "middle"
+PROJECT_NAME = "middle"
 
 
 class Middle(Project):
@@ -36,7 +36,7 @@ class Middle(Project):
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name=PROJECT_MAME,
+            project_name=PROJECT_NAME,
             github_url="https://github.com/smythi93/middle",
             status=Status.OK,
             python_version="3.10.9",
@@ -54,7 +54,8 @@ class Middle(Project):
             grammar=grammar,
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
-            included_files=[os.path.join("src", PROJECT_MAME)],
+            included_files=[os.path.join("src", PROJECT_NAME)],
+            source_base=Path("src"),
             test_base=Path("tests"),
             relevant_test_files=relevant_test_files,
         )
@@ -240,7 +241,8 @@ grammar: Grammar = clean_up(
         CLI_GRAMMAR,
         **{
             "<start>": ["<arg> <arg> <arg>"],
-            "<escaped>": ["<integer>"],
+            "<escaped_double>": ["<integer>"],
+            "<escaped_single>": ["<integer>"],
             "<unescaped>": ["<integer>"],
         },
         **INTEGER,
