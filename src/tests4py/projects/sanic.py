@@ -50,6 +50,7 @@ class Sanic(Project):
             source_base=Path(PROJECT_NAME),
             test_base=Path("tests"),
             included_files=[PROJECT_NAME],
+            excluded_files=[os.path.join(PROJECT_NAME, "__version__.py")],
             setup=[
                 ["python", "-m", "pip", "install", "-e", "."],
             ],
