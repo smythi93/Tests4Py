@@ -1,6 +1,7 @@
 import argparse
 import json
 import os.path
+import shutil
 import time
 import traceback
 
@@ -68,6 +69,10 @@ def main(project_name, bug_id):
         with open(mapping, "w") as f:
             json.dump(mapping_content, f, indent=2)
 
+        events_base = os.path.join(
+            "sflkit_events", project.project_name, str(project.bug_id)
+        )
+        shutil.rmtree(events_base, ignore_errors=True)
         start = time.time()
         r = sfl.sflkit_unittest(
             sfl_path, relevant_tests=True, all_tests=False, include_suffix=True
@@ -120,9 +125,6 @@ def main(project_name, bug_id):
             continue
 
         checks = True
-        events_base = os.path.join(
-            "sflkit_events", project.project_name, str(project.bug_id)
-        )
         bug_events = os.path.join(events_base, "bug")
         fix_events = os.path.join(events_base, "fix")
         for failing_test in project.test_cases:
