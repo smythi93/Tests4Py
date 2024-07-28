@@ -21,7 +21,7 @@ from tests4py.sfl.utils import (
 )
 from tests4py.tests.utils import get_pytest_skip
 
-DEFAULT_TIME_OUT = 40
+DEFAULT_TIME_OUT = 60
 
 
 def sflkit_instrument(
