@@ -25,6 +25,7 @@ class Sanic(Project):
         loc: int = 0,
         relevant_test_files: Optional[List[Path]] = None,
         python_version: Optional[str] = None,
+        init: bool = False,
     ):
         super().__init__(
             bug_id=bug_id,
@@ -50,7 +51,9 @@ class Sanic(Project):
             source_base=Path(PROJECT_NAME),
             test_base=Path("tests"),
             included_files=[PROJECT_NAME],
-            excluded_files=[os.path.join(PROJECT_NAME, "__version__.py")],
+            excluded_files=[
+                os.path.join(PROJECT_NAME, "__init__.py" if init else "__version__.py")
+            ],
             setup=[
                 ["python", "-m", "pip", "install", "-e", "."],
             ],
@@ -113,6 +116,7 @@ def register():
             )
         ],
         python_version="3.7.8",
+        init=True,
         loc=3755,
     )
 
