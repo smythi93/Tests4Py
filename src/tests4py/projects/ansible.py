@@ -486,7 +486,7 @@ def register():
                 "test_distribution_version.py::test_distribution_version[stdin29-Kali 2020.2]",
             ),
         ],
-        included_packages=["cli"],
+        included_packages=["module_utils"],
         loc=55902,
     )
 

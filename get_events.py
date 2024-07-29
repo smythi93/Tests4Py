@@ -51,6 +51,7 @@ def main(project_name, bug_id):
             report[identifier]["checkout"] = "failed"
             report[identifier]["error"] = traceback.format_exception(r.raised)
             continue
+        original_checkout = r.location
 
         mapping = os.path.join("mappings", f"{project}.json")
         sfl_path = os.path.join("tmp", f"sfl_{identifier}")
@@ -73,6 +74,15 @@ def main(project_name, bug_id):
             "sflkit_events", project.project_name, str(project.bug_id)
         )
         shutil.rmtree(events_base, ignore_errors=True)
+        if project.project_name == "ansible":
+            """
+            When ansible is executed it sometimes loads the original version.
+            Even though it is never installed and the virtual environment clearly
+            contains the instrumented version.
+            This prevents an event collection.
+            Removing the original version fixes this problem.
+            """
+            shutil.rmtree(original_checkout, ignore_errors=True)
         start = time.time()
         r = sfl.sflkit_unittest(
             sfl_path, relevant_tests=True, all_tests=False, include_suffix=True
@@ -112,6 +122,15 @@ def main(project_name, bug_id):
         with open(mapping, "w") as f:
             json.dump(mapping_content, f, indent=2)
 
+        if project.project_name == "ansible":
+            """
+            When ansible is executed it sometimes loads the original version.
+            Even though it is never installed and the virtual environment clearly
+            contains the instrumented version.
+            This prevents an event collection.
+            Removing the original version fixes this problem.
+            """
+            shutil.rmtree(original_checkout, ignore_errors=True)
         start = time.time()
         r = sfl.sflkit_unittest(
             sfl_path, relevant_tests=False, all_tests=False, include_suffix=True
