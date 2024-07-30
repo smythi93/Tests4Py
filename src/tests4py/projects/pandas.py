@@ -2171,6 +2171,10 @@ class PandasTestGenerator:
         return "".join(random.choices(string.ascii_letters, k=random.randint(7, 15)))
 
     @staticmethod
+    def generate_random_integer():
+        return random.randint(1, 9999)
+
+    @staticmethod
     def pandas1_generate():
         random_int = random.randint(0, 9999)
         random_char = ("T", "A", "M", "D", "W", "H", "S")
@@ -2370,7 +2374,14 @@ class PandasTestGenerator:
 
     @staticmethod
     def pandas20_generate():
-        return "", ""
+        periods = PandasTestGenerator.generate_random_integer()
+        random_year = random.randint(1700, 2199)
+        random_year_failing = random.randint(1000, 1599)
+        random_month = random.randint(1, 12)
+        random_day = random.randint(1, 28)
+        passing = (periods, f"{random_month}/{random_day}/{random_year}")
+        failing = (periods, f"{random_month}/{random_day}/{random_year_failing}")
+        return passing, failing
 
 
 class PandasUnittestGenerator1(
@@ -2499,10 +2510,9 @@ class PandasUnittestGenerator2(
                             slice=ast.Index(value=ast.Tuple(elts=[
                                 ast.Tuple(
                                     elts=[ast.Constant(value=data_frame_int1), ast.Constant(value=data_frame_int2)],
-                                    ctx=ast.Load()),
-                                ast.Constant(value=data_frame_str, ctx=ast.Load())
-                            ], ctx=ast.Load())),
-                            ctx=ast.Load()
+                                ),
+                                ast.Constant(value=data_frame_str)
+                            ])),
                         )
                     ],
                     keywords=[]
@@ -2717,7 +2727,6 @@ class PandasUnittestGenerator4(
                                 func=ast.Attribute(
                                     value=ast.Name(id="numpy"),
                                     attr="arange",
-                                    ctx=ast.Load()
                                 ),
                                 args=[ast.Constant(value=4)],
                                 keywords=[]
@@ -2726,7 +2735,6 @@ class PandasUnittestGenerator4(
                                 func=ast.Attribute(
                                     value=ast.Name(id="numpy"),
                                     attr="arange",
-                                    ctx=ast.Load()
                                 ),
                                 args=[ast.Constant(value=4)],
                                 keywords=[]
@@ -2774,7 +2782,6 @@ class PandasUnittestGenerator4(
                                 func=ast.Attribute(
                                     value=ast.Name(id="numpy"),
                                     attr="arange",
-                                    ctx=ast.Load()
                                 ),
                                 args=[ast.Constant(value=4)],
                                 keywords=[]
@@ -4870,8 +4877,7 @@ class PandasUnittestGenerator18(
                             )
                         )
                     ],
-                    keywords=[
-                    ]
+                    keywords=[]
                 ),
                 lineno=6,
             ),
@@ -4965,79 +4971,141 @@ class PandasUnittestGenerator19(
 
     @staticmethod
     def _get_assert(
-            expected: Any,
-            index_1: Any,
-            index_2: Any,
-            list_1: Any,
-            list_2: Any,
     ) -> list[ast.Assign | ast.Expr]:
+        numpy_attribute = random.choice(["int64", "float64", "uint64"])
         return [
             ast.Assign(
-                targets=[ast.Name(id="midx1")],
-                value=ast.Call(
-                    func=ast.Attribute(value=ast.Attribute(value=ast.Name(id="pandas"), attr="MultiIndex"),
-                                       attr="from_product"),
-                    args=[
-                        ast.List(elts=[
-                            ast.Constant(value=list_1),
-                            ast.Constant(value=list_2)
-                        ]),
-                    ],
-                    keywords=[
-                        ast.keyword(arg="names", value=ast.Constant(value=index_1))
-                    ],
-                ),
+                targets=[ast.Name(id="box")],
+                value=ast.Attribute(value=ast.Name(id="numpy"), attr="array"),
                 lineno=1,
             ),
             ast.Assign(
-                targets=[ast.Name(id="midx2")],
-                value=ast.Call(
-                    func=ast.Attribute(value=ast.Attribute(value=ast.Name(id="pandas"), attr="MultiIndex"),
-                                       attr="from_product"),
-                    args=[
-                        ast.List(elts=[
-                            ast.Constant(value=list_1),
-                            ast.Constant(value=list_2)
-                        ]),
-                    ],
-                    keywords=[
-                        ast.keyword(arg="names", value=ast.Constant(value=index_2))
-                    ],
-                ),
+                targets=[ast.Name(id="dtype")],
+                value=ast.Attribute(value=ast.Name(id="numpy"), attr=numpy_attribute),
                 lineno=2,
             ),
             ast.Assign(
-                targets=[ast.Tuple(elts=[ast.Name(id="join_idx"),
-                                         ast.Name(id="lidx"),
-                                         ast.Name(id="ridx")])],
+                targets=[ast.Name(id="idx")],
                 value=ast.Call(
-                    func=ast.Attribute(value=ast.Name(id="midx1"), attr="join"),
-                    args=[ast.Name(id="midx2")],
-                    keywords=[
-                        ast.keyword(arg="return_indexers", value=ast.Constant(value=False))],
+                    func=ast.Attribute(
+                        value=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id="pandas"),
+                                attr="Index",
+                            ),
+                            args=[
+                                ast.Call(
+                                    func=ast.Name(id="range"),
+                                    args=[ast.Constant(value=4)],
+                                    keywords=[]
+                                )
+                            ],
+                            keywords=[]
+                        ),
+                        attr="astype",
+                    ),
+                    args=[ast.Name(id="dtype")],
+                    keywords=[]
                 ),
                 lineno=3,
             ),
-            ast.Expr(
+            ast.Assign(
+                targets=[ast.Name(id="dti")],
                 value=ast.Call(
-                    func=ast.Name(id="assert_index_equal"),
-                    args=[
-                        ast.Name(id="midx1"),
-                        ast.Name(id="join_idx"),
-                    ],
-                    keywords=[],
-                )
+                    func=ast.Name(id="date_range"),
+                    args=[ast.Constant(value="2000-12-03")],
+                    keywords=[ast.keyword(arg="periods", value=ast.Constant(value=3))]),
+                lineno=4,
             ),
-            ast.Expr(
+            ast.Assign(
+                targets=[ast.Name(id="mi")],
                 value=ast.Call(
-                    func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
+                    func=ast.Attribute(
+                        value=ast.Attribute(
+                            value=ast.Name(id="pandas"),
+                            attr="MultiIndex",
+                        ),
+                        attr="from_product",
+                    ),
                     args=[
-                        ast.Constant(value=expected),
-                        ast.Name(id="lidx")
+                        ast.List(
+                            elts=[
+                                ast.Name(id="idx"),
+                                ast.Name(id="dti")
+                            ],
+                        )
                     ],
                     keywords=[]
-                )
-            )
+                ),
+                lineno=5,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="ser")],
+                value=ast.Call(
+                    func=ast.Name(id="Series"),
+                    args=[
+                        ast.Subscript(
+                            value=ast.Call(
+                                func=ast.Name(id="range"),
+                                args=[
+                                    ast.Call(
+                                        func=ast.Name(id="len"),
+                                        args=[ast.Name(id="mi")],
+                                        keywords=[]
+                                    )
+                                ],
+                                keywords=[]
+                            ),
+                            slice=ast.Slice(lower=None, upper=None,
+                                            step=ast.UnaryOp(op=ast.USub(), operand=ast.Constant(value=1))),
+                        )
+                    ],
+                    keywords=[
+                        ast.keyword(arg="index", value=ast.Name(id="mi"))
+                    ]
+                ),
+                lineno=6,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="key")],
+                value=ast.Call(
+                    func=ast.Name(id="box"),
+                    args=[ast.List(elts=[ast.Constant(value=5)])],
+                    keywords=[]
+                ),
+                lineno=7,
+            ),
+            ast.With(
+                items=[
+                    ast.withitem(
+                        context_expr=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id='pytest'),
+                                attr='raises',
+                            ),
+                            args=[
+                                ast.Name(id='KeyError')
+                            ],
+                            keywords=[
+                                ast.keyword(
+                                    arg='match',
+                                    value=ast.Constant(value='5')
+                                )
+                            ]
+                        ),
+                        optional_vars=None
+                    )
+                ],
+                body=[
+                    ast.Expr(
+                        value=ast.Subscript(
+                            value=ast.Name(id='ser'),
+                            slice=ast.Index(value=ast.Name(id='key')),
+                        )
+                    )
+                ],
+                lineno=8,
+            ),
         ]
 
     def get_imports(self) -> list[ImportFrom]:
@@ -5047,9 +5115,19 @@ class PandasUnittestGenerator19(
                 names=[ast.alias(name="pandas")],
                 level=0,
             ),
+            ast.Import(
+                module="numpy",
+                names=[ast.alias(name="numpy")],
+                level=0,
+            ),
+            ast.Import(
+                module="pytest",
+                names=[ast.alias(name="pytest")],
+                level=0,
+            ),
             ast.ImportFrom(
-                module="pandas._testing",
-                names=[ast.alias(name="assert_index_equal")],
+                module="pandas",
+                names=[ast.alias(name="date_range"), ast.alias(name="Series")],
                 level=0,
             )
         ]
@@ -5057,14 +5135,15 @@ class PandasUnittestGenerator19(
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("", "", "", "", "")
+        test.body = self._get_assert()
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("", "", "", "", "")
+        test.body = self._get_assert()
         return test, TestResult.PASSING
+
 
 class PandasUnittestGenerator20(
     python.PythonGenerator, UnittestGenerator, PandasTestGenerator
@@ -5075,80 +5154,176 @@ class PandasUnittestGenerator20(
         return self.generate_values(self.pandas20_generate)
 
     @staticmethod
-    def _get_assert(
-            expected: Any,
-            index_1: Any,
-            index_2: Any,
-            list_1: Any,
-            list_2: Any,
+    def _get_assert(periods: int, start: str
     ) -> list[ast.Assign | ast.Expr]:
+        n_values = random.choice([-2, 1])
+        cls_value = random.choice(
+            ['MonthBegin', 'MonthEnd', 'BMonthBegin', 'BMonthEnd', 'QuarterBegin', 'QuarterEnd', 'BQuarterBegin',
+             'BQuarterEnd', 'YearBegin', 'YearEnd', 'BYearBegin', 'BYearEnd'])
+        rng_values = random.choice([0, -1])
         return [
             ast.Assign(
-                targets=[ast.Name(id="midx1")],
-                value=ast.Call(
-                    func=ast.Attribute(value=ast.Attribute(value=ast.Name(id="pandas"), attr="MultiIndex"),
-                                       attr="from_product"),
-                    args=[
-                        ast.List(elts=[
-                            ast.Constant(value=list_1),
-                            ast.Constant(value=list_2)
-                        ]),
-                    ],
-                    keywords=[
-                        ast.keyword(arg="names", value=ast.Constant(value=index_1))
-                    ],
-                ),
+                targets=[ast.Name(id="n")],
+                value=ast.Constant(value=n_values),
                 lineno=1,
             ),
             ast.Assign(
-                targets=[ast.Name(id="midx2")],
+                targets=[ast.Name(id="offset")],
                 value=ast.Call(
-                    func=ast.Attribute(value=ast.Attribute(value=ast.Name(id="pandas"), attr="MultiIndex"),
-                                       attr="from_product"),
-                    args=[
-                        ast.List(elts=[
-                            ast.Constant(value=list_1),
-                            ast.Constant(value=list_2)
-                        ]),
-                    ],
-                    keywords=[
-                        ast.keyword(arg="names", value=ast.Constant(value=index_2))
-                    ],
+                    func=ast.Name(id=cls_value),
+                    args=[],
+                    keywords=[ast.keyword(arg="n", value=ast.Name(id="n"))],
                 ),
                 lineno=2,
             ),
             ast.Assign(
-                targets=[ast.Tuple(elts=[ast.Name(id="join_idx"),
-                                         ast.Name(id="lidx"),
-                                         ast.Name(id="ridx")])],
+                targets=[ast.Name(id="rng")],
                 value=ast.Call(
-                    func=ast.Attribute(value=ast.Name(id="midx1"), attr="join"),
-                    args=[ast.Name(id="midx2")],
+                    func=ast.Attribute(value=ast.Name(id="pandas"), attr="date_range"),
+                    args=[],
                     keywords=[
-                        ast.keyword(arg="return_indexers", value=ast.Constant(value=False))],
+                        ast.keyword(arg="start", value=ast.Constant(value=start)),
+                        ast.keyword(arg="periods", value=ast.Constant(value=periods)),
+                        ast.keyword(arg="freq", value=ast.Constant(value="T"))
+                    ],
                 ),
                 lineno=3,
             ),
-            ast.Expr(
+            ast.Assign(
+                targets=[ast.Name(id="ser")],
                 value=ast.Call(
-                    func=ast.Name(id="assert_index_equal"),
-                    args=[
-                        ast.Name(id="midx1"),
-                        ast.Name(id="join_idx"),
-                    ],
+                    func=ast.Attribute(value=ast.Name(id="pandas"), attr="Series"),
+                    args=[ast.Name(id="rng")],
                     keywords=[],
-                )
+                ),
+                lineno=4,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="res")],
+                value=ast.BinOp(
+                    left=ast.Name(id="rng"),
+                    op=ast.Add(),
+                    right=ast.Name(id="offset")
+                ),
+                lineno=5,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="res2")],
+                value=ast.BinOp(
+                    left=ast.Name(id="ser"),
+                    op=ast.Add(),
+                    right=ast.Name(id="offset")
+                ),
+                lineno=6,
             ),
             ast.Expr(
                 value=ast.Call(
                     func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
                     args=[
-                        ast.Constant(value=expected),
-                        ast.Name(id="lidx")
+                        ast.Subscript(value=ast.Name(id="res"),
+                                      slice=ast.Index(value=ast.Constant(value=rng_values)),
+                                      ),
+                        ast.BinOp(
+                            left=ast.Subscript(value=ast.Name(id="rng"),
+                                               slice=ast.Index(value=ast.Constant(value=rng_values)),
+                                               ),
+                            op=ast.Add(),
+                            right=ast.Name(id="offset")
+                        )
                     ],
                     keywords=[]
                 )
-            )
+            ),
+        ]
+
+    @staticmethod
+    def _get_assert_2(periods: int, start: str
+    ) -> list[ast.Assign | ast.Expr]:
+        n_values = random.choice([-2, 1])
+        cls_value = random.choice(
+            ['MonthBegin', 'MonthEnd', 'BMonthBegin', 'BMonthEnd', 'QuarterBegin', 'QuarterEnd', 'BQuarterBegin',
+             'BQuarterEnd', 'YearBegin', 'YearEnd', 'BYearBegin', 'BYearEnd'])
+        return [
+            ast.Assign(
+                targets=[ast.Name(id="n")],
+                value=ast.Constant(value=n_values),
+                lineno=1,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="offset")],
+                value=ast.Call(
+                    func=ast.Name(id=cls_value),
+                    args=[],
+                    keywords=[ast.keyword(arg="n", value=ast.Name(id="n"))],
+                ),
+                lineno=2,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="rng")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="pandas"), attr="date_range"),
+                    args=[],
+                    keywords=[
+                        ast.keyword(arg="start", value=ast.Constant(value=start)),
+                        ast.keyword(arg="periods", value=ast.Constant(value=periods)),
+                        ast.keyword(arg="freq", value=ast.Constant(value="T"))
+                    ],
+                ),
+                lineno=3,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="ser")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="pandas"), attr="Series"),
+                    args=[ast.Name(id="rng")],
+                    keywords=[],
+                ),
+                lineno=4,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="res")],
+                value=ast.BinOp(
+                    left=ast.Name(id="rng"),
+                    op=ast.Add(),
+                    right=ast.Name(id="offset")
+                ),
+                lineno=5,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="res2")],
+                value=ast.BinOp(
+                    left=ast.Name(id="ser"),
+                    op=ast.Add(),
+                    right=ast.Name(id="offset")
+                ),
+                lineno=6,
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
+                    args=[
+                        ast.Subscript(
+                            value=ast.Attribute(
+                                value=ast.Name(id="res2"),
+                                attr="iloc",
+                            ),
+                            slice=ast.Index(value=ast.Constant(value=0)),
+                        ),
+                        ast.BinOp(
+                            left=ast.Subscript(
+                                value=ast.Attribute(
+                                    value=ast.Name(id="ser"),
+                                    attr="iloc",
+                                ),
+                                slice=ast.Index(value=ast.Constant(value=0)),
+                            ),
+                            op=ast.Add(),
+                            right=ast.Name(id="offset")
+                        )
+                    ],
+                    keywords=[]
+                )
+            ),
         ]
 
     def get_imports(self) -> list[ImportFrom]:
@@ -5162,19 +5337,41 @@ class PandasUnittestGenerator20(
                 module="pandas._testing",
                 names=[ast.alias(name="assert_index_equal")],
                 level=0,
+            ),
+            ast.ImportFrom(
+                module="pandas.tseries.offsets",
+                names=[ast.alias(name="BMonthBegin"), ast.alias(name="BMonthEnd"), ast.alias(name="BQuarterBegin"),
+                       ast.alias(name="BQuarterEnd"), ast.alias(name="BYearBegin"), ast.alias(name="BYearEnd"),
+                       ast.alias(name="MonthBegin"), ast.alias(name="MonthEnd"), ast.alias(name="QuarterBegin"),
+                       ast.alias(name="QuarterEnd"), ast.alias(name="YearBegin"), ast.alias(name="YearEnd")],
+                level=0,
             )
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
+        periods, start = fail_
         test = self.get_empty_test()
-        test.body = self._get_assert("", "", "", "", "")
+        dice = random.choice([0, 1])
+        if dice == 0:
+            test.body = self._get_assert(periods, start)
+        elif dice == 1:
+            test.body = self._get_assert_2(periods, start)
+        else:
+            print("Value is out of boundaries")
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
+        periods, start = pass_
         test = self.get_empty_test()
-        test.body = self._get_assert("", "", "", "", "")
+        dice = random.choice([0, 1])
+        if dice == 0:
+            test.body = self._get_assert(periods, start)
+        elif dice == 1:
+            test.body = self._get_assert_2(periods, start)
+        else:
+            print("Value is out of boundaries")
         return test, TestResult.PASSING
 
 
@@ -5407,3 +5604,4 @@ grammar: Grammar = {
     "<char>": srange(string.ascii_letters),
 }
 assert is_valid_grammar(grammar)
+
