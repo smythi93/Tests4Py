@@ -1,5 +1,5 @@
 diff --git a/scrapy/core/engine.py b/scrapy/core/engine.py
-index 40f19e4c..992327bf 100644
+index 40f19e4c3..992327bfe 100644
 --- a/scrapy/core/engine.py
 +++ b/scrapy/core/engine.py
 @@ -16,7 +16,7 @@ from scrapy.exceptions import DontCloseSpider
@@ -8,9 +8,9 @@ index 40f19e4c..992327bf 100644
  from scrapy.utils.reactor import CallLaterOnce
 -from scrapy.utils.log import logformatter_adapter
 +from scrapy.utils.log import logformatter_adapter, failure_to_exc_info
- 
+
  logger = logging.getLogger(__name__)
- 
+
 @@ -135,13 +135,16 @@ class ExecutionEngine(object):
          d = self._download(request, spider)
          d.addBoth(self._handle_downloader_output, request, spider)
@@ -29,7 +29,7 @@ index 40f19e4c..992327bf 100644
 +                                           exc_info=failure_to_exc_info(f),
 +                                           extra={'spider': spider}))
          return d
- 
+
      def _handle_downloader_output(self, response, request, spider):
 @@ -153,7 +156,8 @@ class ExecutionEngine(object):
          # response is a Response or Failure
@@ -39,10 +39,10 @@ index 40f19e4c..992327bf 100644
 +                                            exc_info=failure_to_exc_info(f),
 +                                            extra={'spider': spider}))
          return d
- 
+
      def spider_is_idle(self, spider):
 @@ -268,7 +272,11 @@ class ExecutionEngine(object):
- 
+
          def log_failure(msg):
              def errback(failure):
 -                logger.error(msg, extra={'spider': spider, 'failure': failure})
@@ -52,5 +52,338 @@ index 40f19e4c..992327bf 100644
 +                    extra={'spider': spider}
 +                )
              return errback
- 
+
          dfd.addBoth(lambda _: self.downloader.close())
+diff --git a/scrapy/core/scraper.py b/scrapy/core/scraper.py
+index e5d8acea2..244499be2 100644
+--- a/scrapy/core/scraper.py
++++ b/scrapy/core/scraper.py
+@@ -10,7 +10,7 @@ from twisted.internet import defer
+ from scrapy.utils.defer import defer_result, defer_succeed, parallel, iter_errback
+ from scrapy.utils.spider import iterate_spider_output
+ from scrapy.utils.misc import load_object
+-from scrapy.utils.log import logformatter_adapter
++from scrapy.utils.log import logformatter_adapter, failure_to_exc_info
+ from scrapy.exceptions import CloseSpider, DropItem, IgnoreRequest
+ from scrapy import signals
+ from scrapy.http import Request, Response
+@@ -107,7 +107,8 @@ class Scraper(object):
+         dfd.addErrback(
+             lambda f: logger.error('Scraper bug processing %(request)s',
+                                    {'request': request},
+-                                   extra={'spider': spider, 'failure': f}))
++                                   exc_info=failure_to_exc_info(f),
++                                   extra={'spider': spider}))
+         self._scrape_next(spider, slot)
+         return dfd
+
+@@ -153,7 +154,8 @@ class Scraper(object):
+         logger.error(
+             "Spider error processing %(request)s (referer: %(referer)s)",
+             {'request': request, 'referer': referer},
+-            extra={'spider': spider, 'failure': _failure}
++            exc_info=failure_to_exc_info(_failure),
++            extra={'spider': spider}
+         )
+         self.signals.send_catch_log(
+             signal=signals.spider_error,
+@@ -202,7 +204,8 @@ class Scraper(object):
+             if download_failure.frames:
+                 logger.error('Error downloading %(request)s',
+                              {'request': request},
+-                             extra={'spider': spider, 'failure': download_failure})
++                             exc_info=failure_to_exc_info(download_failure),
++                             extra={'spider': spider})
+             else:
+                 errmsg = download_failure.getErrorMessage()
+                 if errmsg:
+@@ -227,7 +230,8 @@ class Scraper(object):
+                     spider=spider, exception=output.value)
+             else:
+                 logger.error('Error processing %(item)s', {'item': item},
+-                             extra={'spider': spider, 'failure': output})
++                             exc_info=failure_to_exc_info(output),
++                             extra={'spider': spider})
+         else:
+             logkws = self.logformatter.scraped(output, response, spider)
+             logger.log(*logformatter_adapter(logkws), extra={'spider': spider})
+diff --git a/scrapy/downloadermiddlewares/robotstxt.py b/scrapy/downloadermiddlewares/robotstxt.py
+index 9083482f0..77e08b7e0 100644
+--- a/scrapy/downloadermiddlewares/robotstxt.py
++++ b/scrapy/downloadermiddlewares/robotstxt.py
+@@ -11,6 +11,7 @@ from six.moves.urllib import robotparser
+ from scrapy.exceptions import NotConfigured, IgnoreRequest
+ from scrapy.http import Request
+ from scrapy.utils.httpobj import urlparse_cached
++from scrapy.utils.log import failure_to_exc_info
+
+ logger = logging.getLogger(__name__)
+
+@@ -59,7 +60,8 @@ class RobotsTxtMiddleware(object):
+         if failure.type is not IgnoreRequest:
+             logger.error("Error downloading %(request)s: %(f_exception)s",
+                          {'request': request, 'f_exception': failure.value},
+-                         extra={'spider': spider, 'failure': failure})
++                         exc_info=failure_to_exc_info(failure),
++                         extra={'spider': spider})
+
+     def _parse_robots(self, response):
+         rp = robotparser.RobotFileParser(response.url)
+diff --git a/scrapy/extensions/feedexport.py b/scrapy/extensions/feedexport.py
+index 7c6849a73..3bc1c92cc 100644
+--- a/scrapy/extensions/feedexport.py
++++ b/scrapy/extensions/feedexport.py
+@@ -22,6 +22,7 @@ from scrapy.utils.ftp import ftp_makedirs_cwd
+ from scrapy.exceptions import NotConfigured
+ from scrapy.utils.misc import load_object
+ from scrapy.utils.python import get_func_args
++from scrapy.utils.log import failure_to_exc_info
+
+ logger = logging.getLogger(__name__)
+
+@@ -184,7 +185,8 @@ class FeedExporter(object):
+         d.addCallback(lambda _: logger.info(logfmt % "Stored", log_args,
+                                             extra={'spider': spider}))
+         d.addErrback(lambda f: logger.error(logfmt % "Error storing", log_args,
+-                                            extra={'spider': spider, 'failure': f}))
++                                            exc_info=failure_to_exc_info(f),
++                                            extra={'spider': spider}))
+         return d
+
+     def item_scraped(self, item, spider):
+diff --git a/scrapy/log.py b/scrapy/log.py
+index c3f9c4227..e1c68aa93 100644
+--- a/scrapy/log.py
++++ b/scrapy/log.py
+@@ -8,6 +8,7 @@ import warnings
+ from twisted.python.failure import Failure
+
+ from scrapy.exceptions import ScrapyDeprecationWarning
++from scrapy.utils.log import failure_to_exc_info
+
+ logger = logging.getLogger(__name__)
+
+@@ -48,4 +49,4 @@ def err(_stuff=None, _why=None, **kw):
+     level = kw.pop('level', logging.ERROR)
+     failure = kw.pop('failure', _stuff) or Failure()
+     message = kw.pop('why', _why) or failure.value
+-    logger.log(level, message, *[kw] if kw else [], extra={'failure': failure})
++    logger.log(level, message, *[kw] if kw else [], exc_info=failure_to_exc_info(failure))
+diff --git a/scrapy/pipelines/files.py b/scrapy/pipelines/files.py
+index c0192b867..250f46ad8 100644
+--- a/scrapy/pipelines/files.py
++++ b/scrapy/pipelines/files.py
+@@ -25,6 +25,7 @@ from scrapy.pipelines.media import MediaPipeline
+ from scrapy.exceptions import NotConfigured, IgnoreRequest
+ from scrapy.http import Request
+ from scrapy.utils.misc import md5sum
++from scrapy.utils.log import failure_to_exc_info
+
+ logger = logging.getLogger(__name__)
+
+@@ -212,7 +213,8 @@ class FilesPipeline(MediaPipeline):
+         dfd.addErrback(
+             lambda f:
+             logger.error(self.__class__.__name__ + '.store.stat_file',
+-                         extra={'spider': info.spider, 'failure': f})
++                         exc_info=failure_to_exc_info(f),
++                         extra={'spider': info.spider})
+         )
+         return dfd
+
+diff --git a/scrapy/pipelines/media.py b/scrapy/pipelines/media.py
+index 55ef05ad4..21b8b8986 100644
+--- a/scrapy/pipelines/media.py
++++ b/scrapy/pipelines/media.py
+@@ -8,6 +8,7 @@ from twisted.python.failure import Failure
+ from scrapy.utils.defer import mustbe_deferred, defer_result
+ from scrapy.utils.request import request_fingerprint
+ from scrapy.utils.misc import arg_to_iter
++from scrapy.utils.log import failure_to_exc_info
+
+ logger = logging.getLogger(__name__)
+
+@@ -70,7 +71,7 @@ class MediaPipeline(object):
+         dfd.addCallback(self._check_media_to_download, request, info)
+         dfd.addBoth(self._cache_result_and_execute_waiters, fp, info)
+         dfd.addErrback(lambda f: logger.error(
+-            f.value, extra={'spider': info.spider, 'failure': f})
++            f.value, exc_info=failure_to_exc_info(f), extra={'spider': info.spider})
+         )
+         return dfd.addBoth(lambda _: wad)  # it must return wad at last
+
+@@ -127,6 +128,7 @@ class MediaPipeline(object):
+                     logger.error(
+                         '%(class)s found errors processing %(item)s',
+                         {'class': self.__class__.__name__, 'item': item},
+-                        extra={'spider': info.spider, 'failure': value}
++                        exc_info=failure_to_exc_info(value),
++                        extra={'spider': info.spider}
+                     )
+         return item
+diff --git a/scrapy/utils/log.py b/scrapy/utils/log.py
+index 23b246491..5dabe5697 100644
+--- a/scrapy/utils/log.py
++++ b/scrapy/utils/log.py
+@@ -1,6 +1,5 @@
+ # -*- coding: utf-8 -*-
+
+-import os
+ import sys
+ import logging
+ import warnings
+@@ -16,22 +15,10 @@ from scrapy.exceptions import ScrapyDeprecationWarning
+ logger = logging.getLogger(__name__)
+
+
+-class FailureFormatter(logging.Filter):
+-    """Extract exc_info from Failure instances provided as contextual data
+-
+-    This filter mimics Twisted log.err formatting for its first `_stuff`
+-    argument, which means that reprs of non Failure objects are appended to the
+-    log messages.
+-    """
+-
+-    def filter(self, record):
+-        failure = record.__dict__.get('failure')
+-        if failure:
+-            if isinstance(failure, Failure):
+-                record.exc_info = (failure.type, failure.value, failure.tb)
+-            else:
+-                record.msg += os.linesep + repr(failure)
+-        return True
++def failure_to_exc_info(failure):
++    """Extract exc_info from Failure instances"""
++    if isinstance(failure, Failure):
++        return (failure.type, failure.value, failure.tb)
+
+
+ class TopLevelFormatter(logging.Filter):
+@@ -58,15 +45,9 @@ class TopLevelFormatter(logging.Filter):
+ DEFAULT_LOGGING = {
+     'version': 1,
+     'disable_existing_loggers': False,
+-    'filters': {
+-        'failure_formatter': {
+-            '()': 'scrapy.utils.log.FailureFormatter',
+-        },
+-    },
+     'loggers': {
+         'scrapy': {
+             'level': 'DEBUG',
+-            'filters': ['failure_formatter'],
+         },
+         'twisted': {
+             'level': 'ERROR',
+diff --git a/scrapy/utils/signal.py b/scrapy/utils/signal.py
+index d4cc41305..d9a59e161 100644
+--- a/scrapy/utils/signal.py
++++ b/scrapy/utils/signal.py
+@@ -8,6 +8,7 @@ from twisted.python.failure import Failure
+ from scrapy.xlib.pydispatch.dispatcher import Any, Anonymous, liveReceivers, \
+     getAllReceivers, disconnect
+ from scrapy.xlib.pydispatch.robustapply import robustApply
++from scrapy.utils.log import failure_to_exc_info
+
+ logger = logging.getLogger(__name__)
+
+@@ -47,7 +48,8 @@ def send_catch_log_deferred(signal=Any, sender=Anonymous, *arguments, **named):
+         if dont_log is None or not isinstance(failure.value, dont_log):
+             logger.error("Error caught on signal handler: %(receiver)s",
+                          {'receiver': recv},
+-                         extra={'spider': spider, 'failure': failure})
++                         exc_info=failure_to_exc_info(failure),
++                         extra={'spider': spider})
+         return failure
+
+     dont_log = named.pop('dont_log', None)
+diff --git a/tests/test_pipeline_media.py b/tests/test_pipeline_media.py
+index 7217eee90..fd8b28ce1 100644
+--- a/tests/test_pipeline_media.py
++++ b/tests/test_pipeline_media.py
+@@ -9,6 +9,7 @@ from scrapy.http import Request, Response
+ from scrapy.spiders import Spider
+ from scrapy.utils.request import request_fingerprint
+ from scrapy.pipelines.media import MediaPipeline
++from scrapy.utils.log import failure_to_exc_info
+ from scrapy.utils.signal import disconnect_all
+ from scrapy import signals
+
+@@ -66,7 +67,7 @@ class BaseMediaPipelineTestCase(unittest.TestCase):
+         assert len(l.records) == 1
+         record = l.records[0]
+         assert record.levelname == 'ERROR'
+-        assert record.failure is fail
++        self.assertTupleEqual(record.exc_info, failure_to_exc_info(fail))
+
+         # disable failure logging and check again
+         self.pipe.LOG_FAILED_RESULTS = False
+diff --git a/tests/test_utils_log.py b/tests/test_utils_log.py
+index 7448dbfc0..45527b03b 100644
+--- a/tests/test_utils_log.py
++++ b/tests/test_utils_log.py
+@@ -1,6 +1,5 @@
+ # -*- coding: utf-8 -*-
+ from __future__ import print_function
+-import os
+ import sys
+ import logging
+ import unittest
+@@ -8,46 +7,24 @@ import unittest
+ from testfixtures import LogCapture
+ from twisted.python.failure import Failure
+
+-from scrapy.utils.log import (FailureFormatter, TopLevelFormatter,
++from scrapy.utils.log import (failure_to_exc_info, TopLevelFormatter,
+                               LogCounterHandler, StreamLogger)
+ from scrapy.utils.test import get_crawler
+
+
+-class FailureFormatterTest(unittest.TestCase):
++class FailureToExcInfoTest(unittest.TestCase):
+
+-    def setUp(self):
+-        self.logger = logging.getLogger('test')
+-        self.filter = FailureFormatter()
+-        self.logger.addFilter(self.filter)
+-
+-    def tearDown(self):
+-        self.logger.removeFilter(self.filter)
+-
+-    def test_failure_format(self):
+-        with LogCapture() as l:
+-            try:
+-                0/0
+-            except ZeroDivisionError:
+-                self.logger.error('test log msg', exc_info=True)
+-                failure = Failure()
+-
+-            self.logger.error('test log msg', extra={'failure': failure})
+-
+-        self.assertEqual(len(l.records), 2)
+-        exc_record, failure_record = l.records
+-        self.assertTupleEqual(failure_record.exc_info, exc_record.exc_info)
++    def test_failure(self):
++        try:
++            0/0
++        except ZeroDivisionError:
++            exc_info = sys.exc_info()
++            failure = Failure()
+
+-        formatter = logging.Formatter()
+-        self.assertMultiLineEqual(formatter.format(failure_record),
+-                                  formatter.format(exc_record))
+-
+-    def test_non_failure_format(self):
+-        with LogCapture() as l:
+-            self.logger.error('test log msg', extra={'failure': 3})
++        self.assertTupleEqual(exc_info, failure_to_exc_info(failure))
+
+-        self.assertEqual(len(l.records), 1)
+-        self.assertMultiLineEqual(l.records[0].getMessage(),
+-                                  'test log msg' + os.linesep + '3')
++    def test_non_failure(self):
++        self.assertIsNone(failure_to_exc_info('test'))
+
+
+ class TopLevelFormatterTest(unittest.TestCase):
