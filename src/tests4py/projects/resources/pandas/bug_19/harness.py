@@ -1,12 +1,13 @@
 import sys
 
 if __name__ == "__main__":
-    assert len(sys.argv) == 10
-    all_values = []
-    for i in sys.argv[1:]:
-        i = i.replace("(", "")
-        i = i.replace("[", "")
-        i = i.replace(")", "")
-        i = i.replace("]", "")
-        i = i.replace(",", "")
-        all_values.append(i)
+    assert len(sys.argv) == 5
+    error_match = sys.argv[4]
+    value = sys.argv[1]
+    value = value.replace("(", "")
+    value = value.replace(",", "")
+    error_match = error_match.replace(")", "")
+    if error_match == "not in index":
+        print("Assertion Error")
+    else:
+        print(value)
