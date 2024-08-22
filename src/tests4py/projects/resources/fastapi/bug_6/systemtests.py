@@ -3,71 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return (
-            '-p/form/python-set\n-d{"items":["first","second","third"]}\n-mpost\n-a\n-o'
-        )
+        return "-gs /valid/ Item -a aliased_name -m get -u /valid/"
 
     def test_diversity_2(self):
-        return '-p/form/python-set\n-d{"items":[1,2,3]}\n-mpost'
+        return "-gs /valid/ Item -a aliased_name -m get -u /valid/"
 
     def test_diversity_3(self):
-        return (
-            '-p/form/python-set\n-d{"items":[1,"second","third"]}\n-mpost\n-a\n-o\n-u'
-        )
+        return "-gs /valid/ Item -a aliased_name -m get -u /valid/"
 
     def test_diversity_4(self):
-        return '-p/form/python-set\n-d{"items":[1,"second","third"]}\n-mpost\n-a\n-u'
+        return "-gs /valid/ Item -a aliased_name -m get -u /valid/"
 
     def test_diversity_5(self):
-        return '-p/form/python-set\n-d{"items":[1,"second","third"]}\n-mpost\n-a'
+        return "-gs /valid/ Item -a aliased_name -m get -u /valid/"
 
     def test_diversity_6(self):
-        return '-p/form/python-list\n-d{"items":["first","second","third"]}\n-mpost\n-a\n-o'
+        return "-gs /valid/ Item -a aliased_name -m get -u /valid/"
 
     def test_diversity_7(self):
-        return '-p/form/python-list\n-d{"items":[1,2,3]}\n-mpost'
+        return "-gs /valid/ Item -a aliased_name -m get -u /valid/"
 
     def test_diversity_8(self):
-        return (
-            '-p/form/python-list\n-d{"items":[1,"second","third"]}\n-mpost\n-a\n-o\n-u'
-        )
+        return "-gs /valid/ Item -a aliased_name -m get -u /valid/"
 
     def test_diversity_9(self):
-        return '-p/form/python-list\n-d{"items":[1,"second","third"]}\n-mpost\n-a\n-u'
+        return "-gs /valid/ Item -a aliased_name -m get -u /valid/"
 
     def test_diversity_10(self):
-        return '-p/form/python-list\n-d{"items":[1,"second","third"]}\n-mpost\n-a'
+        return "-gs /valid/ Item -a aliased_name -m get -u /valid/"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return "-p/router/\n-mwebsocket\n-a"
+        return "-gs /valid/ Item -m get -u /valid/"
 
     def test_diversity_2(self):
-        return "-p/user/1\n-mget\n-u"
+        return "-gs /valid/ Item -m get -u /valid/"
 
     def test_diversity_3(self):
-        return "-p/items/valid\n-mget"
+        return "-gs /valid/ Item -m get -u /valid/"
 
     def test_diversity_4(self):
-        return '-p/items/valid\n-d{"items":["first","second","third"]}\n-o'
+        return "-gs /valid/ Item -m get -u /valid/"
 
     def test_diversity_5(self):
-        return '-p/items/\n-mpost\n-d{"name":"test-name","price":1.6,"age":5}'
+        return "-gs /valid/ Item -m get -u /valid/"
 
     def test_diversity_6(self):
-        return (
-            '-p/items/\n-mpost\n-a\n-d{"aliased_name":"test-name","price":1.6,"age":5}'
-        )
+        return "-gs /valid/ Item -m get -u /valid/"
 
     def test_diversity_7(self):
-        return '-p/items/valid\n-mget\n-o\n-d[1,2,0.0,"test"]'
+        return "-gs /valid/ Item -m get -u /valid/"
 
     def test_diversity_8(self):
-        return "-p/openapi.json"
+        return "-gs /valid/ Item -m get -u /valid/"
 
     def test_diversity_9(self):
-        return '-p/items/valid_list\n-mget\n-o\n-d"test"'
+        return "-gs /valid/ Item -m get -u /valid/"
 
     def test_diversity_10(self):
-        return "-p/model\n-mget\n-o\n-d1"
+        return "-gs /valid/ Item -m get -u /valid/"

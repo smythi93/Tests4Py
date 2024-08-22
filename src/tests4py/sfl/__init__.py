@@ -19,14 +19,17 @@ from tests4py.sfl.utils import (
     read_src,
     OracleInputRunner,
 )
+from tests4py.tests.utils import get_pytest_skip
 
-DEFAULT_TIME_OUT = 10
+DEFAULT_TIME_OUT = 60
 
 
 def sflkit_instrument(
     dst: os.PathLike,
     work_dir_or_project: Optional[Union[os.PathLike, Project]] = None,
     events: str = None,
+    mapping: os.PathLike = None,
+    only_patched_files: bool = False,
     report: SFLInstrumentReport = None,
 ):
     report = report or SFLInstrumentReport()
@@ -42,6 +45,8 @@ def sflkit_instrument(
                 work_dir,
                 Path(dst),
                 events=events,
+                mapping=Path(mapping) if mapping else None,
+                only_patched_files=only_patched_files,
             ),
         )
         report.successful = True
@@ -54,7 +59,9 @@ def sflkit_instrument(
 def sflkit_unittest(
     work_dir: os.PathLike,
     output: Path = None,
+    relevant_tests: bool = True,
     all_tests: bool = False,
+    include_suffix: bool = False,
     report: SFLEventsReport = None,
 ):
     report = report or SFLEventsReport()
@@ -62,17 +69,27 @@ def sflkit_unittest(
     try:
         project = load_project(work_dir, only_project=True)
         if output is None:
-            output = get_events_path(project)
+            output = get_events_path(project, include_suffix=include_suffix)
         report.project = project
         environ = env_on(project)
         environ = activate_venv(work_dir, environ)
         runner = PytestRunner(timeout=DEFAULT_TIME_OUT)
+        k = None
+        if all_tests:
+            files = None
+        elif relevant_tests:
+            if project.skip_tests:
+                k = get_pytest_skip(project.skip_tests)
+            files = project.relevant_test_files
+        else:
+            files = project.test_cases
         runner.run(
             directory=work_dir,
             output=output,
-            files=None if all_tests else project.relevant_test_files,
+            files=files,
             base=project.test_base,
             environ=environ,
+            k=k,
         )
         report.successful = True
         report.passing = runner.passing_tests
@@ -89,6 +106,7 @@ def sflkit_systemtest(
     tests: os.PathLike | list[os.PathLike],
     relative: bool = False,
     output: Path = None,
+    include_suffix: bool = False,
     report: SFLEventsReport = None,
 ):
     report = report or SFLEventsReport()
@@ -96,7 +114,7 @@ def sflkit_systemtest(
     try:
         project = load_project(work_dir, only_project=True)
         if output is None:
-            output = get_events_path(project)
+            output = get_events_path(project, include_suffix=include_suffix)
         report.project = project
         environ = env_on(project)
         environ = activate_venv(work_dir, environ)
@@ -121,6 +139,7 @@ def sflkit_analyze(
     metrics: str = None,
     predicates: str = None,
     suggestions: bool = False,
+    include_suffix: bool = False,
     report: SFLAnalyzeReport = None,
 ):
     report = report or SFLAnalyzeReport()
@@ -137,6 +156,7 @@ def sflkit_analyze(
             metrics=metrics,
             predicates=predicates,
             events_path=events_path,
+            include_suffix=include_suffix,
         )
         analyzer = analyze(config)
         report.analyzer = analyzer

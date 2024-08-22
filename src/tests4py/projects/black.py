@@ -8,7 +8,7 @@ from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
 
-PROJECT_MAME = "black"
+PROJECT_NAME = "black"
 
 
 class Black(Project):
@@ -29,7 +29,7 @@ class Black(Project):
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name=PROJECT_MAME,
+            project_name=PROJECT_NAME,
             github_url="https://github.com/psf/black",
             status=Status.OK,
             python_version="3.8.4",
@@ -47,6 +47,8 @@ class Black(Project):
             grammar=None,
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
+            source_base=[Path("black.py"), Path("blib2to3")]
+            + ([Path("blackd.py")] if blackd else []),
             test_base=Path("tests"),
             included_files=["black.py"] + (["blackd.py"] if blackd else list()),
             relevant_test_files=[Path("tests", "test_black.py")],
@@ -257,7 +259,7 @@ def register():
             Path("tests", "data", "fmtonoff2.py"),
         ],
         test_cases=[
-            os.path.join("tests", "test_black.py::.BlackTestCase::test_fmtonoff2"),
+            os.path.join("tests", "test_black.py::BlackTestCase::test_fmtonoff2"),
         ],
         loc=4110,
     )

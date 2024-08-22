@@ -10,7 +10,7 @@ from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
 
-PROJECT_MAME = "httpie"
+PROJECT_NAME = "httpie"
 
 
 class Httpie(Project):
@@ -28,10 +28,11 @@ class Httpie(Project):
         test_base: Optional[os.PathLike] = None,
         loc: int = 0,
         relevant_test_files: Optional[List[Path]] = None,
+        skip_tests: Optional[List[str]] = None,
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name=PROJECT_MAME,
+            project_name=PROJECT_NAME,
             github_url="https://github.com/jakubroztocil/httpie/",
             status=Status.OK,
             python_version="3.7.8",
@@ -47,11 +48,14 @@ class Httpie(Project):
             systemtests=systemtests,
             api=HttpieAPI(),
             grammar=grammar_request,
+            source_base=Path(PROJECT_NAME),
             test_base=test_base or Path("tests"),
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
-            included_files=[PROJECT_MAME],
+            included_files=[PROJECT_NAME],
             relevant_test_files=relevant_test_files,
+            skip_tests=skip_tests,
+            set_rootdir=False,
         )
 
 
@@ -65,7 +69,54 @@ def register():
         ],
         test_cases=[
             os.path.join(
-                "tests", "test_downloads.py::TestDownloadUtils::test_unique_filename"
+                "tests",
+                "test_downloads.py::TestDownloadUtils::test_unique_filename[foo.bar-0-foo.bar]",
+            ),
+            os.path.join(
+                "tests",
+                "test_downloads.py::TestDownloadUtils::test_unique_filename[foo.bar-1-foo.bar-1]",
+            ),
+            os.path.join(
+                "tests",
+                "test_downloads.py::TestDownloadUtils::test_unique_filename[foo.bar-10-foo.bar-10]",
+            ),
+            os.path.join(
+                "tests",
+                "test_downloads.py::TestDownloadUtils::test_unique_filename[AAAAAAAAAAAAAAAAAAAA-0-AAAAAAAAAA]",
+            ),
+            os.path.join(
+                "tests",
+                "test_downloads.py::TestDownloadUtils::test_unique_filename[AAAAAAAAAAAAAAAAAAAA-1-AAAAAAAA-1]",
+            ),
+            os.path.join(
+                "tests",
+                "test_downloads.py::TestDownloadUtils::test_unique_filename"
+                "[AAAAAAAAAAAAAAAAAAAA-10-AAAAAAA-10]",
+            ),
+            os.path.join(
+                "tests",
+                "test_downloads.py::TestDownloadUtils::test_unique_filename"
+                "[AAAAAAAAAAAAAAAAAAAA.txt-0-AAAAAA.txt]",
+            ),
+            os.path.join(
+                "tests",
+                "test_downloads.py::TestDownloadUtils::test_unique_filename"
+                "[AAAAAAAAAAAAAAAAAAAA.txt-1-AAAA.txt-1]",
+            ),
+            os.path.join(
+                "tests",
+                "test_downloads.py::TestDownloadUtils::test_unique_filename"
+                "[foo.AAAAAAAAAAAAAAAAAAAA-0-foo.AAAAAA]",
+            ),
+            os.path.join(
+                "tests",
+                "test_downloads.py::TestDownloadUtils::test_unique_filename"
+                "[foo.AAAAAAAAAAAAAAAAAAAA-1-foo.AAAA-1]",
+            ),
+            os.path.join(
+                "tests",
+                "test_downloads.py::TestDownloadUtils::test_unique_filename"
+                "[foo.AAAAAAAAAAAAAAAAAAAA-10-foo.AAA-10]",
             ),
         ],
         # systemtests=Httpie1SystemtestGenerator(),
@@ -108,6 +159,7 @@ def register():
             Path("tests", "test_downloads.py"),
             Path("tests", "test_sessions.py"),
         ],
+        skip_tests=["test_session_ignored_header_prefixes"],
         # systemtests=Httpie3SystemtestGenerator(),
         # unittests=Httpie3UnittestGenerator(),
         loc=2255,
@@ -141,6 +193,7 @@ def register():
             os.path.join("tests", "tests.py::TestItemParsing::test_escape_longsep"),
         ],
         test_base=Path("tests", "tests.py"),
+        skip_tests=["test_verbose"],
         # systemtests=Httpie5SystemtestGenerator(),
         # unittests=Httpie5UnittestGenerator(),
         loc=509,

@@ -20,7 +20,7 @@ from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult, SpecificationError
 
-PROJECT_MAME = "cookiecutter"
+PROJECT_NAME = "cookiecutter"
 
 
 class CookieCutter(Project):
@@ -44,7 +44,7 @@ class CookieCutter(Project):
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name=PROJECT_MAME,
+            project_name=PROJECT_NAME,
             github_url="https://github.com/cookiecutter/cookiecutter",
             status=Status.OK,
             python_version=python_version,
@@ -64,8 +64,9 @@ class CookieCutter(Project):
             grammar=grammar,
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
+            source_base=Path(PROJECT_NAME),
             test_base=Path("tests"),
-            included_files=[PROJECT_MAME],
+            included_files=[PROJECT_NAME],
             relevant_test_files=relevant_test_files,
         )
 
@@ -114,9 +115,8 @@ def register():
         fixed_commit_id="90434ff4ea4477941444f1e83313beb414838535",
         test_files=[Path("tests", "test_hooks.py")],
         test_cases=[
-            os.path.join("tests", "test_hooks.py") + "::TestFindHooks::test_find_hook",
-            os.path.join("tests", "test_hooks.py")
-            + "::TestExternalHooks::test_run_hook",
+            os.path.join("tests", "test_hooks.py::TestFindHooks::test_find_hook"),
+            os.path.join("tests", "test_hooks.py::TestExternalHooks::test_run_hook"),
         ],
         api=CookieCutter2API(),
         systemtests=CookieCutter2SystemtestGenerator(),
@@ -132,7 +132,18 @@ def register():
         fixed_commit_id="7129d474206761a6156925db78eee4b62a0e3944",
         test_files=[Path("tests", "test_read_user_choice.py")],
         test_cases=[
-            os.path.join("tests", "test_read_user_choice.py") + ":test_click_invocation"
+            os.path.join(
+                "tests", "test_read_user_choice.py::test_click_invocation[1-hello]"
+            ),
+            os.path.join(
+                "tests", "test_read_user_choice.py::test_click_invocation[2-world]"
+            ),
+            os.path.join(
+                "tests", "test_read_user_choice.py::test_click_invocation[3-foo]"
+            ),
+            os.path.join(
+                "tests", "test_read_user_choice.py::test_click_invocation[4-bar]"
+            ),
         ],
         relevant_test_files=[
             Path("tests", "test_read_user_choice.py"),
@@ -154,8 +165,9 @@ def register():
         fixed_commit_id="457a1a4e862aab4102b644ff1d2b2e2b5a766b3c",
         test_files=[Path("tests", "test_hooks.py")],
         test_cases=[
-            os.path.join("tests", "test_hooks.py")
-            + "::TestExternalHooks::test_run_failing_hook"
+            os.path.join(
+                "tests", "test_hooks.py::TestExternalHooks::test_run_failing_hook"
+            )
         ],
         relevant_test_files=[
             Path("tests", "test_hooks.py"),

@@ -1,4 +1,5 @@
 import ast
+import os
 import random
 import string
 import subprocess
@@ -15,7 +16,7 @@ from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
 
-PROJECT_MAME = "pandas"
+PROJECT_NAME = "pandas"
 
 
 class Pandas(Project):
@@ -37,7 +38,7 @@ class Pandas(Project):
         # noinspection SqlDialectInspection,SqlNoDataSourceInspection
         super().__init__(
             bug_id=bug_id,
-            project_name=PROJECT_MAME,
+            project_name=PROJECT_NAME,
             github_url="https://github.com/pandas-dev/pandas",
             status=Status.OK,
             python_version="3.8.3",
@@ -77,7 +78,12 @@ def register():
         fixed_commit_id="e41ee47a90bb1d8a1fa28fcefcd45ed8ef5cb946",
         test_files=[Path("pandas", "tests", "dtypes", "test_dtypes.py")],
         test_cases=[
-            "pandas/tests/dtypes/test_dtypes.py::TestCategoricalDtype::test_not_string"
+            os.path.join(
+                "pandas",
+                "tests",
+                "dtypes",
+                "test_dtypes.py::TestCategoricalDtype::test_not_string",
+            )
         ],
         api=PandasAPI1(),
         unittests=PandasUnittestGenerator1(),
@@ -89,10 +95,24 @@ def register():
         fixed_commit_id="55e8891f6d33be14e0db73ac06513129503f995c",
         test_files=[Path("pandas", "tests", "indexing", "test_scalar.py")],
         test_cases=[
-            "pandas/tests/indexing/test_scalar.py::test_at_with_tuple_index_get",
-            "pandas/tests/indexing/test_scalar.py::test_at_with_tuple_index_set",
-            "pandas/tests/indexing/test_scalar.py::test_multiindex_at_get",
-            "pandas/tests/indexing/test_scalar.py::test_multiindex_at_set",
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexing",
+                "test_scalar.py::test_at_with_tuple_index_get",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexing",
+                "test_scalar.py::test_at_with_tuple_index_set",
+            ),
+            os.path.join(
+                "pandas", "tests", "indexing", "test_scalar.py::test_multiindex_at_get"
+            ),
+            os.path.join(
+                "pandas", "tests", "indexing", "test_scalar.py::test_multiindex_at_set"
+            ),
         ],
     )
     Pandas(
@@ -104,8 +124,20 @@ def register():
             Path("pandas", "tests", "series", "methods", "test_to_timestamp.py"),
         ],
         test_cases=[
-            "pandas/tests/series/methods/test_to_period.py::TestToPeriod::test_to_period_raises",
-            "pandas/tests/series/methods/test_to_timestamp.py::TestToTimestamp::test_to_timestamp_raises",
+            os.path.join(
+                "pandas",
+                "tests",
+                "series",
+                "methods",
+                "test_to_period.py::TestToPeriod::test_to_period_raises",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "series",
+                "methods",
+                "test_to_timestamp.py::TestToTimestamp::test_to_timestamp_raises",
+            ),
         ],
     )
     Pandas(
@@ -114,7 +146,13 @@ def register():
         fixed_commit_id="2250ddfaff92abaff20a5bcd78315f5d4bd44981",
         test_files=[Path("pandas", "tests", "indexes", "multi", "test_join.py")],
         test_cases=[
-            "pandas/tests/indexes/multi/test_join.py::test_join_multi_return_indexers"
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "multi",
+                "test_join.py::test_join_multi_return_indexers",
+            )
         ],
     )
     Pandas(
@@ -122,14 +160,22 @@ def register():
         buggy_commit_id="cca710b",
         fixed_commit_id="2250ddfaff92abaff20a5bcd78315f5d4bd44981",
         test_files=[Path("pandas", "tests", "groupby", "test_function.py")],
-        test_cases=["pandas/tests/groupby/test_function.py::test_ops_not_as_index"],
+        test_cases=[
+            os.path.join(
+                "pandas", "tests", "groupby", "test_function.py::test_ops_not_as_index"
+            )
+        ],
     )
     Pandas(
         bug_id=6,
         buggy_commit_id="21a10d1",
         fixed_commit_id="8cd8ed3657e52ad9f67e17b7f5c20f7340ab6a2c",
         test_files=[Path("pandas", "tests", "groupby", "test_size.py")],
-        test_cases=["pandas/tests/groupby/test_size.py::test_size_period_index"],
+        test_cases=[
+            os.path.join(
+                "pandas", "tests", "groupby", "test_size.py::test_size_period_index"
+            )
+        ],
     )
     Pandas(
         bug_id=7,
@@ -137,7 +183,13 @@ def register():
         fixed_commit_id="64336ff8414f8977ff94adb9a5bc000a3a4ef454",
         test_files=[Path("pandas", "tests", "frame", "indexing", "test_indexing.py")],
         test_cases=[
-            "pandas/tests/frame/indexing/test_indexing.py::TestDataFrameIndexing::test_reindex_nearest_tz"
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "indexing",
+                "test_indexing.py::TestDataFrameIndexing::test_reindex_nearest_tz",
+            )
         ],
     )
     Pandas(
@@ -146,7 +198,13 @@ def register():
         fixed_commit_id="d09f20e29bdfa82f5efc071986e2633001d552f6",
         test_files=[Path("pandas", "tests", "frame", "methods", "test_replace.py")],
         test_cases=[
-            "pandas/tests/frame/methods/test_replace.py::TestDataFrameReplace::test_replace_no_replacement_dtypes"
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "methods",
+                "test_replace.py::TestDataFrameReplace::test_replace_no_replacement_dtypes",
+            )
         ],
     )
     Pandas(
@@ -157,7 +215,13 @@ def register():
             Path("pandas", "tests", "indexes", "categorical", "test_indexing.py")
         ],
         test_cases=[
-            "pandas/tests/indexes/categorical/test_indexing.py::TestContains::test_contains_na_dtype"
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "categorical",
+                "test_indexing.py::TestContains::test_contains_na_dtype",
+            )
         ],
     )
     Pandas(
@@ -166,7 +230,13 @@ def register():
         fixed_commit_id="e1ee2b0679e5999c993a787606d30e75faaba7a2",
         test_files=[Path("pandas", "tests", "series", "methods", "test_update.py")],
         test_cases=[
-            "pandas/tests/series/methods/test_update.py::TestUpdate::test_update_extension_array_series"
+            os.path.join(
+                "pandas",
+                "tests",
+                "series",
+                "methods",
+                "test_update.py::TestUpdate::test_update_extension_array_series",
+            )
         ],
     )
     Pandas(
@@ -174,7 +244,11 @@ def register():
         buggy_commit_id="1c88e6a",
         fixed_commit_id="b7f061c3d24df943e16918ad3932e767f5639a38",
         test_files=[Path("pandas", "tests", "reshape", "test_concat.py")],
-        test_cases=["pandas/tests/reshape/test_concat.py::test_duplicate_keys"],
+        test_cases=[
+            os.path.join(
+                "pandas", "tests", "reshape", "test_concat.py::test_duplicate_keys"
+            )
+        ],
     )
     Pandas(
         bug_id=12,
@@ -182,7 +256,13 @@ def register():
         fixed_commit_id="8aa707298428801199280b2b994632080591700a",
         test_files=[Path("pandas", "tests", "frame", "methods", "test_cov_corr.py")],
         test_cases=[
-            "pandas/tests/frame/methods/test_cov_corr.py::TestDataFrameCov::test_cov_nullable_integer"
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "methods",
+                "test_cov_corr.py::TestDataFrameCov::test_cov_nullable_integer",
+            )
         ],
     )
     Pandas(
@@ -193,9 +273,21 @@ def register():
             Path("pandas", "tests", "arrays", "categorical", "test_missing.py")
         ],
         test_cases=[
-            "pandas/tests/arrays/categorical/test_missing.py::TestCategoricalMissing::test_use_inf_as_na",
-            "pandas/tests/arrays/categorical/test_missing.py::TestCategoricalMissing"
-            "::test_use_inf_as_na_outside_context",
+            os.path.join(
+                "pandas",
+                "tests",
+                "arrays",
+                "categorical",
+                "test_missing.py::TestCategoricalMissing::test_use_inf_as_na",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "arrays",
+                "categorical",
+                "test_missing.py::TestCategoricalMissing"
+                "::test_use_inf_as_na_outside_context",
+            ),
         ],
     )
     Pandas(
@@ -207,10 +299,20 @@ def register():
             Path("pandas", "tests", "arithmetic", "test_timedelta64.py"),
         ],
         test_cases=[
-            "pandas/tests/arithmetic/test_datetime64.py::TestDatetime64DateOffsetArithmetic"
-            "::test_dt64arr_add_sub_offset_array",
-            "pandas/tests/arithmetic/test_timedelta64.py::TestTimedeltaArraylikeAddSubOps"
-            "::test_td64arr_add_offset_index",
+            os.path.join(
+                "pandas",
+                "tests",
+                "arithmetic",
+                "test_datetime64.py::TestDatetime64DateOffsetArithmetic"
+                "::test_dt64arr_add_sub_offset_array",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "arithmetic",
+                "test_timedelta64.py::TestTimedeltaArraylikeAddSubOps"
+                "::test_td64arr_add_offset_index",
+            ),
         ],
     )
     Pandas(
@@ -221,7 +323,13 @@ def register():
             Path("pandas", "tests", "indexes", "datetimes", "test_datetime.py")
         ],
         test_cases=[
-            "pandas/tests/indexes/datetimes/test_datetime.py::TestDatetimeIndex::test_pickle_after_set_freq"
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "datetimes",
+                "test_datetime.py::TestDatetimeIndex::test_pickle_after_set_freq",
+            )
         ],
     )
     Pandas(
@@ -230,7 +338,12 @@ def register():
         fixed_commit_id="74e8607cb163b76ccf272ac72ae6b7848fe930c8",
         test_files=[Path("pandas", "tests", "arithmetic", "test_period.py")],
         test_cases=[
-            "pandas/tests/arithmetic/test_period.py::TestPeriodIndexSeriesMethods::test_pi_sub_period"
+            os.path.join(
+                "pandas",
+                "tests",
+                "arithmetic",
+                "test_period.py::TestPeriodIndexSeriesMethods::test_pi_sub_period",
+            )
         ],
     )
     Pandas(
@@ -239,7 +352,13 @@ def register():
         fixed_commit_id="afb04645b5b3361814f7d00ef68ce8d68e19ddb8",
         test_files=[Path("pandas", "tests", "indexes", "datetimes", "test_insert.py")],
         test_cases=[
-            "pandas/tests/indexes/datetimes/test_insert.py::TestInsert::test_insert_mismatched_types_raises"
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "datetimes",
+                "test_insert.py::TestInsert::test_insert_mismatched_types_raises",
+            )
         ],
     )
     Pandas(
@@ -248,7 +367,12 @@ def register():
         fixed_commit_id="cb71376385c33270fa1922aec9eb6c49de4336f4",
         test_files=[Path("pandas", "tests", "window", "test_base_indexer.py")],
         test_cases=[
-            "pandas/tests/window/test_base_indexer.py::test_rolling_forward_skewness"
+            os.path.join(
+                "pandas",
+                "tests",
+                "window",
+                "test_base_indexer.py::test_rolling_forward_skewness",
+            )
         ],
     )
     Pandas(
@@ -261,10 +385,28 @@ def register():
             Path("pandas", "tests", "series", "indexing", "test_getitem.py"),
         ],
         test_cases=[
-            "pandas/tests/indexing/multiindex/test_loc.py::TestMultiIndexLoc::test_loc_multiindex_list_missing_label",
-            "pandas/tests/indexing/multiindex/test_slice.py::TestMultiIndexSlicers::test_per_axis_per_level_getitem",
-            "pandas/tests/series/indexing/test_getitem.py::TestSeriesGetitemListLike"
-            "::test_getitem_intlist_multiindex_numeric_level",
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexing",
+                "multiindex",
+                "test_loc.py::TestMultiIndexLoc::test_loc_multiindex_list_missing_label",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexing",
+                "multiindex",
+                "test_slice.py::TestMultiIndexSlicers::test_per_axis_per_level_getitem",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "series",
+                "indexing",
+                "test_getitem.py::TestSeriesGetitemListLike"
+                "::test_getitem_intlist_multiindex_numeric_level",
+            ),
         ],
     )
     Pandas(
@@ -275,7 +417,13 @@ def register():
             Path("pandas", "tests", "tseries", "offsets", "test_yqm_offsets.py")
         ],
         test_cases=[
-            "pandas/tests/tseries/offsets/test_yqm_offsets.py::test_apply_index"
+            os.path.join(
+                "pandas",
+                "tests",
+                "tseries",
+                "offsets",
+                "test_yqm_offsets.py::test_apply_index",
+            )
         ],
     )
     Pandas(
@@ -287,7 +435,13 @@ def register():
             Path("pandas", "tests", "series", "indexing", "test_getitem.py"),
         ],
         test_cases=[
-            "pandas/tests/series/indexing/test_getitem.py::TestSeriesGetitemListLike::test_getitem_no_matches"
+            os.path.join(
+                "pandas",
+                "tests",
+                "series",
+                "indexing",
+                "test_getitem.py::TestSeriesGetitemListLike::test_getitem_no_matches",
+            )
         ],
     )
     Pandas(
@@ -296,7 +450,12 @@ def register():
         fixed_commit_id="299e27da8a75d02d84870c1ca5971f4dd0f046e6",
         test_files=[Path("pandas", "tests", "window", "test_base_indexer.py")],
         test_cases=[
-            "pandas/tests/window/test_base_indexer.py::test_rolling_forward_window"
+            os.path.join(
+                "pandas",
+                "tests",
+                "window",
+                "test_base_indexer.py::test_rolling_forward_window",
+            )
         ],
     )
     Pandas(
@@ -305,9 +464,27 @@ def register():
         fixed_commit_id="38b669a206b151e0a2bb985200d4a493c4ac078f",
         test_files=[Path("pandas", "tests", "indexes", "datetimes", "test_setops.py")],
         test_cases=[
-            "pandas/tests/indexes/datetimes/test_setops.py::TestDatetimeIndexSetOps::test_intersection_empty",
-            "pandas/tests/indexes/datetimes/test_setops.py::TestBusinessDatetimeIndex::test_intersection_bug",
-            "pandas/tests/indexes/datetimes/test_setops.py::TestCustomDatetimeIndex::test_intersection_bug",
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "datetimes",
+                "test_setops.py::TestDatetimeIndexSetOps::test_intersection_empty",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "datetimes",
+                "test_setops.py::TestBusinessDatetimeIndex::test_intersection_bug",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "datetimes",
+                "test_setops.py::TestCustomDatetimeIndex::test_intersection_bug",
+            ),
         ],
     )
     Pandas(
@@ -318,7 +495,13 @@ def register():
             Path("pandas", "tests", "indexes", "datetimes", "test_timezones.py")
         ],
         test_cases=[
-            "pandas/tests/indexes/datetimes/test_timezones.py::test_tz_localize_invalidates_freq"
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "datetimes",
+                "test_timezones.py::test_tz_localize_invalidates_freq",
+            )
         ],
     )
     Pandas(
@@ -327,8 +510,14 @@ def register():
         fixed_commit_id="73d614403759831814ef7ab83ef1e4aaa645b33a",
         test_files=[Path("pandas", "tests", "indexes", "datetimes", "test_misc.py")],
         test_cases=[
-            "pandas/tests/indexes/datetimes/test_misc.py"
-            "::test_isocalendar_returns_correct_values_close_to_new_year_with_tz"
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "datetimes",
+                "test_misc.py"
+                "::test_isocalendar_returns_correct_values_close_to_new_year_with_tz",
+            )
         ],
     )
     Pandas(
@@ -339,7 +528,13 @@ def register():
             Path("pandas", "tests", "arrays", "categorical", "test_analytics.py")
         ],
         test_cases=[
-            "pandas/tests/arrays/categorical/test_analytics.py::TestCategoricalAnalytics::test_min_max_only_nan"
+            os.path.join(
+                "pandas",
+                "tests",
+                "arrays",
+                "categorical",
+                "test_analytics.py::TestCategoricalAnalytics::test_min_max_only_nan",
+            )
         ],
     )
     Pandas(
@@ -350,7 +545,13 @@ def register():
             Path("pandas", "tests", "indexes", "datetimes", "test_to_period.py")
         ],
         test_cases=[
-            "pandas/tests/indexes/datetimes/test_to_period.py::TestToPeriod::test_to_period_infer"
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "datetimes",
+                "test_to_period.py::TestToPeriod::test_to_period_infer",
+            )
         ],
     )
     Pandas(
@@ -358,7 +559,11 @@ def register():
         buggy_commit_id="40fd73a",
         fixed_commit_id="ef9b9387c88cf12b20dd8656dfedfc236e0f3352",
         test_files=[Path("pandas", "tests", "test_strings.py")],
-        test_cases=["pandas/tests/test_strings.py::test_cat_different_classes"],
+        test_cases=[
+            os.path.join(
+                "pandas", "tests", "test_strings.py::test_cat_different_classes"
+            )
+        ],
     )
     Pandas(
         bug_id=29,
@@ -369,8 +574,20 @@ def register():
             Path("pandas", "tests", "series", "methods", "test_convert_dtypes.py"),
         ],
         test_cases=[
-            "pandas/tests/arrays/interval/test_interval.py::TestSetitem::test_set_na",
-            "pandas/tests/series/methods/test_convert_dtypes.py::TestSeriesConvertDtypes::test_convert_dtypes",
+            os.path.join(
+                "pandas",
+                "tests",
+                "arrays",
+                "interval",
+                "test_interval.py::TestSetitem::test_set_na",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "series",
+                "methods",
+                "test_convert_dtypes.py::TestSeriesConvertDtypes::test_convert_dtypes",
+            ),
         ],
     )
     Pandas(
@@ -379,7 +596,13 @@ def register():
         fixed_commit_id="d857cd12b3ae11be788ba96015383a5b7464ecc9",
         test_files=[Path("pandas", "tests", "io", "json", "test_pandas.py")],
         test_cases=[
-            "pandas/tests/io/json/test_pandas.py::TestPandasContainer::test_readjson_bool_series"
+            os.path.join(
+                "pandas",
+                "tests",
+                "io",
+                "json",
+                "test_pandas.py::TestPandasContainer::test_readjson_bool_series",
+            )
         ],
     )
     Pandas(
@@ -388,7 +611,12 @@ def register():
         fixed_commit_id="8267427bfe567eec9a098aa8c071dddcc1d289f9",
         test_files=[Path("pandas", "tests", "groupby", "test_function.py")],
         test_cases=[
-            "pandas/tests/groupby/test_function.py::test_groupby_quantile_nullable_array"
+            os.path.join(
+                "pandas",
+                "tests",
+                "groupby",
+                "test_function.py::test_groupby_quantile_nullable_array",
+            )
         ],
     )
     Pandas(
@@ -396,7 +624,11 @@ def register():
         buggy_commit_id="467e1c2",
         fixed_commit_id="c82cb179affed1c1136431ce39e4c66f4f3a65c0",
         test_files=[Path("pandas", "tests", "io", "sas", "test_xport.py")],
-        test_cases=["pandas/tests/io/sas/test_xport.py::TestXport::test2_binary"],
+        test_cases=[
+            os.path.join(
+                "pandas", "tests", "io", "sas", "test_xport.py::TestXport::test2_binary"
+            )
+        ],
     )
     Pandas(
         bug_id=33,
@@ -404,7 +636,13 @@ def register():
         fixed_commit_id="89d8aba76a2bb930e520590d145e3d67b2046e39",
         test_files=[Path("pandas", "tests", "arrays", "integer", "test_function.py")],
         test_cases=[
-            "pandas/tests/arrays/integer/test_function.py::test_value_counts_empty"
+            os.path.join(
+                "pandas",
+                "tests",
+                "arrays",
+                "integer",
+                "test_function.py::test_value_counts_empty",
+            )
         ],
     )
     Pandas(
@@ -413,7 +651,12 @@ def register():
         fixed_commit_id="cf9ec7854ecb80709804178e769425f02ddf8c64",
         test_files=[Path("pandas", "tests", "resample", "test_datetime_index.py")],
         test_cases=[
-            "pandas/tests/resample/test_datetime_index.py::test_downsample_dst_at_midnight"
+            os.path.join(
+                "pandas",
+                "tests",
+                "resample",
+                "test_datetime_index.py::test_downsample_dst_at_midnight",
+            )
         ],
     )
     Pandas(
@@ -424,7 +667,13 @@ def register():
             Path("pandas", "tests", "indexes", "multi", "test_get_level_values.py")
         ],
         test_cases=[
-            "pandas/tests/indexes/multi/test_get_level_values.py::test_get_level_values_when_periods"
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "multi",
+                "test_get_level_values.py::test_get_level_values_when_periods",
+            )
         ],
     )
     Pandas(
@@ -433,7 +682,12 @@ def register():
         fixed_commit_id="51f114b9882a5cf819efddb8be74524814f437e1",
         test_files=[Path("pandas", "tests", "dtypes", "", "test_missing.py")],
         test_cases=[
-            "pandas/tests/dtypes//test_missing.py::TestIsNA::test_isna_old_datetimelike"
+            os.path.join(
+                "pandas",
+                "tests",
+                "dtypes",
+                "test_missing.py::TestIsNA::test_isna_old_datetimelike",
+            )
         ],
     )
     Pandas(
@@ -441,7 +695,15 @@ def register():
         buggy_commit_id="c69f7d8",
         fixed_commit_id="845c50c9e2ce611c773422ae9db7097fc3e5fba5",
         test_files=[Path("pandas", "tests", "arrays", "string_", "test_string.py")],
-        test_cases=["pandas/tests/arrays/string_/test_string.py::test_astype_int"],
+        test_cases=[
+            os.path.join(
+                "pandas",
+                "tests",
+                "arrays",
+                "string_",
+                "test_string.py::test_astype_int",
+            )
+        ],
     )
     Pandas(
         bug_id=38,
@@ -449,9 +711,24 @@ def register():
         fixed_commit_id="e7ee418fa7a519225203fef23481c5fa35834dc3",
         test_files=[Path("pandas", "tests", "frame", "test_reshape.py")],
         test_cases=[
-            "pandas/tests/frame/test_reshape.py::TestDataFrameReshape::test_unstack_long_index",
-            "pandas/tests/frame/test_reshape.py::TestDataFrameReshape::test_unstack_multi_level_cols",
-            "pandas/tests/frame/test_reshape.py::TestDataFrameReshape::test_unstack_multi_level_rows_and_cols",
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "test_reshape.py::TestDataFrameReshape::test_unstack_long_index",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "test_reshape.py::TestDataFrameReshape::test_unstack_multi_level_cols",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "test_reshape.py::TestDataFrameReshape::test_unstack_multi_level_rows_and_cols",
+            ),
         ],
     )
     Pandas(
@@ -462,8 +739,13 @@ def register():
             Path("pandas", "tests", "frame", "", "test_axis_select_reindex.py")
         ],
         test_cases=[
-            "pandas/tests/frame//test_axis_select_reindex.py::TestDataFrameSelectReindex"
-            "::test_inplace_drop_and_operation"
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "test_axis_select_reindex.py::TestDataFrameSelectReindex"
+                "::test_inplace_drop_and_operation",
+            )
         ],
     )
     Pandas(
@@ -472,7 +754,13 @@ def register():
         fixed_commit_id="8a5f2917e163e09e08af880819fdf44144b1a5fe",
         test_files=[Path("pandas", "tests", "reshape", "merge", "test_merge.py")],
         test_cases=[
-            "pandas/tests/reshape/merge/test_merge.py::TestMerge::test_merge_preserves_row_order"
+            os.path.join(
+                "pandas",
+                "tests",
+                "reshape",
+                "merge",
+                "test_merge.py::TestMerge::test_merge_preserves_row_order",
+            )
         ],
     )
     Pandas(
@@ -484,8 +772,18 @@ def register():
             Path("pandas", "tests", "internals", "test_internals.py"),
         ],
         test_cases=[
-            "pandas/tests/indexing/test_iloc.py::TestiLoc2::test_iloc_setitem_categorical_updates_inplace",
-            "pandas/tests/internals/test_internals.py::TestShouldStore::test_should_store_categorical",
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexing",
+                "test_iloc.py::TestiLoc2::test_iloc_setitem_categorical_updates_inplace",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "internals",
+                "test_internals.py::TestShouldStore::test_should_store_categorical",
+            ),
         ],
     )
     Pandas(
@@ -497,11 +795,30 @@ def register():
             Path("pandas", "tests", "util", "test_assert_series_equal.py"),
         ],
         test_cases=[
-            "pandas/tests/util/test_assert_frame_equal.py::test_assert_frame_equal_extension_dtype_mismatch",
-            "pandas/tests/util/test_assert_frame_equal.py::test_assert_frame_equal_interval_dtype_mismatch",
-            "pandas/tests/util/test_assert_series_equal.py::test_assert_series_equal_extension_dtype_mismatch",
-            "pandas/tests/util/test_assert_series_equal.py::test_assert_series_equal_interval_dtype_mismatch",
-            "",
+            os.path.join(
+                "pandas",
+                "tests",
+                "util",
+                "test_assert_frame_equal.py::test_assert_frame_equal_extension_dtype_mismatch",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "util",
+                "test_assert_frame_equal.py::test_assert_frame_equal_interval_dtype_mismatch",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "util",
+                "test_assert_series_equal.py::test_assert_series_equal_extension_dtype_mismatch",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "util",
+                "test_assert_series_equal.py::test_assert_series_equal_interval_dtype_mismatch",
+            ),
         ],
     )
     Pandas(
@@ -509,7 +826,14 @@ def register():
         buggy_commit_id="81149fb",
         fixed_commit_id="be7bfe6ab7ae2cba056f61dea6c3b0226bf80082",
         test_files=[Path("pandas", "tests", "frame", "test_arithmetic.py")],
-        test_cases=["pandas/tests/frame/test_arithmetic.py::test_pow_with_realignment"],
+        test_cases=[
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "test_arithmetic.py::test_pow_with_realignment",
+            )
+        ],
     )
     Pandas(
         bug_id=44,
@@ -520,8 +844,18 @@ def register():
             Path("pandas", "tests", "indexing", "test_loc.py"),
         ],
         test_cases=[
-            "pandas/tests/indexes/test_base.py::test_get_indexer_non_unique_wrong_dtype",
-            "pandas/tests/indexing/test_loc.py::test_loc_datetimelike_mismatched_dtypes",
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "test_base.py::test_get_indexer_non_unique_wrong_dtype",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexing",
+                "test_loc.py::test_loc_datetimelike_mismatched_dtypes",
+            ),
         ],
     )
     Pandas(
@@ -530,8 +864,13 @@ def register():
         fixed_commit_id="74f6579941fbe71cf7c033f53977047ac872e469",
         test_files=[Path("pandas", "tests", "frame", "test_constructors.py")],
         test_cases=[
-            "pandas/tests/frame/test_constructors.py::TestDataFrameConstructorWithDatetimeTZ"
-            "::test_construction_from_set_raises"
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "test_constructors.py::TestDataFrameConstructorWithDatetimeTZ"
+                "::test_construction_from_set_raises",
+            )
         ],
     )
     Pandas(
@@ -540,7 +879,12 @@ def register():
         fixed_commit_id="0ed6d538c38010bcbd540cd6413ae8e4b749d9e6",
         test_files=[Path("pandas", "tests", "reshape", "test_pivot.py")],
         test_cases=[
-            "pandas/tests/reshape/test_pivot.py::TestPivotTable::test_pivot_table_retains_tz"
+            os.path.join(
+                "pandas",
+                "tests",
+                "reshape",
+                "test_pivot.py::TestPivotTable::test_pivot_table_retains_tz",
+            )
         ],
     )
     Pandas(
@@ -552,8 +896,19 @@ def register():
             Path("pandas", "tests", "indexing", "test_loc.py"),
         ],
         test_cases=[
-            "pandas/tests/frame/indexing/test_indexing.py::TestDataFrameIndexing::test_setitem_list_missing_columns",
-            "pandas/tests/indexing/test_loc.py::TestLoc2::test_loc_setitem_missing_columns",
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "indexing",
+                "test_indexing.py::TestDataFrameIndexing::test_setitem_list_missing_columns",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexing",
+                "test_loc.py::TestLoc2::test_loc_setitem_missing_columns",
+            ),
         ],
     )
     Pandas(
@@ -562,7 +917,12 @@ def register():
         fixed_commit_id="9e7cb7c102655d0ba92d2561c178da9254d5cef5",
         test_files=[Path("pandas", "tests", "groupby", "test_function.py")],
         test_cases=[
-            "pandas/tests/groupby/test_function.py::test_apply_to_nullable_integer_returns_float"
+            os.path.join(
+                "pandas",
+                "tests",
+                "groupby",
+                "test_function.py::test_apply_to_nullable_integer_returns_float",
+            )
         ],
     )
     Pandas(
@@ -571,7 +931,11 @@ def register():
         fixed_commit_id="37659d47a685ecc5f5117aa56526ece0106c6d0f",
         test_files=[Path("pandas", "tests", "test_strings.py")],
         test_cases=[
-            "pandas/tests/test_strings.py::TestStringMethods::test_repeat_with_null"
+            os.path.join(
+                "pandas",
+                "tests",
+                "test_strings.py::TestStringMethods::test_repeat_with_null",
+            )
         ],
     )
     Pandas(
@@ -580,7 +944,12 @@ def register():
         fixed_commit_id="821aa25c9039e72da9a7b236cf2f9e7d549cbb7b",
         test_files=[Path("pandas", "tests", "extension", "test_categorical.py")],
         test_cases=[
-            "pandas/tests/extension/test_categorical.py::TestComparisonOps::test_not_equal_with_na"
+            os.path.join(
+                "pandas",
+                "tests",
+                "extension",
+                "test_categorical.py::TestComparisonOps::test_not_equal_with_na",
+            )
         ],
     )
     Pandas(
@@ -589,8 +958,13 @@ def register():
         fixed_commit_id="ea1d8fadb95fbc7cafe036274006228400817fd4",
         test_files=[Path("pandas", "tests", "reshape", "merge", "test_merge.py")],
         test_cases=[
-            "pandas/tests/reshape/merge/test_merge.py::test_categorical_non_unique_monotonic",
-            "",
+            os.path.join(
+                "pandas",
+                "tests",
+                "reshape",
+                "merge",
+                "test_merge.py::test_categorical_non_unique_monotonic",
+            )
         ],
     )
     Pandas(
@@ -599,7 +973,12 @@ def register():
         fixed_commit_id="7017599821e02ba95282848c12f7d3b5f2ce670a",
         test_files=[Path("pandas", "tests", "groupby", "test_function.py")],
         test_cases=[
-            "pandas/tests/groupby/test_function.py::test_series_groupby_nunique"
+            os.path.join(
+                "pandas",
+                "tests",
+                "groupby",
+                "test_function.py::test_series_groupby_nunique",
+            )
         ],
     )
     Pandas(
@@ -611,9 +990,21 @@ def register():
             Path("pandas", "tests", "indexing", "test_loc.py"),
         ],
         test_cases=[
-            "pandas/tests/indexing/test_categorical.py::TestCategoricalIndex::test_loc_scalar",
-            "pandas/tests/indexing/test_loc.py::TestLoc::test_loc_getitem_int",
-            "pandas/tests/indexing/test_loc.py::test_loc_mixed_int_float",
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexing",
+                "test_categorical.py::TestCategoricalIndex::test_loc_scalar",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexing",
+                "test_loc.py::TestLoc::test_loc_getitem_int",
+            ),
+            os.path.join(
+                "pandas", "tests", "indexing", "test_loc.py::test_loc_mixed_int_float"
+            ),
         ],
     )
     Pandas(
@@ -622,7 +1013,12 @@ def register():
         fixed_commit_id="00e8e4ab0c5e4c7bfb3e356e660d9f088d4a82a4",
         test_files=[Path("pandas", "tests", "dtypes", "test_dtypes.py")],
         test_cases=[
-            "pandas/tests/dtypes/test_dtypes.py::TestCategoricalDtype::test_from_values_or_dtype_invalid_dtype"
+            os.path.join(
+                "pandas",
+                "tests",
+                "dtypes",
+                "test_dtypes.py::TestCategoricalDtype::test_from_values_or_dtype_invalid_dtype",
+            )
         ],
     )
     Pandas(
@@ -631,7 +1027,12 @@ def register():
         fixed_commit_id="628dfba239865adc09c94108b288bcb60c619950",
         test_files=[Path("pandas", "tests", "indexing", "test_iloc.py")],
         test_cases=[
-            "pandas/tests/indexing/test_iloc.py::TestiLoc2::test_is_scalar_access"
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexing",
+                "test_iloc.py::TestiLoc2::test_is_scalar_access",
+            )
         ],
     )
     Pandas(
@@ -640,7 +1041,12 @@ def register():
         fixed_commit_id="dafec63f2e138d0451dae5b37edea2e83f9adc8a",
         test_files=[Path("pandas", "tests", "indexing", "test_scalar.py")],
         test_cases=[
-            "pandas/tests/indexing/test_scalar.py::test_iat_dont_wrap_object_datetimelike"
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexing",
+                "test_scalar.py::test_iat_dont_wrap_object_datetimelike",
+            )
         ],
     )
     Pandas(
@@ -650,7 +1056,15 @@ def register():
         test_files=[
             Path("pandas", "tests", "arrays", "categorical", "test_replace.py")
         ],
-        test_cases=["pandas/tests/arrays/categorical/test_replace.py::test_replace"],
+        test_cases=[
+            os.path.join(
+                "pandas",
+                "tests",
+                "arrays",
+                "categorical",
+                "test_replace.py::test_replace",
+            )
+        ],
     )
     Pandas(
         bug_id=58,
@@ -660,10 +1074,22 @@ def register():
             Path("pandas", "tests", "arrays", "categorical", "test_constructors.py")
         ],
         test_cases=[
-            "pandas/tests/arrays/categorical/test_constructors.py::TestCategoricalConstructors"
-            "::test_from_codes_with_nullable_int",
-            "pandas/tests/arrays/categorical/test_constructors.py::TestCategoricalConstructors"
-            "::test_from_codes_with_nullable_int_na_raises",
+            os.path.join(
+                "pandas",
+                "tests",
+                "arrays",
+                "categorical",
+                "test_constructors.py::TestCategoricalConstructors"
+                "::test_from_codes_with_nullable_int",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "arrays",
+                "categorical",
+                "test_constructors.py::TestCategoricalConstructors"
+                "::test_from_codes_with_nullable_int_na_raises",
+            ),
         ],
     )
     Pandas(
@@ -672,7 +1098,12 @@ def register():
         fixed_commit_id="8dd9fabd2ad9104e747084437b9ad436d5be087a",
         test_files=[Path("pandas", "tests", "window", "test_pairwise.py")],
         test_cases=[
-            "pandas/tests/window/test_pairwise.py::TestPairwise::test_corr_freq_memory_error"
+            os.path.join(
+                "pandas",
+                "tests",
+                "window",
+                "test_pairwise.py::TestPairwise::test_corr_freq_memory_error",
+            )
         ],
     )
     Pandas(
@@ -681,7 +1112,12 @@ def register():
         fixed_commit_id="fcf7258c19b0a6a712f33fb0bcefdae426be7e7f",
         test_files=[Path("pandas", "tests", "window", "test_grouper.py")],
         test_cases=[
-            "pandas/tests/window/test_grouper.py::TestGrouperGrouping::test_groupby_rolling"
+            os.path.join(
+                "pandas",
+                "tests",
+                "window",
+                "test_grouper.py::TestGrouperGrouping::test_groupby_rolling",
+            )
         ],
     )
     Pandas(
@@ -690,7 +1126,12 @@ def register():
         fixed_commit_id="f7e2b74f1bcc1d1cbebbc42481e33f0abb2843dc",
         test_files=[Path("pandas", "tests", "indexing", "test_indexing.py")],
         test_cases=[
-            "pandas/tests/indexing/test_indexing.py::TestFancy::test_getitem_ndarray_3d"
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexing",
+                "test_indexing.py::TestFancy::test_getitem_ndarray_3d",
+            )
         ],
     )
     Pandas(
@@ -699,7 +1140,12 @@ def register():
         fixed_commit_id="74dad82827e9b13552df2d6d3fbbeb901821b53f",
         test_files=[Path("pandas", "tests", "indexing", "test_indexing.py")],
         test_cases=[
-            "pandas/tests/indexing/test_indexing.py::TestFancy::test_setitem_ndarray_3d"
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexing",
+                "test_indexing.py::TestFancy::test_setitem_ndarray_3d",
+            )
         ],
     )
     Pandas(
@@ -708,7 +1154,12 @@ def register():
         fixed_commit_id="e1ca66bae38b8026079dfcbe0edad5f278546608",
         test_files=[Path("pandas", "tests", "indexing", "test_scalar.py")],
         test_cases=[
-            "pandas/tests/indexing/test_scalar.py::TestScalar2::test_series_at_raises_type_error"
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexing",
+                "test_scalar.py::TestScalar2::test_series_at_raises_type_error",
+            )
         ],
     )
     Pandas(
@@ -717,7 +1168,13 @@ def register():
         fixed_commit_id="d0c84ce57d23a409169daf7232ec7681e42363fe",
         test_files=[Path("pandas", "tests", "io", "excel", "test_writers.py")],
         test_cases=[
-            "pandas/tests/io/excel/test_writers.py::TestExcelWriter::test_write_subset_columns"
+            os.path.join(
+                "pandas",
+                "tests",
+                "io",
+                "excel",
+                "test_writers.py::TestExcelWriter::test_write_subset_columns",
+            )
         ],
     )
     Pandas(
@@ -726,7 +1183,13 @@ def register():
         fixed_commit_id="2f9a44635bd8d468cf008f2855ce2dcfb9e90586",
         test_files=[Path("pandas", "tests", "io", "parser", "test_encoding.py")],
         test_cases=[
-            "pandas/tests/io/parser/test_encoding.py::test_binary_mode_file_buffers"
+            os.path.join(
+                "pandas",
+                "tests",
+                "io",
+                "parser",
+                "test_encoding.py::test_binary_mode_file_buffers",
+            )
         ],
     )
     Pandas(
@@ -735,7 +1198,13 @@ def register():
         fixed_commit_id="d84f9eb32aea33a8f790e8e365cf226eddd5c7a7",
         test_files=[Path("pandas", "tests", "series", "indexing", "test_xs.py")],
         test_cases=[
-            "pandas/tests/series/indexing/test_xs.py::test_xs_datetimelike_wrapping"
+            os.path.join(
+                "pandas",
+                "tests",
+                "series",
+                "indexing",
+                "test_xs.py::test_xs_datetimelike_wrapping",
+            )
         ],
     )
     Pandas(
@@ -744,7 +1213,13 @@ def register():
         fixed_commit_id="1996b17599731b889895b0e1edf758588c068fbb",
         test_files=[Path("pandas", "tests", "frame", "indexing", "test_indexing.py")],
         test_cases=[
-            "pandas/tests/frame/indexing/test_indexing.py::test_object_casting_indexing_wraps_datetimelike"
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "indexing",
+                "test_indexing.py::test_object_casting_indexing_wraps_datetimelike",
+            )
         ],
     )
     Pandas(
@@ -753,7 +1228,13 @@ def register():
         fixed_commit_id="d28db65bdba16e9400a16469ba2707f94ae63483",
         test_files=[Path("pandas", "tests", "arrays", "interval", "test_interval.py")],
         test_cases=[
-            "pandas/tests/arrays/interval/test_interval.py::TestMethods::test_shift"
+            os.path.join(
+                "pandas",
+                "tests",
+                "arrays",
+                "interval",
+                "test_interval.py::TestMethods::test_shift",
+            )
         ],
     )
     Pandas(
@@ -762,7 +1243,12 @@ def register():
         fixed_commit_id="948f95756c79543bb089a94a85e73011a3730b2d",
         test_files=[Path("pandas", "tests", "indexes", "test_numeric.py")],
         test_cases=[
-            "pandas/tests/indexes/test_numeric.py::TestFloat64Index::test_lookups_datetimelike_values"
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "test_numeric.py::TestFloat64Index::test_lookups_datetimelike_values",
+            )
         ],
     )
     Pandas(
@@ -771,7 +1257,12 @@ def register():
         fixed_commit_id="06ef193a5c1957c0a76e3e88bc7b834b38972c39",
         test_files=[Path("pandas", "tests", "groupby", "test_categorical.py")],
         test_cases=[
-            "pandas/tests/groupby/test_categorical.py::test_groupby_agg_categorical_columns"
+            os.path.join(
+                "pandas",
+                "tests",
+                "groupby",
+                "test_categorical.py::test_groupby_agg_categorical_columns",
+            )
         ],
     )
     Pandas(
@@ -779,7 +1270,9 @@ def register():
         buggy_commit_id="74a5edc",
         fixed_commit_id="a5daff22e6e37af4946c614f85b110905e063be3",
         test_files=[Path("pandas", "tests", "arrays", "test_integer.py")],
-        test_cases=["pandas/tests/arrays/test_integer.py::test_cut"],
+        test_cases=[
+            os.path.join("pandas", "tests", "arrays", "test_integer.py::test_cut")
+        ],
     )
     Pandas(
         bug_id=72,
@@ -789,8 +1282,14 @@ def register():
             Path("pandas", "tests", "frame", "indexing", "test_categorical.py")
         ],
         test_cases=[
-            "pandas/tests/frame/indexing/test_categorical.py::TestDataFrameIndexingCategorical"
-            "::test_setitem_single_row_categorical"
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "indexing",
+                "test_categorical.py::TestDataFrameIndexingCategorical"
+                "::test_setitem_single_row_categorical",
+            )
         ],
     )
     Pandas(
@@ -799,7 +1298,12 @@ def register():
         fixed_commit_id="6f93898d32c0f1fdb382d1e9dee434c158998374",
         test_files=[Path("pandas", "tests", "frame", "test_arithmetic.py")],
         test_cases=[
-            "pandas/tests/frame/test_arithmetic.py::TestFrameFlexArithmetic::test_floordiv_axis0"
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "test_arithmetic.py::TestFrameFlexArithmetic::test_floordiv_axis0",
+            )
         ],
     )
     Pandas(
@@ -810,7 +1314,13 @@ def register():
             Path("pandas", "tests", "indexes", "timedeltas", "test_constructors.py")
         ],
         test_cases=[
-            "pandas/tests/indexes/timedeltas/test_constructors.py::TestTimedeltaIndex::test_infer_from_tdi_mismatch"
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "timedeltas",
+                "test_constructors.py::TestTimedeltaIndex::test_infer_from_tdi_mismatch",
+            )
         ],
     )
     Pandas(
@@ -819,7 +1329,13 @@ def register():
         fixed_commit_id="9a211aae9f710db23c9113aea0251e2758904755",
         test_files=[Path("pandas", "tests", "indexes", "period", "test_indexing.py")],
         test_cases=[
-            "pandas/tests/indexes/period/test_indexing.py::TestIndexing::test_contains"
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "period",
+                "test_indexing.py::TestIndexing::test_contains",
+            )
         ],
     )
     Pandas(
@@ -828,7 +1344,13 @@ def register():
         fixed_commit_id="47922d3b00edfc264f73b1484589734bbd077c11",
         test_files=[Path("pandas", "tests", "io", "json", "test_pandas.py")],
         test_cases=[
-            "pandas/tests/io/json/test_pandas.py::TestPandasContainer::test_frame_int_overflow"
+            os.path.join(
+                "pandas",
+                "tests",
+                "io",
+                "json",
+                "test_pandas.py::TestPandasContainer::test_frame_int_overflow",
+            )
         ],
     )
     Pandas(
@@ -836,7 +1358,14 @@ def register():
         buggy_commit_id="667bb37",
         fixed_commit_id="daef69c1366e31c3c49aea6f2e55f577d0c832fd",
         test_files=[Path("pandas", "tests", "arithmetic", "test_array_ops.py")],
-        test_cases=["pandas/tests/arithmetic/test_array_ops.py::test_na_logical_op_2d"],
+        test_cases=[
+            os.path.join(
+                "pandas",
+                "tests",
+                "arithmetic",
+                "test_array_ops.py::test_na_logical_op_2d",
+            )
+        ],
     )
     Pandas(
         bug_id=78,
@@ -844,7 +1373,12 @@ def register():
         fixed_commit_id="bd6b395a1e8fb7d099fa17a0e24f8fe3b628822c",
         test_files=[Path("pandas", "tests", "frame", "test_subclass.py")],
         test_cases=[
-            "pandas/tests/frame/test_subclass.py::TestDataFrameSubclassing::test_subclassed_boolean_reductions"
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "test_subclass.py::TestDataFrameSubclassing::test_subclassed_boolean_reductions",
+            )
         ],
     )
     Pandas(
@@ -855,7 +1389,13 @@ def register():
             Path("pandas", "tests", "indexes", "datetimes", "test_indexing.py")
         ],
         test_cases=[
-            "pandas/tests/indexes/datetimes/test_indexing.py::TestDatetimeIndex::test_get_loc"
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "datetimes",
+                "test_indexing.py::TestDatetimeIndex::test_get_loc",
+            )
         ],
     )
     Pandas(
@@ -863,7 +1403,15 @@ def register():
         buggy_commit_id="d0d93db",
         fixed_commit_id="351760c0655b6c383e449cf857b9a718e3545229",
         test_files=[Path("pandas", "tests", "arrays", "sparse", "test_arithmetics.py")],
-        test_cases=["pandas/tests/arrays/sparse/test_arithmetics.py::test_invert"],
+        test_cases=[
+            os.path.join(
+                "pandas",
+                "tests",
+                "arrays",
+                "sparse",
+                "test_arithmetics.py::test_invert",
+            )
+        ],
     )
     Pandas(
         bug_id=81,
@@ -871,7 +1419,12 @@ def register():
         fixed_commit_id="339edcdb7ecc6edc6fde1b7d1413dbb746d2bcca",
         test_files=[Path("pandas", "tests", "arrays", "test_integer.py")],
         test_cases=[
-            "pandas/tests/arrays/test_integer.py::TestCasting::test_astype_boolean"
+            os.path.join(
+                "pandas",
+                "tests",
+                "arrays",
+                "test_integer.py::TestCasting::test_astype_boolean",
+            )
         ],
     )
     Pandas(
@@ -880,7 +1433,13 @@ def register():
         fixed_commit_id="e83a6bddac8c89b144dfe0783594dd332c5b3030",
         test_files=[Path("pandas", "tests", "reshape", "merge", "test_merge.py")],
         test_cases=[
-            "pandas/tests/reshape/merge/test_merge.py::test_merge_datetime_upcast_dtype"
+            os.path.join(
+                "pandas",
+                "tests",
+                "reshape",
+                "merge",
+                "test_merge.py::test_merge_datetime_upcast_dtype",
+            )
         ],
     )
     Pandas(
@@ -888,7 +1447,11 @@ def register():
         buggy_commit_id="964400d",
         fixed_commit_id="7ffcf9d6753e7de2c5318e8e0ecdc63586d502f3",
         test_files=[Path("pandas", "tests", "reshape", "test_concat.py")],
-        test_cases=["pandas/tests/reshape/test_concat.py::test_concat_copy_index"],
+        test_cases=[
+            os.path.join(
+                "pandas", "tests", "reshape", "test_concat.py::test_concat_copy_index"
+            )
+        ],
     )
     Pandas(
         bug_id=84,
@@ -896,8 +1459,18 @@ def register():
         fixed_commit_id="24d7c06130f9c2aeebedc26971b244ce076f7d0a",
         test_files=[Path("pandas", "tests", "frame", "test_reshape.py")],
         test_cases=[
-            "pandas/tests/frame/test_reshape.py::TestDataFrameReshape::test_unstack_tuplename_in_multiindex",
-            "pandas/tests/frame/test_reshape.py::TestDataFrameReshape::test_unstack_mixed_type_name_in_multiindex",
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "test_reshape.py::TestDataFrameReshape::test_unstack_tuplename_in_multiindex",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "test_reshape.py::TestDataFrameReshape::test_unstack_mixed_type_name_in_multiindex",
+            ),
         ],
     )
     Pandas(
@@ -905,7 +1478,14 @@ def register():
         buggy_commit_id="f1aaf62",
         fixed_commit_id="29edd119d31a9ee7d4f89e8c1dc8af96f0c19dce",
         test_files=[Path("pandas", "tests", "groupby", "test_apply.py")],
-        test_cases=["pandas/tests/groupby/test_apply.py::test_apply_multi_level_name"],
+        test_cases=[
+            os.path.join(
+                "pandas",
+                "tests",
+                "groupby",
+                "test_apply.py::test_apply_multi_level_name",
+            )
+        ],
     )
     Pandas(
         bug_id=86,
@@ -913,7 +1493,12 @@ def register():
         fixed_commit_id="f792d8c50ee456aa8aa2ae406d8e6b8843f45614",
         test_files=[Path("pandas", "tests", "reshape", "test_pivot.py")],
         test_cases=[
-            "pandas/tests/reshape/test_pivot.py::TestPivotTable::test_pivot_columns_none_raise_error"
+            os.path.join(
+                "pandas",
+                "tests",
+                "reshape",
+                "test_pivot.py::TestPivotTable::test_pivot_columns_none_raise_error",
+            )
         ],
     )
     Pandas(
@@ -922,7 +1507,12 @@ def register():
         fixed_commit_id="a890239b7020dec714d9819b718d83f786bfda34",
         test_files=[Path("pandas", "tests", "reshape", "test_pivot.py")],
         test_cases=[
-            "pandas/tests/reshape/test_pivot.py::TestCrosstab::test_crosstab_both_tuple_names"
+            os.path.join(
+                "pandas",
+                "tests",
+                "reshape",
+                "test_pivot.py::TestCrosstab::test_crosstab_both_tuple_names",
+            )
         ],
     )
     Pandas(
@@ -931,7 +1521,12 @@ def register():
         fixed_commit_id="586bcb16023ae870b0ad7769f6d9077903705486",
         test_files=[Path("pandas", "tests", "reshape", "test_pivot.py")],
         test_cases=[
-            "pandas/tests/reshape/test_pivot.py::TestPivotTable::test_pivot_table_multiindex_only"
+            os.path.join(
+                "pandas",
+                "tests",
+                "reshape",
+                "test_pivot.py::TestPivotTable::test_pivot_table_multiindex_only",
+            )
         ],
     )
     Pandas(
@@ -940,7 +1535,12 @@ def register():
         fixed_commit_id="feaa5033b7810f7775fd4806c27b2f9f1e9b5051",
         test_files=[Path("pandas", "tests", "frame", "test_reshape.py")],
         test_cases=[
-            "pandas/tests/frame/test_reshape.py::test_unstacking_multi_index_df"
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "test_reshape.py::test_unstacking_multi_index_df",
+            )
         ],
     )
     Pandas(
@@ -949,8 +1549,12 @@ def register():
         fixed_commit_id="1c3d64bae7c07b5ae1be337e0ebd751385b7ce27",
         test_files=[Path("pandas", "tests", "io", "test_pickle.py")],
         test_cases=[
-            "pandas/tests/io/test_pickle.py::test_pickle_buffer_roundtrip",
-            "pandas/tests/io/test_pickle.py::test_pickle_generalurl_read",
+            os.path.join(
+                "pandas", "tests", "io", "test_pickle.py::test_pickle_buffer_roundtrip"
+            ),
+            os.path.join(
+                "pandas", "tests", "io", "test_pickle.py::test_pickle_generalurl_read"
+            ),
         ],
     )
     Pandas(
@@ -959,7 +1563,12 @@ def register():
         fixed_commit_id="cb9a1c7d0319c34a97247973ca96af53ead8033a",
         test_files=[Path("pandas", "tests", "arrays", "test_timedeltas.py")],
         test_cases=[
-            "pandas/tests/arrays/test_timedeltas.py::TestTimedeltaArray::test_searchsorted_invalid_types"
+            os.path.join(
+                "pandas",
+                "tests",
+                "arrays",
+                "test_timedeltas.py::TestTimedeltaArray::test_searchsorted_invalid_types",
+            )
         ],
     )
     Pandas(
@@ -968,7 +1577,13 @@ def register():
         fixed_commit_id="511a2847f4330c54d079d04b3cac4febe0fe9915",
         test_files=[Path("pandas", "tests", "frame", "methods", "test_asof.py")],
         test_cases=[
-            "pandas/tests/frame/methods/test_asof.py::TestFrameAsof::test_missing"
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "methods",
+                "test_asof.py::TestFrameAsof::test_missing",
+            )
         ],
     )
     Pandas(
@@ -980,7 +1595,13 @@ def register():
             Path(""),
         ],
         test_cases=[
-            "pandas/tests/indexes/period/test_indexing.py::TestWhere::test_where_invalid_dtypes"
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "period",
+                "test_indexing.py::TestWhere::test_where_invalid_dtypes",
+            )
         ],
     )
     Pandas(
@@ -991,8 +1612,14 @@ def register():
             Path("pandas", "tests", "indexes", "datetimes", "test_constructors.py")
         ],
         test_cases=[
-            "pandas/tests/indexes/datetimes/test_constructors.py::TestDatetimeIndex"
-            "::test_shallow_copy_inherits_array_freq"
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "datetimes",
+                "test_constructors.py::TestDatetimeIndex"
+                "::test_shallow_copy_inherits_array_freq",
+            )
         ],
     )
     Pandas(
@@ -1001,7 +1628,12 @@ def register():
         fixed_commit_id="c99dfea33612f44e97c2365f78c0ca6d5754a1bc",
         test_files=[Path("pandas", "tests", "arithmetic", "test_period.py")],
         test_cases=[
-            "pandas/tests/arithmetic/test_period.py::TestPeriodIndexComparisons::test_eq_integer_disallowed"
+            os.path.join(
+                "pandas",
+                "tests",
+                "arithmetic",
+                "test_period.py::TestPeriodIndexComparisons::test_eq_integer_disallowed",
+            )
         ],
     )
     Pandas(
@@ -1012,7 +1644,13 @@ def register():
             Path("pandas", "tests", "indexes", "datetimes", "test_date_range.py")
         ],
         test_cases=[
-            "pandas/tests/indexes/datetimes/test_date_range.py::test_date_range_with_custom_holidays"
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "datetimes",
+                "test_date_range.py::test_date_range_with_custom_holidays",
+            )
         ],
     )
     Pandas(
@@ -1021,7 +1659,13 @@ def register():
         fixed_commit_id="6f690b088190581552e04c53288819472fdb2dbe",
         test_files=[Path("pandas", "tests", "indexes", "timedeltas", "test_setops.py")],
         test_cases=[
-            "pandas/tests/indexes/timedeltas/test_setops.py::TestTimedeltaIndex::test_union_sort_false"
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "timedeltas",
+                "test_setops.py::TestTimedeltaIndex::test_union_sort_false",
+            )
         ],
     )
     Pandas(
@@ -1032,7 +1676,13 @@ def register():
             Path("pandas", "tests", "indexes", "period", "test_constructors.py")
         ],
         test_cases=[
-            "pandas/tests/indexes/period/test_constructors.py::TestPeriodIndex::test_base_constructor_with_period_dtype"
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "period",
+                "test_constructors.py::TestPeriodIndex::test_base_constructor_with_period_dtype",
+            )
         ],
     )
     Pandas(
@@ -1041,7 +1691,13 @@ def register():
         fixed_commit_id="b8043724c48890e86fda0265ad5b6ac3d31f1940",
         test_files=[Path("pandas", "tests", "indexes", "datetimes", "test_tools.py")],
         test_cases=[
-            "pandas/tests/indexes/datetimes/test_tools.py::test_nullable_integer_to_datetime"
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "datetimes",
+                "test_tools.py::test_nullable_integer_to_datetime",
+            )
         ],
     )
     Pandas(
@@ -1050,7 +1706,13 @@ def register():
         fixed_commit_id="2b1b3da4c68fdaf9637d12706c5ba3de1a9b20de",
         test_files=[Path("pandas", "tests", "frame", "methods", "test_pct_change.py")],
         test_cases=[
-            "pandas/tests/frame/methods/test_pct_change.py::test_pct_change_with_duplicated_indices"
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "methods",
+                "test_pct_change.py::test_pct_change_with_duplicated_indices",
+            )
         ],
     )
     Pandas(
@@ -1058,7 +1720,11 @@ def register():
         buggy_commit_id="765d8db",
         fixed_commit_id="27b713ba677869893552cbeff6bc98a5dd231950",
         test_files=[Path("pandas", "tests", "dtypes", "test_common.py")],
-        test_cases=["pandas/tests/dtypes/test_common.py::test_astype_nansafe"],
+        test_cases=[
+            os.path.join(
+                "pandas", "tests", "dtypes", "test_common.py::test_astype_nansafe"
+            )
+        ],
     )
     Pandas(
         bug_id=102,
@@ -1066,8 +1732,13 @@ def register():
         fixed_commit_id="765d8db7eef1befef33f4c99d3e206d26e8444c8",
         test_files=[Path("pandas", "tests", "frame", "test_constructors.py")],
         test_cases=[
-            "pandas/tests/frame/test_constructors.py::TestDataFrameConstructorWithDatetimeTZ"
-            "::test_from_2d_ndarray_with_dtype"
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "test_constructors.py::TestDataFrameConstructorWithDatetimeTZ"
+                "::test_from_2d_ndarray_with_dtype",
+            )
         ],
     )
     Pandas(
@@ -1075,7 +1746,11 @@ def register():
         buggy_commit_id="d1f82f7",
         fixed_commit_id="19578e364fb47ce10dd14174cffc3ecfea1a58cd",
         test_files=[Path("pandas", "tests", "groupby", "test_transform.py")],
-        test_cases=["pandas/tests/groupby/test_transform.py::test_pct_change"],
+        test_cases=[
+            os.path.join(
+                "pandas", "tests", "groupby", "test_transform.py::test_pct_change"
+            )
+        ],
     )
     Pandas(
         bug_id=104,
@@ -1083,7 +1758,12 @@ def register():
         fixed_commit_id="8e9b3eee812b70197341c26c40200d8a1a77ed9c",
         test_files=[Path("pandas", "tests", "groupby", "test_function.py")],
         test_cases=[
-            "pandas/tests/groupby/test_function.py::test_groupby_quantile_with_arraylike_q_and_int_columns"
+            os.path.join(
+                "pandas",
+                "tests",
+                "groupby",
+                "test_function.py::test_groupby_quantile_with_arraylike_q_and_int_columns",
+            )
         ],
     )
     Pandas(
@@ -1092,9 +1772,24 @@ def register():
         fixed_commit_id="cb5f9d1ff407f5ccef7c717e0c23bbd6ed96cf5f",
         test_files=[Path("pandas", "tests", "arithmetic", "test_period.py")],
         test_cases=[
-            "pandas/tests/arithmetic/test_period.py::TestPeriodIndexArithmetic::test_pi_add_offset_n_gt1",
-            "pandas/tests/arithmetic/test_period.py::TestPeriodIndexArithmetic::test_parr_add_sub_td64_nat",
-            "pandas/tests/arithmetic/test_period.py::TestPeriodIndexArithmetic::test_parr_add_sub_tdt64_nat_array",
+            os.path.join(
+                "pandas",
+                "tests",
+                "arithmetic",
+                "test_period.py::TestPeriodIndexArithmetic::test_pi_add_offset_n_gt1",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "arithmetic",
+                "test_period.py::TestPeriodIndexArithmetic::test_parr_add_sub_td64_nat",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "arithmetic",
+                "test_period.py::TestPeriodIndexArithmetic::test_parr_add_sub_tdt64_nat_array",
+            ),
         ],
     )
     Pandas(
@@ -1103,7 +1798,13 @@ def register():
         fixed_commit_id="e46026ff4669a30192b91e362ce8cdcbc9693870",
         test_files=[Path("pandas", "tests", "indexes", "multi", "test_drop.py")],
         test_cases=[
-            "pandas/tests/indexes/multi/test_drop.py::test_drop_with_non_unique_datetime_index_and_invalid_keys"
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "multi",
+                "test_drop.py::test_drop_with_non_unique_datetime_index_and_invalid_keys",
+            )
         ],
     )
     Pandas(
@@ -1112,8 +1813,13 @@ def register():
         fixed_commit_id="fa4949f27ccfbc255bb8dbcd5ec5464b8663f1d2",
         test_files=[Path("pandas", "tests", "frame", "test_combine_concat.py")],
         test_cases=[
-            "pandas/tests/frame/test_combine_concat.py::TestDataFrameConcatCommon"
-            "::test_append_timestamps_aware_or_naive"
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "test_combine_concat.py::TestDataFrameConcatCommon"
+                "::test_append_timestamps_aware_or_naive",
+            )
         ],
     )
     Pandas(
@@ -1122,7 +1828,13 @@ def register():
         fixed_commit_id="53a0dfd41a65a33dd7b0963734b24c749212e625",
         test_files=[Path("pandas", "tests", "dtypes", "cast", "test_infer_dtype.py")],
         test_cases=[
-            "pandas/tests/dtypes/cast/test_infer_dtype.py::test_infer_from_interval"
+            os.path.join(
+                "pandas",
+                "tests",
+                "dtypes",
+                "cast",
+                "test_infer_dtype.py::test_infer_from_interval",
+            )
         ],
     )
     Pandas(
@@ -1133,7 +1845,13 @@ def register():
             Path("pandas", "tests", "arrays", "categorical", "test_analytics.py")
         ],
         test_cases=[
-            "pandas/tests/arrays/categorical/test_analytics.py::TestCategoricalAnalytics::test_min_max_ordered_empty"
+            os.path.join(
+                "pandas",
+                "tests",
+                "arrays",
+                "categorical",
+                "test_analytics.py::TestCategoricalAnalytics::test_min_max_ordered_empty",
+            )
         ],
     )
     Pandas(
@@ -1142,8 +1860,18 @@ def register():
         fixed_commit_id="96bb151fe1a5b812ecab400adcd297d14fd0e0e4",
         test_files=[Path("pandas", "tests", "indexing", "test_categorical.py")],
         test_cases=[
-            "pandas/tests/indexing/test_categorical.py::TestCategoricalIndex::test_loc_with_non_string_categories",
-            "pandas/tests/indexing/test_categorical.py::TestCategoricalIndex::test_loc_slice",
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexing",
+                "test_categorical.py::TestCategoricalIndex::test_loc_with_non_string_categories",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexing",
+                "test_categorical.py::TestCategoricalIndex::test_loc_slice",
+            ),
         ],
     )
     Pandas(
@@ -1155,8 +1883,18 @@ def register():
             Path("pandas", "tests", "indexing", "test_floats.py"),
         ],
         test_cases=[
-            "pandas/tests/indexing/test_categorical.py::TestCategoricalIndex::test_loc_with_non_string_categories",
-            "pandas/tests/indexing/test_floats.py::TestFloatIndexers::test_scalar_non_numeric",
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexing",
+                "test_categorical.py::TestCategoricalIndex::test_loc_with_non_string_categories",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexing",
+                "test_floats.py::TestFloatIndexers::test_scalar_non_numeric",
+            ),
         ],
     )
     Pandas(
@@ -1165,7 +1903,12 @@ def register():
         fixed_commit_id="8a354b7630f74739212725c38cbaa9b069191a88",
         test_files=[Path("pandas", "tests", "frame", "test_analytics.py")],
         test_cases=[
-            "pandas/tests/frame/test_analytics.py::TestDataFrameAnalytics::test_round_interval_category_columns"
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "test_analytics.py::TestDataFrameAnalytics::test_round_interval_category_columns",
+            )
         ],
     )
     Pandas(
@@ -1174,8 +1917,18 @@ def register():
         fixed_commit_id="8705aad961dd227d38ff93a39697547b98109c9d",
         test_files=[Path("pandas", "tests", "extension", "test_integer.py")],
         test_cases=[
-            "pandas/tests/extension/test_integer.py::TestComparisonOps::test_compare_to_string",
-            "pandas/tests/extension/test_integer.py::TestComparisonOps::test_compare_to_int",
+            os.path.join(
+                "pandas",
+                "tests",
+                "extension",
+                "test_integer.py::TestComparisonOps::test_compare_to_string",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "extension",
+                "test_integer.py::TestComparisonOps::test_compare_to_int",
+            ),
         ],
     )
     Pandas(
@@ -1184,7 +1937,13 @@ def register():
         fixed_commit_id="9a222ea0300053ff46da984e3b3f68622ccba9c3",
         test_files=[Path("pandas", "tests", "extension", "decimal", "test_decimal.py")],
         test_cases=[
-            "pandas/tests/extension/decimal/test_decimal.py::test_indexing_no_materialize"
+            os.path.join(
+                "pandas",
+                "tests",
+                "extension",
+                "decimal",
+                "test_decimal.py::test_indexing_no_materialize",
+            )
         ],
     )
     Pandas(
@@ -1193,7 +1952,12 @@ def register():
         fixed_commit_id="386494d0dc851be9e86b1576f30fa8705df4d47b",
         test_files=[Path("pandas", "tests", "series", "test_missing.py")],
         test_cases=[
-            "pandas/tests/series/test_missing.py::TestSeriesInterpolateData::test_interpolate_unsorted_index"
+            os.path.join(
+                "pandas",
+                "tests",
+                "series",
+                "test_missing.py::TestSeriesInterpolateData::test_interpolate_unsorted_index",
+            )
         ],
     )
     Pandas(
@@ -1202,7 +1966,13 @@ def register():
         fixed_commit_id="c4fa6a52f7737aecda08f6b0f2d6c27476298ae1",
         test_files=[Path("pandas", "tests", "reshape", "merge", "test_merge_asof.py")],
         test_cases=[
-            "pandas/tests/reshape/merge/test_merge_asof.py::TestAsOfMerge::test_merge_index_column_tz"
+            os.path.join(
+                "pandas",
+                "tests",
+                "reshape",
+                "merge",
+                "test_merge_asof.py::TestAsOfMerge::test_merge_index_column_tz",
+            )
         ],
     )
     Pandas(
@@ -1211,7 +1981,12 @@ def register():
         fixed_commit_id="f98d2b6587b74c9a640b062d94911b199d962119",
         test_files=[Path("pandas", "tests", "series", "test_analytics.py")],
         test_cases=[
-            "pandas/tests/series/test_analytics.py::TestSeriesAnalytics::test_count"
+            os.path.join(
+                "pandas",
+                "tests",
+                "series",
+                "test_analytics.py::TestSeriesAnalytics::test_count",
+            )
         ],
     )
     Pandas(
@@ -1220,8 +1995,18 @@ def register():
         fixed_commit_id="76e39ebcf584042fab4f224a6bd2c903bb0c8aff",
         test_files=[Path("pandas", "tests", "reshape", "test_melt.py")],
         test_cases=[
-            "pandas/tests/reshape/test_melt.py::TestMelt::test_melt_mixed_int_str_id_vars",
-            "pandas/tests/reshape/test_melt.py::TestMelt::test_melt_mixed_int_str_value_vars",
+            os.path.join(
+                "pandas",
+                "tests",
+                "reshape",
+                "test_melt.py::TestMelt::test_melt_mixed_int_str_id_vars",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "reshape",
+                "test_melt.py::TestMelt::test_melt_mixed_int_str_value_vars",
+            ),
         ],
     )
     Pandas(
@@ -1230,7 +2015,12 @@ def register():
         fixed_commit_id="e0bd4d5dd07cc481cb52de3cf3c7bf199cb2df07",
         test_files=[Path("pandas", "tests", "reshape", "test_pivot.py")],
         test_cases=[
-            "pandas/tests/reshape/test_pivot.py::TestPivotTable::test_margins_casted_to_float"
+            os.path.join(
+                "pandas",
+                "tests",
+                "reshape",
+                "test_pivot.py::TestPivotTable::test_margins_casted_to_float",
+            )
         ],
     )
     Pandas(
@@ -1239,8 +2029,18 @@ def register():
         fixed_commit_id="c5a1f9e2c373ced9ef2f02ab64d11eaa7b4248f2",
         test_files=[Path("pandas", "tests", "groupby", "test_categorical.py")],
         test_cases=[
-            "pandas/tests/groupby/test_categorical.py::test_series_groupby_on_2_categoricals_unobserved",
-            "pandas/tests/groupby/test_categorical.py::test_series_groupby_on_2_categoricals_unobserved_zeroes_or_nans",
+            os.path.join(
+                "pandas",
+                "tests",
+                "groupby",
+                "test_categorical.py::test_series_groupby_on_2_categoricals_unobserved",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "groupby",
+                "test_categorical.py::test_series_groupby_on_2_categoricals_unobserved_zeroes_or_nans",
+            ),
         ],
     )
     Pandas(
@@ -1249,7 +2049,12 @@ def register():
         fixed_commit_id="958756af5cb40658e975a70d29089b68aea93040",
         test_files=[Path("pandas", "tests", "frame", "test_replace.py")],
         test_cases=[
-            "pandas/tests/frame/test_replace.py::TestDataFrameReplace::test_replace_replacer_dtype"
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "test_replace.py::TestDataFrameReplace::test_replace_replacer_dtype",
+            )
         ],
     )
     Pandas(
@@ -1258,7 +2063,12 @@ def register():
         fixed_commit_id="30059081e946a2020d08d49bf4fa7b771d10089a",
         test_files=[Path("pandas", "tests", "internals", "test_internals.py")],
         test_cases=[
-            "pandas/tests/internals/test_internals.py::test_dataframe_not_equal"
+            os.path.join(
+                "pandas",
+                "tests",
+                "internals",
+                "test_internals.py::test_dataframe_not_equal",
+            )
         ],
     )
     Pandas(
@@ -1270,10 +2080,30 @@ def register():
             Path("pandas", "tests", "indexes", "test_range.py"),
         ],
         test_cases=[
-            "pandas/tests/indexes/test_numeric.py::TestFloat64Index::test_invalid_dtype",
-            "pandas/tests/indexes/test_range.py::TestRangeIndex::test_constructor_same",
-            "pandas/tests/indexes/test_range.py::TestRangeIndex::test_constructor_range",
-            "pandas/tests/indexes/test_range.py::TestRangeIndex::test_constructor_corner",
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "test_numeric.py::TestFloat64Index::test_invalid_dtype",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "test_range.py::TestRangeIndex::test_constructor_same",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "test_range.py::TestRangeIndex::test_constructor_range",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "test_range.py::TestRangeIndex::test_constructor_corner",
+            ),
         ],
     )
     Pandas(
@@ -1282,7 +2112,11 @@ def register():
         fixed_commit_id="5a0f7e9e03976020ba52a7473f90cb1c8a4354c0",
         test_files=[Path("pandas", "tests", "test_strings.py")],
         test_cases=[
-            "pandas/tests/test_strings.py::TestStringMethods::test_empty_str_methods"
+            os.path.join(
+                "pandas",
+                "tests",
+                "test_strings.py::TestStringMethods::test_empty_str_methods",
+            )
         ],
     )
     Pandas(
@@ -1294,8 +2128,19 @@ def register():
             Path("pandas", "tests", "frame", "test_replace.py"),
         ],
         test_cases=[
-            "pandas/tests/arrays/categorical/test_algos.py::test_replace",
-            "pandas/tests/frame/test_replace.py::TestDataFrameReplace::test_categorical_replace_with_dict",
+            os.path.join(
+                "pandas",
+                "tests",
+                "arrays",
+                "categorical",
+                "test_algos.py::test_replace",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "test_replace.py::TestDataFrameReplace::test_categorical_replace_with_dict",
+            ),
         ],
     )
     Pandas(
@@ -1304,7 +2149,12 @@ def register():
         fixed_commit_id="e639af2afd18b90ab9063df9c1927ae1f357a418",
         test_files=[Path("pandas", "tests", "frame", "test_combine_concat.py")],
         test_cases=[
-            "pandas/tests/frame/test_combine_concat.py::TestDataFrameConcatCommon::test_append_empty_list"
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "test_combine_concat.py::TestDataFrameConcatCommon::test_append_empty_list",
+            )
         ],
     )
     Pandas(
@@ -1313,7 +2163,12 @@ def register():
         fixed_commit_id="710d82c0d393c9031e469ec0371660d8187b7dc3",
         test_files=[Path("pandas", "tests", "series", "test_timeseries.py")],
         test_cases=[
-            "pandas/tests/series/test_timeseries.py::TestTimeSeries::test_pct_change_with_duplicate_axis"
+            os.path.join(
+                "pandas",
+                "tests",
+                "series",
+                "test_timeseries.py::TestTimeSeries::test_pct_change_with_duplicate_axis",
+            )
         ],
     )
     Pandas(
@@ -1321,7 +2176,15 @@ def register():
         buggy_commit_id="794a1c2",
         fixed_commit_id="112e6b8d054f9adc1303138533ed6506975f94db",
         test_files=[Path("pandas", "tests", "io", "json", "test_readlines.py")],
-        test_cases=["pandas/tests/io/json/test_readlines.py::test_readjson_unicode"],
+        test_cases=[
+            os.path.join(
+                "pandas",
+                "tests",
+                "io",
+                "json",
+                "test_readlines.py::test_readjson_unicode",
+            )
+        ],
     )
     Pandas(
         bug_id=129,
@@ -1329,8 +2192,13 @@ def register():
         fixed_commit_id="82c9547ddcaf2fd70e00f1368731f14a03bbac88",
         test_files=[Path("pandas", "tests", "arithmetic", "test_timedelta64.py")],
         test_cases=[
-            "pandas/tests/arithmetic/test_timedelta64.py::TestTimedeltaArraylikeAddSubOps"
-            "::test_td64arr_add_sub_datetimelike_scalar"
+            os.path.join(
+                "pandas",
+                "tests",
+                "arithmetic",
+                "test_timedelta64.py::TestTimedeltaArraylikeAddSubOps"
+                "::test_td64arr_add_sub_datetimelike_scalar",
+            )
         ],
     )
     Pandas(
@@ -1339,7 +2207,12 @@ def register():
         fixed_commit_id="8efc717e4652e1e4bfbc4455da1d40eb676eed91",
         test_files=[Path("pandas", "tests", "groupby", "test_value_counts.py")],
         test_cases=[
-            "pandas/tests/groupby/test_value_counts.py::test_series_groupby_value_counts_with_grouper"
+            os.path.join(
+                "pandas",
+                "tests",
+                "groupby",
+                "test_value_counts.py::test_series_groupby_value_counts_with_grouper",
+            )
         ],
     )
     Pandas(
@@ -1348,8 +2221,18 @@ def register():
         fixed_commit_id="bf5848f111c92fc5c6c11a93a3bc2480f138f1b1",
         test_files=[Path("pandas", "tests", "series", "test_datetime_values.py")],
         test_cases=[
-            "pandas/tests/series/test_datetime_values.py::TestSeriesDatetimeValues::test_dt_tz_localize_categorical",
-            "pandas/tests/series/test_datetime_values.py::TestSeriesDatetimeValues::test_dt_tz_convert_categorical",
+            os.path.join(
+                "pandas",
+                "tests",
+                "series",
+                "test_datetime_values.py::TestSeriesDatetimeValues::test_dt_tz_localize_categorical",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "series",
+                "test_datetime_values.py::TestSeriesDatetimeValues::test_dt_tz_convert_categorical",
+            ),
         ],
     )
     Pandas(
@@ -1358,8 +2241,18 @@ def register():
         fixed_commit_id="bd8f07fb29d2ac819f4c8e8e1b8e6d40f8b0f40c",
         test_files=[Path("pandas", "tests", "reductions", "test_reductions.py")],
         test_cases=[
-            "pandas/tests/reductions/test_reductions.py::TestIndexReductions::test_timedelta_ops",
-            "pandas/tests/reductions/test_reductions.py::TestSeriesReductions::test_ops_consistency_on_empty",
+            os.path.join(
+                "pandas",
+                "tests",
+                "reductions",
+                "test_reductions.py::TestIndexReductions::test_timedelta_ops",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "reductions",
+                "test_reductions.py::TestSeriesReductions::test_ops_consistency_on_empty",
+            ),
         ],
     )
     Pandas(
@@ -1368,7 +2261,12 @@ def register():
         fixed_commit_id="c983d52e3a3a8a191359814417f375b1dc8b04c1",
         test_files=[Path("pandas", "tests", "frame", "test_missing.py")],
         test_cases=[
-            "pandas/tests/frame/test_missing.py::TestDataFrameInterpolate::test_interp_axis_names"
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "test_missing.py::TestDataFrameInterpolate::test_interp_axis_names",
+            )
         ],
     )
     Pandas(
@@ -1377,7 +2275,13 @@ def register():
         fixed_commit_id="b1eb97bdfe17f477600eef19e82d65480457bbf5",
         test_files=[Path("pandas", "tests", "tseries", "holiday", "test_calendar.py")],
         test_cases=[
-            "pandas/tests/tseries/holiday/test_calendar.py::test_calendar_2031"
+            os.path.join(
+                "pandas",
+                "tests",
+                "tseries",
+                "holiday",
+                "test_calendar.py::test_calendar_2031",
+            )
         ],
     )
     Pandas(
@@ -1386,8 +2290,20 @@ def register():
         fixed_commit_id="f41219179de69fed5c2a4b7df821394af1aa6559",
         test_files=[Path("pandas", "tests", "extension", "decimal", "test_decimal.py")],
         test_cases=[
-            "pandas/tests/extension/decimal/test_decimal.py::test_groupby_agg",
-            "pandas/tests/extension/decimal/test_decimal.py::test_groupby_agg_ea_method",
+            os.path.join(
+                "pandas",
+                "tests",
+                "extension",
+                "decimal",
+                "test_decimal.py::test_groupby_agg",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "extension",
+                "decimal",
+                "test_decimal.py::test_groupby_agg_ea_method",
+            ),
         ],
     )
     Pandas(
@@ -1396,7 +2312,13 @@ def register():
         fixed_commit_id="6241b9d3b3b8fd688cf32e45539719f1b9ec25c1",
         test_files=[Path("pandas", "tests", "reshape", "merge", "test_merge_asof.py")],
         test_cases=[
-            "pandas/tests/reshape/merge/test_merge_asof.py::TestAsOfMerge::test_int_type_tolerance"
+            os.path.join(
+                "pandas",
+                "tests",
+                "reshape",
+                "merge",
+                "test_merge_asof.py::TestAsOfMerge::test_int_type_tolerance",
+            )
         ],
     )
     Pandas(
@@ -1408,8 +2330,19 @@ def register():
             Path("pandas", "tests", "reshape", "merge", "test_merge.py"),
         ],
         test_cases=[
-            "pandas/tests/extension/test_categorical.py::TestCasting::test_cast_category_to_extension_dtype",
-            "pandas/tests/reshape/merge/test_merge.py::test_merge_on_cat_and_ext_array",
+            os.path.join(
+                "pandas",
+                "tests",
+                "extension",
+                "test_categorical.py::TestCasting::test_cast_category_to_extension_dtype",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "reshape",
+                "merge",
+                "test_merge.py::test_merge_on_cat_and_ext_array",
+            ),
         ],
     )
     Pandas(
@@ -1418,7 +2351,12 @@ def register():
         fixed_commit_id="c59c2df94e5563819a824f49fa6f55636bdb4445",
         test_files=[Path("pandas", "tests", "reshape", "test_qcut.py")],
         test_cases=[
-            "pandas/tests/reshape/test_qcut.py::test_qcut_bool_coercion_to_int"
+            os.path.join(
+                "pandas",
+                "tests",
+                "reshape",
+                "test_qcut.py::test_qcut_bool_coercion_to_int",
+            )
         ],
     )
     Pandas(
@@ -1427,7 +2365,12 @@ def register():
         fixed_commit_id="0ffdbe36f0df732f2700cda4a84be758084ff901",
         test_files=[Path("pandas", "tests", "groupby", "test_categorical.py")],
         test_cases=[
-            "pandas/tests/groupby/test_categorical.py::test_preserve_categories"
+            os.path.join(
+                "pandas",
+                "tests",
+                "groupby",
+                "test_categorical.py::test_preserve_categories",
+            )
         ],
     )
     Pandas(
@@ -1435,7 +2378,11 @@ def register():
         buggy_commit_id="3b19e1d",
         fixed_commit_id="4375daffeed16531bae3fdaf85324b590d1dcb59",
         test_files=[Path("pandas", "tests", "groupby", "test_apply.py")],
-        test_cases=["pandas/tests/groupby/test_apply.py::test_apply_datetime_issue"],
+        test_cases=[
+            os.path.join(
+                "pandas", "tests", "groupby", "test_apply.py::test_apply_datetime_issue"
+            )
+        ],
     )
     Pandas(
         bug_id=141,
@@ -1443,7 +2390,12 @@ def register():
         fixed_commit_id="411dd249e755d7e281603fe3e0ab9e0e48383df9",
         test_files=[Path("pandas", "tests", "indexes", "test_range.py")],
         test_cases=[
-            "pandas/tests/indexes/test_range.py::TestRangeIndex::test_get_indexer_decreasing"
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "test_range.py::TestRangeIndex::test_get_indexer_decreasing",
+            )
         ],
     )
     Pandas(
@@ -1452,7 +2404,12 @@ def register():
         fixed_commit_id="65815e6f33e25991e3d40a53c581ffb3c7daf70f",
         test_files=[Path("pandas", "tests", "series", "test_analytics.py")],
         test_cases=[
-            "pandas/tests/series/test_analytics.py::TestSeriesAnalytics::test_bool_diff"
+            os.path.join(
+                "pandas",
+                "tests",
+                "series",
+                "test_analytics.py::TestSeriesAnalytics::test_bool_diff",
+            )
         ],
     )
     Pandas(
@@ -1464,8 +2421,18 @@ def register():
             Path("pandas", "tests", "indexes", "test_range.py"),
         ],
         test_cases=[
-            "pandas/tests/frame/test_indexing.py::TestDataFrameIndexing::test_reindex_limit",
-            "pandas/tests/indexes/test_range.py::TestRangeIndex::test_get_indexer_limit",
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "test_indexing.py::TestDataFrameIndexing::test_reindex_limit",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "test_range.py::TestRangeIndex::test_get_indexer_limit",
+            ),
         ],
     )
     Pandas(
@@ -1474,7 +2441,12 @@ def register():
         fixed_commit_id="ffe6cfdbf82d663c3f77567bde11f1666de1df38",
         test_files=[Path("pandas", "tests", "plotting", "test_series.py")],
         test_cases=[
-            "pandas/tests/plotting/test_series.py::TestSeriesPlots::test_xtick_barPlot"
+            os.path.join(
+                "pandas",
+                "tests",
+                "plotting",
+                "test_series.py::TestSeriesPlots::test_xtick_barPlot",
+            )
         ],
     )
     Pandas(
@@ -1483,7 +2455,12 @@ def register():
         fixed_commit_id="f08a1e62e31fc11e7e5bd7bec72b7e6d86473423",
         test_files=[Path("pandas", "tests", "frame", "test_arithmetic.py")],
         test_cases=[
-            "pandas/tests/frame/test_arithmetic.py::TestFrameArithmetic::test_td64_op_nat_casting"
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "test_arithmetic.py::TestFrameArithmetic::test_td64_op_nat_casting",
+            )
         ],
     )
     Pandas(
@@ -1492,7 +2469,12 @@ def register():
         fixed_commit_id="74cba561ece511e24abb5145225bf98a929ca6c9",
         test_files=[Path("pandas", "tests", "dtypes", "test_missing.py")],
         test_cases=[
-            "pandas/tests/dtypes/test_missing.py::test_array_equivalent_tzawareness"
+            os.path.join(
+                "pandas",
+                "tests",
+                "dtypes",
+                "test_missing.py::test_array_equivalent_tzawareness",
+            )
         ],
     )
     Pandas(
@@ -1501,7 +2483,12 @@ def register():
         fixed_commit_id="773f341c8cc5a481a5a222508718034457ed1ebc",
         test_files=[Path("pandas", "tests", "dtypes", "test_dtypes.py")],
         test_cases=[
-            "pandas/tests/dtypes/test_dtypes.py::TestDatetimeTZDtype::test_construct_from_string_raises"
+            os.path.join(
+                "pandas",
+                "tests",
+                "dtypes",
+                "test_dtypes.py::TestDatetimeTZDtype::test_construct_from_string_raises",
+            )
         ],
     )
     Pandas(
@@ -1510,8 +2497,18 @@ def register():
         fixed_commit_id="95edcf1cbee630e42daca0404c44d8128ea156fb",
         test_files=[Path("pandas", "tests", "frame", "test_apply.py")],
         test_cases=[
-            "pandas/tests/frame/test_apply.py::TestDataFrameApply::test_apply_funcs_over_empty",
-            "pandas/tests/frame/test_apply.py::TestDataFrameApply::test_nunique_empty",
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "test_apply.py::TestDataFrameApply::test_apply_funcs_over_empty",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "test_apply.py::TestDataFrameApply::test_nunique_empty",
+            ),
         ],
     )
     Pandas(
@@ -1519,7 +2516,11 @@ def register():
         buggy_commit_id="0d69d91",
         fixed_commit_id="fa1364d1299a53093bc704f9c34c595b602a568b",
         test_files=[Path("pandas", "tests", "io", "test_gcs.py")],
-        test_cases=["pandas/tests/io/test_gcs.py::test_to_parquet_gcs_new_file"],
+        test_cases=[
+            os.path.join(
+                "pandas", "tests", "io", "test_gcs.py::test_to_parquet_gcs_new_file"
+            )
+        ],
     )
     Pandas(
         bug_id=150,
@@ -1527,7 +2528,12 @@ def register():
         fixed_commit_id="d38627b5889db3f663cad339fe8f995af823b76b",
         test_files=[Path("pandas", "tests", "dtypes", "test_missing.py")],
         test_cases=[
-            "pandas/tests/dtypes/test_missing.py::test_array_equivalent_nested"
+            os.path.join(
+                "pandas",
+                "tests",
+                "dtypes",
+                "test_missing.py::test_array_equivalent_nested",
+            )
         ],
     )
     Pandas(
@@ -1536,8 +2542,15 @@ def register():
         fixed_commit_id="5a227a410c520ceec2d94369a44e2ab774a40dc3",
         test_files=[Path("pandas", "tests", "arrays", "test_numpy.py")],
         test_cases=[
-            "pandas/tests/arrays/test_numpy.py::test_setitem_object_typecode",
-            "pandas/tests/arrays/test_numpy.py::test_setitem_no_coercion",
+            os.path.join(
+                "pandas",
+                "tests",
+                "arrays",
+                "test_numpy.py::test_setitem_object_typecode",
+            ),
+            os.path.join(
+                "pandas", "tests", "arrays", "test_numpy.py::test_setitem_no_coercion"
+            ),
         ],
     )
     Pandas(
@@ -1546,7 +2559,12 @@ def register():
         fixed_commit_id="f61deb962ac0853595a43ad024c482b018d1792b",
         test_files=[Path("pandas", "tests", "series", "test_combine_concat.py")],
         test_cases=[
-            "pandas/tests/series/test_combine_concat.py::TestSeriesCombine::test_append_tuples"
+            os.path.join(
+                "pandas",
+                "tests",
+                "series",
+                "test_combine_concat.py::TestSeriesCombine::test_append_tuples",
+            )
         ],
     )
     Pandas(
@@ -1555,7 +2573,13 @@ def register():
         fixed_commit_id="0c0a0cfbadcf01864d499599712edc9022eea12e",
         test_files=[Path("pandas", "tests", "io", "formats", "test_to_csv.py")],
         test_cases=[
-            "pandas/tests/io/formats/test_to_csv.py::TestToCSV::test_to_csv_na_rep_long_string"
+            os.path.join(
+                "pandas",
+                "tests",
+                "io",
+                "formats",
+                "test_to_csv.py::TestToCSV::test_to_csv_na_rep_long_string",
+            )
         ],
     )
     Pandas(
@@ -1563,7 +2587,14 @@ def register():
         buggy_commit_id="3f5b5c4",
         fixed_commit_id="e0c63b4cfaa821dfe310f4a8a1f84929ced5f5bd",
         test_files=[Path("pandas", "tests", "groupby", "test_groupby.py")],
-        test_cases=["pandas/tests/groupby/test_groupby.py::test_shift_bfill_ffill_tz"],
+        test_cases=[
+            os.path.join(
+                "pandas",
+                "tests",
+                "groupby",
+                "test_groupby.py::test_shift_bfill_ffill_tz",
+            )
+        ],
     )
     Pandas(
         bug_id=155,
@@ -1571,7 +2602,12 @@ def register():
         fixed_commit_id="0bde7cedf46209a9fd4fa8c7f9fbce8b49aa78cd",
         test_files=[Path("pandas", "tests", "window", "test_rolling.py")],
         test_cases=[
-            "pandas/tests/window/test_rolling.py::TestRolling::test_rolling_datetime"
+            os.path.join(
+                "pandas",
+                "tests",
+                "window",
+                "test_rolling.py::TestRolling::test_rolling_datetime",
+            )
         ],
     )
     Pandas(
@@ -1580,7 +2616,13 @@ def register():
         fixed_commit_id="05cc95971e56b503d4df9911a44cd60a7b74cc79",
         test_files=[Path("pandas", "tests", "sparse", "frame", "test_frame.py")],
         test_cases=[
-            "pandas/tests/sparse/frame/test_frame.py::TestSparseDataFrameArithmetic::test_add_series_retains_dtype"
+            os.path.join(
+                "pandas",
+                "tests",
+                "sparse",
+                "frame",
+                "test_frame.py::TestSparseDataFrameArithmetic::test_add_series_retains_dtype",
+            )
         ],
     )
     Pandas(
@@ -1589,7 +2631,13 @@ def register():
         fixed_commit_id="def01cf7bbb5ef8c9bf2e19737ea918e6a76a143",
         test_files=[Path("pandas", "tests", "reshape", "merge", "test_merge_asof.py")],
         test_cases=[
-            "pandas/tests/reshape/merge/test_merge_asof.py::TestAsOfMerge::test_timedelta_tolerance_nearest"
+            os.path.join(
+                "pandas",
+                "tests",
+                "reshape",
+                "merge",
+                "test_merge_asof.py::TestAsOfMerge::test_timedelta_tolerance_nearest",
+            )
         ],
     )
     Pandas(
@@ -1598,8 +2646,18 @@ def register():
         fixed_commit_id="b1c871ce4b5e76b3cffe1ebd4216d36379872352",
         test_files=[Path("pandas", "tests", "series", "test_alter_axes.py")],
         test_cases=[
-            "pandas/tests/series/test_alter_axes.py::TestSeriesAlterAxes::test_rename_with_custom_indexer",
-            "pandas/tests/series/test_alter_axes.py::TestSeriesAlterAxes::test_rename_with_custom_indexer_inplace",
+            os.path.join(
+                "pandas",
+                "tests",
+                "series",
+                "test_alter_axes.py::TestSeriesAlterAxes::test_rename_with_custom_indexer",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "series",
+                "test_alter_axes.py::TestSeriesAlterAxes::test_rename_with_custom_indexer_inplace",
+            ),
         ],
     )
     Pandas(
@@ -1608,8 +2666,18 @@ def register():
         fixed_commit_id="62ab439b168d972546e06d329916c6be7ddd1288",
         test_files=[Path("pandas", "tests", "arithmetic", "test_numeric.py")],
         test_cases=[
-            "pandas/tests/arithmetic/test_numeric.py::test_fill_value_inf_masking",
-            "pandas/tests/arithmetic/test_numeric.py::test_dataframe_div_silenced",
+            os.path.join(
+                "pandas",
+                "tests",
+                "arithmetic",
+                "test_numeric.py::test_fill_value_inf_masking",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "arithmetic",
+                "test_numeric.py::test_dataframe_div_silenced",
+            ),
         ],
     )
     Pandas(
@@ -1618,7 +2686,11 @@ def register():
         fixed_commit_id="fb62fcf91c874e9c24fa83693c4e6e613f35f864",
         test_files=[Path("pandas", "tests", "test_expressions.py")],
         test_cases=[
-            "pandas/tests/test_expressions.py::TestExpressions::test_frame_series_axis"
+            os.path.join(
+                "pandas",
+                "tests",
+                "test_expressions.py::TestExpressions::test_frame_series_axis",
+            )
         ],
     )
     Pandas(
@@ -1627,7 +2699,12 @@ def register():
         fixed_commit_id="ca5198a6daa7757e398112a17ccadc9e7d078d96",
         test_files=[Path("pandas", "tests", "series", "test_missing.py")],
         test_cases=[
-            "pandas/tests/series/test_missing.py::TestSeriesMissingData::test_fillna_categorical_with_new_categories"
+            os.path.join(
+                "pandas",
+                "tests",
+                "series",
+                "test_missing.py::TestSeriesMissingData::test_fillna_categorical_with_new_categories",
+            )
         ],
     )
     Pandas(
@@ -1636,7 +2713,12 @@ def register():
         fixed_commit_id="640d9e1f5fe8ab64d1f6496b8216c28185e53225",
         test_files=[Path("pandas", "tests", "reshape", "test_pivot.py")],
         test_cases=[
-            "pandas/tests/reshape/test_pivot.py::TestCrosstab::test_margin_normalize"
+            os.path.join(
+                "pandas",
+                "tests",
+                "reshape",
+                "test_pivot.py::TestCrosstab::test_margin_normalize",
+            )
         ],
     )
     Pandas(
@@ -1645,7 +2727,12 @@ def register():
         fixed_commit_id="f669f94a186ea444cc771985a915e90eecf218a9",
         test_files=[Path("pandas", "tests", "window", "test_rolling.py")],
         test_cases=[
-            "pandas/tests/window/test_rolling.py::TestRolling::test_readonly_array"
+            os.path.join(
+                "pandas",
+                "tests",
+                "window",
+                "test_rolling.py::TestRolling::test_readonly_array",
+            )
         ],
     )
     Pandas(
@@ -1654,7 +2741,13 @@ def register():
         fixed_commit_id="61819aba14dd7b3996336aaed84d07cd936d92b5",
         test_files=[Path("pandas", "tests", "indexes", "datetimes", "test_tools.py")],
         test_cases=[
-            "pandas/tests/indexes/datetimes/test_tools.py::TestToDatetimeMisc::test_to_datetime_dta_tz"
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "datetimes",
+                "test_tools.py::TestToDatetimeMisc::test_to_datetime_dta_tz",
+            )
         ],
     )
     Pandas(
@@ -1663,7 +2756,12 @@ def register():
         fixed_commit_id="9b1c005142fed227081dd454eab1a414168d458e",
         test_files=[Path("pandas", "tests", "arithmetic", "test_datetime64.py")],
         test_cases=[
-            "pandas/tests/arithmetic/test_datetime64.py::TestDatetimeIndexArithmetic::test_dta_add_sub_index"
+            os.path.join(
+                "pandas",
+                "tests",
+                "arithmetic",
+                "test_datetime64.py::TestDatetimeIndexArithmetic::test_dta_add_sub_index",
+            )
         ],
     )
     Pandas(
@@ -1672,7 +2770,12 @@ def register():
         fixed_commit_id="d44fb07063e9a8bd8a209ddce35b40d8a56c8d02",
         test_files=[Path("pandas", "tests", "frame", "test_join.py")],
         test_cases=[
-            "pandas/tests/frame/test_join.py::test_suppress_future_warning_with_sort_kw"
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "test_join.py::test_suppress_future_warning_with_sort_kw",
+            )
         ],
     )
     Pandas(
@@ -1683,7 +2786,13 @@ def register():
             Path("pandas", "tests", "indexes", "datetimes", "test_partial_slicing.py")
         ],
         test_cases=[
-            "pandas/tests/indexes/datetimes/test_partial_slicing.py::TestSlicing::test_slice_reduce_to_series"
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "datetimes",
+                "test_partial_slicing.py::TestSlicing::test_slice_reduce_to_series",
+            )
         ],
     )
     Pandas(
@@ -1691,7 +2800,11 @@ def register():
         buggy_commit_id="2de4fbb",
         fixed_commit_id="1fa1ad91b29c5474cbb86cbcbcdcd50537cad0ae",
         test_files=[Path("pandas", "tests", "groupby", "test_groupby.py")],
-        test_cases=["pandas/tests/groupby/test_groupby.py::test_groupby_axis_1"],
+        test_cases=[
+            os.path.join(
+                "pandas", "tests", "groupby", "test_groupby.py::test_groupby_axis_1"
+            )
+        ],
     )
     Pandas(
         bug_id=169,
@@ -1699,7 +2812,12 @@ def register():
         fixed_commit_id="01babb590cb15ef5c6e9ad890ea580a5112e6999",
         test_files=[Path("pandas", "tests", "frame", "test_quantile.py")],
         test_cases=[
-            "pandas/tests/frame/test_quantile.py::TestDataFrameQuantile::test_quantile_empty_no_columns"
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "test_quantile.py::TestDataFrameQuantile::test_quantile_empty_no_columns",
+            )
         ],
     )
 

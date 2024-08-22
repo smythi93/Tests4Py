@@ -19,7 +19,7 @@ from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
 
-PROJECT_MAME = "calculator"
+PROJECT_NAME = "calculator"
 
 
 class Calculator(Project):
@@ -39,7 +39,7 @@ class Calculator(Project):
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name=PROJECT_MAME,
+            project_name=PROJECT_NAME,
             github_url="https://github.com/smythi93/calculator",
             status=Status.OK,
             python_version="3.10.9",
@@ -57,6 +57,7 @@ class Calculator(Project):
             grammar=grammar,
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
+            source_base=Path("src"),
             test_base=Path("test"),
             included_files=[os.path.join("src", "calc")],
         )
@@ -66,15 +67,15 @@ def register():
     Calculator(
         bug_id=1,
         buggy_commit_id="5d7f01c5497940b7415db22864100d90c575300f",
-        fixed_commit_id="063d988682e407ad25cd94854f1b4d5e3dc282f8",
+        fixed_commit_id="9ec9d498b41a98db7b2b79049b7685356213ce52",
         test_files=[
             Path("tests", "test_calc.py"),
         ],
         test_cases=[
-            os.path.join("tests", "test_calc.py") + "::TestCalc::test_main_sqrt_0",
-            os.path.join("tests", "test_calc.py") + "::TestCalc::test_main_sqrt_neg",
-            os.path.join("tests", "test_calc.py") + "::TestCalc::test_sqrt_0",
-            os.path.join("tests", "test_calc.py") + "::TestCalc::test_sqrt_neg",
+            os.path.join("tests", "test_calc.py::TestCalc::test_main_sqrt_0"),
+            os.path.join("tests", "test_calc.py::TestCalc::test_main_sqrt_neg"),
+            os.path.join("tests", "test_calc.py::TestCalc::test_sqrt_0"),
+            os.path.join("tests", "test_calc.py::TestCalc::test_sqrt_neg"),
         ],
         loc=20,
         unittests=CalculatorUnittestGenerator(),
@@ -89,23 +90,26 @@ class Calculator1API(API):
 
     def oracle(self, args: Any) -> Tuple[TestResult, str]:
         from math import sqrt, cos, sin, tan
+
         if args is None:
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
-        if b'ZeroDivisionError' in process.stderr:
+        if b"ZeroDivisionError" in process.stderr:
             return TestResult.FAILING, f"{process.stderr}"
         try:
-            expected = eval(process.args[2], {"sqrt": sqrt, "cos": cos, "sin": sin, "tan": tan})
+            expected = eval(
+                process.args[2], {"sqrt": sqrt, "cos": cos, "sin": sin, "tan": tan}
+            )
             result = float(process.stdout.decode("utf8").strip())
             if abs(result - expected) < 0.0001:
                 return TestResult.PASSING, ""
             else:
                 return TestResult.FAILING, f"Expected {expected}, but was {result}"
         except ValueError as e:
-            if b'ValueError' in process.stderr:
+            if b"ValueError" in process.stderr:
                 return TestResult.PASSING, f"Expected ValueError"
         except NameError as e:
-            if b'NameError' in process.stderr:
+            if b"NameError" in process.stderr:
                 return TestResult.PASSING, f"Expected NameError"
 
 

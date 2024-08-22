@@ -18,7 +18,7 @@ from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
 
-PROJECT_MAME = "markup"
+PROJECT_NAME = "markup"
 
 
 class Markup(Project):
@@ -39,7 +39,7 @@ class Markup(Project):
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name=PROJECT_MAME,
+            project_name=PROJECT_NAME,
             github_url="https://github.com/smythi93/markup",
             status=Status.OK,
             python_version="3.10.9",
@@ -57,7 +57,7 @@ class Markup(Project):
             grammar=grammar,
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
-            included_files=[os.path.join("src", PROJECT_MAME)],
+            included_files=[os.path.join("src", PROJECT_NAME)],
             relevant_test_files=relevant_test_files,
         )
 
@@ -74,6 +74,7 @@ def register():
         unittests=MarkupUnittestGenerator(),
         systemtests=MarkupSystemtestGenerator(),
         api=MarkupAPI(),
+        loc=14,
     )
     Markup(
         bug_id=2,
@@ -89,6 +90,7 @@ def register():
         unittests=MarkupUnittestGenerator(),
         systemtests=MarkupSystemtestGenerator(),
         api=MarkupAPI(),
+        loc=14,
     )
 
 

@@ -2,11 +2,12 @@ import os
 from pathlib import Path
 from typing import List, Optional, Tuple
 
+from tests4py.constants import PYTHON
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
 
-PROJECT_MAME = "keras"
+PROJECT_NAME = "keras"
 
 
 class Keras(Project):
@@ -24,10 +25,11 @@ class Keras(Project):
         api: Optional[API] = None,
         loc: int = 0,
         relevant_test_files: Optional[List[Path]] = None,
+        skip_tests: Optional[List[str]] = None,
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name=PROJECT_MAME,
+            project_name=PROJECT_NAME,
             github_url="https://github.com/keras-team/keras",
             status=Status.OK,
             python_version="3.7.8",
@@ -44,9 +46,42 @@ class Keras(Project):
             api=api,
             grammar=None,
             loc=loc,
-            included_files=[PROJECT_MAME],
+            included_files=[PROJECT_NAME],
+            source_base=Path(PROJECT_NAME),
+            test_base=Path("tests"),
+            setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
             relevant_test_files=relevant_test_files,
-        )  # TODO adjust parameters
+            skip_tests=skip_tests,
+        )
+
+    def patch(self, location: Path):
+        if self.bug_id in (14, 15, 16, 17, 18, 19, 20, 21, 22):
+            with open(location / "setup.py", "r") as fp:
+                content = fp.read()
+            content = content.replace(
+                "keras_applications==1.0.4",
+                "keras_applications==1.0.6"
+                if self.bug_id in (21, 22)
+                else "keras_applications==1.0.8",
+            )
+            content = content.replace(
+                "keras_preprocessing==1.0.2",
+                "keras_preprocessing==1.0.5",
+            )
+            with open(location / "setup.py", "w") as fp:
+                fp.write(content)
+        if self.bug_id == 23:
+            with open(location / "setup.py", "r") as fp:
+                content = fp.read()
+            content = content.replace(
+                "keras_applications==1.0.2", "keras_applications==1.0.6"
+            )
+            content = content.replace(
+                "keras_preprocessing==1.0.1",
+                "keras_preprocessing==1.0.5",
+            )
+            with open(location / "setup.py", "w") as fp:
+                fp.write(content)
 
 
 def register():
@@ -56,8 +91,27 @@ def register():
         fixed_commit_id="8e23a3ec47a2ccbf6cdd222a80886c6b9f17264f",
         test_files=[Path("tests", "keras", "initializers_test.py")],
         test_cases=[
-            os.path.join("tests", "keras", "initializers_test.py::test_statefulness")
+            os.path.join(
+                "tests", "keras", "initializers_test.py::test_statefulness[uniform]"
+            ),
+            os.path.join(
+                "tests", "keras", "initializers_test.py::test_statefulness[orthogonal]"
+            ),
+            os.path.join(
+                "tests",
+                "keras",
+                "initializers_test.py::test_statefulness[truncated_normal]",
+            ),
+            os.path.join(
+                "tests", "keras", "initializers_test.py::test_statefulness[normal]"
+            ),
+            os.path.join(
+                "tests",
+                "keras",
+                "initializers_test.py::test_statefulness[variance_scaling]",
+            ),
         ],
+        loc=22638,
     )
     Keras(
         bug_id=2,
@@ -72,6 +126,13 @@ def register():
                 "backend_test.py::TestBackend::test_in_top_k",
             )
         ],
+        skip_tests=[
+            "test_gradient",
+            "test_elementwise_operations",
+            "(test_function and not test_function_tf)",
+            "test_resize_images_bilinear",
+        ],
+        loc=22758,
     )
     Keras(
         bug_id=3,
@@ -85,6 +146,7 @@ def register():
                 "test_sequential_model.py::test_clone_functional_model_with_multi_outputs",
             )
         ],
+        loc=22751,
     )
     Keras(
         bug_id=4,
@@ -98,6 +160,7 @@ def register():
                 "optimizers_test.py::test_tfoptimizer_pass_correct_named_params_to_native_tensorflow_optimizer",
             )
         ],
+        loc=22459,
     )
     Keras(
         bug_id=5,
@@ -109,13 +172,20 @@ def register():
                 "tests", "keras", "utils", "data_utils_test.py::test_data_utils"
             )
         ],
+        loc=22261,
     )
     Keras(
         bug_id=6,
         buggy_commit_id="88af7d0c97497b5c3a198ee9416b2accfbc72c36",
         fixed_commit_id="4b54657ab4806b0aaef8f8eeb973edb83c3d3483",
-        test_files=[Path("tests", "test_loss_masking.py")],
-        test_cases=["tests", "test_loss_masking.py::test_masking_is_all_zeros"],
+        test_files=[
+            Path("tests", "test_loss_masking.py"),
+            Path("tests", "test_loss_weighting.py"),
+        ],
+        test_cases=[
+            os.path.join("tests", "test_loss_masking.py::test_masking_is_all_zeros")
+        ],
+        loc=22060,
     )
     Keras(
         bug_id=7,
@@ -130,6 +200,8 @@ def register():
                 "scikit_learn_test.py::test_regression_predict_shape_correct_num_test_1",
             )
         ],
+        test_status_fixed=TestStatus.FAILING,
+        loc=21990,
     )
     Keras(
         bug_id=8,
@@ -144,16 +216,25 @@ def register():
                 "test_topology.py::test_layer_sharing_at_heterogeneous_depth_order",
             )
         ],
+        skip_tests=[
+            "test_recursion",
+            "test_constant_initializer_with_numpy",
+        ],
+        loc=22427,
     )
     Keras(
         bug_id=9,
         buggy_commit_id="0cd3b07eb5de1aaaad84d1ff7f7c2ed7dab4b23c",
         fixed_commit_id="0505393746d56ddacc34bb1c016dba79429c9ac9",
-        test_files=[Path("tests", "test_doc_auto_generation.py")],
-        test_cases=[
-            "tests",
-            "test_doc_auto_generation.py::test_doc_lists[docs_descriptor1]",
+        test_files=[
+            Path("tests", "test_doc_auto_generation.py"),
         ],
+        test_cases=[
+            os.path.join(
+                "tests", "test_doc_auto_generation.py::test_doc_lists[docs_descriptor1]"
+            ),
+        ],
+        loc=22278,
     )
     Keras(
         bug_id=10,
@@ -165,17 +246,24 @@ def register():
                 "tests", "keras", "engine", "test_training.py::test_sample_weights"
             )
         ],
+        loc=22083,
     )
     Keras(
         bug_id=11,
         buggy_commit_id="36b9e4c055f32718a036cabaf767325b010c7485",
         fixed_commit_id="d6b5c5ebb410e3366c9d7aca41977a60134bfe10",
-        test_files=[Path("tests", "integration_tests", "test_image_data_tasks.py")],
-        test_cases=[
-            "tests",
-            "integration_tests",
-            "test_image_data_tasks.py::test_image_data_generator_training",
+        test_files=[
+            Path("tests", "integration_tests", "test_image_data_tasks.py"),
+            Path("tests", "integration_tests", "test_temporal_data_tasks.py"),
         ],
+        test_cases=[
+            os.path.join(
+                "tests",
+                "integration_tests",
+                "test_image_data_tasks.py::test_image_data_generator_training",
+            ),
+        ],
+        loc=21230,
     )
     Keras(
         bug_id=12,
@@ -194,6 +282,8 @@ def register():
                 "metrics_test.py::test_sparse_categorical_accuracy_correctness[shape2]",
             ),
         ],
+        test_status_buggy=TestStatus.PASSING,
+        loc=21126,
     )
     Keras(
         bug_id=13,
@@ -205,6 +295,7 @@ def register():
                 "tests", "keras", "engine", "test_training.py::test_model_methods"
             )
         ],
+        loc=21127,
     )
     Keras(
         bug_id=14,
@@ -218,6 +309,7 @@ def register():
                 "metrics_test.py::test_sparse_top_k_categorical_accuracy[y_pred1-y_true1]",
             )
         ],
+        loc=21024,
     )
     Keras(
         bug_id=15,
@@ -227,6 +319,8 @@ def register():
         test_cases=[
             os.path.join("tests", "keras", "test_callbacks.py::test_CSVLogger")
         ],
+        test_status_buggy=TestStatus.PASSING,
+        loc=20893,
     )
     Keras(
         bug_id=16,
@@ -241,6 +335,7 @@ def register():
                 "test_sequential_model.py::test_sequential_deferred_build",
             ),
         ],
+        loc=20910,
     )
     Keras(
         bug_id=17,
@@ -254,6 +349,8 @@ def register():
                 "metrics_test.py::test_sparse_categorical_accuracy_correctness",
             )
         ],
+        test_status_buggy=TestStatus.PASSING,
+        loc=20691,
     )
     Keras(
         bug_id=18,
@@ -268,6 +365,19 @@ def register():
                 "backend_test.py::TestBackend::test_function_tf_run_options_with_run_metadata",
             )
         ],
+        skip_tests=[
+            "test_gradient",
+            "(test_function and not test_function_tf)",
+            "test_in_top_k",
+            "test_resize_images_bilinear",
+            "test_spatial_2d_padding",
+            "test_spatial_3d_padding",
+            "test_batchnorm",
+            "test_sparse_dot",
+            "test_sparse_concat",
+            "test_ctc_decode_beam_search",
+        ],
+        loc=20677,
     )
     Keras(
         bug_id=19,
@@ -287,7 +397,14 @@ def register():
                 "layers",
                 "recurrent_test.py::test_minimal_rnn_cell_non_layer_multiple_states",
             ),
+            os.path.join(
+                "tests",
+                "keras",
+                "layers",
+                "recurrent_test.py::test_stacked_rnn_compute_output_shape",
+            ),
         ],
+        loc=20718,
     )
     Keras(
         bug_id=20,
@@ -302,6 +419,7 @@ def register():
                 "convolutional_test.py::test_conv2d_transpose_dilation",
             )
         ],
+        loc=20699,
     )
     Keras(
         bug_id=21,
@@ -315,6 +433,7 @@ def register():
                 "test_callbacks.py::test_EarlyStopping_final_weights_when_restoring_model_weights",
             )
         ],
+        loc=20378,
     )
     Keras(
         bug_id=22,
@@ -329,6 +448,7 @@ def register():
                 "core_test.py::test_sequential_as_downstream_of_masking_layer",
             )
         ],
+        loc=20447,
     )
     Keras(
         bug_id=23,
@@ -342,6 +462,7 @@ def register():
                 "test_sequential_model.py::test_nested_sequential_deferred_build",
             )
         ],
+        loc=20647,
     )
     Keras(
         bug_id=24,
@@ -355,12 +476,15 @@ def register():
                 "test_callbacks.py::test_TensorBoard_multi_input_output",
             )
         ],
+        loc=23663,
     )
     Keras(
         bug_id=25,
         buggy_commit_id="b470a595f7278acf5e7e47521edf25d3c4f479f1",
         fixed_commit_id="84e168b5fa55933e02e767ff7c86fcc0232aecc6",
-        test_files=[Path("tests", "keras", "applications", "imagenet_utils_test.py")],
+        test_files=[
+            Path("tests", "keras", "applications", "imagenet_utils_test.py"),
+        ],
         test_cases=[
             os.path.join(
                 "tests",
@@ -369,6 +493,7 @@ def register():
                 "imagenet_utils_test.py::test_preprocess_input",
             )
         ],
+        loc=23708,
     )
     Keras(
         bug_id=26,
@@ -383,6 +508,22 @@ def register():
                 "backend_test.py::TestBackend::test_rnn_additional_states",
             )
         ],
+        skip_tests=[
+            "test_linear_operations",
+            "test_gradient",
+            "(test_function and not test_function_tf)",
+            "test_elementwise_operations",
+            "test_nn_operations",
+            "test_in_top_k",
+            "test_ctc_decode_beam_search",
+            "test_batchnorm",
+            "test_sparse_dot",
+            "test_sparse_concat",
+            "test_arange",
+            "test_in_test_phase",
+            "test_in_train_phase",
+        ],
+        loc=23599,
     )
     Keras(
         bug_id=27,
@@ -403,6 +544,7 @@ def register():
                 "wrappers_test.py::test_Bidirectional_losses",
             ),
         ],
+        loc=23414,
     )
     Keras(
         bug_id=28,
@@ -423,6 +565,7 @@ def register():
                 "sequence_test.py::test_TimeseriesGenerator",
             ),
         ],
+        loc=23235,
     )
     Keras(
         bug_id=29,
@@ -434,6 +577,7 @@ def register():
                 "tests", "keras", "metrics_test.py::test_stateful_metrics[dict]"
             )
         ],
+        loc=23191,
     )
     Keras(
         bug_id=30,
@@ -448,6 +592,7 @@ def register():
                 "test_training.py::test_model_with_external_loss",
             )
         ],
+        loc=23177,
     )
     Keras(
         bug_id=31,
@@ -459,6 +604,21 @@ def register():
                 "tests", "keras", "backend", "backend_test.py::TestBackend::test_ctc"
             )
         ],
+        skip_tests=[
+            "test_linear_operations",
+            "test_gradient",
+            "(test_function and not test_function_tf)",
+            "test_elementwise_operations",
+            "test_nn_operations",
+            "test_in_top_k",
+            "test_batchnorm",
+            "test_ctc_decode_beam_search",
+            "test_sparse_dot",
+            "test_sparse_concat",
+            "test_arange",
+            "test_in_train_phase",
+        ],
+        loc=23134,
     )
     Keras(
         bug_id=32,
@@ -475,6 +635,8 @@ def register():
                 "test_callbacks.py::test_ReduceLROnPlateau_backwards_compatibility",
             ),
         ],
+        skip_tests=["tests_RemoteMonitor"],
+        loc=23124,
     )
     Keras(
         bug_id=33,
@@ -495,13 +657,19 @@ def register():
                 "text_test.py::test_text_to_word_sequence_unicode_multichar_split",
             ),
         ],
+        loc=23085,
     )
     Keras(
         bug_id=34,
         buggy_commit_id="7ef5244a2f1f7f7b76e3c804b82cbb20cdf4d139",
         fixed_commit_id="4b74fc5418944c9f449eb88ed4b40ada280fa5ca",
         test_files=[Path("tests", "test_multiprocessing.py")],
-        test_cases=["tests", "test_multiprocessing.py::test_multiprocessing_training"],
+        test_cases=[
+            os.path.join(
+                "tests", "test_multiprocessing.py::test_multiprocessing_training"
+            )
+        ],
+        loc=23036,
     )
     Keras(
         bug_id=35,
@@ -516,6 +684,7 @@ def register():
                 "image_test.py::TestImage::test_directory_iterator",
             )
         ],
+        loc=22563,
     )
     Keras(
         bug_id=36,
@@ -530,6 +699,7 @@ def register():
                 "convolutional_test.py::test_separable_conv_1d",
             )
         ],
+        loc=22278,
     )
     Keras(
         bug_id=37,
@@ -544,6 +714,7 @@ def register():
                 "wrappers_test.py::test_Bidirectional_state_reuse",
             )
         ],
+        loc=22237,
     )
     Keras(
         bug_id=38,
@@ -558,6 +729,7 @@ def register():
                 "recurrent_test.py::test_minimal_rnn_cell_layer",
             )
         ],
+        loc=22146,
     )
     Keras(
         bug_id=39,
@@ -569,6 +741,7 @@ def register():
                 "tests", "keras", "utils", "generic_utils_test.py::test_progbar"
             )
         ],
+        loc=22117,
     )
     Keras(
         bug_id=40,
@@ -583,6 +756,7 @@ def register():
                 "recurrent_test.py::test_stacked_rnn_compute_output_shape",
             )
         ],
+        loc=21482,
     )
     Keras(
         bug_id=41,
@@ -595,8 +769,21 @@ def register():
                 "keras",
                 "utils",
                 "data_utils_test.py::test_generator_enqueuer_fail_threads",
-            )
+            ),
+            os.path.join(
+                "tests",
+                "keras",
+                "utils",
+                "data_utils_test.py::test_generator_enqueuer_fail_processes",
+            ),
         ],
+        skip_tests=[
+            "test_ordered_enqueuer_fail_threads",
+            "test_ordered_enqueuer_fail_processes",
+            "test_finite_generator_enqueuer_threads",
+            "test_finite_generator_enqueuer_processes",
+        ],
+        loc=20988,
     )
     Keras(
         bug_id=42,
@@ -608,17 +795,26 @@ def register():
                 "tests", "keras", "engine", "test_training.py::test_model_methods"
             )
         ],
+        loc=20868,
     )
     Keras(
         bug_id=43,
         buggy_commit_id="e3e97c401aa8251e957b73fba8ed4d108c106f12",
         fixed_commit_id="b17169ca5d6cd1c8aeb237fc2bb0555c9e1b6a02",
-        test_files=[Path("tests", "keras", "utils", "np_utils_test.py")],
+        test_files=[
+            Path("tests", "keras", "utils", "generic_utils_test.py"),
+            Path("tests", "keras", "utils", "io_utils_test.py"),
+            Path("tests", "keras", "utils", "layer_utils_test.py"),
+            Path("tests", "keras", "utils", "multi_gpu_test.py"),
+            Path("tests", "keras", "utils", "np_utils_test.py"),
+            Path("tests", "keras", "utils", "vis_utils_test.py"),
+        ],
         test_cases=[
             os.path.join(
                 "tests", "keras", "utils", "np_utils_test.py::test_to_categorical"
             )
         ],
+        loc=20859,
     )
     Keras(
         bug_id=44,
@@ -627,9 +823,19 @@ def register():
         test_files=[Path("tests", "keras", "layers", "recurrent_test.py")],
         test_cases=[
             os.path.join(
-                "tests", "keras", "layers", "recurrent_test.py::test_trainability"
-            )
+                "tests",
+                "keras",
+                "layers",
+                "recurrent_test.py::test_trainability[SimpleRNN]",
+            ),
+            os.path.join(
+                "tests", "keras", "layers", "recurrent_test.py::test_trainability[GRU]"
+            ),
+            os.path.join(
+                "tests", "keras", "layers", "recurrent_test.py::test_trainability[LSTM]"
+            ),
         ],
+        loc=20825,
     )
     Keras(
         bug_id=45,
@@ -644,6 +850,7 @@ def register():
                 "recurrent_test.py::test_implementation_mode[LSTM]",
             )
         ],
+        loc=20761,
     )
 
 

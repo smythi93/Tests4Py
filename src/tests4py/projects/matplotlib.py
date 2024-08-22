@@ -6,7 +6,7 @@ from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
 
-PROJECT_MAME = "matplotlib"
+PROJECT_NAME = "matplotlib"
 
 
 class Matplotlib(Project):
@@ -24,13 +24,15 @@ class Matplotlib(Project):
         api: Optional[API] = None,
         loc: int = 0,
         relevant_test_files: Optional[List[Path]] = None,
+        skip_tests: Optional[List[str]] = None,
+        python_version: Optional[str] = None,
     ):
         super().__init__(
             bug_id=bug_id,
-            project_name=PROJECT_MAME,
+            project_name=PROJECT_NAME,
             github_url="https://github.com/matplotlib/matplotlib",
             status=Status.OK,
-            python_version="3.8.4",
+            python_version=python_version or "3.8.4",
             python_path="",
             buggy_commit_id=buggy_commit_id,
             fixed_commit_id=fixed_commit_id,
@@ -44,14 +46,16 @@ class Matplotlib(Project):
             api=api,
             grammar=None,
             loc=loc,
-            test_base=Path("lib", "matplotlib", "tests"),
+            test_base=Path("lib", PROJECT_NAME, "tests"),
+            source_base=Path("lib", PROJECT_NAME),
             setup=[
                 ["python", "-m", "pip", "install", "-e", "."],
             ],
-            included_files=[os.path.join("lib", PROJECT_MAME)],
-            excluded_files=[os.path.join("lib", PROJECT_MAME, "tests")],
+            included_files=[os.path.join("lib", PROJECT_NAME)],
+            excluded_files=[os.path.join("lib", PROJECT_NAME, "tests")],
             relevant_test_files=relevant_test_files,
-        )  # TODO adjust parameters
+            skip_tests=skip_tests,
+        )
 
 
 def register():
@@ -67,6 +71,7 @@ def register():
                 "lib", "matplotlib", "tests", "test_bbox_tight.py::test_noop_tight_bbox"
             )
         ],
+        loc=63544,
     )
     Matplotlib(
         bug_id=2,
@@ -81,6 +86,15 @@ def register():
                 "test_axes.py::TestScatter::test_scatter_unfilled",
             )
         ],
+        relevant_test_files=[
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::TestScatter",
+            )
+        ],
+        loc=63506,
     )
     Matplotlib(
         bug_id=3,
@@ -92,6 +106,7 @@ def register():
                 "lib", "matplotlib", "tests", "test_marker.py::test_marker_fillstyle"
             )
         ],
+        loc=63506,
     )
     Matplotlib(
         bug_id=4,
@@ -101,8 +116,25 @@ def register():
         test_cases=[
             os.path.join(
                 "lib", "matplotlib", "tests", "test_axes.py::test_vlines_default"
-            )
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_hlines_default"
+            ),
         ],
+        relevant_test_files=[
+            os.path.join("lib", "matplotlib", "tests", "test_axes.py::test_vlines"),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_vlines_default"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_vline_limit"
+            ),
+            os.path.join("lib", "matplotlib", "tests", "test_axes.py::test_hlines"),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_hlines_default"
+            ),
+        ],
+        loc=63462,
     )
     Matplotlib(
         bug_id=5,
@@ -117,6 +149,15 @@ def register():
                 "test_axes.py::TestScatter::test_scatter_linewidths",
             )
         ],
+        relevant_test_files=[
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::TestScatter",
+            )
+        ],
+        loc=63378,
     )
     Matplotlib(
         bug_id=6,
@@ -128,9 +169,18 @@ def register():
                 "lib",
                 "matplotlib",
                 "tests",
-                "test_axes.py::TestScatter::test_scatter_single_color_c",
+                "test_axes.py::TestScatter::test_scatter_single_color_c[png]",
             )
         ],
+        relevant_test_files=[
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::TestScatter",
+            )
+        ],
+        loc=63369,
     )
     Matplotlib(
         bug_id=7,
@@ -145,6 +195,8 @@ def register():
                 "test_colors.py::test_light_source_shading_empty_mask",
             )
         ],
+        test_status_buggy=TestStatus.PASSING,
+        loc=63292,
     )
     Matplotlib(
         bug_id=8,
@@ -153,12 +205,48 @@ def register():
         test_files=[Path("lib", "matplotlib", "tests", "test_axes.py")],
         test_cases=[
             os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_unautoscaley[True]"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_unautoscalex[True]"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_unautoscaley[None]"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_unautoscalex[None]"
+            ),
+        ],
+        relevant_test_files=[
+            os.path.join(
                 "lib", "matplotlib", "tests", "test_axes.py::test_unautoscaley"
             ),
             os.path.join(
                 "lib", "matplotlib", "tests", "test_axes.py::test_unautoscalex"
             ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_shared_axes_autoscale"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_twinx_axis_scales"
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::test_twin_inherit_autoscale_setting",
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_autoscale_tiny_range"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_autoscale_tight"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_autoscale_log_shared"
+            ),
         ],
+        loc=63243,
     )
     Matplotlib(
         bug_id=9,
@@ -170,9 +258,10 @@ def register():
                 "lib",
                 "matplotlib",
                 "tests",
-                "test_polar.py::test_polar_invertedylim_rorigin",
+                "test_polar.py::test_polar_invertedylim_rorigin[png]",
             )
         ],
+        loc=63277,
     )
     Matplotlib(
         bug_id=10,
@@ -184,6 +273,42 @@ def register():
                 "lib", "matplotlib", "tests", "test_axes.py::test_offset_text_visible"
             )
         ],
+        relevant_test_files=[
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_offset_text_visible"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_offset_label_color"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_text_labelsize"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_large_offset"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_errorbar_offsets"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_hist_offset"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_move_offsetlabel"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_dash_offset"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_relim_visible_only"
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::test_retain_tick_visibility",
+            ),
+        ],
+        loc=62823,
     )
     Matplotlib(
         bug_id=11,
@@ -192,9 +317,14 @@ def register():
         test_files=[Path("lib", "matplotlib", "tests", "test_text.py")],
         test_cases=[
             os.path.join(
-                "lib", "matplotlib", "tests", "test_text.py::test_non_default_dpi"
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_text.py::test_non_default_dpi[empty]",
             )
         ],
+        skip_tests=["test_text_repr"],
+        loc=62827,
     )
     Matplotlib(
         bug_id=12,
@@ -203,9 +333,50 @@ def register():
         test_files=[Path("lib", "matplotlib", "tests", "test_axes.py")],
         test_cases=[
             os.path.join(
-                "lib", "matplotlib", "tests", "test_axes.py::test_lines_with_colors"
-            )
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::test_lines_with_colors[png-data0]",
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::test_lines_with_colors[png-data1]",
+            ),
         ],
+        relevant_test_files=[
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_lines_with_colors"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_step_linestyle"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_markevery_line"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_eb_line_zorder"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_pie_linewidth_0"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_pie_linewidth_2"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_zero_linewidth"
+            ),
+            os.path.join("lib", "matplotlib", "tests", "test_axes.py::test_vlines"),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_vline_limit"
+            ),
+            os.path.join("lib", "matplotlib", "tests", "test_axes.py::test_hlines"),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_eventplot_colors"
+            ),
+        ],
+        loc=62948,
     )
     Matplotlib(
         bug_id=13,
@@ -220,6 +391,7 @@ def register():
                 "test_path.py::test_make_compound_path_stops",
             )
         ],
+        loc=62951,
     )
     Matplotlib(
         bug_id=14,
@@ -234,6 +406,8 @@ def register():
                 "test_text.py::test_fontproperties_kwarg_precedence",
             )
         ],
+        skip_tests=["test_text_repr"],
+        loc=64078,
     )
     Matplotlib(
         bug_id=15,
@@ -243,8 +417,120 @@ def register():
         test_cases=[
             os.path.join(
                 "lib", "matplotlib", "tests", "test_colors.py::test_SymLogNorm"
-            )
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_colors.py::test_SymLogNorm_colorbar",
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_colors.py::test_SymLogNorm_single_zero",
+            ),
         ],
+        relevant_test_files=[
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_colors.py::test_BoundaryNorm"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_colors.py::test_lognorm_invalid"
+            ),
+            os.path.join("lib", "matplotlib", "tests", "test_colors.py::test_LogNorm"),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_colors.py::test_PowerNorm"
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_colors.py::test_PowerNorm_translation_invariance",
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_colors.py::test_TwoSlopeNorm_autoscale",
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_colors.py::test_TwoSlopeNorm_autoscale_None_vmin",
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_colors.py::test_TwoSlopeNorm_autoscale_None_vmax",
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_colors.py::test_TwoSlopeNorm_scale"
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_colors.py::test_TwoSlopeNorm_scaleout_center",
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_colors.py::test_TwoSlopeNorm_scaleout_center_max",
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_colors.py::test_TwoSlopeNorm_Even"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_colors.py::test_TwoSlopeNorm_Odd"
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_colors.py::test_TwoSlopeNorm_VminEqualsVcenter",
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_colors.py::test_TwoSlopeNorm_VmaxEqualsVcenter",
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_colors.py::test_TwoSlopeNorm_VminGTVcenter",
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_colors.py::test_TwoSlopeNorm_TwoSlopeNorm_VminGTVmax",
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_colors.py::test_TwoSlopeNorm_VcenterGTVmax",
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_colors.py::test_SymLogNorm"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_colors.py::test_SymLogNorm_colorbar"
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_colors.py::test_SymLogNorm_single_zero",
+            ),
+        ],
+        loc=64152,
     )
     Matplotlib(
         bug_id=16,
@@ -253,9 +539,20 @@ def register():
         test_files=[Path("lib", "matplotlib", "tests", "test_colorbar.py")],
         test_cases=[
             os.path.join(
-                "lib", "matplotlib", "tests", "test_colorbar.py::test_colorbar_int"
-            )
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_colorbar.py::test_colorbar_int[clim0]",
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_colorbar.py::test_colorbar_int[clim1]",
+            ),
         ],
+        skip_tests=["test_colorbar_positioning[png]"],
+        loc=65317,
     )
     Matplotlib(
         bug_id=17,
@@ -264,9 +561,20 @@ def register():
         test_files=[Path("lib", "matplotlib", "tests", "test_colorbar.py")],
         test_cases=[
             os.path.join(
-                "lib", "matplotlib", "tests", "test_colorbar.py::test_colorbar_int"
-            )
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_colorbar.py::test_colorbar_int[clim0]",
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_colorbar.py::test_colorbar_int[clim1]",
+            ),
         ],
+        skip_tests=["test_colorbar_positioning[png]"],
+        loc=64261,
     )
     Matplotlib(
         bug_id=18,
@@ -278,6 +586,38 @@ def register():
                 "lib", "matplotlib", "tests", "test_axes.py::test_polar_no_data"
             )
         ],
+        relevant_test_files=[
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_polar_twice"
+            ),
+            os.path.join("lib", "matplotlib", "tests", "test_axes.py::test_polar_wrap"),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_polar_units_1"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_polar_units_2"
+            ),
+            os.path.join("lib", "matplotlib", "tests", "test_axes.py::test_polar_rlim"),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_polar_rlim_bottom"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_polar_rlim_zero"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_polar_no_data"
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::test_polar_not_datalim_adjustable",
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_polar_gridlines"
+            ),
+        ],
+        loc=65299,
     )
     Matplotlib(
         bug_id=19,
@@ -289,6 +629,38 @@ def register():
                 "lib", "matplotlib", "tests", "test_axes.py::test_polar_no_data"
             )
         ],
+        relevant_test_files=[
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_polar_twice"
+            ),
+            os.path.join("lib", "matplotlib", "tests", "test_axes.py::test_polar_wrap"),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_polar_units_1"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_polar_units_2"
+            ),
+            os.path.join("lib", "matplotlib", "tests", "test_axes.py::test_polar_rlim"),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_polar_rlim_bottom"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_polar_rlim_zero"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_polar_no_data"
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::test_polar_not_datalim_adjustable",
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_polar_gridlines"
+            ),
+        ],
+        loc=64410,
     )
     Matplotlib(
         bug_id=20,
@@ -300,6 +672,36 @@ def register():
                 "lib", "matplotlib", "tests", "test_axes.py::test_invisible_axes"
             )
         ],
+        relevant_test_files=[
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_invisible_axes"
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::test_annotate_across_transforms",
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::test_twin_spines",
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::test_relim_visible_only",
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::test_axisbelow",
+            ),
+        ],
+        loc=65299,
     )
     Matplotlib(
         bug_id=21,
@@ -312,8 +714,69 @@ def register():
                 "matplotlib",
                 "tests",
                 "test_axes.py::test_boxplot_marker_behavior",
-            )
+            ),
         ],
+        relevant_test_files=[
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_boxplot_dates_pandas"
+            ),
+            os.path.join("lib", "matplotlib", "tests", "test_axes.py::test_boxplot"),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_boxplot_sym2"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_boxplot_sym"
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::test_boxplot_autorange_whiskers",
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_boxplot_rc_parameters"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_boxplot_with_CIarray"
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::test_boxplot_no_weird_whisker",
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_boxplot_bad_medians_1"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_boxplot_bad_medians_2"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_boxplot_bad_ci_1"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_boxplot_zorder"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_boxplot_bad_ci_2"
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::test_boxplot_marker_behavior",
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::test_boxplot_mod_artist_after_plotting",
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_boxplot_not_single"
+            ),
+        ],
+        loc=65200,
     )
     Matplotlib(
         bug_id=22,
@@ -325,9 +788,74 @@ def register():
                 "lib",
                 "matplotlib",
                 "tests",
-                "test_axes.py::test_hist_datetime_datasets_bins",
-            )
+                "test_axes.py::test_hist_datetime_datasets_bins[datetime.datetime]",
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::test_hist_datetime_datasets_bins[np.datetime64]",
+            ),
         ],
+        relevant_test_files=[
+            os.path.join("lib", "matplotlib", "tests", "test_axes.py::test_hist_log_2"),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_hist_bar_empty"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_hist_step_empty"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_hist_step_filled"
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::test_hist_unequal_bins_density",
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::test_hist_datetime_datasets",
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::test_hist_datetime_datasets_bins",
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_hist_with_empty_input"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_hist2d_density_normed"
+            ),
+            os.path.join("lib", "matplotlib", "tests", "test_axes.py::test_hist_step"),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_hist_step_bottom"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_hist_emptydata"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_hist_labels"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_hist_auto_bins"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_hist_nan_data"
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::test_hist_range_and_density",
+            ),
+        ],
+        loc=65308,
     )
     Matplotlib(
         bug_id=23,
@@ -342,6 +870,45 @@ def register():
                 "test_axes.py::test_aspect_nonlinear_adjustable_datalim",
             )
         ],
+        relevant_test_files=[
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::test_aspect_nonlinear_adjustable_datalim",
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::test_aspect_nonlinear_adjustable_box",
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::test_shared_with_aspect_2",
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::test_shared_with_aspect_3",
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::test_inset",
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::test_zoom_inset",
+            ),
+        ],
+        loc=65354,
     )
     Matplotlib(
         bug_id=24,
@@ -353,6 +920,18 @@ def register():
                 "lib", "matplotlib", "tests", "test_axes.py::test_set_ticks_inverted"
             )
         ],
+        relevant_test_files=[
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_set_ticks_inverted"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_inverted_limits"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_tick_label_update"
+            ),
+        ],
+        loc=66180,
     )
     Matplotlib(
         bug_id=25,
@@ -367,6 +946,24 @@ def register():
                 "test_collections.py::test_EventCollection_nosort",
             )
         ],
+        skip_tests=[
+            "test__EventCollection__get_segments",
+            "test__EventCollection__set_positions",
+            "test__EventCollection__add_positions",
+            "test__EventCollection__append_positions",
+            "test__EventCollection__extend_positions",
+            "test__EventCollection__switch_orientation",
+            "test__EventCollection__switch_orientation_2x",
+            "test__EventCollection__set_orientation",
+            "test__EventCollection__set_linelength",
+            "test__EventCollection__set_lineoffset",
+            "test__EventCollection__set_linestyle",
+            "test__EventCollection__set_linestyle_single_dash",
+            "test__EventCollection__set_linewidth",
+            "test__EventCollection__set_color",
+            "test_cap_and_joinstyle_image",
+        ],
+        loc=66180,
     )
     Matplotlib(
         bug_id=26,
@@ -378,6 +975,18 @@ def register():
                 "lib", "matplotlib", "tests", "test_axes.py::test_set_ticks_inverted"
             )
         ],
+        relevant_test_files=[
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_set_ticks_inverted"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_inverted_limits"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_tick_label_update"
+            ),
+        ],
+        loc=65354,
     )
     Matplotlib(
         bug_id=27,
@@ -389,6 +998,11 @@ def register():
                 "lib", "matplotlib", "tests", "test_colorbar.py::test_colorbar_label"
             )
         ],
+        skip_tests=[
+            "test_colorbar_positioning",
+            "test_colorbar_closed_patch",
+        ],
+        loc=65356,
     )
     Matplotlib(
         bug_id=28,
@@ -400,6 +1014,27 @@ def register():
                 "lib", "matplotlib", "tests", "test_axes.py::test_log_scales_invalid"
             )
         ],
+        relevant_test_files=[
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_log_scales_invalid"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_shared_scale"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_minorticks_on"
+            ),
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_secondary_minorloc"
+            ),
+            os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_axes.py::test_boxplot_no_weird_whisker",
+            ),
+        ],
+        loc=65357,
     )
     Matplotlib(
         bug_id=29,
@@ -411,6 +1046,13 @@ def register():
                 "lib", "matplotlib", "tests", "test_axes.py::test_inverted_cla"
             )
         ],
+        relevant_test_files=[
+            os.path.join(
+                "lib", "matplotlib", "tests", "test_axes.py::test_inverted_cla"
+            ),
+            os.path.join("lib", "matplotlib", "tests", "test_axes.py::test_twinx_cla"),
+        ],
+        loc=66175,
     )
     Matplotlib(
         bug_id=30,
@@ -419,9 +1061,18 @@ def register():
         test_files=[Path("lib", "matplotlib", "tests", "test_colors.py")],
         test_cases=[
             os.path.join(
+                "lib",
+                "matplotlib",
+                "tests",
+                "test_colors.py::test_makeMappingArray[1-result2]",
+            )
+        ],
+        relevant_test_files=[
+            os.path.join(
                 "lib", "matplotlib", "tests", "test_colors.py::test_makeMappingArray"
             )
         ],
+        loc=66111,
     )
 
 

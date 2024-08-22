@@ -59,7 +59,30 @@ class _BlankLine:
         self.source_line_no = 1
 
 
-def get_faulty_lines(project: Project):
+def get_patched_files(project: Project) -> List[str]:
+    files = set()
+    project_resources = importlib.resources.files(
+        getattr(getattr(resources, project.project_name), f"bug_{project.bug_id}")
+    )
+    with importlib.resources.as_file(
+        project_resources.joinpath(
+            "fix.patch",
+        )
+    ) as resource:
+        try:
+            with open(resource, "r") as fp:
+                s = fp.read()
+            for diff in PatchSet(s):
+                if project.test_base:
+                    if diff.path.startswith(str(project.test_base)):
+                        continue
+                files.add(diff.path)
+        except IOError:
+            pass
+    return list(files)
+
+
+def get_faulty_lines(project: Project) -> List[Location]:
     locations = list()
     project_resources = importlib.resources.files(
         getattr(getattr(resources, project.project_name), f"bug_{project.bug_id}")
@@ -135,6 +158,7 @@ def get_faulty_lines(project: Project):
 __all__ = [
     "get_bugs",
     "get_projects",
+    "get_patched_files",
     "get_faulty_lines",
     "checkout",
     "build",
