@@ -100,12 +100,23 @@ class ExpressionAPI(API):
                 TestResult.PASSING,
                 f"Process failed with ValueError and code {process.returncode}",
             )
-        expected = process.args[2]
-        expected = "".join(expected).strip()
+        s = process.args[2]
+        s = "".join(s).strip()
         result = process.stdout.decode("utf8")
         result = float(result)
         try:
-            expected = eval(expected.replace("~", "-"))
+            s = s.replace("(", " ( ")
+            s = s.replace(")", " ) ")
+            while "  " in s:
+                s = s.replace("  ", " ")
+            s = s.strip()
+            s = s.split(" ")
+            for i in range(len(s)):
+                try:
+                    s[i] = str(float(s[i]))
+                except ValueError:
+                    pass
+            expected = eval("".join(s).replace("~", "-"))
         except ZeroDivisionError:
             return (
                 TestResult.FAILING,
