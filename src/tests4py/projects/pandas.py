@@ -5746,70 +5746,201 @@ class PandasUnittestGenerator22(
     ) -> list[ast.Assign | ast.Expr]:
         return [
             ast.Assign(
-                targets=[ast.Name(id="midx1")],
+                targets=[ast.Name(id='indexer')],
                 value=ast.Call(
-                    func=ast.Attribute(value=ast.Attribute(value=ast.Name(id="pandas"), attr="MultiIndex"),
-                                       attr="from_product"),
-                    args=[
-                        ast.List(elts=[
-                            ast.Constant(value=list_1),
-                            ast.Constant(value=list_2)
-                        ]),
-                    ],
-                    keywords=[
-                        ast.keyword(arg="names", value=ast.Constant(value=index_1))
-                    ],
+                    func=ast.Name(id='FixedForwardWindowIndexer'),
+                    args=[],
+                    keywords=[ast.keyword(arg='window_size', value=ast.Constant(value=3))]
                 ),
-                lineno=1,
+                lineno=1
             ),
             ast.Assign(
-                targets=[ast.Name(id="midx2")],
-                value=ast.Call(
-                    func=ast.Attribute(value=ast.Attribute(value=ast.Name(id="pandas"), attr="MultiIndex"),
-                                       attr="from_product"),
-                    args=[
-                        ast.List(elts=[
-                            ast.Constant(value=list_1),
-                            ast.Constant(value=list_2)
-                        ]),
-                    ],
-                    keywords=[
-                        ast.keyword(arg="names", value=ast.Constant(value=index_2))
-                    ],
-                ),
-                lineno=2,
+                targets=[ast.Name(id='match')],
+                value=ast.Constant(value="Forward-looking windows can't have center=True"),
+                lineno=2
+            ),
+            ast.With(
+                items=[
+                    ast.withitem(
+                        context_expr=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id='pytest'),
+                                attr='raises',
+                            ),
+                            args=[ast.Name(id='ValueError')],
+                            keywords=[ast.keyword(arg='match', value=ast.Name(id='match'))]
+                        ),
+                        optional_vars=None
+                    )
+                ],
+                body=[
+                    ast.Assign(
+                        targets=[ast.Name(id='rolling')],
+                        value=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Call(
+                                    func=ast.Name(id='constructor'),
+                                    args=[ast.Name(id='values')],
+                                    keywords=[]
+                                ),
+                                attr='rolling',
+                            ),
+                            args=[],
+                            keywords=[
+                                ast.keyword(arg='window', value=ast.Name(id='indexer')),
+                                ast.keyword(arg='center', value=ast.Constant(value=True))
+                            ]
+                        ),
+                        lineno=4
+                    ),
+                    ast.Assign(
+                        targets=[ast.Name(id='result')],
+                        value=ast.Call(
+                            func=ast.Call(
+                                func=ast.Name(id='getattr'),
+                                args=[ast.Name(id='rolling'), ast.Name(id='func')],
+                                keywords=[]
+                            ),
+                            args=[],
+                            keywords=[]
+                        ),
+                        lineno=5
+                    )
+                ],
+                lineno=3
             ),
             ast.Assign(
-                targets=[ast.Tuple(elts=[ast.Name(id="join_idx"),
-                                         ast.Name(id="lidx"),
-                                         ast.Name(id="ridx")])],
+                targets=[ast.Name(id='match')],
+                value=ast.Constant(value="Forward-looking windows don't support setting the closed argument"),
+                lineno=6
+            ),
+            ast.With(
+                items=[
+                    ast.withitem(
+                        context_expr=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id='pytest'),
+                                attr='raises',
+                            ),
+                            args=[ast.Name(id='ValueError')],
+                            keywords=[ast.keyword(arg='match', value=ast.Name(id='match'))]
+                        ),
+                        optional_vars=None
+                    )
+                ],
+                body=[
+                    ast.Assign(
+                        targets=[ast.Name(id='rolling')],
+                        value=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Call(
+                                    func=ast.Name(id='constructor'),
+                                    args=[ast.Name(id='values')],
+                                    keywords=[]
+                                ),
+                                attr='rolling',
+                            ),
+                            args=[],
+                            keywords=[
+                                ast.keyword(arg='window', value=ast.Name(id='indexer')),
+                                ast.keyword(arg='closed', value=ast.Constant(value='right'))
+                            ]
+                        ),
+                        lineno=8
+                    ),
+                    ast.Assign(
+                        targets=[ast.Name(id='result')],
+                        value=ast.Call(
+                            func=ast.Call(
+                                func=ast.Name(id='getattr'),
+                                args=[ast.Name(id='rolling'), ast.Name(id='func')],
+                                keywords=[]
+                            ),
+                            args=[],
+                            keywords=[]
+                        ),
+                        lineno=9
+                    )
+                ],
+                lineno=7
+            ),
+            ast.Assign(
+                targets=[ast.Name(id='rolling')],
                 value=ast.Call(
-                    func=ast.Attribute(value=ast.Name(id="midx1"), attr="join"),
-                    args=[ast.Name(id="midx2")],
+                    func=ast.Attribute(
+                        value=ast.Call(
+                            func=ast.Name(id='constructor'),
+                            args=[ast.Name(id='values')],
+                            keywords=[]
+                        ),
+                        attr='rolling',
+                    ),
+                    args=[],
                     keywords=[
-                        ast.keyword(arg="return_indexers", value=ast.Constant(value=False))],
+                        ast.keyword(arg='window', value=ast.Name(id='indexer')),
+                        ast.keyword(arg='min_periods', value=ast.Constant(value=2))
+                    ]
                 ),
-                lineno=3,
+                lineno=10
             ),
-            ast.Expr(
+            ast.Assign(
+                targets=[ast.Name(id='result')],
                 value=ast.Call(
-                    func=ast.Name(id="assert_index_equal"),
-                    args=[
-                        ast.Name(id="midx1"),
-                        ast.Name(id="join_idx"),
-                    ],
-                    keywords=[],
-                )
+                    func=ast.Call(
+                        func=ast.Name(id='getattr'),
+                        args=[ast.Name(id='rolling'), ast.Name(id='func')],
+                        keywords=[]
+                    ),
+                    args=[],
+                    keywords=[]
+                ),
+                lineno=11
             ),
-            ast.Expr(
+            ast.Assign(
+                targets=[ast.Name(id='expected')],
                 value=ast.Call(
-                    func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
+                    func=ast.Name(id='constructor'),
+                    args=[ast.Name(id='expected')],
+                    keywords=[]
+                ),
+                lineno=12
+            ),
+            ast.Assign(
+                targets=[ast.Name(id='expected2')],
+                value=ast.Call(
+                    func=ast.Name(id='constructor'),
                     args=[
-                        ast.Constant(value=expected),
-                        ast.Name(id="lidx")
+                        ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id='rolling'),
+                                attr='apply',
+                            ),
+                            args=[
+                                ast.Lambda(
+                                    args=ast.arguments(
+                                        posonlyargs=[],
+                                        args=[ast.arg(arg='x', annotation=None)],
+                                        vararg=None,
+                                        kwonlyargs=[],
+                                        kw_defaults=[],
+                                        kwarg=None,
+                                        defaults=[]
+                                    ),
+                                    body=ast.Call(
+                                        func=ast.Name(id='np_func'),
+                                        args=[ast.Name(id='x')],
+                                        keywords=[
+                                            ast.keyword(arg=None, value=ast.Name(id='np_kwargs'))
+                                        ]
+                                    )
+                                )
+                            ],
+                            keywords=[]
+                        )
                     ],
                     keywords=[]
-                )
+                ),
+                lineno=13
             )
         ]
 
@@ -5858,70 +5989,71 @@ class PandasUnittestGenerator23(
     ) -> list[ast.Assign | ast.Expr]:
         return [
             ast.Assign(
-                targets=[ast.Name(id="midx1")],
+                targets=[ast.Name(id='a')],
                 value=ast.Call(
-                    func=ast.Attribute(value=ast.Attribute(value=ast.Name(id="pandas"), attr="MultiIndex"),
-                                       attr="from_product"),
+                    func=ast.Name(id='bdate_range'),
                     args=[
-                        ast.List(elts=[
-                            ast.Constant(value=list_1),
-                            ast.Constant(value=list_2)
-                        ]),
-                    ],
-                    keywords=[
-                        ast.keyword(arg="names", value=ast.Constant(value=index_1))
-                    ],
-                ),
-                lineno=1,
-            ),
-            ast.Assign(
-                targets=[ast.Name(id="midx2")],
-                value=ast.Call(
-                    func=ast.Attribute(value=ast.Attribute(value=ast.Name(id="pandas"), attr="MultiIndex"),
-                                       attr="from_product"),
-                    args=[
-                        ast.List(elts=[
-                            ast.Constant(value=list_1),
-                            ast.Constant(value=list_2)
-                        ]),
-                    ],
-                    keywords=[
-                        ast.keyword(arg="names", value=ast.Constant(value=index_2))
-                    ],
-                ),
-                lineno=2,
-            ),
-            ast.Assign(
-                targets=[ast.Tuple(elts=[ast.Name(id="join_idx"),
-                                         ast.Name(id="lidx"),
-                                         ast.Name(id="ridx")])],
-                value=ast.Call(
-                    func=ast.Attribute(value=ast.Name(id="midx1"), attr="join"),
-                    args=[ast.Name(id="midx2")],
-                    keywords=[
-                        ast.keyword(arg="return_indexers", value=ast.Constant(value=False))],
-                ),
-                lineno=3,
-            ),
-            ast.Expr(
-                value=ast.Call(
-                    func=ast.Name(id="assert_index_equal"),
-                    args=[
-                        ast.Name(id="midx1"),
-                        ast.Name(id="join_idx"),
-                    ],
-                    keywords=[],
-                )
-            ),
-            ast.Expr(
-                value=ast.Call(
-                    func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
-                    args=[
-                        ast.Constant(value=expected),
-                        ast.Name(id="lidx")
+                        ast.Constant(value="11/30/2011"),
+                        ast.Constant(value="12/31/2011")
                     ],
                     keywords=[]
-                )
+                ),
+                lineno=1
+            ),
+            ast.Assign(
+                targets=[ast.Name(id='b')],
+                value=ast.Call(
+                    func=ast.Name(id='bdate_range'),
+                    args=[
+                        ast.Constant(value="12/10/2011"),
+                        ast.Constant(value="12/20/2011")
+                    ],
+                    keywords=[]
+                ),
+                lineno=2
+            ),
+            ast.Assign(
+                targets=[ast.Name(id='result')],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id='a'),
+                        attr='intersection',
+                    ),
+                    args=[ast.Name(id='b')],
+                    keywords=[]
+                ),
+                lineno=3
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id='tm'),
+                        attr='assert_index_equal',
+                    ),
+                    args=[
+                        ast.Name(id='result'),
+                        ast.Name(id='b')
+                    ],
+                    keywords=[]
+                ),
+                lineno=4
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Attribute(
+                        value=ast.Name(id='result'),
+                        attr='freq',
+                    ),
+                    ops=[ast.Eq()],
+                    comparators=[
+                        ast.Attribute(
+                            value=ast.Name(id='b'),
+                            attr='freq',
+                        )
+                    ]
+                ),
+                msg=None,
+                lineno=5
             )
         ]
 
