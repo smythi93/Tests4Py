@@ -2,7 +2,7 @@ import ast
 import random
 import string
 import subprocess
-from _ast import Call, ImportFrom, Assign, Expr
+from _ast import Call, ImportFrom, Assign, Expr, Import
 from pathlib import Path
 from typing import List, Optional, Tuple, Any, Callable
 from tests4py.constants import PYTHON
@@ -417,6 +417,9 @@ def register():
         test_cases=[
             "pandas/tests/arrays/categorical/test_analytics.py::TestCategoricalAnalytics::test_min_max_only_nan"
         ],
+        api=PandasAPI25(),
+        unittests=PandasUnittestGenerator26(),
+        systemtests=PandasSystemtestGenerator26(),
     )
     Pandas(
         bug_id=27,
@@ -428,6 +431,9 @@ def register():
         test_cases=[
             "pandas/tests/indexes/datetimes/test_to_period.py::TestToPeriod::test_to_period_infer"
         ],
+        api=PandasAPI27(),
+        unittests=PandasUnittestGenerator27(),
+        systemtests=PandasSystemtestGenerator27(),
     )
     Pandas(
         bug_id=28,
@@ -435,6 +441,9 @@ def register():
         fixed_commit_id="ef9b9387c88cf12b20dd8656dfedfc236e0f3352",
         test_files=[Path("pandas", "tests", "test_strings.py")],
         test_cases=["pandas/tests/test_strings.py::test_cat_different_classes"],
+        api=PandasAPI28(),
+        unittests=PandasUnittestGenerator28(),
+        systemtests=PandasSystemtestGenerator28(),
     )
     Pandas(
         bug_id=29,
@@ -448,6 +457,9 @@ def register():
             "pandas/tests/arrays/interval/test_interval.py::TestSetitem::test_set_na",
             "pandas/tests/series/methods/test_convert_dtypes.py::TestSeriesConvertDtypes::test_convert_dtypes",
         ],
+        api=PandasAPI29(),
+        unittests=PandasUnittestGenerator29(),
+        systemtests=PandasSystemtestGenerator29(),
     )
     Pandas(
         bug_id=30,
@@ -457,6 +469,9 @@ def register():
         test_cases=[
             "pandas/tests/io/json/test_pandas.py::TestPandasContainer::test_readjson_bool_series"
         ],
+        api=PandasAPI30(),
+        unittests=PandasUnittestGenerator30(),
+        systemtests=PandasSystemtestGenerator30(),
     )
     Pandas(
         bug_id=31,
@@ -2277,6 +2292,117 @@ class PandasAPI25(API):
             return TestResult.FAILING, f"Expected {expected}, but was {result}"
 
 
+class PandasAPI26(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        expected = expected[1:]
+        expected = expected[:-1]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        print("args: ", args)
+        print("result: ", result)
+        print("expected: ", expected)
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class PandasAPI27(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        expected = expected[1:]
+        expected = expected[:-1]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        print("args: ", args)
+        print("result: ", result)
+        print("expected: ", expected)
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class PandasAPI28(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        expected = expected[1:]
+        expected = expected[:-1]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        print("args: ", args)
+        print("result: ", result)
+        print("expected: ", expected)
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class PandasAPI29(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        expected = expected[1:]
+        expected = expected[:-1]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        print("args: ", args)
+        print("result: ", result)
+        print("expected: ", expected)
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class PandasAPI30(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        expected = expected[1:]
+        expected = expected[:-1]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        print("args: ", args)
+        print("result: ", result)
+        print("expected: ", expected)
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+
 class PandasTestGenerator:
     @staticmethod
     def generate_values(producer: Callable) -> str:
@@ -2524,6 +2650,27 @@ class PandasTestGenerator:
     @staticmethod
     def pandas25_generate():
         return "", ""
+
+    @staticmethod
+    def pandas26_generate():
+        return "", ""
+
+    @staticmethod
+    def pandas27_generate():
+        return "", ""
+
+    @staticmethod
+    def pandas28_generate():
+        return "", ""
+
+    @staticmethod
+    def pandas29_generate():
+        return "", ""
+
+    @staticmethod
+    def pandas30_generate():
+        return "", ""
+
 
 
 class PandasUnittestGenerator1(
@@ -6102,70 +6249,32 @@ class PandasUnittestGenerator24(
     ) -> list[ast.Assign | ast.Expr]:
         return [
             ast.Assign(
-                targets=[ast.Name(id="midx1")],
+                targets=[ast.Name(id='dti', ctx=ast.Store())],
                 value=ast.Call(
-                    func=ast.Attribute(value=ast.Attribute(value=ast.Name(id="pandas"), attr="MultiIndex"),
-                                       attr="from_product"),
+                    func=ast.Name(id='date_range', ctx=ast.Load()),
                     args=[
-                        ast.List(elts=[
-                            ast.Constant(value=list_1),
-                            ast.Constant(value=list_2)
-                        ]),
+                        ast.Constant(value="2014-03-08 23:00"),
+                        ast.Constant(value="2014-03-09 09:00")
                     ],
                     keywords=[
-                        ast.keyword(arg="names", value=ast.Constant(value=index_1))
-                    ],
+                        ast.keyword(arg='freq', value=ast.Constant(value="H"))
+                    ]
                 ),
-                lineno=1,
+                lineno=1
             ),
-            ast.Assign(
-                targets=[ast.Name(id="midx2")],
-                value=ast.Call(
-                    func=ast.Attribute(value=ast.Attribute(value=ast.Name(id="pandas"), attr="MultiIndex"),
-                                       attr="from_product"),
-                    args=[
-                        ast.List(elts=[
-                            ast.Constant(value=list_1),
-                            ast.Constant(value=list_2)
-                        ]),
-                    ],
-                    keywords=[
-                        ast.keyword(arg="names", value=ast.Constant(value=index_2))
-                    ],
+            # assert dti.freq == "H"
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Attribute(
+                        value=ast.Name(id='dti', ctx=ast.Load()),
+                        attr='freq',
+                        ctx=ast.Load()
+                    ),
+                    ops=[ast.Eq()],
+                    comparators=[ast.Constant(value="H")]
                 ),
-                lineno=2,
-            ),
-            ast.Assign(
-                targets=[ast.Tuple(elts=[ast.Name(id="join_idx"),
-                                         ast.Name(id="lidx"),
-                                         ast.Name(id="ridx")])],
-                value=ast.Call(
-                    func=ast.Attribute(value=ast.Name(id="midx1"), attr="join"),
-                    args=[ast.Name(id="midx2")],
-                    keywords=[
-                        ast.keyword(arg="return_indexers", value=ast.Constant(value=False))],
-                ),
-                lineno=3,
-            ),
-            ast.Expr(
-                value=ast.Call(
-                    func=ast.Name(id="assert_index_equal"),
-                    args=[
-                        ast.Name(id="midx1"),
-                        ast.Name(id="join_idx"),
-                    ],
-                    keywords=[],
-                )
-            ),
-            ast.Expr(
-                value=ast.Call(
-                    func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
-                    args=[
-                        ast.Constant(value=expected),
-                        ast.Name(id="lidx")
-                    ],
-                    keywords=[]
-                )
+                msg=None,
+                lineno=2
             )
         ]
 
@@ -6214,70 +6323,103 @@ class PandasUnittestGenerator25(
     ) -> list[ast.Assign | ast.Expr]:
         return [
             ast.Assign(
-                targets=[ast.Name(id="midx1")],
-                value=ast.Call(
-                    func=ast.Attribute(value=ast.Attribute(value=ast.Name(id="pandas"), attr="MultiIndex"),
-                                       attr="from_product"),
-                    args=[
-                        ast.List(elts=[
-                            ast.Constant(value=list_1),
-                            ast.Constant(value=list_2)
-                        ]),
+                targets=[ast.Name(id='dates', ctx=ast.Store())],
+                value=ast.List(
+                    elts=[
+                        ast.Constant(value="2013/12/29"),
+                        ast.Constant(value="2013/12/30"),
+                        ast.Constant(value="2013/12/31")
                     ],
-                    keywords=[
-                        ast.keyword(arg="names", value=ast.Constant(value=index_1))
-                    ],
+                    ctx=ast.Load()
                 ),
-                lineno=1,
+                lineno=1
             ),
+            # dates = DatetimeIndex(dates, tz="Europe/Brussels")
             ast.Assign(
-                targets=[ast.Name(id="midx2")],
+                targets=[ast.Name(id='dates', ctx=ast.Store())],
                 value=ast.Call(
-                    func=ast.Attribute(value=ast.Attribute(value=ast.Name(id="pandas"), attr="MultiIndex"),
-                                       attr="from_product"),
+                    func=ast.Name(id='DatetimeIndex', ctx=ast.Load()),
                     args=[
-                        ast.List(elts=[
-                            ast.Constant(value=list_1),
-                            ast.Constant(value=list_2)
-                        ]),
+                        ast.Name(id='dates', ctx=ast.Load())
                     ],
                     keywords=[
-                        ast.keyword(arg="names", value=ast.Constant(value=index_2))
-                    ],
+                        ast.keyword(arg='tz', value=ast.Constant(value="Europe/Brussels"))
+                    ]
                 ),
-                lineno=2,
+                lineno=2
             ),
+            # result = dates.isocalendar()
             ast.Assign(
-                targets=[ast.Tuple(elts=[ast.Name(id="join_idx"),
-                                         ast.Name(id="lidx"),
-                                         ast.Name(id="ridx")])],
+                targets=[ast.Name(id='result', ctx=ast.Store())],
                 value=ast.Call(
-                    func=ast.Attribute(value=ast.Name(id="midx1"), attr="join"),
-                    args=[ast.Name(id="midx2")],
-                    keywords=[
-                        ast.keyword(arg="return_indexers", value=ast.Constant(value=False))],
+                    func=ast.Attribute(
+                        value=ast.Name(id='dates', ctx=ast.Load()),
+                        attr='isocalendar',
+                        ctx=ast.Load()
+                    ),
+                    args=[],
+                    keywords=[]
                 ),
-                lineno=3,
+                lineno=3
             ),
+            # expected_data_frame = pd.DataFrame(
+            #     [[2013, 52, 7], [2014, 1, 1], [2014, 1, 2]],
+            #     columns=["year", "week", "day"],
+            #     dtype="UInt32",
+            # )
+            ast.Assign(
+                targets=[ast.Name(id='expected_data_frame', ctx=ast.Store())],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id='pd', ctx=ast.Load()),
+                        attr='DataFrame',
+                        ctx=ast.Load()
+                    ),
+                    args=[
+                        ast.List(
+                            elts=[
+                                ast.List(elts=[ast.Constant(value=2013), ast.Constant(value=52), ast.Constant(value=7)],
+                                         ctx=ast.Load()),
+                                ast.List(elts=[ast.Constant(value=2014), ast.Constant(value=1), ast.Constant(value=1)],
+                                         ctx=ast.Load()),
+                                ast.List(elts=[ast.Constant(value=2014), ast.Constant(value=1), ast.Constant(value=2)],
+                                         ctx=ast.Load())
+                            ],
+                            ctx=ast.Load()
+                        )
+                    ],
+                    keywords=[
+                        ast.keyword(
+                            arg='columns',
+                            value=ast.List(
+                                elts=[
+                                    ast.Constant(value="year"),
+                                    ast.Constant(value="week"),
+                                    ast.Constant(value="day")
+                                ],
+                                ctx=ast.Load()
+                            )
+                        ),
+                        ast.keyword(arg='dtype', value=ast.Constant(value="UInt32"))
+                    ]
+                ),
+                lineno=4
+            ),
+            # tm.assert_frame_equal(result, expected_data_frame)
             ast.Expr(
                 value=ast.Call(
-                    func=ast.Name(id="assert_index_equal"),
+                    func=ast.Attribute(
+                        value=ast.Name(id='tm', ctx=ast.Load()),
+                        attr='assert_frame_equal',
+                        ctx=ast.Load()
+                    ),
                     args=[
-                        ast.Name(id="midx1"),
-                        ast.Name(id="join_idx"),
-                    ],
-                    keywords=[],
-                )
-            ),
-            ast.Expr(
-                value=ast.Call(
-                    func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
-                    args=[
-                        ast.Constant(value=expected),
-                        ast.Name(id="lidx")
+                        ast.Name(id='result', ctx=ast.Load()),
+                        ast.Name(id='expected_data_frame', ctx=ast.Load())
                     ],
                     keywords=[]
-                )
+                ),
+                lineno=9
             )
         ]
 
@@ -6305,6 +6447,196 @@ class PandasUnittestGenerator25(
         pass_, _ = self._generate_one()
         test = self.get_empty_test()
         test.body = self._get_assert("", "", "", "", "")
+        return test, TestResult.PASSING
+
+
+class PandasUnittestGenerator26(
+    python.PythonGenerator, UnittestGenerator, PandasTestGenerator
+):
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.pandas26_generate)
+
+    @staticmethod
+    def _get_assert(
+            expected: Any,
+    ) -> list[ast.Assign | ast.Expr]:
+        return [
+
+        ]
+
+    def get_imports(self) -> list[Import]:
+        return [
+            ast.Import(
+                module="pandas",
+                names=[ast.alias(name="pandas")],
+                level=0,
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        _, fail_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert("")
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_, _ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert("")
+        return test, TestResult.PASSING
+
+
+class PandasUnittestGenerator27(
+    python.PythonGenerator, UnittestGenerator, PandasTestGenerator
+):
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.pandas27_generate)
+
+    @staticmethod
+    def _get_assert(
+            expected: Any,
+    ) -> list[ast.Assign | ast.Expr]:
+        return [
+
+        ]
+
+    def get_imports(self) -> list[Import]:
+        return [
+            ast.Import(
+                module="pandas",
+                names=[ast.alias(name="pandas")],
+                level=0,
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        _, fail_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert("")
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_, _ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert("")
+        return test, TestResult.PASSING
+
+
+class PandasUnittestGenerator28(
+    python.PythonGenerator, UnittestGenerator, PandasTestGenerator
+):
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.pandas28_generate)
+
+    @staticmethod
+    def _get_assert(
+            expected: Any,
+    ) -> list[ast.Assign | ast.Expr]:
+        return [
+
+        ]
+
+    def get_imports(self) -> list[Import]:
+        return [
+            ast.Import(
+                module="pandas",
+                names=[ast.alias(name="pandas")],
+                level=0,
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        _, fail_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert("")
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_, _ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert("")
+        return test, TestResult.PASSING
+
+
+class PandasUnittestGenerator29(
+    python.PythonGenerator, UnittestGenerator, PandasTestGenerator
+):
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.pandas29_generate)
+
+    @staticmethod
+    def _get_assert(
+            expected: Any,
+    ) -> list[ast.Assign | ast.Expr]:
+        return [
+
+        ]
+
+    def get_imports(self) -> list[Import]:
+        return [
+            ast.Import(
+                module="pandas",
+                names=[ast.alias(name="pandas")],
+                level=0,
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        _, fail_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert("")
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_, _ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert("")
+        return test, TestResult.PASSING
+
+
+class PandasUnittestGenerator30(
+    python.PythonGenerator, UnittestGenerator, PandasTestGenerator
+):
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.pandas30_generate)
+
+    @staticmethod
+    def _get_assert(
+            expected: Any,
+    ) -> list[ast.Assign | ast.Expr]:
+        return [
+
+        ]
+
+    def get_imports(self) -> list[Import]:
+        return [
+            ast.Import(
+                module="pandas",
+                names=[ast.alias(name="pandas")],
+                level=0,
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        _, fail_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert("")
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_, _ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert("")
         return test, TestResult.PASSING
 
 
@@ -6567,6 +6899,56 @@ class PandasSystemtestGenerator25(SystemtestGenerator, PandasTestGenerator):
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
         pass_, _ = self.generate_values(self.pandas25_generate)
+        return f"{pass_}", TestResult.PASSING
+
+
+class PandasSystemtestGenerator26(SystemtestGenerator, PandasTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.pandas26_generate)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.pandas26_generate)
+        return f"{pass_}", TestResult.PASSING
+
+
+class PandasSystemtestGenerator27(SystemtestGenerator, PandasTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.pandas27_generate)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.pandas27_generate)
+        return f"{pass_}", TestResult.PASSING
+
+
+class PandasSystemtestGenerator28(SystemtestGenerator, PandasTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.pandas28_generate)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.pandas28_generate)
+        return f"{pass_}", TestResult.PASSING
+
+
+class PandasSystemtestGenerator29(SystemtestGenerator, PandasTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.pandas29_generate)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.pandas29_generate)
+        return f"{pass_}", TestResult.PASSING
+
+
+class PandasSystemtestGenerator30(SystemtestGenerator, PandasTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.pandas30_generate)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.pandas30_generate)
         return f"{pass_}", TestResult.PASSING
 
 
