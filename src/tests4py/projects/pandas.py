@@ -2402,7 +2402,6 @@ class PandasAPI30(API):
             return TestResult.FAILING, f"Expected {expected}, but was {result}"
 
 
-
 class PandasTestGenerator:
     @staticmethod
     def generate_values(producer: Callable) -> str:
@@ -2670,7 +2669,6 @@ class PandasTestGenerator:
     @staticmethod
     def pandas30_generate():
         return "", ""
-
 
 
 class PandasUnittestGenerator1(
@@ -5828,7 +5826,8 @@ class PandasUnittestGenerator21(
                             keywords=[
                                 ast.keyword(
                                     arg='match',
-                                    value=ast.Constant(value=r"None of \[Index\(\['C'\], dtype='object'\)\] are in the \[index\]"),
+                                    value=ast.Constant(
+                                        value=r"None of \[Index\(\['C'\], dtype='object'\)\] are in the \[index\]"),
                                 )
                             ]
                         ),
@@ -6249,9 +6248,9 @@ class PandasUnittestGenerator24(
     ) -> list[ast.Assign | ast.Expr]:
         return [
             ast.Assign(
-                targets=[ast.Name(id='dti', ctx=ast.Store())],
+                targets=[ast.Name(id='dti')],
                 value=ast.Call(
-                    func=ast.Name(id='date_range', ctx=ast.Load()),
+                    func=ast.Name(id='date_range'),
                     args=[
                         ast.Constant(value="2014-03-08 23:00"),
                         ast.Constant(value="2014-03-09 09:00")
@@ -6262,13 +6261,12 @@ class PandasUnittestGenerator24(
                 ),
                 lineno=1
             ),
-            # assert dti.freq == "H"
             ast.Assert(
                 test=ast.Compare(
                     left=ast.Attribute(
-                        value=ast.Name(id='dti', ctx=ast.Load()),
+                        value=ast.Name(id='dti'),
                         attr='freq',
-                        ctx=ast.Load()
+
                     ),
                     ops=[ast.Eq()],
                     comparators=[ast.Constant(value="H")]
@@ -6323,24 +6321,23 @@ class PandasUnittestGenerator25(
     ) -> list[ast.Assign | ast.Expr]:
         return [
             ast.Assign(
-                targets=[ast.Name(id='dates', ctx=ast.Store())],
+                targets=[ast.Name(id='dates')],
                 value=ast.List(
                     elts=[
                         ast.Constant(value="2013/12/29"),
                         ast.Constant(value="2013/12/30"),
                         ast.Constant(value="2013/12/31")
                     ],
-                    ctx=ast.Load()
+
                 ),
                 lineno=1
             ),
-            # dates = DatetimeIndex(dates, tz="Europe/Brussels")
             ast.Assign(
-                targets=[ast.Name(id='dates', ctx=ast.Store())],
+                targets=[ast.Name(id='dates')],
                 value=ast.Call(
-                    func=ast.Name(id='DatetimeIndex', ctx=ast.Load()),
+                    func=ast.Name(id='DatetimeIndex'),
                     args=[
-                        ast.Name(id='dates', ctx=ast.Load())
+                        ast.Name(id='dates')
                     ],
                     keywords=[
                         ast.keyword(arg='tz', value=ast.Constant(value="Europe/Brussels"))
@@ -6348,14 +6345,13 @@ class PandasUnittestGenerator25(
                 ),
                 lineno=2
             ),
-            # result = dates.isocalendar()
             ast.Assign(
-                targets=[ast.Name(id='result', ctx=ast.Store())],
+                targets=[ast.Name(id='result')],
                 value=ast.Call(
                     func=ast.Attribute(
-                        value=ast.Name(id='dates', ctx=ast.Load()),
+                        value=ast.Name(id='dates'),
                         attr='isocalendar',
-                        ctx=ast.Load()
+
                     ),
                     args=[],
                     keywords=[]
@@ -6368,24 +6364,24 @@ class PandasUnittestGenerator25(
             #     dtype="UInt32",
             # )
             ast.Assign(
-                targets=[ast.Name(id='expected_data_frame', ctx=ast.Store())],
+                targets=[ast.Name(id='expected_data_frame')],
                 value=ast.Call(
                     func=ast.Attribute(
-                        value=ast.Name(id='pd', ctx=ast.Load()),
+                        value=ast.Name(id='pd'),
                         attr='DataFrame',
-                        ctx=ast.Load()
+
                     ),
                     args=[
                         ast.List(
                             elts=[
                                 ast.List(elts=[ast.Constant(value=2013), ast.Constant(value=52), ast.Constant(value=7)],
-                                         ctx=ast.Load()),
+                                         ),
                                 ast.List(elts=[ast.Constant(value=2014), ast.Constant(value=1), ast.Constant(value=1)],
-                                         ctx=ast.Load()),
+                                         ),
                                 ast.List(elts=[ast.Constant(value=2014), ast.Constant(value=1), ast.Constant(value=2)],
-                                         ctx=ast.Load())
+                                         )
                             ],
-                            ctx=ast.Load()
+
                         )
                     ],
                     keywords=[
@@ -6397,7 +6393,7 @@ class PandasUnittestGenerator25(
                                     ast.Constant(value="week"),
                                     ast.Constant(value="day")
                                 ],
-                                ctx=ast.Load()
+
                             )
                         ),
                         ast.keyword(arg='dtype', value=ast.Constant(value="UInt32"))
@@ -6405,17 +6401,16 @@ class PandasUnittestGenerator25(
                 ),
                 lineno=4
             ),
-            # tm.assert_frame_equal(result, expected_data_frame)
             ast.Expr(
                 value=ast.Call(
                     func=ast.Attribute(
-                        value=ast.Name(id='tm', ctx=ast.Load()),
+                        value=ast.Name(id='tm'),
                         attr='assert_frame_equal',
-                        ctx=ast.Load()
+
                     ),
                     args=[
-                        ast.Name(id='result', ctx=ast.Load()),
-                        ast.Name(id='expected_data_frame', ctx=ast.Load())
+                        ast.Name(id='result'),
+                        ast.Name(id='expected_data_frame')
                     ],
                     keywords=[]
                 ),
@@ -6463,7 +6458,69 @@ class PandasUnittestGenerator26(
             expected: Any,
     ) -> list[ast.Assign | ast.Expr]:
         return [
+            ast.Assign(
+                targets=[ast.Name(id='function')],
+                value=ast.Constant(value='max'),
+                lineno=1
+            ),
+            ast.Assign(
+                targets=[ast.Name(id='skipna')],
+                value=ast.Constant(value=True),
+                lineno=2
+            ),
+            ast.Assign(
+                targets=[ast.Name(id='cat')],
+                value=ast.Call(
+                    func=ast.Name(id='Categorical'),
+                    args=[
+                        ast.List(
+                            elts=[
+                                ast.Attribute(value=ast.Name(id='np'), attr='nan')
+                            ],
 
+                        )
+                    ],
+                    keywords=[
+                        ast.keyword(
+                            arg='categories',
+                            value=ast.List(
+                                elts=[ast.Constant(value=1), ast.Constant(value=2)],
+
+                            )
+                        ),
+                        ast.keyword(arg='ordered', value=ast.Constant(value=True))
+                    ]
+                ),
+                lineno=3
+            ),
+            ast.Assign(
+                targets=[ast.Name(id='result')],
+                value=ast.Call(
+                    func=ast.Call(
+                        func=ast.Name(id='getattr'),
+                        args=[
+                            ast.Name(id='cat'),
+                            ast.Name(id='function')
+                        ],
+                        keywords=[]
+                    ),
+                    args=[],
+                    keywords=[
+                        ast.keyword(arg='skipna', value=ast.Name(id='skipna'))
+                    ]
+                ),
+                lineno=4
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Name(id='result'),
+                    ops=[ast.Is()],
+                    comparators=[
+                        ast.Attribute(value=ast.Name(id='np'), attr='nan')
+                    ]
+                ),
+                lineno=5
+            )
         ]
 
     def get_imports(self) -> list[Import]:
@@ -6501,7 +6558,94 @@ class PandasUnittestGenerator27(
             expected: Any,
     ) -> list[ast.Assign | ast.Expr]:
         return [
-
+            ast.Assign(
+                targets=[ast.Name(id='rng')],
+                value=ast.Call(
+                    func=ast.Name(id='date_range'),
+                    args=[],
+                    keywords=[
+                        ast.keyword(arg='start', value=ast.Constant(value="2019-12-22 06:40:00+00:00")),
+                        ast.keyword(arg='end', value=ast.Constant(value="2019-12-22 08:45:00+00:00")),
+                        ast.keyword(arg='freq', value=ast.Constant(value="5min")),
+                    ]
+                ),
+                lineno=1
+            ),
+            ast.With(
+                items=[
+                    ast.withitem(
+                        context_expr=ast.Call(
+                            func=ast.Attribute(value=ast.Name(id='tm'), attr='assert_produces_warning',
+                                               ),
+                            args=[ast.Constant(value=None)],
+                            keywords=[]
+                        ),
+                        optional_vars=None
+                    )
+                ],
+                body=[
+                    ast.Expr(
+                        value=ast.Call(
+                            func=ast.Attribute(value=ast.Name(id='warnings'), attr='simplefilter',
+                                               ),
+                            args=[ast.Constant(value="ignore"), ast.Name(id='UserWarning')],
+                            keywords=[]
+                        )
+                    ),
+                    ast.Assign(
+                        targets=[ast.Name(id='pi1')],
+                        value=ast.Call(
+                            func=ast.Attribute(value=ast.Name(id='rng'), attr='to_period',
+                                               ),
+                            args=[ast.Constant(value="5min")],
+                            keywords=[]
+                        )
+                    )
+                ],
+                lineno=6
+            ),
+            ast.With(
+                items=[
+                    ast.withitem(
+                        context_expr=ast.Call(
+                            func=ast.Attribute(value=ast.Name(id='tm'), attr='assert_produces_warning',
+                                               ),
+                            args=[ast.Constant(value=None)],
+                            keywords=[]
+                        ),
+                        optional_vars=None
+                    )
+                ],
+                body=[
+                    ast.Expr(
+                        value=ast.Call(
+                            func=ast.Attribute(value=ast.Name(id='warnings'), attr='simplefilter',
+                                               ),
+                            args=[ast.Constant(value="ignore"), ast.Name(id='UserWarning')],
+                            keywords=[]
+                        )
+                    ),
+                    ast.Assign(
+                        targets=[ast.Name(id='pi2')],
+                        value=ast.Call(
+                            func=ast.Attribute(value=ast.Name(id='rng'), attr='to_period',
+                                               ),
+                            args=[],
+                            keywords=[]
+                        )
+                    )
+                ],
+                lineno=11
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id='tm'), attr='assert_index_equal',
+                                       ),
+                    args=[ast.Name(id='pi1'), ast.Name(id='pi2')],
+                    keywords=[]
+                ),
+                lineno=15
+            )
         ]
 
     def get_imports(self) -> list[Import]:
