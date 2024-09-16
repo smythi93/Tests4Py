@@ -1,9 +1,45 @@
+diff --git a/tests/shells/test_bash.py b/tests/shells/test_bash.py
+index 1a00e9b..c3738f4 100644
+--- a/tests/shells/test_bash.py
++++ b/tests/shells/test_bash.py
+@@ -46,6 +46,13 @@ class TestBash(object):
+         assert 'TF_ALIAS=fuck' in shell.app_alias('fuck')
+         assert 'PYTHONIOENCODING=utf-8' in shell.app_alias('fuck')
+
++    def test_app_alias_variables_correctly_set(self, shell):
++        alias = shell.app_alias('fuck')
++        assert "alias fuck='TF_CMD=$(TF_ALIAS" in alias
++        assert '$(TF_ALIAS=fuck PYTHONIOENCODING' in alias
++        assert 'PYTHONIOENCODING=utf-8 TF_SHELL_ALIASES' in alias
++        assert 'ALIASES=$(alias) thefuck' in alias
++
+     def test_get_history(self, history_lines, shell):
+         history_lines(['ls', 'rm'])
+         assert list(shell.get_history()) == ['ls', 'rm']
+diff --git a/tests/shells/test_zsh.py b/tests/shells/test_zsh.py
+index 450191d..f44f051 100644
+--- a/tests/shells/test_zsh.py
++++ b/tests/shells/test_zsh.py
+@@ -45,6 +45,13 @@ class TestZsh(object):
+         assert 'thefuck' in shell.app_alias('fuck')
+         assert 'PYTHONIOENCODING' in shell.app_alias('fuck')
+
++    def test_app_alias_variables_correctly_set(self, shell):
++        alias = shell.app_alias('fuck')
++        assert "alias fuck='TF_CMD=$(TF_ALIAS" in alias
++        assert '$(TF_ALIAS=fuck PYTHONIOENCODING' in alias
++        assert 'PYTHONIOENCODING=utf-8 TF_SHELL_ALIASES' in alias
++        assert 'ALIASES=$(alias) thefuck' in alias
++
+     def test_get_history(self, history_lines, shell):
+         history_lines([': 1432613911:0;ls', ': 1432613916:0;rm'])
+         assert list(shell.get_history()) == ['ls', 'rm']
 diff --git a/thefuck/shells/bash.py b/thefuck/shells/bash.py
 index d6e9b2c..8f4e0e1 100644
 --- a/thefuck/shells/bash.py
 +++ b/thefuck/shells/bash.py
 @@ -6,9 +6,11 @@ from .generic import Generic
- 
+
  class Bash(Generic):
      def app_alias(self, fuck):
 -        alias = "TF_ALIAS={0}" \
@@ -13,8 +49,9 @@ index d6e9b2c..8f4e0e1 100644
 +        alias = "alias {0}='TF_CMD=$(TF_ALIAS={0}" \
 +                " PYTHONIOENCODING=utf-8" \
 +                " TF_SHELL_ALIASES=$(alias)" \
-+                " thefuck $(fc -ln -1)) &&"" eval $TF_CMD".format(fuck)
- 
++                " thefuck $(fc -ln -1)) &&" \
+                 " eval $TF_CMD".format(fuck)
+
          if settings.alter_history:
 diff --git a/thefuck/shells/fish.py b/thefuck/shells/fish.py
 index fff003b..bc2b2ec 100644
@@ -22,7 +59,7 @@ index fff003b..bc2b2ec 100644
 +++ b/thefuck/shells/fish.py
 @@ -14,6 +14,7 @@ class Fish(Generic):
              return ['cd', 'grep', 'ls', 'man', 'open']
- 
+
      def app_alias(self, fuck):
 +        # It is VERY important to have the variables declared WITHIN the alias
          return ('function {0} -d "Correct your previous console command"\n'
@@ -33,16 +70,18 @@ index a8c0587..e522d6a 100644
 --- a/thefuck/shells/zsh.py
 +++ b/thefuck/shells/zsh.py
 @@ -7,10 +7,11 @@ from .generic import Generic
- 
+
  class Zsh(Generic):
      def app_alias(self, alias_name):
 -        alias = "alias {0}='TF_ALIAS={0}" \
 +        # It is VERY important to have the variables declared WITHIN the alias
-+        alias = "alias {0}='TF_CMD=$(TF_ALIAS={0}"" PYTHONIOENCODING=utf-8" \
++        alias = "alias {0}='TF_CMD=$(TF_ALIAS={0}" \
+                 " PYTHONIOENCODING=utf-8" \
 -                ' TF_SHELL_ALIASES=$(alias)' \
 -                " TF_CMD=$(thefuck $(fc -ln -1 | tail -n 1)) &&" \
 +                " TF_SHELL_ALIASES=$(alias)" \
-+                " thefuck $(fc -ln -1 | tail -n 1)) &&"" eval $TF_CMD".format(alias_name)
++                " thefuck $(fc -ln -1 | tail -n 1)) &&" \
+                 " eval $TF_CMD".format(alias_name)
  
          if settings.alter_history:
 diff --git a/thefuck/types.py b/thefuck/types.py
