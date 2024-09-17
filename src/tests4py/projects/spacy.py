@@ -175,9 +175,9 @@ def register():
                 "spacy", "tests", "regression", "test_issue4665.py::test_issue4665"
             )
         ],
-        # api=SpaCyAPI4(),
-        # unittests=SpaCyUnittestGenerator4(),
-        # systemtests=SpaCySystemtestGenerator4(),
+        api=SpaCyAPI4(),
+        unittests=SpaCyUnittestGenerator4(),
+        systemtests=SpaCySystemtestGenerator4(),
         loc=73718,
     )
     SpaCy(
@@ -188,6 +188,9 @@ def register():
         test_cases=[
             os.path.join("spacy", "tests", "test_language.py::test_evaluate_no_pipe")
         ],
+        api=SpaCyAPI5(),
+        unittests=SpaCyUnittestGenerator5(),
+        systemtests=SpaCySystemtestGenerator5(),
         loc=73083,
     )
     SpaCy(
@@ -274,9 +277,14 @@ class SpaCyAPI1(API):
         if args is None:
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
-        expected = process.args[2]
+        expected = process.args[3]
         result = process.stdout.decode("utf8")
         result = result.strip()
+        expected = expected[:-1]
+        expected = expected.replace("\\n", "\n")
+        print("args: ", args)
+        print("result: ", result)
+        print("expected: ", expected)
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -294,6 +302,9 @@ class SpaCyAPI2(API):
         expected = process.args[2]
         result = process.stdout.decode("utf8")
         result = result.strip()
+        print("args: ", args)
+        print("result: ", result)
+        print("expected: ", expected)
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -311,6 +322,9 @@ class SpaCyAPI3(API):
         expected = process.args[2]
         result = process.stdout.decode("utf8")
         result = result.strip()
+        print("args: ", args)
+        print("result: ", result)
+        print("expected: ", expected)
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -318,6 +332,23 @@ class SpaCyAPI3(API):
 
 
 class SpaCyAPI4(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class SpaCyAPI5(API):
     def __init__(self, default_timeout: int = 5):
         super().__init__(default_timeout=default_timeout)
 
@@ -815,7 +846,7 @@ class SpaCyTestGenerator:
             "only be fixed with token.is_sent_start.",
             "Row out of bounds, unable to add row {row} for key {key}."
         )
-        dice = random.randint(0, len(all_error_messages)-1)
+        dice = random.randint(0, len(all_error_messages) - 1)
         passing = (all_errors[dice], f"[{all_errors[dice]}] {all_error_messages[dice]}")
         failing = (all_errors[dice], f"[{all_errors[dice]}] error description")
         return passing, failing
@@ -832,6 +863,10 @@ class SpaCyTestGenerator:
     def spacy4_generate():
         return ""
 
+    @staticmethod
+    def spacy5_generate():
+        return ""
+
 
 class SpaCyUnittestGenerator1(
     python.PythonGenerator, UnittestGenerator, SpaCyTestGenerator
@@ -846,20 +881,18 @@ class SpaCyUnittestGenerator1(
     def _get_assert(
             err: str,
             code: str
-    ) -> list[Assert]:
+    ) -> list[Call]:
         return [
-            ast.Assert(
-                test=ast.Compare(
-                    left=ast.Attribute(
+            ast.Call(
+                func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
+                args=[
+                    ast.Attribute(
                         value=ast.Name(id='Errors'),
                         attr=err,
                     ),
-                    ops=[ast.Eq()],
-                    comparators=[
-                        ast.Constant(value=code)
-                    ]
-                ),
-                msg=None
+                    ast.Constant(value=code)
+                ],
+                keywords=[],
             )
         ]
 
@@ -897,39 +930,46 @@ class SpaCyUnittestGenerator2(
 
     @staticmethod
     def _get_assert(
-            expected: str,
-            model_path: str,
     ) -> list[Assign | Expr | Assert]:
         return [
             ast.Assign(
                 targets=[ast.Subscript(
-                    value=ast.Attribute(value=ast.Name(id='Language', attr='factories')),
+                    value=ast.Attribute(
+                        value=ast.Name(id='Language', ctx=ast.Load()),
+                        attr='factories',
+                        ctx=ast.Load()
+                    ),
                     slice=ast.Index(value=ast.Constant(value='my_component')),
+                    ctx=ast.Store()
                 )],
                 value=ast.Lambda(
                     args=ast.arguments(
                         args=[
-                            ast.Name(id='nlp'),
-                            ast.Name(id='cfg')
+                            ast.arg(arg='nlp', annotation=None),
+                            ast.arg(arg='cfg', annotation=None)
                         ],
                         vararg=None,
                         kwonlyargs=[],
                         kw_defaults=[],
-                        kwarg=None,
+                        kwarg=ast.arg(arg='cfg', annotation=None),
                         defaults=[]
                     ),
                     body=ast.Call(
-                        func=ast.Name(id='MyComponent'),
-                        args=[ast.Name(id='nlp'), ast.Name(id='cfg')],
-                        keywords=[]
+                        func=ast.Name(id='MyComponent', ctx=ast.Load()),
+                        args=[
+                            ast.Name(id='nlp', ctx=ast.Load())
+                        ],
+                        keywords=[
+                            ast.keyword(arg=None, value=ast.Name(id='cfg', ctx=ast.Load()))
+                        ]
                     )
                 ),
                 lineno=1
             ),
             ast.Assign(
-                targets=[ast.Name(id='nlp')],
+                targets=[ast.Name(id='nlp', ctx=ast.Store())],
                 value=ast.Call(
-                    func=ast.Name(id='English'),
+                    func=ast.Name(id='English', ctx=ast.Load()),
                     args=[],
                     keywords=[]
                 ),
@@ -938,14 +978,16 @@ class SpaCyUnittestGenerator2(
             ast.Expr(
                 value=ast.Call(
                     func=ast.Attribute(
-                        value=ast.Name(id='nlp'),
+                        value=ast.Name(id='nlp', ctx=ast.Load()),
                         attr='add_pipe',
+                        ctx=ast.Load()
                     ),
                     args=[
                         ast.Call(
                             func=ast.Attribute(
-                                value=ast.Name(id='nlp'),
+                                value=ast.Name(id='nlp', ctx=ast.Load()),
                                 attr='create_pipe',
+                                ctx=ast.Load()
                             ),
                             args=[ast.Constant(value='my_component')],
                             keywords=[]
@@ -960,27 +1002,87 @@ class SpaCyUnittestGenerator2(
                     left=ast.Attribute(
                         value=ast.Call(
                             func=ast.Attribute(
-                                value=ast.Name(id='nlp'),
+                                value=ast.Name(id='nlp', ctx=ast.Load()),
                                 attr='get_pipe',
+                                ctx=ast.Load()
                             ),
                             args=[ast.Constant(value='my_component')],
                             keywords=[]
                         ),
                         attr='categories',
+                        ctx=ast.Load()
                     ),
                     ops=[ast.Eq()],
                     comparators=[ast.Constant(value='all_categories')]
                 ),
                 msg=None,
                 lineno=4
+            ),
+            ast.With(
+                items=[ast.withitem(context_expr=ast.Call(
+                    func=ast.Name(id='make_tempdir', ctx=ast.Load()),
+                    args=[], keywords=[]))],
+                body=[
+                    ast.Expr(value=ast.Call(
+                        func=ast.Attribute(value=ast.Name(id='nlp', ctx=ast.Load()), attr='to_disk', ctx=ast.Load()),
+                        args=[ast.Name(id='tmpdir', ctx=ast.Load())],
+                        keywords=[]),
+                        lineno=5),
+                    ast.Assign(
+                        targets=[ast.Name(id='nlp2', ctx=ast.Store())],
+                        value=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id='spacy', ctx=ast.Load()),
+                                attr='load',
+                                ctx=ast.Load()
+                            ),
+                            args=[ast.Name(id='tmpdir', ctx=ast.Load())],
+                            keywords=[
+                                ast.keyword(arg='categories', value=ast.Constant(value='my_categories'))
+                            ]
+                        ),
+                        lineno=6
+                    ),
+                    ast.Assert(
+                        test=ast.Compare(
+                            left=ast.Attribute(
+                                value=ast.Call(
+                                    func=ast.Attribute(
+                                        value=ast.Name(id='nlp2', ctx=ast.Load()),
+                                        attr='get_pipe',
+                                        ctx=ast.Load()
+                                    ),
+                                    args=[ast.Constant(value='my_component')],
+                                    keywords=[]
+                                ),
+                                attr='categories',
+                                ctx=ast.Load()
+                            ),
+                            ops=[ast.Eq()],
+                            comparators=[ast.Constant(value='my_categories')]
+                        ),
+                        msg=None,
+                        lineno=7
+                    )
+                ]
             )
         ]
 
     def get_imports(self) -> list[ImportFrom]:
         return [
             ast.ImportFrom(
-                module="spacy.util",
-                names=[ast.alias(name="load_model_from_path")],
+                module="spacy.language",
+                names=[ast.alias(name="Language")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="spacy.lang.en",
+                names=[ast.alias(name="English")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="spacy.tests.util",
+                names=[ast.alias(name="make_tempdir")],
                 level=0,
             ),
         ]
@@ -988,13 +1090,13 @@ class SpaCyUnittestGenerator2(
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("", "")
+        test.body = self._get_assert()
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("", "")
+        test.body = self._get_assert()
         return test, TestResult.PASSING
 
 
@@ -1008,28 +1110,10 @@ class SpaCyUnittestGenerator3(
 
     @staticmethod
     def _get_assert(
-            expected: str,
-            article_title: str,
-            article_text: str,
-            wp_to_id: dict,
+
     ) -> list[Call]:
         return [
-            ast.Call(
-                func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
-                args=[
-                    ast.Constant(value=expected),
-                    ast.Call(
-                        func=ast.Name(id="_process_wp_text"),
-                        args=[
-                            ast.Constant(value=article_title),
-                            ast.Constant(value=article_text),
-                            ast.Constant(value=wp_to_id),
-                        ],
-                        keywords=[],
-                    ),
-                ],
-                keywords=[],
-            )
+
         ]
 
     def get_imports(self) -> list[ImportFrom]:
@@ -1044,34 +1128,15 @@ class SpaCyUnittestGenerator3(
     @property
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         self._generate_one()
-        article_title = "Artificial intelligence"  # Title of the Wikipedia article
-        article_text = (
-            "\n"
-            '            <text xml:space="preserve">\n'
-            "                Artificial intelligence (AI), sometimes called machine intelligence, is "
-            "intelligence demonstrated by machines, in contrast to the natural intelligence displayed by "
-            "humans and animals.\n"
-            '                Leading AI textbooks define the field as the study of "intelligent agents": '
-            "any device that perceives its environment and takes actions that maximize its chance of "
-            "successfully achieving its goals.\n"
-            '                Colloquially, the term "artificial intelligence" is often used to describe '
-            'machines (or computers) that mimic "cognitive" functions that humans associate with the '
-            'human mind, such as "learning" and "problem solving".\n'
-            "            </text>\n"
-            "        "
-        )  # Raw text content of the Wikipedia article
-        wp_to_id = {
-            "Artificial intelligence": "Q11660",
-            "Machine learning": "Q2539",
-        }  # Dictionary mapping Wikipedia page titles to IDs
+
         test = self.get_empty_test()
-        test.body = self._get_assert("", article_title, article_text, wp_to_id)
+        test.body = self._get_assert()
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("", "", "", "")
+        test.body = self._get_assert()
         return test, TestResult.PASSING
 
 
@@ -1085,28 +1150,9 @@ class SpaCyUnittestGenerator4(
 
     @staticmethod
     def _get_assert(
-            expected: str,
-            article_title: str,
-            article_text: str,
-            wp_to_id: str,
     ) -> list[Call]:
         return [
-            ast.Call(
-                func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
-                args=[
-                    ast.Constant(value=expected),
-                    ast.Call(
-                        func=ast.Name(id="_process_wp_text"),
-                        args=[
-                            ast.Constant(value=article_title),
-                            ast.Constant(value=article_text),
-                            ast.Constant(value=wp_to_id),
-                        ],
-                        keywords=[],
-                    ),
-                ],
-                keywords=[],
-            )
+
         ]
 
     def get_imports(self) -> list[ImportFrom]:
@@ -1121,13 +1167,50 @@ class SpaCyUnittestGenerator4(
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("", "", "", "")
+        test.body = self._get_assert()
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("", "", "", "")
+        test.body = self._get_assert()
+        return test, TestResult.PASSING
+
+
+class SpaCyUnittestGenerator5(
+    python.PythonGenerator, UnittestGenerator, SpaCyTestGenerator
+):
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.spacy5_generate)
+
+    @staticmethod
+    def _get_assert(
+    ) -> list[Call]:
+        return [
+
+        ]
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            ast.ImportFrom(
+                module="bin.wiki_entity_linking.wikipedia_processor",
+                names=[ast.alias(name="_process_wp_text")],
+                level=0,
+            ),
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
         return test, TestResult.PASSING
 
 
@@ -1168,6 +1251,16 @@ class SpaCySystemtestGenerator4(SystemtestGenerator, SpaCyTestGenerator):
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
         pass_, _ = self.generate_values(self.spacy4_generate)
+        return f"{pass_}", TestResult.PASSING
+
+
+class SpaCySystemtestGenerator5(SystemtestGenerator, SpaCyTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.spacy5_generate)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.spacy5_generate)
         return f"{pass_}", TestResult.PASSING
 
 
