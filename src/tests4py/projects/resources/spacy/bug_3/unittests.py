@@ -1,67 +1,169 @@
 import unittest
+from bin.wiki_entity_linking.wikipedia_processor import _process_wp_text
+import html
 
 
 class TestsFailing(unittest.TestCase):
 
     def test_diversity_1(self):
-        self.assertEqual("", "")
+        title = 'cryOhWoX'
+        text = html.unescape(
+            '<text bytes="11456" xml:space="preserve">[[Fil:Archäologie schichtengrabung.jpg|thumb|Arkæologisk [[udgravning]] med profil.]] \'\'\'Arkæologi\'\'\' er studiet af tidligere tiders [[menneske]]lige [[aktivitet]], primært gennem studiet af menneskets materielle levn.</text>')
+        clean_text, _ = _process_wp_text(title, text, {})
+        expected_text = 'Arkæologi er studiet af tidligere tiders menneskelige aktivitet, primært gennem studiet af menneskets materielle levn.'
+        self.assertEqual(clean_text.strip(), expected_text)
 
     def test_diversity_2(self):
-        self.assertEqual("", "")
+        title = 'cCQWe'
+        text = html.unescape(
+            '<text bytes="11456" xml:space="preserve">[[Fil:Archäologie schichtengrabung.jpg|thumb|Arkæologisk [[udgravning]] med profil.]] \'\'\'Arkæologi\'\'\' er studiet af tidligere tiders [[menneske]]lige [[aktivitet]], primært gennem studiet af menneskets materielle levn.</text>')
+        clean_text, _ = _process_wp_text(title, text, {})
+        expected_text = 'Arkæologi er studiet af tidligere tiders menneskelige aktivitet, primært gennem studiet af menneskets materielle levn.'
+        self.assertEqual(clean_text.strip(), expected_text)
 
     def test_diversity_3(self):
-        self.assertEqual("", "")
+        title = 'oyQfr'
+        text = html.unescape(
+            '<text bytes="11456" xml:space="preserve">[[Fil:Archäologie schichtengrabung.jpg|thumb|Arkæologisk [[udgravning]] med profil.]] \'\'\'Arkæologi\'\'\' er studiet af tidligere tiders [[menneske]]lige [[aktivitet]], primært gennem studiet af menneskets materielle levn.</text>')
+        clean_text, _ = _process_wp_text(title, text, {})
+        expected_text = 'Arkæologi er studiet af tidligere tiders menneskelige aktivitet, primært gennem studiet af menneskets materielle levn.'
+        self.assertEqual(clean_text.strip(), expected_text)
 
     def test_diversity_4(self):
-        self.assertEqual("", "")
+        title = 'SjdZF'
+        text = html.unescape(
+            '<text bytes="11456" xml:space="preserve">[[Fil:Archäologie schichtengrabung.jpg|thumb|Arkæologisk [[udgravning]] med profil.]] \'\'\'Arkæologi\'\'\' er studiet af tidligere tiders [[menneske]]lige [[aktivitet]], primært gennem studiet af menneskets materielle levn.</text>')
+        clean_text, _ = _process_wp_text(title, text, {})
+        expected_text = 'Arkæologi er studiet af tidligere tiders menneskelige aktivitet, primært gennem studiet af menneskets materielle levn.'
+        self.assertEqual(clean_text.strip(), expected_text)
 
     def test_diversity_5(self):
-        self.assertEqual("", "")
+        title = 'PnQiyKMxvj'
+        text = html.unescape(
+            '<text bytes="11456" xml:space="preserve">[[Fil:Archäologie schichtengrabung.jpg|thumb|Arkæologisk [[udgravning]] med profil.]] \'\'\'Arkæologi\'\'\' er studiet af tidligere tiders [[menneske]]lige [[aktivitet]], primært gennem studiet af menneskets materielle levn.</text>')
+        clean_text, _ = _process_wp_text(title, text, {})
+        expected_text = 'Arkæologi er studiet af tidligere tiders menneskelige aktivitet, primært gennem studiet af menneskets materielle levn.'
+        self.assertEqual(clean_text.strip(), expected_text)
 
     def test_diversity_6(self):
-        self.assertEqual("", "")
+        title = 'SaAUdz'
+        text = html.unescape(
+            '<text bytes="11456" xml:space="preserve">[[Fil:Archäologie schichtengrabung.jpg|thumb|Arkæologisk [[udgravning]] med profil.]] \'\'\'Arkæologi\'\'\' er studiet af tidligere tiders [[menneske]]lige [[aktivitet]], primært gennem studiet af menneskets materielle levn.</text>')
+        clean_text, _ = _process_wp_text(title, text, {})
+        expected_text = 'Arkæologi er studiet af tidligere tiders menneskelige aktivitet, primært gennem studiet af menneskets materielle levn.'
+        self.assertEqual(clean_text.strip(), expected_text)
 
     def test_diversity_7(self):
-        self.assertEqual("", "")
+        title = 'HsTrqgUF'
+        text = html.unescape(
+            '<text bytes="11456" xml:space="preserve">[[Fil:Archäologie schichtengrabung.jpg|thumb|Arkæologisk [[udgravning]] med profil.]] \'\'\'Arkæologi\'\'\' er studiet af tidligere tiders [[menneske]]lige [[aktivitet]], primært gennem studiet af menneskets materielle levn.</text>')
+        clean_text, _ = _process_wp_text(title, text, {})
+        expected_text = 'Arkæologi er studiet af tidligere tiders menneskelige aktivitet, primært gennem studiet af menneskets materielle levn.'
+        self.assertEqual(clean_text.strip(), expected_text)
 
     def test_diversity_8(self):
-        self.assertEqual("", "")
+        title = 'TfkLtRDluIPYjIG'
+        text = html.unescape(
+            '<text bytes="11456" xml:space="preserve">[[Fil:Archäologie schichtengrabung.jpg|thumb|Arkæologisk [[udgravning]] med profil.]] \'\'\'Arkæologi\'\'\' er studiet af tidligere tiders [[menneske]]lige [[aktivitet]], primært gennem studiet af menneskets materielle levn.</text>')
+        clean_text, _ = _process_wp_text(title, text, {})
+        expected_text = 'Arkæologi er studiet af tidligere tiders menneskelige aktivitet, primært gennem studiet af menneskets materielle levn.'
+        self.assertEqual(clean_text.strip(), expected_text)
 
     def test_diversity_9(self):
-        self.assertEqual("", "")
+        title = 'XFzRTQqwZuV'
+        text = html.unescape(
+            '<text bytes="11456" xml:space="preserve">[[Fil:Archäologie schichtengrabung.jpg|thumb|Arkæologisk [[udgravning]] med profil.]] \'\'\'Arkæologi\'\'\' er studiet af tidligere tiders [[menneske]]lige [[aktivitet]], primært gennem studiet af menneskets materielle levn.</text>')
+        clean_text, _ = _process_wp_text(title, text, {})
+        expected_text = 'Arkæologi er studiet af tidligere tiders menneskelige aktivitet, primært gennem studiet af menneskets materielle levn.'
+        self.assertEqual(clean_text.strip(), expected_text)
 
     def test_diversity_10(self):
-        self.assertEqual("", "")
+        title = 'DazhRHhrXKfev'
+        text = html.unescape(
+            '<text bytes="11456" xml:space="preserve">[[Fil:Archäologie schichtengrabung.jpg|thumb|Arkæologisk [[udgravning]] med profil.]] \'\'\'Arkæologi\'\'\' er studiet af tidligere tiders [[menneske]]lige [[aktivitet]], primært gennem studiet af menneskets materielle levn.</text>')
+        clean_text, _ = _process_wp_text(title, text, {})
+        expected_text = 'Arkæologi er studiet af tidligere tiders menneskelige aktivitet, primært gennem studiet af menneskets materielle levn.'
+        self.assertEqual(clean_text.strip(), expected_text)
 
 
 class TestsPassing(unittest.TestCase):
 
     def test_diversity_1(self):
-        self.assertEqual("", "")
+        title = 'cSPhdsLZ'
+        text = html.unescape(
+            '<text xml:space="preserve">[[Fil:Archäologie schichtengrabung.jpg|thumb|Arkæologisk [[udgravning]] med profil.]] \'\'\'Arkæologi\'\'\' er studiet af tidligere tiders [[menneske]]lige [[aktivitet]], primært gennem studiet af menneskets materielle levn.</text>')
+        clean_text, _ = _process_wp_text(title, text, {})
+        expected_text = 'Arkæologi er studiet af tidligere tiders menneskelige aktivitet, primært gennem studiet af menneskets materielle levn.'
+        self.assertEqual(clean_text.strip(), expected_text)
 
     def test_diversity_2(self):
-        self.assertEqual("", "")
+        title = 'ECjsrijTmhiAH'
+        text = html.unescape(
+            '<text xml:space="preserve">[[Fil:Archäologie schichtengrabung.jpg|thumb|Arkæologisk [[udgravning]] med profil.]] \'\'\'Arkæologi\'\'\' er studiet af tidligere tiders [[menneske]]lige [[aktivitet]], primært gennem studiet af menneskets materielle levn.</text>')
+        clean_text, _ = _process_wp_text(title, text, {})
+        expected_text = 'Arkæologi er studiet af tidligere tiders menneskelige aktivitet, primært gennem studiet af menneskets materielle levn.'
+        self.assertEqual(clean_text.strip(), expected_text)
 
     def test_diversity_3(self):
-        self.assertEqual("", "")
+        title = 'JLNsxGWjCwxX'
+        text = html.unescape(
+            '<text xml:space="preserve">[[Fil:Archäologie schichtengrabung.jpg|thumb|Arkæologisk [[udgravning]] med profil.]] \'\'\'Arkæologi\'\'\' er studiet af tidligere tiders [[menneske]]lige [[aktivitet]], primært gennem studiet af menneskets materielle levn.</text>')
+        clean_text, _ = _process_wp_text(title, text, {})
+        expected_text = 'Arkæologi er studiet af tidligere tiders menneskelige aktivitet, primært gennem studiet af menneskets materielle levn.'
+        self.assertEqual(clean_text.strip(), expected_text)
 
     def test_diversity_4(self):
-        self.assertEqual("", "")
+        title = 'eaOjVWhcS'
+        text = html.unescape(
+            '<text xml:space="preserve">[[Fil:Archäologie schichtengrabung.jpg|thumb|Arkæologisk [[udgravning]] med profil.]] \'\'\'Arkæologi\'\'\' er studiet af tidligere tiders [[menneske]]lige [[aktivitet]], primært gennem studiet af menneskets materielle levn.</text>')
+        clean_text, _ = _process_wp_text(title, text, {})
+        expected_text = 'Arkæologi er studiet af tidligere tiders menneskelige aktivitet, primært gennem studiet af menneskets materielle levn.'
+        self.assertEqual(clean_text.strip(), expected_text)
 
     def test_diversity_5(self):
-        self.assertEqual("", "")
+        title = 'zscLDzGXGYziEJ'
+        text = html.unescape(
+            '<text xml:space="preserve">[[Fil:Archäologie schichtengrabung.jpg|thumb|Arkæologisk [[udgravning]] med profil.]] \'\'\'Arkæologi\'\'\' er studiet af tidligere tiders [[menneske]]lige [[aktivitet]], primært gennem studiet af menneskets materielle levn.</text>')
+        clean_text, _ = _process_wp_text(title, text, {})
+        expected_text = 'Arkæologi er studiet af tidligere tiders menneskelige aktivitet, primært gennem studiet af menneskets materielle levn.'
+        self.assertEqual(clean_text.strip(), expected_text)
 
     def test_diversity_6(self):
-        self.assertEqual("", "")
+        title = 'ANVKJhnMlC'
+        text = html.unescape(
+            '<text xml:space="preserve">[[Fil:Archäologie schichtengrabung.jpg|thumb|Arkæologisk [[udgravning]] med profil.]] \'\'\'Arkæologi\'\'\' er studiet af tidligere tiders [[menneske]]lige [[aktivitet]], primært gennem studiet af menneskets materielle levn.</text>')
+        clean_text, _ = _process_wp_text(title, text, {})
+        expected_text = 'Arkæologi er studiet af tidligere tiders menneskelige aktivitet, primært gennem studiet af menneskets materielle levn.'
+        self.assertEqual(clean_text.strip(), expected_text)
 
     def test_diversity_7(self):
-        self.assertEqual("", "")
+        title = 'wDocuLWNJEOGiP'
+        text = html.unescape(
+            '<text xml:space="preserve">[[Fil:Archäologie schichtengrabung.jpg|thumb|Arkæologisk [[udgravning]] med profil.]] \'\'\'Arkæologi\'\'\' er studiet af tidligere tiders [[menneske]]lige [[aktivitet]], primært gennem studiet af menneskets materielle levn.</text>')
+        clean_text, _ = _process_wp_text(title, text, {})
+        expected_text = 'Arkæologi er studiet af tidligere tiders menneskelige aktivitet, primært gennem studiet af menneskets materielle levn.'
+        self.assertEqual(clean_text.strip(), expected_text)
 
     def test_diversity_8(self):
-        self.assertEqual("", "")
+        title = 'QbmXoIotHRc'
+        text = html.unescape(
+            '<text xml:space="preserve">[[Fil:Archäologie schichtengrabung.jpg|thumb|Arkæologisk [[udgravning]] med profil.]] \'\'\'Arkæologi\'\'\' er studiet af tidligere tiders [[menneske]]lige [[aktivitet]], primært gennem studiet af menneskets materielle levn.</text>')
+        clean_text, _ = _process_wp_text(title, text, {})
+        expected_text = 'Arkæologi er studiet af tidligere tiders menneskelige aktivitet, primært gennem studiet af menneskets materielle levn.'
+        self.assertEqual(clean_text.strip(), expected_text)
 
     def test_diversity_9(self):
-        self.assertEqual("", "")
+        title = 'bwwRyJEx'
+        text = html.unescape(
+            '<text xml:space="preserve">[[Fil:Archäologie schichtengrabung.jpg|thumb|Arkæologisk [[udgravning]] med profil.]] \'\'\'Arkæologi\'\'\' er studiet af tidligere tiders [[menneske]]lige [[aktivitet]], primært gennem studiet af menneskets materielle levn.</text>')
+        clean_text, _ = _process_wp_text(title, text, {})
+        expected_text = 'Arkæologi er studiet af tidligere tiders menneskelige aktivitet, primært gennem studiet af menneskets materielle levn.'
+        self.assertEqual(clean_text.strip(), expected_text)
 
     def test_diversity_10(self):
-        self.assertEqual("", "")
+        title = 'bCXNC'
+        text = html.unescape(
+            '<text xml:space="preserve">[[Fil:Archäologie schichtengrabung.jpg|thumb|Arkæologisk [[udgravning]] med profil.]] \'\'\'Arkæologi\'\'\' er studiet af tidligere tiders [[menneske]]lige [[aktivitet]], primært gennem studiet af menneskets materielle levn.</text>')
+        clean_text, _ = _process_wp_text(title, text, {})
+        expected_text = 'Arkæologi er studiet af tidligere tiders menneskelige aktivitet, primært gennem studiet af menneskets materielle levn.'
+        self.assertEqual(clean_text.strip(), expected_text)

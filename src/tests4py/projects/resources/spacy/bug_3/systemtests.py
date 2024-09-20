@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return ""
+        return "JHSDBFJBSjb old/future"
 
     def test_diversity_2(self):
-        return ""
+        return "wnkfjrwfw old/future"
 
     def test_diversity_3(self):
-        return ""
+        return "jhbjhHVGHV old/future"
 
     def test_diversity_4(self):
-        return ""
+        return "kjwefhw old/future"
 
     def test_diversity_5(self):
-        return ""
+        return "JHBJHHSjk old/future"
 
     def test_diversity_6(self):
-        return ""
+        return "rhttrggj old/future"
 
     def test_diversity_7(self):
-        return ""
+        return "BDSJFjhbj old/future"
 
     def test_diversity_8(self):
-        return ""
+        return "eherge old/future"
 
     def test_diversity_9(self):
-        return ""
+        return "jksdbfjhvdDA old/future"
 
     def test_diversity_10(self):
-        return ""
+        return "jhdsbfhjds old/future"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return ""
+        return "SDFKHJjhgh new"
 
     def test_diversity_2(self):
-        return ""
+        return "kejrgjhdsjfG new"
 
     def test_diversity_3(self):
-        return ""
+        return "rktjre new"
 
     def test_diversity_4(self):
-        return ""
+        return "jhGHhgjh new"
 
     def test_diversity_5(self):
-        return ""
+        return "hfkerewsdf new"
 
     def test_diversity_6(self):
-        return ""
+        return "KJDSFJ new"
 
     def test_diversity_7(self):
-        return ""
+        return "hfghf new"
 
     def test_diversity_8(self):
-        return ""
+        return "ghjhgrt new"
 
     def test_diversity_9(self):
-        return ""
+        return "ashjfjhsfa new"
 
     def test_diversity_10(self):
-        return ""
+        return "sdkfaasd new"

@@ -1,9 +1,10 @@
 import ast
+import html
 import os.path
 import random
 import string
 import subprocess
-from _ast import Call, ImportFrom, Assign, Expr, Assert
+from _ast import Call, ImportFrom, Assign, Expr, Assert, With
 from pathlib import Path
 from typing import List, Optional, Tuple, Any, Callable
 from tests4py.constants import PYTHON
@@ -282,9 +283,6 @@ class SpaCyAPI1(API):
         result = result.strip()
         expected = expected[:-1]
         expected = expected.replace("\\n", "\n")
-        print("args: ", args)
-        print("result: ", result)
-        print("expected: ", expected)
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -319,12 +317,10 @@ class SpaCyAPI3(API):
         if args is None:
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
-        expected = process.args[2]
+        expected = process.args[3]
         result = process.stdout.decode("utf8")
         result = result.strip()
-        print("args: ", args)
-        print("result: ", result)
-        print("expected: ", expected)
+        expected = expected[:-1]
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -853,11 +849,18 @@ class SpaCyTestGenerator:
 
     @staticmethod
     def spacy2_generate():
-        return ""
+        return "", ""
 
     @staticmethod
     def spacy3_generate():
-        return ""
+        random_string = SpaCyTestGenerator.generate_random_string()
+        new_format_text = """<text xml:space="preserve">[[Fil:Archäologie schichtengrabung.jpg|thumb|Arkæologisk [[udgravning]] med profil.]] '''Arkæologi''' er studiet af tidligere tiders [[menneske]]lige [[aktivitet]], primært gennem studiet af menneskets materielle levn.</text>"""
+        old_format_text = """<text bytes="11456" xml:space="preserve">[[Fil:Archäologie schichtengrabung.jpg|thumb|Arkæologisk [[udgravning]] med profil.]] '''Arkæologi''' er studiet af tidligere tiders [[menneske]]lige [[aktivitet]], primært gennem studiet af menneskets materielle levn.</text>"""
+        potential_future_format = """<text bytes="11456" xml:space="preserve">[[Fil:Archäologie schichtengrabung.jpg|thumb|Arkæologisk [[udgravning]] med profil.]] '''Arkæologi''' er studiet af tidligere tiders [[menneske]]lige [[aktivitet]], primært gennem studiet af menneskets materielle levn.</text>"""
+        old_future_format = random.choice([old_format_text, potential_future_format])
+        passing = (random_string, new_format_text, "new")
+        failing = (random_string, old_future_format, "old/future")
+        return passing, failing
 
     @staticmethod
     def spacy4_generate():
@@ -876,7 +879,6 @@ class SpaCyUnittestGenerator1(
     ) -> str:
         return self.generate_values(self.spacy1_generate)
 
-    # noinspection PyUnusedLocal
     @staticmethod
     def _get_assert(
             err: str,
@@ -930,20 +932,19 @@ class SpaCyUnittestGenerator2(
 
     @staticmethod
     def _get_assert(
-    ) -> list[Assign | Expr | Assert]:
+    ) -> list[Assign | Expr | Assert | With]:
         return [
             ast.Assign(
                 targets=[ast.Subscript(
                     value=ast.Attribute(
-                        value=ast.Name(id='Language', ctx=ast.Load()),
+                        value=ast.Name(id='Language'),
                         attr='factories',
-                        ctx=ast.Load()
                     ),
                     slice=ast.Index(value=ast.Constant(value='my_component')),
-                    ctx=ast.Store()
                 )],
                 value=ast.Lambda(
                     args=ast.arguments(
+                        posonlyargs=[],  # Python 3.8+ requires this
                         args=[
                             ast.arg(arg='nlp', annotation=None),
                             ast.arg(arg='cfg', annotation=None)
@@ -951,25 +952,25 @@ class SpaCyUnittestGenerator2(
                         vararg=None,
                         kwonlyargs=[],
                         kw_defaults=[],
-                        kwarg=ast.arg(arg='cfg', annotation=None),
+                        kwarg=None,  # No kwarg argument should be here if it's already in args
                         defaults=[]
                     ),
                     body=ast.Call(
-                        func=ast.Name(id='MyComponent', ctx=ast.Load()),
+                        func=ast.Name(id='MyComponent'),
                         args=[
-                            ast.Name(id='nlp', ctx=ast.Load())
+                            ast.Name(id='nlp')
                         ],
                         keywords=[
-                            ast.keyword(arg=None, value=ast.Name(id='cfg', ctx=ast.Load()))
+                            ast.keyword(arg=None, value=ast.Name(id='cfg'))
                         ]
                     )
                 ),
                 lineno=1
             ),
             ast.Assign(
-                targets=[ast.Name(id='nlp', ctx=ast.Store())],
+                targets=[ast.Name(id='nlp')],
                 value=ast.Call(
-                    func=ast.Name(id='English', ctx=ast.Load()),
+                    func=ast.Name(id='English'),
                     args=[],
                     keywords=[]
                 ),
@@ -978,16 +979,16 @@ class SpaCyUnittestGenerator2(
             ast.Expr(
                 value=ast.Call(
                     func=ast.Attribute(
-                        value=ast.Name(id='nlp', ctx=ast.Load()),
+                        value=ast.Name(id='nlp'),
                         attr='add_pipe',
-                        ctx=ast.Load()
+
                     ),
                     args=[
                         ast.Call(
                             func=ast.Attribute(
-                                value=ast.Name(id='nlp', ctx=ast.Load()),
+                                value=ast.Name(id='nlp'),
                                 attr='create_pipe',
-                                ctx=ast.Load()
+
                             ),
                             args=[ast.Constant(value='my_component')],
                             keywords=[]
@@ -1002,15 +1003,15 @@ class SpaCyUnittestGenerator2(
                     left=ast.Attribute(
                         value=ast.Call(
                             func=ast.Attribute(
-                                value=ast.Name(id='nlp', ctx=ast.Load()),
+                                value=ast.Name(id='nlp'),
                                 attr='get_pipe',
-                                ctx=ast.Load()
+
                             ),
                             args=[ast.Constant(value='my_component')],
                             keywords=[]
                         ),
                         attr='categories',
-                        ctx=ast.Load()
+
                     ),
                     ops=[ast.Eq()],
                     comparators=[ast.Constant(value='all_categories')]
@@ -1018,58 +1019,64 @@ class SpaCyUnittestGenerator2(
                 msg=None,
                 lineno=4
             ),
-            ast.With(
-                items=[ast.withitem(context_expr=ast.Call(
-                    func=ast.Name(id='make_tempdir', ctx=ast.Load()),
-                    args=[], keywords=[]))],
-                body=[
-                    ast.Expr(value=ast.Call(
-                        func=ast.Attribute(value=ast.Name(id='nlp', ctx=ast.Load()), attr='to_disk', ctx=ast.Load()),
-                        args=[ast.Name(id='tmpdir', ctx=ast.Load())],
-                        keywords=[]),
-                        lineno=5),
-                    ast.Assign(
-                        targets=[ast.Name(id='nlp2', ctx=ast.Store())],
-                        value=ast.Call(
-                            func=ast.Attribute(
-                                value=ast.Name(id='spacy', ctx=ast.Load()),
-                                attr='load',
-                                ctx=ast.Load()
-                            ),
-                            args=[ast.Name(id='tmpdir', ctx=ast.Load())],
-                            keywords=[
-                                ast.keyword(arg='categories', value=ast.Constant(value='my_categories'))
-                            ]
-                        ),
-                        lineno=6
-                    ),
-                    ast.Assert(
-                        test=ast.Compare(
-                            left=ast.Attribute(
-                                value=ast.Call(
-                                    func=ast.Attribute(
-                                        value=ast.Name(id='nlp2', ctx=ast.Load()),
-                                        attr='get_pipe',
-                                        ctx=ast.Load()
-                                    ),
-                                    args=[ast.Constant(value='my_component')],
-                                    keywords=[]
-                                ),
-                                attr='categories',
-                                ctx=ast.Load()
-                            ),
-                            ops=[ast.Eq()],
-                            comparators=[ast.Constant(value='my_categories')]
-                        ),
-                        msg=None,
-                        lineno=7
-                    )
-                ]
-            )
+            # ast.With(
+            #     items=[ast.withitem(context_expr=ast.Call(
+            #         func=ast.Name(id='make_tempdir'),
+            #         args=[], keywords=[]))],
+            #     body=[
+            #         ast.Expr(value=ast.Call(
+            #             func=ast.Attribute(value=ast.Name(id='nlp'), attr='to_disk'),
+            #             args=[ast.Name(id='tmpdir')],
+            #             keywords=[]),
+            #             lineno=5),
+            #         ast.Assign(
+            #             targets=[ast.Name(id='nlp2')],
+            #             value=ast.Call(
+            #                 func=ast.Attribute(
+            #                     value=ast.Name(id='spacy'),
+            #                     attr='load',
+#
+            #                 ),
+            #                 args=[ast.Name(id='tmpdir')],
+            #                 keywords=[
+            #                     ast.keyword(arg='categories', value=ast.Constant(value='my_categories'))
+            #                 ]
+            #             ),
+            #             lineno=6,
+            #         ),
+            #         ast.Assert(
+            #             test=ast.Compare(
+            #                 left=ast.Attribute(
+            #                     value=ast.Call(
+            #                         func=ast.Attribute(
+            #                             value=ast.Name(id='nlp2'),
+            #                             attr='get_pipe',
+#
+            #                         ),
+            #                         args=[ast.Constant(value='my_component')],
+            #                         keywords=[]
+            #                     ),
+            #                     attr='categories',
+#
+            #                 ),
+            #                 ops=[ast.Eq()],
+            #                 comparators=[ast.Constant(value='my_categories')]
+            #             ),
+            #             msg=None,
+            #             lineno=7
+            #         )
+            #     ],
+            #     lineno=4
+            # )
         ]
 
     def get_imports(self) -> list[ImportFrom]:
         return [
+            ast.Import(
+                module="spacy",
+                names=[ast.alias(name="spacy")],
+                level=0,
+            ),
             ast.ImportFrom(
                 module="spacy.language",
                 names=[ast.alias(name="Language")],
@@ -1085,16 +1092,21 @@ class SpaCyUnittestGenerator2(
                 names=[ast.alias(name="make_tempdir")],
                 level=0,
             ),
+            ast.ImportFrom(
+                module="spacy.tests.regression.test_issue5137",
+                names=[ast.alias(name="MyComponent")],
+                level=0,
+            )
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        self._generate_one()
+        _, fail_ = self._generate_one()
         test = self.get_empty_test()
         test.body = self._get_assert()
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        self._generate_one()
+        pass_, _ = self._generate_one()
         test = self.get_empty_test()
         test.body = self._get_assert()
         return test, TestResult.PASSING
@@ -1110,10 +1122,67 @@ class SpaCyUnittestGenerator3(
 
     @staticmethod
     def _get_assert(
-
-    ) -> list[Call]:
+            random_string: str,
+            format_: str
+    ) -> list[Assign | Assert]:
         return [
+            ast.Assign(
+                targets=[ast.Name(id='title')],
+                value=ast.Constant(value=random_string),
+                lineno=1
+            ),
+            ast.Assign(
+                targets=[ast.Name(id='text')],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id='html'),
+                        attr='unescape',
 
+                    ),
+                    args=[
+                        ast.Constant(value=format_)
+                    ],
+                    keywords=[]
+                ),
+                lineno=2
+            ),
+            ast.Assign(
+                targets=[ast.Tuple(
+                    elts=[ast.Name(id='clean_text'), ast.Name(id='_')],
+                )],
+                value=ast.Call(
+                    func=ast.Name(id='_process_wp_text'),
+                    args=[
+                        ast.Name(id='title'),
+                        ast.Name(id="text"),
+                        ast.Dict(keys=[], values=[])
+                    ],
+                    keywords=[]
+                ),
+                lineno=3
+            ),
+            ast.Assign(
+                targets=[ast.Name(id='expected_text')],
+                value=ast.Constant(
+                    value='Arkæologi er studiet af tidligere tiders menneskelige aktivitet, primært gennem studiet af menneskets materielle levn.'),
+                lineno=4
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
+                    args=[
+                        ast.Call(
+                            func=ast.Attribute(value=ast.Name(id='clean_text'), attr='strip',
+                                               ),
+                            args=[],
+                            keywords=[]
+                        ),
+                        ast.Name(id='expected_text')
+                    ],
+                    keywords=[]
+                ),
+                lineno=5
+            ),
         ]
 
     def get_imports(self) -> list[ImportFrom]:
@@ -1123,20 +1192,25 @@ class SpaCyUnittestGenerator3(
                 names=[ast.alias(name="_process_wp_text")],
                 level=0,
             ),
+            ast.Import(
+                module="html",
+                names=[ast.alias(name="html")],
+                level=0,
+            ),
         ]
 
-    @property
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        self._generate_one()
-
+        _, fail_ = self._generate_one()
+        random_string, format_, _ = fail_
         test = self.get_empty_test()
-        test.body = self._get_assert()
+        test.body = self._get_assert(random_string, format_)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        self._generate_one()
+        pass_, _ = self._generate_one()
+        random_string, format_, _ = pass_
         test = self.get_empty_test()
-        test.body = self._get_assert()
+        test.body = self._get_assert(random_string, format_)
         return test, TestResult.PASSING
 
 
@@ -1236,11 +1310,15 @@ class SpaCySystemtestGenerator2(SystemtestGenerator, SpaCyTestGenerator):
 
 class SpaCySystemtestGenerator3(SystemtestGenerator, SpaCyTestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        _, fail_ = self.generate_values(self.spacy3_generate)
+        _, failing = self.generate_values(self.spacy3_generate)
+        random_string, _, info = failing
+        fail_ = random_string, info
         return f"{fail_}", TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        pass_, _ = self.generate_values(self.spacy3_generate)
+        passing, _ = self.generate_values(self.spacy3_generate)
+        random_string, _, info = passing
+        pass_ = random_string, info
         return f"{pass_}", TestResult.PASSING
 
 
