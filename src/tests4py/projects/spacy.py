@@ -355,6 +355,9 @@ class SpaCyAPI5(API):
         expected = process.args[2]
         result = process.stdout.decode("utf8")
         result = result.strip()
+        print("args: ", args)
+        print("result: ", result)
+        print("expected: ", expected)
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -864,7 +867,50 @@ class SpaCyTestGenerator:
 
     @staticmethod
     def spacy4_generate():
-        return ""
+        noun_1 = SpaCyTestGenerator.generate_random_string()
+        noun_2 = SpaCyTestGenerator.generate_random_string()
+
+        failing = f"""
+        1	[	PUNCT	-	-LRB-	_	_	punct	_	_
+        2	This	_	DET	DT	_	_	det	_	_
+        3	{noun_1}	_	NOUN	NN	_	_	nsubj	_	_
+        4	of	_	ADP	IN	_	_	case	_	_
+        5	a	_	DET	DT	_	_	det	_	_
+        6	respected	_	ADJ	JJ	_	_	amod	_	_
+        7	cleric	_	NOUN	NN	_	_	nmod	_	_
+        8	will	_	AUX	MD	_	_	aux	_	_
+        9	be	_	AUX	VB	_	_	aux	_	_
+        10	causing	_	VERB	VBG	_	_	root	_	_
+        11	us	_	PRON	PRP	_	_	iobj	_	_
+        12	{noun_2}	_	NOUN	NN	_	_	dobj	_	_
+        13	for	_	ADP	IN	_	_	case	_	_
+        14	years	_	NOUN	NNS	_	_	nmod	_	_
+        15	to	_	PART	TO	_	_	mark	_	_
+        16	come	_	VERB	VB	_	_	acl	_	_
+        17	.	_	PUNCT	.	_	_	punct	_	_
+        18	]	_	PUNCT	-RRB-	_	_	punct	_	_
+        """
+        passing = f"""
+1	[	_	PUNCT	-LRB-	_	10	punct	_	_
+2	This	_	DET	DT	_	3	det	_	_
+3	{noun_2}	_	NOUN	NN	_	10	nsubj	_	_
+4	of	_	ADP	IN	_	7	case	_	_
+5	a	_	DET	DT	_	7	det	_	_
+6	respected	_	ADJ	JJ	_	7	amod	_	_
+7	cleric	_	NOUN	NN	_	10	nmod	_	_
+8	will	_	AUX	MD	_	10	aux	_	_
+9	be	_	AUX	VB	_	10	aux	_	_
+10	causing	_	VERB	VBG	_	0	root	_	_
+11	us	_	PRON	PRP	_	10	iobj	_	_
+12	{noun_1}	_	NOUN	NN	_	10	dobj	_	_
+13	for	_	ADP	IN	_	14	case	_	_
+14	years	_	NOUN	NNS	_	10	nmod	_	_
+15	to	_	PART	TO	_	16	mark	_	_
+16	come	_	VERB	VB	_	10	acl	_	_
+17	.	_	PUNCT	.	_	10	punct	_	_
+        """
+
+        return passing, failing
 
     @staticmethod
     def spacy5_generate():
@@ -1223,31 +1269,40 @@ class SpaCyUnittestGenerator4(
         return self.generate_values(self.spacy4_generate)
 
     @staticmethod
-    def _get_assert(
-    ) -> list[Call]:
+    def _get_assert(input_value: str
+    ) -> list[Expr]:
         return [
-
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Name(id='conllu2json'),
+                    args=[
+                        ast.Constant(value=input_value)
+                    ],
+                    keywords=[]
+                ),
+                lineno=1
+            )
         ]
 
     def get_imports(self) -> list[ImportFrom]:
         return [
             ast.ImportFrom(
-                module="bin.wiki_entity_linking.wikipedia_processor",
-                names=[ast.alias(name="_process_wp_text")],
+                module="spacy.cli.converters.conllu2json",
+                names=[ast.alias(name="conllu2json")],
                 level=0,
             ),
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        self._generate_one()
+        _, fail_ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert()
+        test.body = self._get_assert(fail_)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        self._generate_one()
+        pass_, _ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert()
+        test.body = self._get_assert(pass_)
         return test, TestResult.PASSING
 
 
