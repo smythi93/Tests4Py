@@ -1,10 +1,9 @@
 import ast
-import html
 import os.path
 import random
 import string
 import subprocess
-from _ast import Call, ImportFrom, Assign, Expr, Assert, With
+from _ast import Call, ImportFrom, Assign, Expr, Assert, Module
 from pathlib import Path
 from typing import List, Optional, Tuple, Any, Callable
 from tests4py.constants import PYTHON
@@ -207,6 +206,9 @@ def register():
                 "test_analysis.py::test_analysis_validate_attrs_remove_pipe",
             )
         ],
+        api=SpaCyAPI6(),
+        unittests=SpaCyUnittestGenerator6(),
+        systemtests=SpaCySystemtestGenerator6(),
         test_status_fixed=TestStatus.FAILING,
         loc=72871,
     )
@@ -218,6 +220,9 @@ def register():
         test_cases=[
             os.path.join("spacy", "tests", "doc", "test_span.py::test_filter_spans")
         ],
+        api=SpaCyAPI7(),
+        unittests=SpaCyUnittestGenerator7(),
+        systemtests=SpaCySystemtestGenerator7(),
         loc=72264,
     )
     SpaCy(
@@ -233,6 +238,9 @@ def register():
                 "test_matcher_logic.py::test_matcher_remove",
             )
         ],
+        api=SpaCyAPI8(),
+        unittests=SpaCyUnittestGenerator8(),
+        systemtests=SpaCySystemtestGenerator8(),
         loc=72263,
     )
     SpaCy(
@@ -251,6 +259,9 @@ def register():
                 "test_tagger.py::test_tagger_warns_no_lemma_lookups",
             )
         ],
+        api=SpaCyAPI9(),
+        unittests=SpaCyUnittestGenerator9(),
+        systemtests=SpaCySystemtestGenerator9(),
         loc=72195,
     )
     SpaCy(
@@ -266,6 +277,9 @@ def register():
                 "test_matcher_api.py::test_matcher_valid_callback",
             )
         ],
+        api=SpaCyAPI10(),
+        unittests=SpaCyUnittestGenerator10(),
+        systemtests=SpaCySystemtestGenerator10(),
         loc=72240,
     )
 
@@ -298,11 +312,10 @@ class SpaCyAPI2(API):
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
         expected = process.args[2]
+        expected = expected[1:]
+        expected = expected[:-1]
         result = process.stdout.decode("utf8")
         result = result.strip()
-        print("args: ", args)
-        print("result: ", result)
-        print("expected: ", expected)
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -353,6 +366,116 @@ class SpaCyAPI5(API):
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
         expected = process.args[2]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        print("args: ", args)
+        print("result: ", result)
+        print("expected: ", expected)
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class SpaCyAPI6(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        expected = expected[1:]
+        expected = expected[:-1]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        print("args: ", args)
+        print("result: ", result)
+        print("expected: ", expected)
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class SpaCyAPI7(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        expected = expected[1:]
+        expected = expected[:-1]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        print("args: ", args)
+        print("result: ", result)
+        print("expected: ", expected)
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class SpaCyAPI8(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        expected = expected[1:]
+        expected = expected[:-1]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        print("args: ", args)
+        print("result: ", result)
+        print("expected: ", expected)
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class SpaCyAPI9(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        expected = expected[1:]
+        expected = expected[:-1]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        print("args: ", args)
+        print("result: ", result)
+        print("expected: ", expected)
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class SpaCyAPI10(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        expected = expected[1:]
+        expected = expected[:-1]
         result = process.stdout.decode("utf8")
         result = result.strip()
         print("args: ", args)
@@ -852,7 +975,11 @@ class SpaCyTestGenerator:
 
     @staticmethod
     def spacy2_generate():
-        return "", ""
+        random_string = SpaCyTestGenerator.generate_random_string()
+        random_string_f = SpaCyTestGenerator.generate_random_string()
+        passing = random_string, random_string
+        failing = random_string, random_string_f
+        return passing, failing
 
     @staticmethod
     def spacy3_generate():
@@ -914,7 +1041,30 @@ class SpaCyTestGenerator:
 
     @staticmethod
     def spacy5_generate():
-        return ""
+        random_string = SpaCyTestGenerator.generate_random_string()
+        passing = random_string
+        failing = random_string
+        return passing, failing
+
+    @staticmethod
+    def spacy6_generate():
+        return "", ""
+
+    @staticmethod
+    def spacy7_generate():
+        return "", ""
+
+    @staticmethod
+    def spacy8_generate():
+        return "", ""
+
+    @staticmethod
+    def spacy9_generate():
+        return "", ""
+
+    @staticmethod
+    def spacy10_generate():
+        return "", ""
 
 
 class SpaCyUnittestGenerator1(
@@ -977,152 +1127,206 @@ class SpaCyUnittestGenerator2(
         return self.generate_values(self.spacy2_generate)
 
     @staticmethod
-    def _get_assert(
-    ) -> list[Assign | Expr | Assert | With]:
+    def _get_assert(value1: str, value2: str
+                    ) -> list[Module]:
         return [
-            ast.Assign(
-                targets=[ast.Subscript(
-                    value=ast.Attribute(
-                        value=ast.Name(id='Language'),
-                        attr='factories',
-                    ),
-                    slice=ast.Index(value=ast.Constant(value='my_component')),
-                )],
-                value=ast.Lambda(
-                    args=ast.arguments(
-                        posonlyargs=[],  # Python 3.8+ requires this
-                        args=[
-                            ast.arg(arg='nlp', annotation=None),
-                            ast.arg(arg='cfg', annotation=None)
-                        ],
-                        vararg=None,
-                        kwonlyargs=[],
-                        kw_defaults=[],
-                        kwarg=None,  # No kwarg argument should be here if it's already in args
-                        defaults=[]
-                    ),
-                    body=ast.Call(
-                        func=ast.Name(id='MyComponent'),
-                        args=[
-                            ast.Name(id='nlp')
-                        ],
-                        keywords=[
-                            ast.keyword(arg=None, value=ast.Name(id='cfg'))
-                        ]
-                    )
-                ),
-                lineno=1
-            ),
-            ast.Assign(
-                targets=[ast.Name(id='nlp')],
-                value=ast.Call(
-                    func=ast.Name(id='English'),
-                    args=[],
-                    keywords=[]
-                ),
-                lineno=2
-            ),
-            ast.Expr(
-                value=ast.Call(
-                    func=ast.Attribute(
-                        value=ast.Name(id='nlp'),
-                        attr='add_pipe',
-
-                    ),
-                    args=[
-                        ast.Call(
-                            func=ast.Attribute(
-                                value=ast.Name(id='nlp'),
-                                attr='create_pipe',
-
+            ast.Module(
+                body=[
+                    ast.ClassDef(
+                        name='MyComponent',
+                        bases=[],
+                        keywords=[],
+                        body=[
+                            ast.Assign(
+                                targets=[ast.Name(id='name')],
+                                value=ast.Constant(value=value1),
+                                lineno=1
                             ),
-                            args=[ast.Constant(value='my_component')],
-                            keywords=[]
-                        )
-                    ],
-                    keywords=[]
-                ),
-                lineno=3
-            ),
-            ast.Assert(
-                test=ast.Compare(
-                    left=ast.Attribute(
+                            ast.FunctionDef(
+                                name='__init__',
+                                args=ast.arguments(
+                                    args=[
+                                        ast.arg(arg='self', annotation=None),
+                                        ast.arg(arg='nlp', annotation=None),
+                                        ast.arg(arg='**cfg', annotation=None)
+                                    ],
+                                    vararg=None,
+                                    kwonlyargs=[],
+                                    posonlyargs=[],
+                                    kw_defaults=[],
+                                    kwarg=None,
+                                    defaults=[]
+                                ),
+                                body=[
+                                    ast.Assign(
+                                        targets=[ast.Attribute(value=ast.Name(id='self'), attr='nlp')],
+                                        value=ast.Name(id='nlp'),
+                                        lineno=2
+                                    ),
+                                    ast.Assign(
+                                        targets=[
+                                            ast.Attribute(value=ast.Name(id='self'), attr='categories')],
+                                        value=ast.Call(
+                                            func=ast.Attribute(value=ast.Name(id='cfg'), attr='get'),
+                                            args=[
+                                                ast.Constant(value='categories'),
+                                                ast.Constant(value='all_categories')
+                                            ],
+                                            keywords=[]
+                                        ),
+                                        lineno=3
+                                    )
+                                ],
+                                decorator_list=[],
+                                lineno=4
+                            ),
+                            ast.FunctionDef(
+                                name='__call__',
+                                args=ast.arguments(
+                                    args=[
+                                        ast.arg(arg='self', annotation=None),
+                                        ast.arg(arg='doc', annotation=None)
+                                    ],
+                                    vararg=None,
+                                    kwonlyargs=[],
+                                    posonlyargs=[],
+                                    kw_defaults=[],
+                                    kwarg=None,
+                                    defaults=[]
+                                ),
+                                body=[
+                                    ast.Pass(),
+                                ],
+                                decorator_list=[],
+                                lineno=7
+                            ),
+                            ast.FunctionDef(
+                                name='to_disk',
+                                args=ast.arguments(
+                                    args=[
+                                        ast.arg(arg='self', annotation=None),
+                                        ast.arg(arg='path', annotation=None),
+                                        ast.arg(arg='**kwargs', annotation=None)
+                                    ],
+                                    vararg=None,
+                                    kwonlyargs=[],
+                                    posonlyargs=[],
+                                    kw_defaults=[],
+                                    kwarg=None,
+                                    defaults=[]
+                                ),
+                                body=[
+                                    ast.Pass(),
+                                ],
+                                decorator_list=[],
+                                lineno=10
+                            ),
+                            ast.FunctionDef(
+                                name='from_disk',
+                                args=ast.arguments(
+                                    args=[
+                                        ast.arg(arg='self', annotation=None),
+                                        ast.arg(arg='path', annotation=None),
+                                        ast.arg(arg='**cfg', annotation=None)
+                                    ],
+                                    vararg=None,
+                                    kwonlyargs=[],
+                                    posonlyargs=[],
+                                    kw_defaults=[],
+                                    kwarg=None,
+                                    defaults=[]
+                                ),
+                                body=[
+                                    ast.Pass(),
+                                ],
+                                decorator_list=[],
+                                lineno=13
+                            )
+                        ],
+                        decorator_list=[],
+                        lineno=16
+                    ),
+                    ast.Assign(
+                        targets=[ast.Subscript(
+                            value=ast.Attribute(
+                                value=ast.Name(id='Language'),
+                                attr='factories'
+                            ),
+                            slice=ast.Index(value=ast.Constant(value=value1)),
+
+                        )],
+                        value=ast.Lambda(
+                            args=ast.arguments(
+                                posonlyargs=[],
+                                args=[
+                                    ast.arg(arg='nlp', annotation=None),
+                                    ast.arg(arg='**cfg', annotation=None)
+                                ],
+                                vararg=None,
+                                kwonlyargs=[],
+                                kw_defaults=[],
+                                kwarg=None,
+                                defaults=[]
+                            ),
+                            body=ast.Call(
+                                func=ast.Name(id='MyComponent'),
+                                args=[
+                                    ast.Name(id='nlp')
+                                ],
+                                keywords=[
+                                    ast.keyword(arg=None, value=ast.Name(id='cfg'))
+                                ]
+                            )
+                        ),
+                        lineno=20
+                    ),
+                    ast.Assign(
+                        targets=[ast.Name(id='nlp')],
+                        value=ast.Call(func=ast.Name(id='English'), args=[], keywords=[]),
+                        lineno=23
+                    ),
+                    ast.Expr(
                         value=ast.Call(
-                            func=ast.Attribute(
-                                value=ast.Name(id='nlp'),
-                                attr='get_pipe',
-
-                            ),
-                            args=[ast.Constant(value='my_component')],
+                            func=ast.Attribute(value=ast.Name(id='nlp'), attr='add_pipe'),
+                            args=[
+                                ast.Call(
+                                    func=ast.Attribute(value=ast.Name(id='nlp'), attr='create_pipe'),
+                                    args=[ast.Constant(value=value2)],
+                                    keywords=[]
+                                )
+                            ],
                             keywords=[]
                         ),
-                        attr='categories',
-
+                        lineno=24
                     ),
-                    ops=[ast.Eq()],
-                    comparators=[ast.Constant(value='all_categories')]
-                ),
-                msg=None,
-                lineno=4
-            ),
-            # ast.With(
-            #     items=[ast.withitem(context_expr=ast.Call(
-            #         func=ast.Name(id='make_tempdir'),
-            #         args=[], keywords=[]))],
-            #     body=[
-            #         ast.Expr(value=ast.Call(
-            #             func=ast.Attribute(value=ast.Name(id='nlp'), attr='to_disk'),
-            #             args=[ast.Name(id='tmpdir')],
-            #             keywords=[]),
-            #             lineno=5),
-            #         ast.Assign(
-            #             targets=[ast.Name(id='nlp2')],
-            #             value=ast.Call(
-            #                 func=ast.Attribute(
-            #                     value=ast.Name(id='spacy'),
-            #                     attr='load',
-#
-            #                 ),
-            #                 args=[ast.Name(id='tmpdir')],
-            #                 keywords=[
-            #                     ast.keyword(arg='categories', value=ast.Constant(value='my_categories'))
-            #                 ]
-            #             ),
-            #             lineno=6,
-            #         ),
-            #         ast.Assert(
-            #             test=ast.Compare(
-            #                 left=ast.Attribute(
-            #                     value=ast.Call(
-            #                         func=ast.Attribute(
-            #                             value=ast.Name(id='nlp2'),
-            #                             attr='get_pipe',
-#
-            #                         ),
-            #                         args=[ast.Constant(value='my_component')],
-            #                         keywords=[]
-            #                     ),
-            #                     attr='categories',
-#
-            #                 ),
-            #                 ops=[ast.Eq()],
-            #                 comparators=[ast.Constant(value='my_categories')]
-            #             ),
-            #             msg=None,
-            #             lineno=7
-            #         )
-            #     ],
-            #     lineno=4
-            # )
+                    ast.Assert(
+                        test=ast.Compare(
+                            left=ast.Attribute(
+                                value=ast.Call(
+                                    func=ast.Attribute(
+                                        value=ast.Name(id='nlp'),
+                                        attr='get_pipe',
+
+                                    ),
+                                    args=[ast.Constant(value=value2)],
+                                    keywords=[]
+                                ),
+                                attr='categories',
+
+                            ),
+                            ops=[ast.Eq()],
+                            comparators=[ast.Constant(value='all_categories')]
+                        ),
+                        msg=None,
+                        lineno=25
+                    ),
+                ],
+                type_ignores=[]
+            )
         ]
 
     def get_imports(self) -> list[ImportFrom]:
         return [
-            ast.Import(
-                module="spacy",
-                names=[ast.alias(name="spacy")],
-                level=0,
-            ),
             ast.ImportFrom(
                 module="spacy.language",
                 names=[ast.alias(name="Language")],
@@ -1132,29 +1336,21 @@ class SpaCyUnittestGenerator2(
                 module="spacy.lang.en",
                 names=[ast.alias(name="English")],
                 level=0,
-            ),
-            ast.ImportFrom(
-                module="spacy.tests.util",
-                names=[ast.alias(name="make_tempdir")],
-                level=0,
-            ),
-            ast.ImportFrom(
-                module="spacy.tests.regression.test_issue5137",
-                names=[ast.alias(name="MyComponent")],
-                level=0,
             )
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
+        value1, value2 = fail_
         test = self.get_empty_test()
-        test.body = self._get_assert()
+        test.body = self._get_assert(value1, value2)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
+        value1, value2 = pass_
         test = self.get_empty_test()
-        test.body = self._get_assert()
+        test.body = self._get_assert(value1, value2)
         return test, TestResult.PASSING
 
 
@@ -1269,8 +1465,7 @@ class SpaCyUnittestGenerator4(
         return self.generate_values(self.spacy4_generate)
 
     @staticmethod
-    def _get_assert(input_value: str
-    ) -> list[Expr]:
+    def _get_assert(input_value: str) -> list[Expr]:
         return [
             ast.Expr(
                 value=ast.Call(
@@ -1315,6 +1510,156 @@ class SpaCyUnittestGenerator5(
         return self.generate_values(self.spacy5_generate)
 
     @staticmethod
+    def _get_assert(random_str: str
+    ) -> list[Module]:
+        return [
+            ast.Module(
+                body=[
+                    ast.FunctionDef(
+                        name='pipe',
+                        args=ast.arguments(
+                            args=[ast.arg(arg='doc', annotation=None)],
+                            vararg=None,
+                            kwonlyargs=[],
+                            posonlyargs=[],
+                            kw_defaults=[],
+                            kwarg=None,
+                            defaults=[]
+                        ),
+                        body=[
+                            ast.Return(
+                                value=ast.Name(id='doc')
+                            )
+                        ],
+                        decorator_list=[],
+                        returns=None,
+                        lineno=1,
+                        col_offset=0
+                    ),
+                    ast.Assign(
+                        targets=[ast.Name(id='text')],
+                        value=ast.Constant(value=random_str),
+                        lineno=3,
+                        col_offset=0
+                    ),
+                    ast.Assign(
+                        targets=[ast.Name(id='annots')],
+                        value=ast.Dict(
+                            keys=[ast.Constant(value="cats")],
+                            values=[ast.Dict(
+                                keys=[ast.Constant(value="POSITIVE"), ast.Constant(value="NEGATIVE")],
+                                values=[ast.Constant(value=1.0), ast.Constant(value=0.0)],
+                                lineno=3,
+                                col_offset=0
+                            )],
+                            lineno=3,
+                            col_offset=0
+                        ),
+                        lineno=3,
+                        col_offset=0
+                    ),
+                    ast.Assign(
+                        targets=[ast.Name(id='nlp')],
+                        value=ast.Call(
+                            func=ast.Name(id='Language'),
+                            args=[ast.Call(func=ast.Name(id='Vocab'), args=[], keywords=[])],
+                            keywords=[],
+                            lineno=4,
+                            col_offset=0
+                        ),
+                        lineno=4,
+                        col_offset=0
+                    ),
+                    ast.Expr(
+                        value=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id='nlp'),
+                                attr='add_pipe',
+
+                            ),
+                            args=[ast.Name(id='pipe')],
+                            keywords=[],
+                            lineno=5,
+                            col_offset=0
+                        ),
+                        lineno=5,
+                        col_offset=0
+                    ),
+                    ast.Expr(
+                        value=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id='nlp'),
+                                attr='evaluate',
+
+                            ),
+                            args=[
+                                ast.List(
+                                    elts=[
+                                        ast.Tuple(
+                                            elts=[
+                                                ast.Name(id='text'),
+                                                ast.Name(id='annots')
+                                            ],
+
+                                            lineno=6,
+                                            col_offset=0
+                                        )
+                                    ],
+
+                                    lineno=6,
+                                    col_offset=0
+                                )
+                            ],
+                            keywords=[],
+                            lineno=6,
+                            col_offset=0
+                        ),
+                        lineno=6,
+                        col_offset=0
+                    )
+                ],
+                type_ignores=[],
+                lineno=1,
+                col_offset=0
+            )
+        ]
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            ast.ImportFrom(
+                module="spacy.language",
+                names=[ast.alias(name="Language")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="spacy.vocab",
+                names=[ast.alias(name="Vocab")],
+                level=0,
+            ),
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        _, fail_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert(fail_)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_, _ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert(pass_)
+        return test, TestResult.PASSING
+
+
+class SpaCyUnittestGenerator6(
+    python.PythonGenerator, UnittestGenerator, SpaCyTestGenerator
+):
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.spacy6_generate)
+
+    @staticmethod
     def _get_assert(
     ) -> list[Call]:
         return [
@@ -1324,20 +1669,168 @@ class SpaCyUnittestGenerator5(
     def get_imports(self) -> list[ImportFrom]:
         return [
             ast.ImportFrom(
-                module="bin.wiki_entity_linking.wikipedia_processor",
-                names=[ast.alias(name="_process_wp_text")],
+                module="spacy.errors",
+                names=[ast.alias(name="Errors")],
                 level=0,
             ),
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        self._generate_one()
+        _, fail_ = self._generate_one()
         test = self.get_empty_test()
         test.body = self._get_assert()
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        self._generate_one()
+        pass_, _ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.PASSING
+
+
+class SpaCyUnittestGenerator7(
+    python.PythonGenerator, UnittestGenerator, SpaCyTestGenerator
+):
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.spacy7_generate)
+
+    @staticmethod
+    def _get_assert(
+    ) -> list[Call]:
+        return [
+
+        ]
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            ast.ImportFrom(
+                module="spacy.errors",
+                names=[ast.alias(name="Errors")],
+                level=0,
+            ),
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        _, fail_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_, _ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.PASSING
+
+
+class SpaCyUnittestGenerator8(
+    python.PythonGenerator, UnittestGenerator, SpaCyTestGenerator
+):
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.spacy8_generate)
+
+    @staticmethod
+    def _get_assert(
+    ) -> list[Call]:
+        return [
+
+        ]
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            ast.ImportFrom(
+                module="spacy.errors",
+                names=[ast.alias(name="Errors")],
+                level=0,
+            ),
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        _, fail_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_, _ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.PASSING
+
+
+class SpaCyUnittestGenerator9(
+    python.PythonGenerator, UnittestGenerator, SpaCyTestGenerator
+):
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.spacy9_generate)
+
+    @staticmethod
+    def _get_assert(
+    ) -> list[Call]:
+        return [
+
+        ]
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            ast.ImportFrom(
+                module="spacy.errors",
+                names=[ast.alias(name="Errors")],
+                level=0,
+            ),
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        _, fail_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_, _ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.PASSING
+
+
+class SpaCyUnittestGenerator10(
+    python.PythonGenerator, UnittestGenerator, SpaCyTestGenerator
+):
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.spacy10_generate)
+
+    @staticmethod
+    def _get_assert(
+    ) -> list[Call]:
+        return [
+
+        ]
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            ast.ImportFrom(
+                module="spacy.errors",
+                names=[ast.alias(name="Errors")],
+                level=0,
+            ),
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        _, fail_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_, _ = self._generate_one()
         test = self.get_empty_test()
         test.body = self._get_assert()
         return test, TestResult.PASSING
@@ -1394,6 +1887,56 @@ class SpaCySystemtestGenerator5(SystemtestGenerator, SpaCyTestGenerator):
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
         pass_, _ = self.generate_values(self.spacy5_generate)
+        return f"{pass_}", TestResult.PASSING
+
+
+class SpaCySystemtestGenerator6(SystemtestGenerator, SpaCyTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.spacy6_generate)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.spacy6_generate)
+        return f"{pass_}", TestResult.PASSING
+
+
+class SpaCySystemtestGenerator7(SystemtestGenerator, SpaCyTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.spacy7_generate)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.spacy7_generate)
+        return f"{pass_}", TestResult.PASSING
+
+
+class SpaCySystemtestGenerator8(SystemtestGenerator, SpaCyTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.spacy8_generate)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.spacy8_generate)
+        return f"{pass_}", TestResult.PASSING
+
+
+class SpaCySystemtestGenerator9(SystemtestGenerator, SpaCyTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.spacy9_generate)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.spacy9_generate)
+        return f"{pass_}", TestResult.PASSING
+
+
+class SpaCySystemtestGenerator10(SystemtestGenerator, SpaCyTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.spacy10_generate)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.spacy10_generate)
         return f"{pass_}", TestResult.PASSING
 
 

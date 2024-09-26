@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return ""
+        return "tLShaF blPAoler"
 
     def test_diversity_2(self):
-        return ""
+        return "rMItLX fblPAol"
 
     def test_diversity_3(self):
-        return ""
+        return "OrMItLX gblPAol"
 
     def test_diversity_4(self):
-        return ""
+        return "EOrMItLX eblPAol"
 
     def test_diversity_5(self):
-        return ""
+        return "yEOrMItLX qblPAol"
 
     def test_diversity_6(self):
-        return ""
+        return "ByEOrMItLX hfblPAol"
 
     def test_diversity_7(self):
-        return ""
+        return "YByEOrMItLX rytblPAol"
 
     def test_diversity_8(self):
-        return ""
+        return "QYByEOrMItLX weblPAol"
 
     def test_diversity_9(self):
-        return ""
+        return "aQYByEOrMItLX KDblPAol"
 
     def test_diversity_10(self):
-        return ""
+        return "GaQYByEOrMItLX GblPAol"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return ""
+        return "iaYoEaoc iaYoEaoc"
 
     def test_diversity_2(self):
-        return ""
+        return "hiaYoEaoc hiaYoEaoc"
 
     def test_diversity_3(self):
-        return ""
+        return "YhiaYoEaoc YhiaYoEaoc"
 
     def test_diversity_4(self):
-        return ""
+        return "kDTYhiaYEaoc kDTYhiaYEaoc"
 
     def test_diversity_5(self):
-        return ""
+        return "kDwYhiaYoEc kDwYhiaYoEc"
 
     def test_diversity_6(self):
-        return ""
+        return "SwTYhiaYoEao SwTYhiaYoEao"
 
     def test_diversity_7(self):
-        return ""
+        return "kDwTYhiaYoE kDwTYhiaYoE"
 
     def test_diversity_8(self):
-        return ""
+        return "DwTYhiaYoEaoc DwTYhiaYoEaoc"
 
     def test_diversity_9(self):
-        return ""
+        return "wTYhiaYoEaoc wTYhiaYoEaoc"
 
     def test_diversity_10(self):
-        return ""
+        return "TYhiaYoEaoc TYhiaYoEaoc"
