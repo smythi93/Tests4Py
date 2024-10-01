@@ -3,7 +3,7 @@ import os.path
 import random
 import string
 import subprocess
-from _ast import Call, ImportFrom, Assign, Expr, Assert, Module
+from _ast import Call, ImportFrom, Assign, Expr, Assert, Module, ClassDef, With
 from pathlib import Path
 from typing import List, Optional, Tuple, Any, Callable
 from tests4py.constants import PYTHON
@@ -1064,7 +1064,10 @@ class SpaCyTestGenerator:
 
     @staticmethod
     def spacy10_generate():
-        return "", ""
+        random_string = SpaCyTestGenerator.generate_random_string()
+        passing = (random_string, "INVALID KEY")
+        failing = (random_string, "TEXT")
+        return passing, failing
 
 
 class SpaCyUnittestGenerator1(
@@ -1128,200 +1131,195 @@ class SpaCyUnittestGenerator2(
 
     @staticmethod
     def _get_assert(value1: str, value2: str
-                    ) -> list[Module]:
+                    ) -> list[ClassDef | Assign | Expr | Assert]:
         return [
-            ast.Module(
+            ast.ClassDef(
+                name='MyComponent',
+                bases=[],
+                keywords=[],
                 body=[
-                    ast.ClassDef(
-                        name='MyComponent',
-                        bases=[],
-                        keywords=[],
+                    ast.Assign(
+                        targets=[ast.Name(id='name')],
+                        value=ast.Constant(value=value1),
+                        lineno=1
+                    ),
+                    ast.FunctionDef(
+                        name='__init__',
+                        args=ast.arguments(
+                            args=[
+                                ast.arg(arg='self', annotation=None),
+                                ast.arg(arg='nlp', annotation=None),
+                                ast.arg(arg='**cfg', annotation=None)
+                            ],
+                            vararg=None,
+                            kwonlyargs=[],
+                            posonlyargs=[],
+                            kw_defaults=[],
+                            kwarg=None,
+                            defaults=[]
+                        ),
                         body=[
                             ast.Assign(
-                                targets=[ast.Name(id='name')],
-                                value=ast.Constant(value=value1),
-                                lineno=1
+                                targets=[ast.Attribute(value=ast.Name(id='self'), attr='nlp')],
+                                value=ast.Name(id='nlp'),
+                                lineno=2
                             ),
-                            ast.FunctionDef(
-                                name='__init__',
-                                args=ast.arguments(
+                            ast.Assign(
+                                targets=[
+                                    ast.Attribute(value=ast.Name(id='self'), attr='categories')],
+                                value=ast.Call(
+                                    func=ast.Attribute(value=ast.Name(id='cfg'), attr='get'),
                                     args=[
-                                        ast.arg(arg='self', annotation=None),
-                                        ast.arg(arg='nlp', annotation=None),
-                                        ast.arg(arg='**cfg', annotation=None)
+                                        ast.Constant(value='categories'),
+                                        ast.Constant(value='all_categories')
                                     ],
-                                    vararg=None,
-                                    kwonlyargs=[],
-                                    posonlyargs=[],
-                                    kw_defaults=[],
-                                    kwarg=None,
-                                    defaults=[]
+                                    keywords=[]
                                 ),
-                                body=[
-                                    ast.Assign(
-                                        targets=[ast.Attribute(value=ast.Name(id='self'), attr='nlp')],
-                                        value=ast.Name(id='nlp'),
-                                        lineno=2
-                                    ),
-                                    ast.Assign(
-                                        targets=[
-                                            ast.Attribute(value=ast.Name(id='self'), attr='categories')],
-                                        value=ast.Call(
-                                            func=ast.Attribute(value=ast.Name(id='cfg'), attr='get'),
-                                            args=[
-                                                ast.Constant(value='categories'),
-                                                ast.Constant(value='all_categories')
-                                            ],
-                                            keywords=[]
-                                        ),
-                                        lineno=3
-                                    )
-                                ],
-                                decorator_list=[],
-                                lineno=4
-                            ),
-                            ast.FunctionDef(
-                                name='__call__',
-                                args=ast.arguments(
-                                    args=[
-                                        ast.arg(arg='self', annotation=None),
-                                        ast.arg(arg='doc', annotation=None)
-                                    ],
-                                    vararg=None,
-                                    kwonlyargs=[],
-                                    posonlyargs=[],
-                                    kw_defaults=[],
-                                    kwarg=None,
-                                    defaults=[]
-                                ),
-                                body=[
-                                    ast.Pass(),
-                                ],
-                                decorator_list=[],
-                                lineno=7
-                            ),
-                            ast.FunctionDef(
-                                name='to_disk',
-                                args=ast.arguments(
-                                    args=[
-                                        ast.arg(arg='self', annotation=None),
-                                        ast.arg(arg='path', annotation=None),
-                                        ast.arg(arg='**kwargs', annotation=None)
-                                    ],
-                                    vararg=None,
-                                    kwonlyargs=[],
-                                    posonlyargs=[],
-                                    kw_defaults=[],
-                                    kwarg=None,
-                                    defaults=[]
-                                ),
-                                body=[
-                                    ast.Pass(),
-                                ],
-                                decorator_list=[],
-                                lineno=10
-                            ),
-                            ast.FunctionDef(
-                                name='from_disk',
-                                args=ast.arguments(
-                                    args=[
-                                        ast.arg(arg='self', annotation=None),
-                                        ast.arg(arg='path', annotation=None),
-                                        ast.arg(arg='**cfg', annotation=None)
-                                    ],
-                                    vararg=None,
-                                    kwonlyargs=[],
-                                    posonlyargs=[],
-                                    kw_defaults=[],
-                                    kwarg=None,
-                                    defaults=[]
-                                ),
-                                body=[
-                                    ast.Pass(),
-                                ],
-                                decorator_list=[],
-                                lineno=13
+                                lineno=3
                             )
                         ],
                         decorator_list=[],
-                        lineno=16
+                        lineno=4
                     ),
-                    ast.Assign(
-                        targets=[ast.Subscript(
-                            value=ast.Attribute(
-                                value=ast.Name(id='Language'),
-                                attr='factories'
-                            ),
-                            slice=ast.Index(value=ast.Constant(value=value1)),
-
-                        )],
-                        value=ast.Lambda(
-                            args=ast.arguments(
-                                posonlyargs=[],
-                                args=[
-                                    ast.arg(arg='nlp', annotation=None),
-                                    ast.arg(arg='**cfg', annotation=None)
-                                ],
-                                vararg=None,
-                                kwonlyargs=[],
-                                kw_defaults=[],
-                                kwarg=None,
-                                defaults=[]
-                            ),
-                            body=ast.Call(
-                                func=ast.Name(id='MyComponent'),
-                                args=[
-                                    ast.Name(id='nlp')
-                                ],
-                                keywords=[
-                                    ast.keyword(arg=None, value=ast.Name(id='cfg'))
-                                ]
-                            )
-                        ),
-                        lineno=20
-                    ),
-                    ast.Assign(
-                        targets=[ast.Name(id='nlp')],
-                        value=ast.Call(func=ast.Name(id='English'), args=[], keywords=[]),
-                        lineno=23
-                    ),
-                    ast.Expr(
-                        value=ast.Call(
-                            func=ast.Attribute(value=ast.Name(id='nlp'), attr='add_pipe'),
+                    ast.FunctionDef(
+                        name='__call__',
+                        args=ast.arguments(
                             args=[
-                                ast.Call(
-                                    func=ast.Attribute(value=ast.Name(id='nlp'), attr='create_pipe'),
-                                    args=[ast.Constant(value=value2)],
-                                    keywords=[]
-                                )
+                                ast.arg(arg='self', annotation=None),
+                                ast.arg(arg='doc', annotation=None)
                             ],
+                            vararg=None,
+                            kwonlyargs=[],
+                            posonlyargs=[],
+                            kw_defaults=[],
+                            kwarg=None,
+                            defaults=[]
+                        ),
+                        body=[
+                            ast.Pass(),
+                        ],
+                        decorator_list=[],
+                        lineno=7
+                    ),
+                    ast.FunctionDef(
+                        name='to_disk',
+                        args=ast.arguments(
+                            args=[
+                                ast.arg(arg='self', annotation=None),
+                                ast.arg(arg='path', annotation=None),
+                                ast.arg(arg='**kwargs', annotation=None)
+                            ],
+                            vararg=None,
+                            kwonlyargs=[],
+                            posonlyargs=[],
+                            kw_defaults=[],
+                            kwarg=None,
+                            defaults=[]
+                        ),
+                        body=[
+                            ast.Pass(),
+                        ],
+                        decorator_list=[],
+                        lineno=10
+                    ),
+                    ast.FunctionDef(
+                        name='from_disk',
+                        args=ast.arguments(
+                            args=[
+                                ast.arg(arg='self', annotation=None),
+                                ast.arg(arg='path', annotation=None),
+                                ast.arg(arg='**cfg', annotation=None)
+                            ],
+                            vararg=None,
+                            kwonlyargs=[],
+                            posonlyargs=[],
+                            kw_defaults=[],
+                            kwarg=None,
+                            defaults=[]
+                        ),
+                        body=[
+                            ast.Pass(),
+                        ],
+                        decorator_list=[],
+                        lineno=13
+                    )
+                ],
+                decorator_list=[],
+                lineno=16
+            ),
+            ast.Assign(
+                targets=[ast.Subscript(
+                    value=ast.Attribute(
+                        value=ast.Name(id='Language'),
+                        attr='factories'
+                    ),
+                    slice=ast.Index(value=ast.Constant(value=value1)),
+
+                )],
+                value=ast.Lambda(
+                    args=ast.arguments(
+                        posonlyargs=[],
+                        args=[
+                            ast.arg(arg='nlp', annotation=None),
+                            ast.arg(arg='**cfg', annotation=None)
+                        ],
+                        vararg=None,
+                        kwonlyargs=[],
+                        kw_defaults=[],
+                        kwarg=None,
+                        defaults=[]
+                    ),
+                    body=ast.Call(
+                        func=ast.Name(id='MyComponent'),
+                        args=[
+                            ast.Name(id='nlp')
+                        ],
+                        keywords=[
+                            ast.keyword(arg=None, value=ast.Name(id='cfg'))
+                        ]
+                    )
+                ),
+                lineno=20
+            ),
+            ast.Assign(
+                targets=[ast.Name(id='nlp')],
+                value=ast.Call(func=ast.Name(id='English'), args=[], keywords=[]),
+                lineno=23
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id='nlp'), attr='add_pipe'),
+                    args=[
+                        ast.Call(
+                            func=ast.Attribute(value=ast.Name(id='nlp'), attr='create_pipe'),
+                            args=[ast.Constant(value=value2)],
+                            keywords=[]
+                        )
+                    ],
+                    keywords=[]
+                ),
+                lineno=24
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Attribute(
+                        value=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id='nlp'),
+                                attr='get_pipe',
+
+                            ),
+                            args=[ast.Constant(value=value2)],
                             keywords=[]
                         ),
-                        lineno=24
-                    ),
-                    ast.Assert(
-                        test=ast.Compare(
-                            left=ast.Attribute(
-                                value=ast.Call(
-                                    func=ast.Attribute(
-                                        value=ast.Name(id='nlp'),
-                                        attr='get_pipe',
+                        attr='categories',
 
-                                    ),
-                                    args=[ast.Constant(value=value2)],
-                                    keywords=[]
-                                ),
-                                attr='categories',
-
-                            ),
-                            ops=[ast.Eq()],
-                            comparators=[ast.Constant(value='all_categories')]
-                        ),
-                        msg=None,
-                        lineno=25
                     ),
-                ],
-                type_ignores=[]
+                    ops=[ast.Eq()],
+                    comparators=[ast.Constant(value='all_categories')]
+                ),
+                msg=None,
+                lineno=25
             )
         ]
 
@@ -1510,7 +1508,8 @@ class SpaCyUnittestGenerator5(
         return self.generate_values(self.spacy5_generate)
 
     @staticmethod
-    def _get_assert(random_str: str
+    def _get_assert(
+            # random_str: str
     ) -> list[Module]:
         return [
             ast.Module(
@@ -1538,8 +1537,8 @@ class SpaCyUnittestGenerator5(
                     ),
                     ast.Assign(
                         targets=[ast.Name(id='text')],
-                        value=ast.Constant(value=random_str),
-                        lineno=3,
+                        value=ast.Constant(value="hello world"),
+                        lineno=2,
                         col_offset=0
                     ),
                     ast.Assign(
@@ -1585,6 +1584,18 @@ class SpaCyUnittestGenerator5(
                         lineno=5,
                         col_offset=0
                     ),
+                    ast.Assign(
+                        targets=[ast.Name(id='doc')],
+                        value=ast.Call(
+                            func=ast.Name(id='nlp'),
+                            args=[ast.Name(id='text')],
+                            keywords=[],
+                            lineno=4,
+                            col_offset=0
+                        ),
+                        lineno=4,
+                        col_offset=0
+                    ),
                     ast.Expr(
                         value=ast.Call(
                             func=ast.Attribute(
@@ -1597,7 +1608,7 @@ class SpaCyUnittestGenerator5(
                                     elts=[
                                         ast.Tuple(
                                             elts=[
-                                                ast.Name(id='text'),
+                                                ast.Name(id='doc'),
                                                 ast.Name(id='annots')
                                             ],
 
@@ -1636,18 +1647,23 @@ class SpaCyUnittestGenerator5(
                 names=[ast.alias(name="Vocab")],
                 level=0,
             ),
+            ast.ImportFrom(
+                module="spacy.tokens",
+                names=[ast.alias(name="Doc")],
+                level=0,
+            ),
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert(fail_)
+        test.body = self._get_assert()
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert(pass_)
+        test.body = self._get_assert()
         return test, TestResult.PASSING
 
 
@@ -1661,16 +1677,167 @@ class SpaCyUnittestGenerator6(
 
     @staticmethod
     def _get_assert(
-    ) -> list[Call]:
+    ) -> list[Module]:
         return [
-
+            ast.Module(
+                body=[
+                    ast.Assign(
+                        targets=[ast.Attribute(value=ast.Name(id="spacy", lineno=1, col_offset=0),
+                                               attr="language.ENABLE_PIPELINE_ANALYSIS", lineno=1,
+                                               col_offset=0)],
+                        value=ast.Constant(value=True, lineno=1, col_offset=30),
+                        lineno=1, col_offset=0
+                    ),
+                    ast.FunctionDef(
+                        name="c1",
+                        args=ast.arguments(
+                            posonlyargs=[],
+                            args=[ast.arg(arg="doc", annotation=None, lineno=3, col_offset=17)],
+                            kwonlyargs=[], kw_defaults=[], defaults=[],
+                            lineno=3, col_offset=17
+                        ),
+                        body=[
+                            ast.Return(value=ast.Name(id="doc", lineno=4, col_offset=12), lineno=4,
+                                       col_offset=8)
+                        ],
+                        decorator_list=[
+                            ast.Call(
+                                func=ast.Name(id="component", lineno=2, col_offset=1),
+                                args=[ast.Constant(value="c1", lineno=2, col_offset=11)],
+                                keywords=[ast.keyword(arg="assigns", value=ast.List(
+                                    elts=[ast.Constant(value="token.tag", lineno=2, col_offset=30)],
+                                    lineno=2, col_offset=30), lineno=2, col_offset=19)],
+                                lineno=2, col_offset=1
+                            )
+                        ],
+                        lineno=3, col_offset=0
+                    ),
+                    ast.FunctionDef(
+                        name="c2",
+                        args=ast.arguments(
+                            posonlyargs=[],
+                            args=[ast.arg(arg="doc", annotation=None, lineno=7, col_offset=17)],
+                            kwonlyargs=[], kw_defaults=[], defaults=[],
+                            lineno=7, col_offset=17
+                        ),
+                        body=[
+                            ast.Return(value=ast.Name(id="doc", lineno=8, col_offset=12), lineno=8,
+                                       col_offset=8)
+                        ],
+                        decorator_list=[
+                            ast.Call(
+                                func=ast.Name(id="component", lineno=6, col_offset=1),
+                                args=[ast.Constant(value="c2", lineno=6, col_offset=11)],
+                                keywords=[ast.keyword(arg="requires", value=ast.List(
+                                    elts=[ast.Constant(value="token.pos", lineno=6, col_offset=30)],
+                                    lineno=6, col_offset=30), lineno=6, col_offset=19)],
+                                lineno=6, col_offset=1
+                            )
+                        ],
+                        lineno=7, col_offset=0
+                    ),
+                    ast.Assign(
+                        targets=[ast.Name(id="nlp", lineno=10, col_offset=0)],
+                        value=ast.Call(func=ast.Name(id="Language", lineno=10, col_offset=5), args=[],
+                                       keywords=[], lineno=10, col_offset=5),
+                        lineno=10, col_offset=0
+                    ),
+                    ast.Expr(
+                        value=ast.Call(
+                            func=ast.Attribute(value=ast.Name(id="nlp", lineno=11, col_offset=0),
+                                               attr="add_pipe", lineno=11, col_offset=4),
+                            args=[ast.Name(id="c1", lineno=11, col_offset=14)],
+                            keywords=[],
+                            lineno=11, col_offset=4
+                        ),
+                        lineno=11, col_offset=0
+                    ),
+                    ast.With(
+                        items=[
+                            ast.withitem(
+                                context_expr=ast.Call(
+                                    func=ast.Attribute(
+                                        value=ast.Name(id="pytest", lineno=12, col_offset=4),
+                                        attr="warns", lineno=12, col_offset=11),
+                                    args=[ast.Name(id="UserWarning", lineno=12, col_offset=17)],
+                                    keywords=[],
+                                    lineno=12, col_offset=11
+                                ),
+                                lineno=12, col_offset=4
+                            )
+                        ],
+                        body=[
+                            ast.Expr(
+                                value=ast.Call(
+                                    func=ast.Attribute(
+                                        value=ast.Name(id="nlp", lineno=13, col_offset=8),
+                                        attr="add_pipe", lineno=13, col_offset=12),
+                                    args=[ast.Name(id="c2", lineno=13, col_offset=22)],
+                                    keywords=[],
+                                    lineno=13, col_offset=12
+                                ),
+                                lineno=13, col_offset=8
+                            )
+                        ],
+                        lineno=12, col_offset=4
+                    ),
+                    ast.With(
+                        items=[
+                            ast.withitem(
+                                context_expr=ast.Call(
+                                    func=ast.Attribute(
+                                        value=ast.Name(id="pytest", lineno=14, col_offset=4),
+                                        attr="warns", lineno=14, col_offset=11),
+                                    args=[ast.Constant(value=None, lineno=14, col_offset=17)],
+                                    keywords=[],
+                                    lineno=14, col_offset=11
+                                ),
+                                optional_vars=ast.Name(id="record", lineno=14, col_offset=23),
+                                lineno=14, col_offset=4
+                            )
+                        ],
+                        body=[
+                            ast.Expr(
+                                value=ast.Call(
+                                    func=ast.Attribute(
+                                        value=ast.Name(id="nlp", lineno=15, col_offset=8),
+                                        attr="remove_pipe", lineno=15, col_offset=12),
+                                    args=[ast.Constant(value="c2", lineno=15, col_offset=24)],
+                                    keywords=[],
+                                    lineno=15, col_offset=12
+                                ),
+                                lineno=15, col_offset=8
+                            )
+                        ],
+                        lineno=14, col_offset=4
+                    ),
+                    ast.Assert(
+                        test=ast.UnaryOp(op=ast.Not(), operand=ast.Attribute(
+                            value=ast.Name(id="record", lineno=16, col_offset=15), attr="list",
+                            lineno=16, col_offset=22), lineno=16, col_offset=8),
+                        msg=None,
+                        lineno=16, col_offset=8
+                    )
+                ],
+                type_ignores=[]
+            )
         ]
 
     def get_imports(self) -> list[ImportFrom]:
         return [
+            ast.Import(
+                module="spacy",
+                names=[ast.alias(name="spacy")],
+                level=0,
+            ),
+            ast.Import(
+                module="pytest",
+                names=[ast.alias(name="pytest")],
+                level=0,
+            ),
             ast.ImportFrom(
-                module="spacy.errors",
-                names=[ast.alias(name="Errors")],
+                module="spacy.language",
+                names=[ast.alias(name="Language"), ast.alias(name="component")],
                 level=0,
             ),
         ]
@@ -1698,18 +1865,334 @@ class SpaCyUnittestGenerator7(
 
     @staticmethod
     def _get_assert(
-    ) -> list[Call]:
+    ) -> list[Module]:
         return [
+            ast.Module(
+                body=[
+                    ast.FunctionDef(
+                        name='en_tokenizer',
+                        args=ast.arguments(
+                            posonlyargs=[],
+                            args=[],
+                            kwonlyargs=[],
+                            kw_defaults=[],
+                            defaults=[],
+                            lineno=1, col_offset=0
+                        ),
+                        body=[
+                            ast.Return(
+                                value=ast.Call(
+                                    func=ast.Attribute(
+                                        value=ast.Call(
+                                            func=ast.Name(id="get_lang_class", lineno=2, col_offset=10),
+                                            args=[ast.Constant(value="en", lineno=2, col_offset=24)],
+                                            keywords=[],
+                                            lineno=2, col_offset=10
+                                        ),
+                                        attr='Defaults',
 
+                                        lineno=2, col_offset=35
+                                    ),
+                                    args=[],
+                                    keywords=[],
+                                    lineno=2, col_offset=35
+                                ),
+                                lineno=2, col_offset=4
+                            )
+                        ],
+                        decorator_list=[
+                            ast.Call(
+                                func=ast.Attribute(
+                                    value=ast.Name(id='pytest', lineno=1, col_offset=1),
+                                    attr='fixture',
+
+                                    lineno=1, col_offset=1
+                                ),
+                                args=[
+                                    ast.keyword(arg='scope',
+                                                value=ast.Constant(value="session", lineno=1, col_offset=20))
+                                ],
+                                keywords=[],
+                                lineno=1, col_offset=1
+                            )
+                        ],
+                        returns=None,
+                        type_comment=None,
+                        lineno=1, col_offset=0
+                    ),
+                    ast.FunctionDef(
+                        name='doc',
+                        args=ast.arguments(
+                            posonlyargs=[],
+                            args=[ast.arg(arg='en_tokenizer', annotation=None, lineno=1, col_offset=15)],
+                            kwonlyargs=[],
+                            kw_defaults=[],
+                            defaults=[],
+                            lineno=1, col_offset=10
+                        ),
+                        body=[
+                            ast.Assign(
+                                targets=[ast.Name(id='text', lineno=2, col_offset=4)],
+                                value=ast.Constant(value="This is a sentence. This is another sentence. And a third.",
+                                                   lineno=2, col_offset=10),
+                                lineno=2, col_offset=4
+                            ),
+                            ast.Assign(
+                                targets=[ast.Name(id='heads', lineno=3, col_offset=4)],
+                                value=ast.List(
+                                    elts=[
+                                        ast.Constant(value=1, lineno=3, col_offset=12),
+                                        ast.Constant(value=0, lineno=3, col_offset=14),
+                                        ast.Constant(value=1, lineno=3, col_offset=16),
+                                        ast.Constant(value=-2, lineno=3, col_offset=18),
+                                        ast.Constant(value=-3, lineno=3, col_offset=21),
+                                        ast.Constant(value=1, lineno=3, col_offset=24),
+                                        ast.Constant(value=0, lineno=3, col_offset=26),
+                                        ast.Constant(value=1, lineno=3, col_offset=28),
+                                        ast.Constant(value=-2, lineno=3, col_offset=30),
+                                        ast.Constant(value=-3, lineno=3, col_offset=33),
+                                        ast.Constant(value=0, lineno=3, col_offset=36),
+                                        ast.Constant(value=1, lineno=3, col_offset=38),
+                                        ast.Constant(value=-2, lineno=3, col_offset=40),
+                                        ast.Constant(value=-1, lineno=3, col_offset=43)
+                                    ],
+
+                                    lineno=3, col_offset=10
+                                ),
+                                lineno=3, col_offset=4
+                            ),
+                            ast.Assign(
+                                targets=[ast.Name(id='deps', lineno=4, col_offset=4)],
+                                value=ast.List(
+                                    elts=[
+                                        ast.Constant(value="nsubj", lineno=4, col_offset=11),
+                                        ast.Constant(value="ROOT", lineno=4, col_offset=19),
+                                        ast.Constant(value="det", lineno=4, col_offset=27),
+                                        ast.Constant(value="attr", lineno=4, col_offset=34),
+                                        ast.Constant(value="punct", lineno=4, col_offset=42),
+                                        ast.Constant(value="nsubj", lineno=4, col_offset=50),
+                                        ast.Constant(value="ROOT", lineno=4, col_offset=58),
+                                        ast.Constant(value="det", lineno=4, col_offset=66),
+                                        ast.Constant(value="attr", lineno=4, col_offset=73),
+                                        ast.Constant(value="punct", lineno=4, col_offset=81),
+                                        ast.Constant(value="ROOT", lineno=4, col_offset=89),
+                                        ast.Constant(value="det", lineno=4, col_offset=97),
+                                        ast.Constant(value="npadvmod", lineno=4, col_offset=105),
+                                        ast.Constant(value="punct", lineno=4, col_offset=116)
+                                    ],
+
+                                    lineno=4, col_offset=10
+                                ),
+                                lineno=4, col_offset=4
+                            ),
+                            ast.Assign(
+                                targets=[ast.Name(id='tokens', lineno=5, col_offset=4)],
+                                value=ast.Call(
+                                    func=ast.Name(id='en_tokenizer', lineno=5, col_offset=12),
+                                    args=[ast.Name(id='text', lineno=5, col_offset=25)],
+                                    keywords=[],
+                                    lineno=5, col_offset=12
+                                ),
+                                lineno=5, col_offset=4
+                            ),
+                            ast.Return(
+                                value=ast.Call(
+                                    func=ast.Name(id='get_doc', lineno=6, col_offset=11),
+                                    args=[
+                                        ast.Attribute(
+                                            value=ast.Name(id='tokens', lineno=6, col_offset=20),
+                                            attr='vocab',
+
+                                            lineno=6, col_offset=27
+                                        ),
+                                        ast.keyword(arg='words', value=ast.ListComp(
+                                            elt=ast.Attribute(
+                                                value=ast.Name(id='t', lineno=6, col_offset=41),
+                                                attr='text',
+
+                                                lineno=6, col_offset=43
+                                            ),
+                                            generators=[
+                                                ast.comprehension(
+                                                    target=ast.Name(id='t', lineno=6, col_offset=53),
+                                                    iter=ast.Name(id='tokens', lineno=6, col_offset=55),
+                                                    ifs=[],
+                                                    is_async=0,
+                                                    lineno=6, col_offset=53
+                                                )
+                                            ],
+                                            lineno=6, col_offset=41
+                                        )),
+                                        ast.keyword(arg='heads', value=ast.Name(id='heads', lineno=6,
+                                                                                col_offset=66)),
+                                        ast.keyword(arg='deps',
+                                                    value=ast.Name(id='deps', lineno=6, col_offset=76))
+                                    ],
+                                    keywords=[],
+                                    lineno=6, col_offset=11
+                                ),
+                                lineno=6, col_offset=4
+                            )
+                        ],
+                        decorator_list=[
+                            ast.Call(
+                                func=ast.Attribute(value=ast.Name(id='pytest', lineno=1, col_offset=1),
+                                                   attr='fixture', lineno=1, col_offset=1),
+                                args=[],
+                                keywords=[],
+                                lineno=1, col_offset=1
+                            )
+                        ],
+                        returns=None,
+                        type_comment=None,
+                        lineno=1, col_offset=0
+                    ),
+                    ast.Assign(
+                        targets=[ast.Name(id="spans", lineno=1, col_offset=0)],
+                        value=ast.List(
+                            elts=[
+                                ast.Subscript(
+                                    value=ast.Name(id="doc", lineno=1, col_offset=9),
+                                    slice=ast.Slice(
+                                        lower=ast.Constant(value=1, lineno=1, col_offset=13),
+                                        upper=ast.Constant(value=4, lineno=1, col_offset=15),
+                                        step=None,
+                                        lineno=1, col_offset=13
+                                    ),
+
+                                    lineno=1, col_offset=9
+                                ),
+                                ast.Subscript(
+                                    value=ast.Name(id="doc", lineno=1, col_offset=18),
+                                    slice=ast.Slice(
+                                        lower=ast.Constant(value=6, lineno=1, col_offset=22),
+                                        upper=ast.Constant(value=8, lineno=1, col_offset=24),
+                                        step=None,
+                                        lineno=1, col_offset=22
+                                    ),
+
+                                    lineno=1, col_offset=18
+                                ),
+                                ast.Subscript(
+                                    value=ast.Name(id="doc", lineno=1, col_offset=27),
+                                    slice=ast.Slice(
+                                        lower=ast.Constant(value=1, lineno=1, col_offset=31),
+                                        upper=ast.Constant(value=4, lineno=1, col_offset=33),
+                                        step=None,
+                                        lineno=1, col_offset=31
+                                    ),
+
+                                    lineno=1, col_offset=27
+                                ),
+                                ast.Subscript(
+                                    value=ast.Name(id="doc", lineno=1, col_offset=36),
+                                    slice=ast.Slice(
+                                        lower=ast.Constant(value=10, lineno=1, col_offset=40),
+                                        upper=ast.Constant(value=14, lineno=1, col_offset=43),
+                                        step=None,
+                                        lineno=1, col_offset=40
+                                    ),
+
+                                    lineno=1, col_offset=36
+                                ),
+                            ],
+
+                            lineno=1, col_offset=9
+                        ),
+                        lineno=1, col_offset=0
+                    ),
+
+                    ast.Assign(
+                        targets=[ast.Name(id="filtered", lineno=2, col_offset=0)],
+                        value=ast.Call(
+                            func=ast.Name(id="filter_spans", lineno=2, col_offset=11),
+                            args=[ast.Name(id="spans", lineno=2, col_offset=24)],
+                            keywords=[],
+                            lineno=2, col_offset=11
+                        ),
+                        lineno=2, col_offset=0
+                    ),
+
+                    ast.Assert(
+                        test=ast.Compare(
+                            left=ast.Call(
+                                func=ast.Name(id="len", lineno=3, col_offset=7),
+                                args=[ast.Name(id="filtered", lineno=3, col_offset=11)],
+                                keywords=[],
+                                lineno=3, col_offset=7
+                            ),
+                            ops=[ast.Eq()],
+                            comparators=[ast.Constant(value=3, lineno=3, col_offset=24)],
+                            lineno=3, col_offset=7
+                        ),
+                        msg=None,
+                        lineno=3, col_offset=0
+                    ),
+
+                    ast.Assert(
+                        test=ast.BoolOp(
+                            op=ast.And(),
+                            values=[
+                                ast.Compare(
+                                    left=ast.Attribute(
+                                        value=ast.Subscript(
+                                            value=ast.Name(id="filtered", lineno=4, col_offset=7),
+                                            slice=ast.Constant(value=0, lineno=4, col_offset=16),
+
+                                            lineno=4, col_offset=16
+                                        ),
+                                        attr="start",
+
+                                        lineno=4, col_offset=7
+                                    ),
+                                    ops=[ast.Eq()],
+                                    comparators=[ast.Constant(value=1, lineno=4, col_offset=29)],
+                                    lineno=4, col_offset=7
+                                ),
+                                ast.Compare(
+                                    left=ast.Attribute(
+                                        value=ast.Subscript(
+                                            value=ast.Name(id="filtered", lineno=4, col_offset=38),
+                                            slice=ast.Constant(value=0, lineno=4, col_offset=47),
+
+                                            lineno=4, col_offset=47
+                                        ),
+                                        attr="end",
+
+                                        lineno=4, col_offset=38
+                                    ),
+                                    ops=[ast.Eq()],
+                                    comparators=[ast.Constant(value=4, lineno=4, col_offset=60)],
+                                    lineno=4, col_offset=38
+                                ),
+                            ],
+                            lineno=4, col_offset=0
+                        ),
+                        msg=None,
+                        lineno=4, col_offset=0
+                    )
+                ],
+                type_ignores=[]
+            )
         ]
 
     def get_imports(self) -> list[ImportFrom]:
         return [
-            ast.ImportFrom(
-                module="spacy.errors",
-                names=[ast.alias(name="Errors")],
+            ast.Import(
+                module="pytest",
+                names=[ast.alias(name="pytest")],
                 level=0,
             ),
+            ast.ImportFrom(
+                module="spacy.util",
+                names=[ast.alias(name="filter_spans"), ast.alias(name="get_lang_class")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="spacy.tests.util",
+                names=[ast.alias(name="get_doc")],
+                level=0,
+            )
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
@@ -1735,18 +2218,110 @@ class SpaCyUnittestGenerator8(
 
     @staticmethod
     def _get_assert(
-    ) -> list[Call]:
+    ) -> list[Assign | Assert | Expr]:
         return [
+            ast.Assign(
+                targets=[ast.Name(id='matcher', lineno=6, col_offset=4)],
+                value=ast.Call(
+                    func=ast.Name(id='Matcher', lineno=6, col_offset=14),
+                    args=[ast.Call(
+                        func=ast.Attribute(
+                            value=ast.Call(
+                                func=ast.Name(id='get_lang_class'),
+                                args=[ast.Constant(value='en')],
+                                keywords=[]
+                            ),
+                            attr='Defaults.create_vocab',
 
+                        ),
+                        args=[],
+                        keywords=[]
+                    )],
+                    keywords=[],
+                    lineno=6, col_offset=14
+                ),
+                lineno=6, col_offset=4
+            ),
+            ast.Assign(
+                targets=[ast.Name(id='pattern', lineno=7, col_offset=4)],
+                value=ast.List(
+                    elts=[
+                        ast.Dict(
+                            keys=[ast.Constant(value='ORTH', lineno=7, col_offset=16)],
+                            values=[ast.Constant(value='test', lineno=7, col_offset=24)],
+                            lineno=7, col_offset=16
+                        ),
+                        ast.Dict(
+                            keys=[ast.Constant(value='OP', lineno=7, col_offset=40)],
+                            values=[ast.Constant(value='?', lineno=7, col_offset=46)],
+                            lineno=7, col_offset=40
+                        )
+                    ],
+
+                    lineno=7, col_offset=14
+                ),
+                lineno=7, col_offset=4
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Call(
+                        func=ast.Name(id='len', lineno=8, col_offset=11),
+                        args=[ast.Name(id='matcher', lineno=8, col_offset=15)],
+                        keywords=[],
+                        lineno=8, col_offset=11
+                    ),
+                    ops=[ast.Eq(lineno=8, col_offset=25)],
+                    comparators=[ast.Constant(value=0, lineno=8, col_offset=29)],
+                    lineno=8, col_offset=11
+                ),
+                lineno=8, col_offset=4
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id='matcher', lineno=9, col_offset=4),
+                        attr='add',
+
+                        lineno=9, col_offset=14
+                    ),
+                    args=[
+                        ast.Constant(value='Rule', lineno=9, col_offset=19),
+                        ast.Constant(value=None, lineno=9, col_offset=26),
+                        ast.Name(id='pattern', lineno=9, col_offset=32)
+                    ],
+                    keywords=[],
+                    lineno=9, col_offset=14
+                ),
+                lineno=9, col_offset=4
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Constant(value='Rule', lineno=10, col_offset=11),
+                    ops=[ast.In(lineno=10, col_offset=18)],
+                    comparators=[ast.Name(id='matcher', lineno=10, col_offset=21)],
+                    lineno=10, col_offset=11
+                ),
+                lineno=10, col_offset=4
+            )
         ]
 
     def get_imports(self) -> list[ImportFrom]:
         return [
-            ast.ImportFrom(
-                module="spacy.errors",
-                names=[ast.alias(name="Errors")],
+            ast.Import(
+                module="pytest",
+                names=[ast.alias(name="pytest")],
                 level=0,
             ),
+            ast.ImportFrom(
+                module="spacy.matcher",
+                names=[ast.alias(name="Matcher")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="spacy.util",
+                names=[ast.alias(name="get_lang_class")],
+                level=0,
+            )
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
@@ -1772,16 +2347,77 @@ class SpaCyUnittestGenerator9(
 
     @staticmethod
     def _get_assert(
-    ) -> list[Call]:
+    ) -> list[Assign | Assert]:
         return [
+            ast.Assign(
+                targets=[ast.Name(id='nlp', lineno=1, col_offset=0)],
+                value=ast.Call(
+                    func=ast.Name(id='English', lineno=1, col_offset=6),
+                    args=[],
+                    keywords=[],
+                    lineno=1, col_offset=6
+                ),
+                lineno=1, col_offset=0
+            ),
+            ast.Assign(
+                targets=[
+                    ast.Attribute(
+                        value=ast.Attribute(
+                            value=ast.Name(id='nlp', lineno=2, col_offset=0),
+                            attr='vocab',
 
+                            lineno=2, col_offset=4
+                        ),
+                        attr='lookups',
+
+                        lineno=2, col_offset=10
+                    )
+                ],
+                value=ast.Call(
+                    func=ast.Name(id='Lookups', lineno=2, col_offset=20),
+                    args=[],
+                    keywords=[],
+                    lineno=2, col_offset=20
+                ),
+                lineno=2, col_offset=0
+            ),
+            ast.Assert(
+                test=ast.UnaryOp(
+                    op=ast.Not(),
+                    operand=ast.Call(
+                        func=ast.Name(id='len', lineno=3, col_offset=11),
+                        args=[
+                            ast.Attribute(
+                                value=ast.Attribute(
+                                    value=ast.Name(id='nlp', lineno=3, col_offset=15),
+                                    attr='vocab',
+
+                                    lineno=3, col_offset=19
+                                ),
+                                attr='lookups',
+
+                                lineno=3, col_offset=25
+                            )
+                        ],
+                        keywords=[],
+                        lineno=3, col_offset=11
+                    ),
+                    lineno=3, col_offset=7
+                ),
+                lineno=3, col_offset=0
+            )
         ]
 
     def get_imports(self) -> list[ImportFrom]:
         return [
             ast.ImportFrom(
-                module="spacy.errors",
-                names=[ast.alias(name="Errors")],
+                module="spacy.lang.en",
+                names=[ast.alias(name="English")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="spacy.lookups",
+                names=[ast.alias(name="Lookups")],
                 level=0,
             ),
         ]
@@ -1808,31 +2444,118 @@ class SpaCyUnittestGenerator10(
         return self.generate_values(self.spacy10_generate)
 
     @staticmethod
-    def _get_assert(
-    ) -> list[Call]:
+    def _get_assert(random_name: str, pattern: str
+                    ) -> list[Assign | With | Expr]:
         return [
+            ast.Assign(
+                targets=[ast.Name(id='matcher', lineno=1, col_offset=0)],
+                value=ast.Call(
+                    func=ast.Name(id='Matcher', lineno=1, col_offset=10),
+                    args=[ast.Call(
+                        func=ast.Attribute(
+                            value=ast.Call(
+                                func=ast.Name(id='get_lang_class'),
+                                args=[ast.Constant(value='en')],
+                                keywords=[]
+                            ),
+                            attr='Defaults.create_vocab',
 
+                        ),
+                        args=[],
+                        keywords=[]
+                    )],
+                    keywords=[],
+                    lineno=1, col_offset=10
+                ),
+                lineno=1, col_offset=0
+            ),
+            ast.With(
+                items=[
+                    ast.withitem(
+                        context_expr=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id='pytest', lineno=2, col_offset=5),
+                                attr='raises',
+
+                                lineno=2, col_offset=11
+                            ),
+                            args=[ast.Name(id='ValueError', lineno=2, col_offset=18)],
+                            keywords=[],
+                            lineno=2, col_offset=5
+                        ),
+                        optional_vars=None
+                    )
+                ],
+                body=[
+                    ast.Expr(
+                        value=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id='matcher', lineno=3, col_offset=4),
+                                attr='add',
+
+                                lineno=3, col_offset=12
+                            ),
+                            args=[
+                                ast.Constant(value=random_name, lineno=3, col_offset=16),
+                                ast.List(elts=[], lineno=3, col_offset=23),
+                                ast.List(
+                                    elts=[
+                                        ast.Dict(
+                                            keys=[ast.Constant(value=pattern, lineno=3, col_offset=29)],
+                                            values=[ast.Constant(value='test', lineno=3, col_offset=36)],
+                                            lineno=3, col_offset=29
+                                        )
+                                    ],
+
+                                    lineno=3, col_offset=28
+                                )
+                            ],
+                            keywords=[],
+                            lineno=3, col_offset=12
+                        ),
+                        lineno=3, col_offset=8
+                    )
+                ],
+                lineno=2, col_offset=0
+            )
         ]
 
     def get_imports(self) -> list[ImportFrom]:
         return [
+            ast.Import(
+                module="pytest",
+                names=[ast.alias(name="pytest")],
+                level=0,
+            ),
             ast.ImportFrom(
-                module="spacy.errors",
-                names=[ast.alias(name="Errors")],
+                module="spacy.matcher",
+                names=[ast.alias(name="Matcher")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="spacy.util",
+                names=[ast.alias(name="get_lang_class")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="spacy.tokens",
+                names=[ast.alias(name="Doc")],
                 level=0,
             ),
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
+        random_name, pattern = fail_
         test = self.get_empty_test()
-        test.body = self._get_assert()
+        test.body = self._get_assert(random_name, pattern)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
+        random_name, pattern = pass_
         test = self.get_empty_test()
-        test.body = self._get_assert()
+        test.body = self._get_assert(random_name, pattern)
         return test, TestResult.PASSING
 
 
