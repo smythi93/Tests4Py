@@ -2536,12 +2536,7 @@ class SpaCyUnittestGenerator10(
                 module="spacy.util",
                 names=[ast.alias(name="get_lang_class")],
                 level=0,
-            ),
-            ast.ImportFrom(
-                module="spacy.tokens",
-                names=[ast.alias(name="Doc")],
-                level=0,
-            ),
+            )
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:

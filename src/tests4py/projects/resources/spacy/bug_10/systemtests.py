@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return ""
+        return "hgwevdghw TEXT"
 
     def test_diversity_2(self):
-        return ""
+        return "vhgdhg TEXT"
 
     def test_diversity_3(self):
-        return ""
+        return "vaghdsvh TEXT"
 
     def test_diversity_4(self):
-        return ""
+        return "hgfyFCGFs TEXT"
 
     def test_diversity_5(self):
-        return ""
+        return "dbhwvduw TEXT"
 
     def test_diversity_6(self):
-        return ""
+        return "BBVDHG TEXT"
 
     def test_diversity_7(self):
-        return ""
+        return "jabsjdwj TEXT"
 
     def test_diversity_8(self):
-        return ""
+        return "HSVDGH TEXT"
 
     def test_diversity_9(self):
-        return ""
+        return "qbdghwe TEXT"
 
     def test_diversity_10(self):
-        return ""
+        return "hjasbdgavjd TEXT"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return ""
+        return "jhgsdgqw INVALID KEY"
 
     def test_diversity_2(self):
-        return ""
+        return "JHBJGV INVALID KEY"
 
     def test_diversity_3(self):
-        return ""
+        return "hgjKHKHK INVALID KEY"
 
     def test_diversity_4(self):
-        return ""
+        return "hjghHHS INVALID KEY"
 
     def test_diversity_5(self):
-        return ""
+        return "bhggYFGFGH INVALID KEY"
 
     def test_diversity_6(self):
-        return ""
+        return "HGGHFhgn INVALID KEY"
 
     def test_diversity_7(self):
-        return ""
+        return "uywegruywe INVALID KEY"
 
     def test_diversity_8(self):
-        return ""
+        return "wehdguew INVALID KEY"
 
     def test_diversity_9(self):
-        return ""
+        return "ajhsbdjh INVALID KEY"
 
     def test_diversity_10(self):
-        return ""
+        return "HJSGHDW INVALID KEY"

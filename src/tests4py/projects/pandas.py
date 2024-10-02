@@ -5884,11 +5884,6 @@ class PandasUnittestGenerator22(
 
     @staticmethod
     def _get_assert(
-            expected: Any,
-            index_1: Any,
-            index_2: Any,
-            list_1: Any,
-            list_2: Any,
     ) -> list[ast.Assign | ast.Expr]:
         return [
             ast.Assign(
@@ -6107,13 +6102,13 @@ class PandasUnittestGenerator22(
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("", "", "", "", "")
+        test.body = self._get_assert()
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("", "", "", "", "")
+        test.body = self._get_assert()
         return test, TestResult.PASSING
 
 
@@ -6127,11 +6122,6 @@ class PandasUnittestGenerator23(
 
     @staticmethod
     def _get_assert(
-            expected: Any,
-            index_1: Any,
-            index_2: Any,
-            list_1: Any,
-            list_2: Any,
     ) -> list[ast.Assign | ast.Expr]:
         return [
             ast.Assign(
@@ -6220,13 +6210,13 @@ class PandasUnittestGenerator23(
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("", "", "", "", "")
+        test.body = self._get_assert()
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("", "", "", "", "")
+        test.body = self._get_assert()
         return test, TestResult.PASSING
 
 
@@ -6240,11 +6230,6 @@ class PandasUnittestGenerator24(
 
     @staticmethod
     def _get_assert(
-            expected: Any,
-            index_1: Any,
-            index_2: Any,
-            list_1: Any,
-            list_2: Any,
     ) -> list[ast.Assign | ast.Expr]:
         return [
             ast.Assign(
@@ -6293,13 +6278,13 @@ class PandasUnittestGenerator24(
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("", "", "", "", "")
+        test.body = self._get_assert()
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("", "", "", "", "")
+        test.body = self._get_assert()
         return test, TestResult.PASSING
 
 
@@ -6313,11 +6298,6 @@ class PandasUnittestGenerator25(
 
     @staticmethod
     def _get_assert(
-            expected: Any,
-            index_1: Any,
-            index_2: Any,
-            list_1: Any,
-            list_2: Any,
     ) -> list[ast.Assign | ast.Expr]:
         return [
             ast.Assign(
@@ -6435,13 +6415,13 @@ class PandasUnittestGenerator25(
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("", "", "", "", "")
+        test.body = self._get_assert()
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("", "", "", "", "")
+        test.body = self._get_assert()
         return test, TestResult.PASSING
 
 
@@ -6455,7 +6435,6 @@ class PandasUnittestGenerator26(
 
     @staticmethod
     def _get_assert(
-            expected: Any,
     ) -> list[ast.Assign | ast.Expr]:
         return [
             ast.Assign(
@@ -6535,13 +6514,13 @@ class PandasUnittestGenerator26(
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("")
+        test.body = self._get_assert()
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("")
+        test.body = self._get_assert()
         return test, TestResult.PASSING
 
 
@@ -6555,7 +6534,6 @@ class PandasUnittestGenerator27(
 
     @staticmethod
     def _get_assert(
-            expected: Any,
     ) -> list[ast.Assign | ast.Expr]:
         return [
             ast.Assign(
@@ -6660,13 +6638,13 @@ class PandasUnittestGenerator27(
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("")
+        test.body = self._get_assert()
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("")
+        test.body = self._get_assert()
         return test, TestResult.PASSING
 
 
@@ -6680,7 +6658,6 @@ class PandasUnittestGenerator28(
 
     @staticmethod
     def _get_assert(
-            expected: Any,
     ) -> list[ast.Assign | ast.Expr]:
         return [
 
@@ -6698,13 +6675,13 @@ class PandasUnittestGenerator28(
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("")
+        test.body = self._get_assert()
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("")
+        test.body = self._get_assert()
         return test, TestResult.PASSING
 
 
@@ -6718,7 +6695,6 @@ class PandasUnittestGenerator29(
 
     @staticmethod
     def _get_assert(
-            expected: Any,
     ) -> list[ast.Assign | ast.Expr]:
         return [
 
@@ -6736,13 +6712,13 @@ class PandasUnittestGenerator29(
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("")
+        test.body = self._get_assert()
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("")
+        test.body = self._get_assert()
         return test, TestResult.PASSING
 
 
@@ -6756,7 +6732,6 @@ class PandasUnittestGenerator30(
 
     @staticmethod
     def _get_assert(
-            expected: Any,
     ) -> list[ast.Assign | ast.Expr]:
         return [
 
@@ -6774,13 +6749,13 @@ class PandasUnittestGenerator30(
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("")
+        test.body = self._get_assert()
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert("")
+        test.body = self._get_assert()
         return test, TestResult.PASSING
 
 
@@ -7113,4 +7088,3 @@ grammar: Grammar = {
     "<char>": srange(string.ascii_letters),
 }
 assert is_valid_grammar(grammar)
-
