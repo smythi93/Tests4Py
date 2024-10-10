@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return ""
+        return "GREFREF tokenizer 0"
 
     def test_diversity_2(self):
-        return ""
+        return "YTJHTYHT tagger 0"
 
     def test_diversity_3(self):
-        return ""
+        return "RTYRYRT ner 0"
 
     def test_diversity_4(self):
-        return ""
+        return "DFGFDGD textcat 0"
 
     def test_diversity_5(self):
-        return ""
+        return "DRGERGERGEA tokenizer 0"
 
     def test_diversity_6(self):
-        return ""
+        return "sfefewfweg tagger 0"
 
     def test_diversity_7(self):
-        return ""
+        return "herhrehger parser 0"
 
     def test_diversity_8(self):
-        return ""
+        return "werewrew tokenizer 0"
 
     def test_diversity_9(self):
-        return ""
+        return "gerggerfe tagger 0"
 
     def test_diversity_10(self):
-        return ""
+        return "grwfgwfw ner 0"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return ""
+        return "kjwjnfw ner 1"
 
     def test_diversity_2(self):
-        return ""
+        return "sdfswer textcat 1"
 
     def test_diversity_3(self):
-        return ""
+        return "gerregd parser 1"
 
     def test_diversity_4(self):
-        return ""
+        return "fwefwefw ner 1"
 
     def test_diversity_5(self):
-        return ""
+        return "wrgwfw tokenizer 1"
 
     def test_diversity_6(self):
-        return ""
+        return "GWRGFWE ner 1"
 
     def test_diversity_7(self):
-        return ""
+        return "SFGSDFS textcat 1"
 
     def test_diversity_8(self):
-        return ""
+        return "WRFKJFG tagger 1"
 
     def test_diversity_9(self):
-        return ""
+        return "SDLFSDIJ tokenizer 1"
 
     def test_diversity_10(self):
-        return ""
+        return "KADJHA tagger 1"
