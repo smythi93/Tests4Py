@@ -1548,124 +1548,94 @@ class SpaCyUnittestGenerator5(
                 returns=None,
                 lineno=1,
             ),
-            # ast.Assign(
-            #     targets=[ast.Name(id='doc', ctx=ast.Store())],
-            #     value=ast.Dict(keys=[], values=[]),
-            #     lineno=1,
-            # ),
-            # ast.Assign(
-            #     targets=[ast.Name(id='paragraph', ctx=ast.Store())],
-            #     value=ast.Dict(keys=[], values=[]),
-            #     lineno=2,
-            # ),
-            # ast.Assign(
-            #     targets=[
-            #         ast.Subscript(
-            #             value=ast.Name(id='doc', ctx=ast.Load()),
-            #             slice=ast.Constant(value='id'),
-            #             ctx=ast.Store(),
-            #         )
-            #     ],
-            #     value=ast.Constant(value=5, ctx=ast.Load()),
-            #     lineno=3,
-            # ),
-            # ast.Assign(
-            #     targets=[
-            #         ast.Subscript(
-            #             value=ast.Name(id='doc', ctx=ast.Load()),
-            #             slice=ast.Constant(value='paragraphs'),
-            #             ctx=ast.Store(),
-            #         )
-            #     ],
-            #     value=ast.List(elts=[], ctx=ast.Load()),
-            #     lineno=4,
-            # ),
-            # ast.Assign(
-            #     targets=[
-            #         ast.Subscript(
-            #             value=ast.Name(id='paragraph', ctx=ast.Load()),
-            #             slice=ast.Constant(value='sentences'),
-            #             ctx=ast.Store(),
-            #         )
-            #     ],
-            #     value=ast.Constant(value='This is sentence 2256. This is sentence 8743. And sentence 9925.', ctx=ast.Load()),
-            #     lineno=5,
-            # ),
-            # ast.Expr(
-            #     value=ast.Call(
-            #         func=ast.Attribute(
-            #             value=ast.Subscript(
-            #                 value=ast.Name(id='doc', ctx=ast.Load()),
-            #                 slice=ast.Constant(value='paragraphs'),
-            #                 ctx=ast.Load(),
-            #             ),
-            #             attr='append',
-            #             ctx=ast.Load(),
-            #         ),
-            #         args=[ast.Name(id='paragraph', ctx=ast.Load())],
-            #         keywords=[],
-            #     ),
-            #     lineno=6,
-            # ),
+            ast.Assign(
+                targets=[ast.Name(id='nlp', ctx=ast.Store())],
+                value=ast.Call(
+                    func=ast.Name(id='Language', ctx=ast.Load()),
+                    args=[ast.Call(
+                        func=ast.Name(id='Vocab', ctx=ast.Load()),
+                        args=[],
+                        keywords=[]
+                    )],
+                    keywords=[]
+                ),
+                lineno=1,
 
-            # ast.Assign(
-            #     targets=[ast.Name(id='nlp', ctx=ast.Store())],
-            #     value=ast.Call(
-            #         func=ast.Name(id='Language', ctx=ast.Load()),
-            #         args=[ast.Call(func=ast.Name(id='Vocab', ctx=ast.Load()), args=[], keywords=[])],
-            #         keywords=[],
-            #     ),
-            #     lineno=1,
-            # ),
-            # ast.Assign(
-            #     targets=[ast.Name(id='textcat', ctx=ast.Store())],
-            #     value=ast.Call(
-            #         func=ast.Attribute(value=ast.Name(id='nlp', ctx=ast.Load()), attr='create_pipe', ctx=ast.Load()),
-            #         args=[ast.Constant(value="textcat")],
-            #         keywords=[],
-            #     ),
-            #     lineno=2,
-            # ),
-            # ast.For(
-            #     target=ast.Name(id='label', ctx=ast.Store()),
-            #     iter=ast.Tuple(
-            #         elts=[ast.Constant(value="POSITIVE"), ast.Constant(value="NEGATIVE")],
-            #         ctx=ast.Load(),
-            #     ),
-            #     body=[
-            #         ast.Expr(
-            #             value=ast.Call(
-            #                 func=ast.Attribute(value=ast.Name(id='textcat', ctx=ast.Load()), attr='add_label',
-            #                                    ctx=ast.Load()),
-            #                 args=[ast.Name(id='label', ctx=ast.Load())],
-            #                 keywords=[],
-            #             ),
-            #             lineno=3,
-            #         )
-            #     ],
-            #     orelse=[],
-            #     lineno=3,
-            # ),
-            # ast.Expr(
-            #     value=ast.Call(
-            #         func=ast.Attribute(value=ast.Name(id='nlp', ctx=ast.Load()), attr='add_pipe', ctx=ast.Load()),
-            #         args=[ast.Name(id='textcat', ctx=ast.Load())],
-            #         keywords=[],
-            #     ),
-            #     lineno=4,
-            # ),
-            # ast.Expr(
-            #     value=ast.Call(
-            #         func=ast.Attribute(value=ast.Name(id='nlp', ctx=ast.Load()), attr='begin_training', ctx=ast.Load()),
-            #         args=[],
-            #         keywords=[],
-            #     ),
-            #     lineno=5,
-            # ),
+            ),
+
+            # textcat = nlp.create_pipe("textcat")
+            ast.Assign(
+                targets=[ast.Name(id='textcat', ctx=ast.Store())],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id='nlp', ctx=ast.Load()),
+                        attr='create_pipe',
+                        ctx=ast.Load()
+                    ),
+                    args=[ast.Constant(value="textcat")],
+                    keywords=[]
+                ),
+                lineno=1,
+
+            ),
+
+            # for label in ("POSITIVE", "NEGATIVE"):
+            ast.For(
+                target=ast.Name(id='label', ctx=ast.Store()),
+                iter=ast.Tuple(
+                    elts=[
+                        ast.Constant(value="POSITIVE"),
+                        ast.Constant(value="NEGATIVE")
+                    ],
+                    ctx=ast.Load()
+                ),
+                body=[
+                    # textcat.add_label(label)
+                    ast.Expr(value=ast.Call(
+                        func=ast.Attribute(
+                            value=ast.Name(id='textcat', ctx=ast.Load()),
+                            attr='add_label',
+                            ctx=ast.Load()
+                        ),
+                        args=[ast.Name(id='label', ctx=ast.Load())],
+                        keywords=[]
+                    ),                lineno=1,
+),
+                ],
+                orelse=[],
+                lineno=1,
+
+            ),
+
+            # nlp.add_pipe(textcat)
+            ast.Expr(value=ast.Call(
+                func=ast.Attribute(
+                    value=ast.Name(id='nlp', ctx=ast.Load()),
+                    attr='add_pipe',
+                    ctx=ast.Load()
+                ),
+                args=[ast.Name(id='textcat', ctx=ast.Load())],
+                keywords=[]
+            ),                lineno=1,
+),
+
+            # nlp.begin_training()
+            ast.Expr(value=ast.Call(
+                func=ast.Attribute(
+                    value=ast.Name(id='nlp', ctx=ast.Load()),
+                    attr='begin_training',
+                    ctx=ast.Load()
+                ),
+                args=[],
+                keywords=[]
+            ),                lineno=1,
+),
+
             ast.Assign(
                 targets=[ast.Name(id='text')],
                 value=ast.Constant(value="hello world"),
-                lineno=7,
+                lineno=2,
+
             ),
             ast.Assign(
                 targets=[ast.Name(id='annots')],
@@ -1676,165 +1646,218 @@ class SpaCyUnittestGenerator5(
                         values=[ast.Constant(value=1.0), ast.Constant(value=0.0)],
                     )],
                 ),
-                lineno=8,
+                lineno=3,
             ),
-            ast.Assign(
-                targets=[ast.Name(id='nlp')],
-                value=ast.Call(
-                    func=ast.Name(id='Language'),
-                    args=[ast.Call(func=ast.Name(id='Vocab'), args=[], keywords=[])],
-                    keywords=[],
-                ),
-                lineno=9,
-            ),
+            # ast.Assign(
+            #     targets=[ast.Name(id='nlp')],
+            #     value=ast.Call(
+            #         func=ast.Name(id='Language'),
+            #         args=[ast.Call(func=ast.Name(id='Vocab'), args=[], keywords=[])],
+            #         keywords=[],
+            #     ),
+            #     lineno=4,
+            # ),
             ast.Expr(
                 value=ast.Call(
                     func=ast.Attribute(
                         value=ast.Name(id='nlp'),
                         attr='add_pipe',
+
                     ),
                     args=[ast.Name(id='pipe')],
                     keywords=[],
                 ),
-                lineno=10,
+                lineno=5,
             ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id='nlp'),
+                        attr='evaluate'
+                    ),
+                    args=[
+                        ast.List(
+                            elts=[
+                                ast.Tuple(
+                                    elts=[
+                                        ast.Name(id='text'),
+                                        ast.Name(id='annots')
+                                    ],
+                                )
+                            ],
+                        )
+                    ],
+                    keywords=[],
+                    lineno=6,
+                ),
+                lineno=6,
+            )
+
+            # ast.Assign(
+            #           targets=[ast.Name(id='text')],
+            #           value=ast.Constant(value="hello world"),
+            #           lineno=2,
+#
+            #       ),
+            # ast.Assign(
+            #     targets=[ast.Name(id='heads')],
+            #     value=ast.List(
+            #         elts=[
+            #             ast.Constant(value=1),
+            #             ast.Constant(value=0),
+            #             ast.Constant(value=1),
+            #             ast.Constant(value=-2),
+            #             ast.Constant(value=-3),
+            #             ast.Constant(value=1),
+            #             ast.Constant(value=0),
+            #             ast.Constant(value=1),
+            #             ast.Constant(value=-2),
+            #             ast.Constant(value=-3),
+            #             ast.Constant(value=0),
+            #             ast.Constant(value=1),
+            #             ast.Constant(value=-2),
+            #             ast.Constant(value=-1),
+            #         ],
+            #     ),
+            #     lineno=2
+            # ),
+            # ast.Assign(
+            #     targets=[ast.Name(id='deps')],
+            #     value=ast.List(
+            #         elts=[
+            #             ast.Constant(value="nsubj"),
+            #             ast.Constant(value="ROOT"),
+            #             ast.Constant(value="det"),
+            #             ast.Constant(value="attr"),
+            #             ast.Constant(value="punct"),
+            #             ast.Constant(value="nsubj"),
+            #             ast.Constant(value="ROOT"),
+            #             ast.Constant(value="det"),
+            #             ast.Constant(value="attr"),
+            #             ast.Constant(value="punct"),
+            #             ast.Constant(value="ROOT"),
+            #             ast.Constant(value="det"),
+            #             ast.Constant(value="npadvmod"),
+            #             ast.Constant(value="punct")
+            #         ],
+            #     ),
+            #     lineno=3
+            # ),
+            # ast.Assign(
+            #     targets=[ast.Name(id='tokenizer')],
+            #     value=ast.Call(
+            #         func=ast.Attribute(
+            #             value=ast.Attribute(
+            #                 value=ast.Call(
+            #                     func=ast.Name(id="get_lang_class", lineno=1),
+            #                     args=[ast.Constant(value="en", lineno=1)],
+            #                     keywords=[],
+            #                 ),
+            #                 attr='Defaults',
+            #             ),
+            #             attr='create_tokenizer',
+            #         ),
+            #         args=[],
+            #         keywords=[],
+            #     ),
+            #     lineno=4
+            # ),
+            # ast.Assign(
+            #     targets=[ast.Name(id='tokens')],
+            #     value=ast.Call(
+            #         func=ast.Name(id='tokenizer'),
+            #         args=[ast.Name(id='text')],
+            #         keywords=[],
+            #     ),
+            #     lineno=5
+            # ),
+            # ast.Assign(
+            #     targets=[ast.Name(id='doc')],
+            #     value=ast.Call(
+            #         func=ast.Name(id='get_doc'),
+            #         args=[
+            #             ast.Attribute(
+            #                 value=ast.Name(id='tokens'),
+            #                 attr='vocab',
+            #             ),
+            #             ast.keyword(arg='words', value=ast.ListComp(
+            #                 elt=ast.Attribute(
+            #                     value=ast.Name(id='t'),
+            #                     attr='text',
+            #                 ),
+            #                 generators=[
+            #                     ast.comprehension(
+            #                         target=ast.Name(id='t'),
+            #                         iter=ast.Name(id='tokens'),
+            #                         ifs=[],
+            #                         is_async=0,
+            #                     )
+            #                 ],
+            #             )),
+            #             ast.keyword(arg='heads', value=ast.Name(id='heads')),
+            #             ast.keyword(arg='deps',
+            #                         value=ast.Name(id='deps'))
+            #         ],
+            #         keywords=[],
+            #     ),
+            #     lineno=6
+            # ),
+            # ast.Assign(
+            #     targets=[ast.Name(id='annots')],
+            #     value=ast.Dict(
+            #         keys=[ast.Constant(value="cats")],
+            #         values=[ast.Dict(
+            #             keys=[ast.Constant(value="POSITIVE"), ast.Constant(value="NEGATIVE")],
+            #             values=[ast.Constant(value=1.0), ast.Constant(value=0.0)],
+            #         )],
+            #     ),
+            #     lineno=3,
+            # ),
+            # ast.Assign(
+            #     targets=[ast.Name(id='nlp')],
+            #     value=ast.Call(
+            #         func=ast.Name(id='Language'),
+            #         args=[ast.Call(func=ast.Name(id='Vocab'), args=[], keywords=[])],
+            #         keywords=[],
+            #     ),
+            #     lineno=4,
+            # ),
             # ast.Expr(
             #     value=ast.Call(
             #         func=ast.Attribute(
             #             value=ast.Name(id='nlp'),
-            #             attr='evaluate',
+            #             attr='add_pipe',
+#
+            #         ),
+            #         args=[ast.Name(id='doc')],
+            #         keywords=[],
+            #     ),
+            #     lineno=5,
+            # ),
+            # ast.Expr(
+            #     value=ast.Call(
+            #         func=ast.Attribute(
+            #             value=ast.Name(id='nlp'),
+            #             attr='evaluate'
             #         ),
             #         args=[
             #             ast.List(
             #                 elts=[
             #                     ast.Tuple(
             #                         elts=[
-            #                             ast.Name(id='text'),
-            #                             ast.Name(id='annots'),
+            #                             ast.Name(id='doc'),
+            #                             ast.Name(id='annots')
             #                         ],
             #                     )
             #                 ],
             #             )
             #         ],
             #         keywords=[],
+            #         lineno=6,
             #     ),
-            #     lineno=11,
-            # ),
-            ast.Assign(
-                targets=[ast.Name(id='docs')],
-                value=ast.List(
-                    elts=[
-                        ast.Call(
-                            func=ast.Name(id='nlp', ctx=ast.Load()),
-                            args=[ast.Name(id='text', ctx=ast.Load())],
-                            keywords=[]
-                        )
-                    ],
-                    ctx=ast.Store()
-                ),
-                lineno=4,
-            ),
-            ast.Expr(
-                value=ast.Call(
-                    func=ast.Attribute(
-                        value=ast.Name(id='nlp'),
-                        attr='evaluate',
-                    ),
-                    args=[
-                        ast.Call(
-                            func=ast.Name(id='zip'),
-                            args=[
-                                ast.Name(id='docs', ctx=ast.Load()),
-                                ast.List(
-                                    elts=[
-                                        ast.Name(id='annots', ctx=ast.Load())
-                                    ],
-                                    ctx=ast.Load()
-                                ),
-                            ],
-                            keywords=[],
-                        )
-                    ],
-                    keywords=[],
-                ),
-                lineno=7,
-            ),
-            ast.Assign(
-                targets=[ast.Name(id='input_data', ctx=ast.Store())],
-                value=ast.List(
-                    elts=[
-                        ast.Tuple(
-                            elts=[
-                                ast.Name(id='text', ctx=ast.Load()),
-                                ast.Name(id='annots', ctx=ast.Load())
-                            ],
-                            ctx=ast.Load()
-                        )
-                    ],
-                    ctx=ast.Load()
-                ),
-                lineno=1,
-            ),
-            ast.Assign(
-                targets=[ast.Name(id='docs', ctx=ast.Store())],
-                value=ast.ListComp(
-                    elt=ast.Call(
-                        func=ast.Name(id='nlp', ctx=ast.Load()),
-                        args=[ast.Name(id='text', ctx=ast.Load())],
-                        keywords=[]
-                    ),
-                    generators=[
-                        ast.comprehension(
-                            target=ast.Tuple(
-                                elts=[
-                                    ast.Name(id='text', ctx=ast.Store()),
-                                    ast.Name(id='_', ctx=ast.Store())
-                                ],
-                                ctx=ast.Store()
-                            ),
-                            iter=ast.Name(id='input_data', ctx=ast.Load()),
-                            ifs=[],
-                            is_async=0
-                        )
-                    ]
-                ),
-                lineno=1
-            ),
-            ast.Expr(
-                value=ast.Call(
-                    func=ast.Attribute(
-                        value=ast.Name(id='nlp', ctx=ast.Load()),
-                        attr='evaluate'
-                    ),
-                    args=[
-                        ast.Call(
-                            func=ast.Name(id='zip', ctx=ast.Load()),
-                            args=[
-                                ast.Name(id='docs', ctx=ast.Load()),  # First argument: docs
-                                ast.ListComp(
-                                    elt=ast.Name(id='annots', ctx=ast.Load()),  # Elements of the list comprehension
-                                    generators=[
-                                        ast.comprehension(
-                                            target=ast.Tuple(
-                                                elts=[
-                                                    ast.Name(id='_', ctx=ast.Store()),  # Unused variable
-                                                    ast.Name(id='annots', ctx=ast.Store())  # Annotations
-                                                ],
-                                                ctx=ast.Store()
-                                            ),
-                                            iter=ast.Name(id='input_data', ctx=ast.Load()),  # Input data for iteration
-                                            ifs=[],
-                                            is_async=0
-                                        )
-                                    ]
-                                )
-                            ],
-                            keywords=[]
-                        )
-                    ],
-                    keywords=[]
-                ),
-            )
+            #     lineno=6,
+            # )
+
         ]
 
     def get_imports(self) -> list[ImportFrom]:
@@ -1852,6 +1875,21 @@ class SpaCyUnittestGenerator5(
             ast.ImportFrom(
                 module="spacy.gold",
                 names=[ast.alias(name="GoldParse")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="spacy.util",
+                names=[ast.alias(name="get_lang_class")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="spacy.tests.util",
+                names=[ast.alias(name="get_doc")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="spacy.tests.test_language",
+                names=[ast.alias(name="nlp")],
                 level=0,
             )
         ]
