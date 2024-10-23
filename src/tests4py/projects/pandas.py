@@ -2,7 +2,7 @@ import ast
 import random
 import string
 import subprocess
-from _ast import Call, ImportFrom, Assign, Expr, Import
+from _ast import Call, ImportFrom, Assign, Expr
 from pathlib import Path
 from typing import List, Optional, Tuple, Any, Callable
 from tests4py.constants import PYTHON
@@ -350,9 +350,9 @@ def register():
         test_cases=[
             "pandas/tests/series/indexing/test_getitem.py::TestSeriesGetitemListLike::test_getitem_no_matches"
         ],
-        api=PandasAPI21(),
-        unittests=PandasUnittestGenerator21(),
-        systemtests=PandasSystemtestGenerator21(),
+        # api=PandasAPI21(),
+        # unittests=PandasUnittestGenerator21(),
+        # systemtests=PandasSystemtestGenerator21(),
     )
     Pandas(
         bug_id=22,
@@ -362,9 +362,9 @@ def register():
         test_cases=[
             "pandas/tests/window/test_base_indexer.py::test_rolling_forward_window"
         ],
-        api=PandasAPI22(),
-        unittests=PandasUnittestGenerator22(),
-        systemtests=PandasSystemtestGenerator22(),
+        # api=PandasAPI22(),
+        # unittests=PandasUnittestGenerator22(),
+        # systemtests=PandasSystemtestGenerator22(),
     )
     Pandas(
         bug_id=23,
@@ -376,9 +376,9 @@ def register():
             "pandas/tests/indexes/datetimes/test_setops.py::TestBusinessDatetimeIndex::test_intersection_bug",
             "pandas/tests/indexes/datetimes/test_setops.py::TestCustomDatetimeIndex::test_intersection_bug",
         ],
-        api=PandasAPI23(),
-        unittests=PandasUnittestGenerator23(),
-        systemtests=PandasSystemtestGenerator23(),
+        # api=PandasAPI23(),
+        # unittests=PandasUnittestGenerator23(),
+        # systemtests=PandasSystemtestGenerator23(),
     )
     Pandas(
         bug_id=24,
@@ -390,9 +390,9 @@ def register():
         test_cases=[
             "pandas/tests/indexes/datetimes/test_timezones.py::test_tz_localize_invalidates_freq"
         ],
-        api=PandasAPI24(),
-        unittests=PandasUnittestGenerator24(),
-        systemtests=PandasSystemtestGenerator24(),
+        # api=PandasAPI24(),
+        # unittests=PandasUnittestGenerator24(),
+        # systemtests=PandasSystemtestGenerator24(),
     )
     Pandas(
         bug_id=25,
@@ -403,9 +403,9 @@ def register():
             "pandas/tests/indexes/datetimes/test_misc.py"
             "::test_isocalendar_returns_correct_values_close_to_new_year_with_tz"
         ],
-        api=PandasAPI25(),
-        unittests=PandasUnittestGenerator25(),
-        systemtests=PandasSystemtestGenerator25(),
+        # api=PandasAPI25(),
+        # unittests=PandasUnittestGenerator25(),
+        # systemtests=PandasSystemtestGenerator25(),
     )
     Pandas(
         bug_id=26,
@@ -417,9 +417,9 @@ def register():
         test_cases=[
             "pandas/tests/arrays/categorical/test_analytics.py::TestCategoricalAnalytics::test_min_max_only_nan"
         ],
-        api=PandasAPI25(),
-        unittests=PandasUnittestGenerator26(),
-        systemtests=PandasSystemtestGenerator26(),
+        # api=PandasAPI25(),
+        # unittests=PandasUnittestGenerator26(),
+        # systemtests=PandasSystemtestGenerator26(),
     )
     Pandas(
         bug_id=27,
@@ -431,9 +431,9 @@ def register():
         test_cases=[
             "pandas/tests/indexes/datetimes/test_to_period.py::TestToPeriod::test_to_period_infer"
         ],
-        api=PandasAPI27(),
-        unittests=PandasUnittestGenerator27(),
-        systemtests=PandasSystemtestGenerator27(),
+        # api=PandasAPI27(),
+        # unittests=PandasUnittestGenerator27(),
+        # systemtests=PandasSystemtestGenerator27(),
     )
     Pandas(
         bug_id=28,
@@ -441,9 +441,9 @@ def register():
         fixed_commit_id="ef9b9387c88cf12b20dd8656dfedfc236e0f3352",
         test_files=[Path("pandas", "tests", "test_strings.py")],
         test_cases=["pandas/tests/test_strings.py::test_cat_different_classes"],
-        api=PandasAPI28(),
-        unittests=PandasUnittestGenerator28(),
-        systemtests=PandasSystemtestGenerator28(),
+        # api=PandasAPI28(),
+        # unittests=PandasUnittestGenerator28(),
+        # systemtests=PandasSystemtestGenerator28(),
     )
     Pandas(
         bug_id=29,
@@ -457,9 +457,9 @@ def register():
             "pandas/tests/arrays/interval/test_interval.py::TestSetitem::test_set_na",
             "pandas/tests/series/methods/test_convert_dtypes.py::TestSeriesConvertDtypes::test_convert_dtypes",
         ],
-        api=PandasAPI29(),
-        unittests=PandasUnittestGenerator29(),
-        systemtests=PandasSystemtestGenerator29(),
+        # api=PandasAPI29(),
+        # unittests=PandasUnittestGenerator29(),
+        # systemtests=PandasSystemtestGenerator29(),
     )
     Pandas(
         bug_id=30,
@@ -469,9 +469,9 @@ def register():
         test_cases=[
             "pandas/tests/io/json/test_pandas.py::TestPandasContainer::test_readjson_bool_series"
         ],
-        api=PandasAPI30(),
-        unittests=PandasUnittestGenerator30(),
-        systemtests=PandasSystemtestGenerator30(),
+        # api=PandasAPI30(),
+        # unittests=PandasUnittestGenerator30(),
+        # systemtests=PandasSystemtestGenerator30(),
     )
     Pandas(
         bug_id=31,
@@ -1903,9 +1903,6 @@ class PandasAPI6(API):
         expected = expected[:-1]
         result = process.stdout.decode("utf8")
         result = result.strip()
-        print("args: ", args)
-        print("result: ", result)
-        print("expected: ", expected)
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -1925,9 +1922,6 @@ class PandasAPI7(API):
         expected = expected[:-1]
         result = process.stdout.decode("utf8")
         result = result.strip()
-        print("args: ", args)
-        print("result: ", result)
-        print("expected: ", expected)
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -2059,9 +2053,6 @@ class PandasAPI14(API):
         expected = expected[:-1]
         result = process.stdout.decode("utf8")
         result = result.strip()
-        print("args: ", args)
-        print("result: ", result)
-        print("expected: ", expected)
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -2181,6 +2172,8 @@ class PandasAPI20(API):
         else:
             return TestResult.FAILING, f"Expected {expected}, but was {result}"
 
+
+'''
 
 class PandasAPI21(API):
     def __init__(self, default_timeout: int = 5):
@@ -2400,6 +2393,8 @@ class PandasAPI30(API):
             return TestResult.PASSING, ""
         else:
             return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+'''
 
 
 class PandasTestGenerator:
@@ -2630,6 +2625,8 @@ class PandasTestGenerator:
         failing = (periods, f"{random_month}/{random_day}/{random_year_failing}")
         return passing, failing
 
+    '''
+
     @staticmethod
     def pandas21_generate():
         return "", ""
@@ -2669,6 +2666,8 @@ class PandasTestGenerator:
     @staticmethod
     def pandas30_generate():
         return "", ""
+
+    '''
 
 
 class PandasUnittestGenerator1(
@@ -5751,6 +5750,8 @@ class PandasUnittestGenerator20(
         return test, TestResult.PASSING
 
 
+"""
+
 class PandasUnittestGenerator21(
     python.PythonGenerator, UnittestGenerator, PandasTestGenerator
 ):
@@ -6758,6 +6759,8 @@ class PandasUnittestGenerator30(
         test.body = self._get_assert()
         return test, TestResult.PASSING
 
+"""
+
 
 class PandasSystemtestGenerator1(SystemtestGenerator, PandasTestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
@@ -6971,6 +6974,8 @@ class PandasSystemtestGenerator20(SystemtestGenerator, PandasTestGenerator):
         return f"{pass_}", TestResult.PASSING
 
 
+"""
+
 class PandasSystemtestGenerator21(SystemtestGenerator, PandasTestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
         _, fail_ = self.generate_values(self.pandas21_generate)
@@ -7070,6 +7075,7 @@ class PandasSystemtestGenerator30(SystemtestGenerator, PandasTestGenerator):
         pass_, _ = self.generate_values(self.pandas30_generate)
         return f"{pass_}", TestResult.PASSING
 
+"""
 
 grammar: Grammar = {
     "<start>": ["<structure>"],
