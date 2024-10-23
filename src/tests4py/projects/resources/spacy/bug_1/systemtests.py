@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return ""
+        return "E110"
 
     def test_diversity_2(self):
-        return ""
+        return "E019"
 
     def test_diversity_3(self):
-        return ""
+        return "E034"
 
     def test_diversity_4(self):
-        return ""
+        return "E003"
 
     def test_diversity_5(self):
-        return ""
+        return "E111"
 
     def test_diversity_6(self):
-        return ""
+        return "E155"
 
     def test_diversity_7(self):
-        return ""
+        return "E153"
 
     def test_diversity_8(self):
-        return ""
+        return "E022"
 
     def test_diversity_9(self):
-        return ""
+        return "E058"
 
     def test_diversity_10(self):
-        return ""
+        return "E044"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return ""
+        return "E177"
 
     def test_diversity_2(self):
-        return ""
+        return "E181"
 
     def test_diversity_3(self):
-        return ""
+        return "E122"
 
     def test_diversity_4(self):
-        return ""
+        return "E099"
 
     def test_diversity_5(self):
-        return ""
+        return "E012"
 
     def test_diversity_6(self):
-        return ""
+        return "E123"
 
     def test_diversity_7(self):
-        return ""
+        return "E021"
 
     def test_diversity_8(self):
-        return ""
+        return "E188"
 
     def test_diversity_9(self):
-        return ""
+        return "E015"
 
     def test_diversity_10(self):
-        return ""
+        return "E158"
