@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return ""
+        return "rtjhiertg"
 
     def test_diversity_2(self):
-        return ""
+        return "hfuhw"
 
     def test_diversity_3(self):
-        return ""
+        return "jhdashjdgasj"
 
     def test_diversity_4(self):
-        return ""
+        return "MDFJBHSS"
 
     def test_diversity_5(self):
-        return ""
+        return "ERKLGEIHGN"
 
     def test_diversity_6(self):
-        return ""
+        return "ERNGKJEG"
 
     def test_diversity_7(self):
-        return ""
+        return "erjkfhwi"
 
     def test_diversity_8(self):
-        return ""
+        return "ewfrwhehbe"
 
     def test_diversity_9(self):
-        return ""
+        return "rthtrhgergw"
 
     def test_diversity_10(self):
-        return ""
+        return "gergrgerw"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return ""
+        return "rfgnkwrbkw TypeError"
 
     def test_diversity_2(self):
-        return ""
+        return "jkwehgfuew TypeError"
 
     def test_diversity_3(self):
-        return ""
+        return "wrjkgwhfnw TypeError"
 
     def test_diversity_4(self):
-        return ""
+        return "wfgguwww TypeError"
 
     def test_diversity_5(self):
-        return ""
+        return "ERJHGUgshg TypeError"
 
     def test_diversity_6(self):
-        return ""
+        return "erjghuer TypeError"
 
     def test_diversity_7(self):
-        return ""
+        return "akjsahjDSFSD TypeError"
 
     def test_diversity_8(self):
-        return ""
+        return "KJWEFIW TypeError"
 
     def test_diversity_9(self):
-        return ""
+        return "SDKJFHDSBFK TypeError"
 
     def test_diversity_10(self):
-        return ""
+        return "jehwbfwej TypeError"
