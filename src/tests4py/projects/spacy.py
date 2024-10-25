@@ -442,8 +442,6 @@ class SpaCyAPI9(API):
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
         expected = process.args[2]
-        expected = expected[1:]
-        expected = expected[:-1]
         result = process.stdout.decode("utf8")
         result = result.strip()
         if result == expected:
@@ -1064,9 +1062,8 @@ class SpaCyTestGenerator:
     @staticmethod
     def spacy9_generate():
         random_string = SpaCyTestGenerator.generate_random_string()
-        builtin_spacy_pipeline = random.choice(["parser", "ner", "tagger", "tokenizer", "textcat"])
-        passing = random_string, builtin_spacy_pipeline, "1"
-        failing = random_string, builtin_spacy_pipeline, "0"
+        passing = random_string
+        failing = random_string, "UserWarning"
         return passing, failing
 
     @staticmethod
@@ -2443,95 +2440,12 @@ class SpaCyUnittestGenerator9(
         return self.generate_values(self.spacy9_generate)
 
     @staticmethod
-    def _get_assert(randomise: str, builtin_spacy_pipeline: str
-                    ) -> list[Assign | Assert]:
+    def _get_assert(randomise: str, usr_warning: str) -> list[Assign | Assert]:
         return [
-            ast.Assign(
-                targets=[ast.Name(id='text')],
-                value=ast.Constant(value=randomise),
-                lineno=1
-            ),
             ast.Assign(
                 targets=[ast.Name(id='nlp', lineno=1)],
                 value=ast.Call(
-                    func=ast.Name(id='English', lineno=1),
-                    args=[],
-                    keywords=[],
-                    lineno=1
-                ),
-                lineno=1
-            ),
-            ast.Assign(
-                targets=[
-                    ast.Attribute(
-                        value=ast.Attribute(
-                            value=ast.Name(id='nlp', lineno=2),
-                            attr='vocab',
-                            lineno=2
-                        ),
-                        attr='lookups',
-                        lineno=2
-                    )
-                ],
-                value=ast.Call(
-                    func=ast.Name(id='Lookups', lineno=2),
-                    args=[],
-                    keywords=[],
-                    lineno=2
-                ),
-                lineno=2
-            ),
-            ast.Assign(
-                targets=[ast.Name(id='tagger', lineno=3)],
-                value=ast.Call(
-                    func=ast.Attribute(
-                        value=ast.Name(id='nlp', lineno=3),
-                        attr='create_pipe', lineno=3
-                    ),
-                    args=[ast.Constant(value=builtin_spacy_pipeline, lineno=3)],
-                    keywords=[],
-                    lineno=3
-                ),
-                lineno=3
-            ),
-            ast.Assert(
-                test=ast.UnaryOp(
-                    op=ast.Not(),
-                    operand=ast.Call(
-                        func=ast.Name(id='len', lineno=4),
-                        args=[
-                            ast.Attribute(
-                                value=ast.Attribute(
-                                    value=ast.Name(id='nlp', lineno=4),
-                                    attr='vocab',
-                                    lineno=4
-                                ),
-                                attr='lookups',
-                                lineno=4
-                            )
-                        ],
-                        keywords=[],
-                        lineno=4
-                    ),
-                    lineno=4
-                ),
-                lineno=4
-            )
-        ]
-
-    @staticmethod
-    def _get_assert_2(randomise: str, builtin_spacy_pipeline: str
-                      ) -> list[Assign | Assert]:
-        return [
-            ast.Assign(
-                targets=[ast.Name(id='text')],
-                value=ast.Constant(value=randomise),
-                lineno=1
-            ),
-            ast.Assign(
-                targets=[ast.Name(id='nlp', lineno=1)],
-                value=ast.Call(
-                    func=ast.Name(id='English', lineno=1),
+                    func=ast.Name(id='Language', lineno=1),
                     args=[],
                     keywords=[],
                     lineno=1
@@ -2580,7 +2494,7 @@ class SpaCyUnittestGenerator9(
                         value=ast.Name(id='nlp', lineno=4),
                         attr='create_pipe', lineno=4
                     ),
-                    args=[ast.Constant(value=builtin_spacy_pipeline, lineno=4)],
+                    args=[ast.Constant(value="tagger", lineno=4)],
                     keywords=[],
                     lineno=4
                 ),
@@ -2594,7 +2508,9 @@ class SpaCyUnittestGenerator9(
                                 value=ast.Name(id='pytest', lineno=5),
                                 attr='warns', lineno=5
                             ),
-                            args=[ast.Name(id='UserWarning', lineno=5)],
+                            args=[
+                                ast.Name(id=usr_warning, lineno=5)
+                            ],
                             keywords=[],
                             lineno=5
                         ),
@@ -2608,7 +2524,9 @@ class SpaCyUnittestGenerator9(
                                 value=ast.Name(id='tagger', lineno=6),
                                 attr='begin_training', lineno=6
                             ),
-                            args=[], keywords=[], lineno=6
+                            args=[
+
+                            ], keywords=[], lineno=6
                         ),
                         lineno=6
                     )
@@ -2635,7 +2553,8 @@ class SpaCyUnittestGenerator9(
                                 value=ast.Name(id='pytest', lineno=8),
                                 attr='warns', lineno=8
                             ),
-                            args=[ast.Name(id='UserWarning', lineno=8)],
+                            args=[
+                                ast.Name(id=usr_warning, lineno=8)],
                             keywords=[],
                             lineno=8
                         ),
@@ -2655,7 +2574,8 @@ class SpaCyUnittestGenerator9(
                     )
                 ],
                 lineno=8
-            ), ast.Expr(
+            ),
+            ast.Expr(
                 value=ast.Call(
                     func=ast.Attribute(
                         value=ast.Attribute(
@@ -2667,17 +2587,179 @@ class SpaCyUnittestGenerator9(
                         ),
                         attr='add_table', lineno=10
                     ),
-                    args=[ast.Constant(value='lemma_lookup', lineno=10)],
+                    args=[ast.Constant(value=randomise, lineno=10)],
                     keywords=[],
                     lineno=10
                 ),
                 lineno=10
             ),
-
             ast.With(
                 items=[
                     ast.withitem(
-                        context_expr=ast.Constant(value=None, lineno=11),
+                        context_expr=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id='pytest', lineno=8),
+                                attr='warns', lineno=8
+                            ),
+                            args=[ast.Constant(value=None, lineno=8)],
+                            keywords=[],
+                            lineno=8
+                        ),
+                        optional_vars=ast.Name(id='record', lineno=11)
+                    )
+                ],
+                body=[
+                    ast.Expr(
+                        value=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id='nlp', lineno=12),
+                                attr='begin_training', lineno=12
+                            ),
+                            args=[], keywords=[], lineno=12
+                        ),
+                        lineno=12
+                    ),
+                    ast.Assert(
+                        test=ast.UnaryOp(
+                            op=ast.Not(),
+                            operand=ast.Attribute(
+                                value=ast.Name(id='record', lineno=13),
+                                attr='list', lineno=13
+                            ),
+                            lineno=13
+                        ),
+                        lineno=13
+                    )
+                ],
+                lineno=11
+            )
+        ]
+
+    @staticmethod
+    def _get_assert2(randomise: str) -> list[Assign | Assert]:
+        return [
+            ast.Assign(
+                targets=[ast.Name(id='nlp', lineno=1)],
+                value=ast.Call(
+                    func=ast.Name(id='Language', lineno=1),
+                    args=[],
+                    keywords=[],
+                    lineno=1
+                ),
+                lineno=1
+            ),
+            ast.Assign(
+                targets=[ast.Attribute(
+                    value=ast.Attribute(
+                        value=ast.Name(id='nlp', lineno=2),
+                        attr='vocab', lineno=2
+                    ),
+                    attr='lookups', lineno=2
+                )],
+                value=ast.Call(
+                    func=ast.Name(id='Lookups', lineno=2),
+                    args=[],
+                    keywords=[],
+                    lineno=2
+                ),
+                lineno=2
+            ),
+            ast.Assert(
+                test=ast.UnaryOp(
+                    op=ast.Not(),
+                    operand=ast.Call(
+                        func=ast.Name(id='len', lineno=3),
+                        args=[ast.Attribute(
+                            value=ast.Attribute(
+                                value=ast.Name(id='nlp', lineno=3),
+                                attr='vocab', lineno=3
+                            ),
+                            attr='lookups', lineno=3
+                        )],
+                        keywords=[],
+                        lineno=3
+                    ),
+                    lineno=3
+                ),
+                lineno=3
+            ),
+            ast.Assign(
+                targets=[ast.Name(id='tagger', lineno=4)],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id='nlp', lineno=4),
+                        attr='create_pipe', lineno=4
+                    ),
+                    args=[ast.Constant(value="tagger", lineno=4)],
+                    keywords=[],
+                    lineno=4
+                ),
+                lineno=4
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id='tagger', lineno=6),
+                        attr='begin_training', lineno=6
+                    ),
+                    args=[
+
+                    ], keywords=[], lineno=6
+                ),
+                lineno=6
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id='nlp', lineno=7),
+                        attr='add_pipe', lineno=7
+                    ),
+                    args=[ast.Name(id='tagger', lineno=7)],
+                    keywords=[],
+                    lineno=7
+                ),
+                lineno=7
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id='nlp', lineno=9),
+                        attr='begin_training', lineno=9
+                    ),
+                    args=[], keywords=[], lineno=9
+                ),
+                lineno=9
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Attribute(
+                            value=ast.Attribute(
+                                value=ast.Name(id='nlp', lineno=10),
+                                attr='vocab', lineno=10
+                            ),
+                            attr='lookups', lineno=10
+                        ),
+                        attr='add_table', lineno=10
+                    ),
+                    args=[ast.Constant(value=randomise, lineno=10)],
+                    keywords=[],
+                    lineno=10
+                ),
+                lineno=10
+            ),
+            ast.With(
+                items=[
+                    ast.withitem(
+                        context_expr=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id='pytest', lineno=8),
+                                attr='warns', lineno=8
+                            ),
+                            args=[ast.Constant(value=None, lineno=8)],
+                            keywords=[],
+                            lineno=8
+                        ),
                         optional_vars=ast.Name(id='record', lineno=11)
                     )
                 ],
@@ -2716,29 +2798,28 @@ class SpaCyUnittestGenerator9(
                 level=0,
             ),
             ast.ImportFrom(
-                module="spacy.lang.en",
-                names=[ast.alias(name="English")],
+                module="spacy.lookups",
+                names=[ast.alias(name="Lookups")],
                 level=0,
             ),
             ast.ImportFrom(
-                module="spacy.lookups",
-                names=[ast.alias(name="Lookups")],
+                module="spacy.language",
+                names=[ast.alias(name="Language")],
                 level=0,
             ),
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
-        text, builtin_spacy_pipeline, _ = fail_
+        randomise, usr_warning = fail_
         test = self.get_empty_test()
-        test.body = self._get_assert_2(text, builtin_spacy_pipeline)
+        test.body = self._get_assert(randomise, usr_warning)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
-        text, builtin_spacy_pipeline, _ = pass_
         test = self.get_empty_test()
-        test.body = self._get_assert(text, builtin_spacy_pipeline)
+        test.body = self._get_assert2(pass_)
         return test, TestResult.PASSING
 
 
