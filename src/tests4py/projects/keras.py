@@ -1,8 +1,17 @@
 import os
+import ast
+import os.path
+import random
+import string
+import subprocess
+from _ast import Call, ImportFrom, Assign, Expr, Assert, Module, ClassDef, With
 from pathlib import Path
-from typing import List, Optional, Tuple
-
+from typing import List, Optional, Tuple, Any, Callable
 from tests4py.constants import PYTHON
+from tests4py.grammars import python
+from tests4py.grammars.fuzzer import Grammar
+from tests4py.grammars.fuzzer import is_valid_grammar
+from tests4py.grammars.fuzzer import srange
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
@@ -12,20 +21,20 @@ PROJECT_NAME = "keras"
 
 class Keras(Project):
     def __init__(
-        self,
-        bug_id: int,
-        buggy_commit_id: str,
-        fixed_commit_id: str,
-        test_files: List[Path],
-        test_cases: List[str],
-        test_status_fixed: TestStatus = TestStatus.PASSING,
-        test_status_buggy: TestStatus = TestStatus.FAILING,
-        unittests: Optional[UnittestGenerator] = None,
-        systemtests: Optional[SystemtestGenerator] = None,
-        api: Optional[API] = None,
-        loc: int = 0,
-        relevant_test_files: Optional[List[Path]] = None,
-        skip_tests: Optional[List[str]] = None,
+            self,
+            bug_id: int,
+            buggy_commit_id: str,
+            fixed_commit_id: str,
+            test_files: List[Path],
+            test_cases: List[str],
+            test_status_fixed: TestStatus = TestStatus.PASSING,
+            test_status_buggy: TestStatus = TestStatus.FAILING,
+            unittests: Optional[UnittestGenerator] = None,
+            systemtests: Optional[SystemtestGenerator] = None,
+            api: Optional[API] = None,
+            loc: int = 0,
+            relevant_test_files: Optional[List[Path]] = None,
+            skip_tests: Optional[List[str]] = None,
     ):
         super().__init__(
             bug_id=bug_id,
@@ -111,6 +120,9 @@ def register():
                 "initializers_test.py::test_statefulness[variance_scaling]",
             ),
         ],
+        api=KerasAPI1(),
+        unittests=KerasUnittestGenerator1(),
+        systemtests=KerasSystemtestGenerator1(),
         loc=22638,
     )
     Keras(
@@ -854,9 +866,215 @@ def register():
     )
 
 
-class KerasAPI(API):
+class KerasAPI1(API):
     def __init__(self, default_timeout: int = 5):
         super().__init__(default_timeout=default_timeout)
 
     def oracle(self, args) -> Tuple[TestResult, str]:
-        return TestResult.UNDEFINED, ""
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class KerasTestGenerator:
+    @staticmethod
+    def generate_values(producer: Callable) -> str:
+        return producer()
+
+    @staticmethod
+    def generate_random_string():
+        return "".join(random.choices(string.ascii_letters, k=random.randint(5, 15)))
+
+    @staticmethod
+    def spacy1_generate():
+        initializer_id = random.choice(['orthogonal', 'uniform', 'normal', 'truncated_normal'])
+        seed_value = random.randint(0, 2000)
+        passing = initializer_id, seed_value
+        failing = initializer_id, seed_value
+        return passing, failing
+
+
+class KerasUnittestGenerator1(
+    python.PythonGenerator, UnittestGenerator, KerasTestGenerator
+):
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.spacy1_generate)
+
+    @staticmethod
+    def _get_assert(initializer_id: str, random_seed: int
+                    ) -> list[Call]:
+        return [
+            ast.Assign(
+                targets=[ast.Name(id="initializer")],
+                value=ast.Attribute(
+                    value=ast.Name(id="initializers"),
+                    attr=initializer_id,
+                    keywords=[ast.keyword(arg="seed", value=ast.Constant(value=random_seed))]
+                ),
+                lineno=1,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="init")],
+                value=ast.Call(
+                    func=ast.Name(id="initializer"),
+                    args=[ast.keyword(arg="seed", value=ast.Constant(value=random_seed))],
+                    keywords=[],
+                ),
+                lineno=1,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="samples")],
+                value=ast.ListComp(
+                    elt=ast.Call(
+                        func=ast.Name(id="init"),
+                        args=[ast.Tuple(elts=[ast.Constant(value=1), ast.Constant(value=1)])],
+                        keywords=[],
+                    ),
+                    generators=[ast.comprehension(
+                        target=ast.Name(id="_"),
+                        iter=ast.Call(func=ast.Name(id="range"), args=[ast.Constant(value=2)],
+                                      keywords=[]),
+                        ifs=[],
+                        is_async=0,
+                    )],
+                ),
+                lineno=2,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="samples")],
+                value=ast.ListComp(
+                    elt=ast.Call(
+                        func=ast.Attribute(
+                            value=ast.Name(id="backend"),
+                            attr="get_value",
+                        ),
+                        args=[
+                            ast.Call(
+                                func=ast.Attribute(
+                                    value=ast.Name(id="backend"),
+                                    attr="variable",
+                                ),
+                                args=[ast.Name(id="x")],
+                                keywords=[],
+                            )
+                        ],
+                        keywords=[],
+                    ),
+                    generators=[ast.comprehension(
+                        target=ast.Name(id="x"),
+                        iter=ast.Name(id="samples"),
+                        ifs=[],
+                        is_async=0,
+                    )],
+                ),
+                lineno=3,
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Call(
+                        func=ast.Attribute(
+                            value=ast.Name(id="numpy"),
+                            attr="mean",
+                        ),
+                        args=[
+                            ast.Call(
+                                func=ast.Attribute(
+                                    value=ast.Name(id="numpy"),
+                                    attr="abs",
+                                ),
+                                args=[
+                                    ast.BinOp(
+                                        left=ast.Subscript(
+                                            value=ast.Name(id="samples"),
+                                            slice=ast.Constant(value=0),
+                                        ),
+                                        op=ast.Sub(),
+                                        right=ast.Subscript(
+                                            value=ast.Name(id="samples"),
+                                            slice=ast.Constant(value=1),
+                                        ),
+                                    )
+                                ],
+                                keywords=[],
+                            )
+                        ],
+                        keywords=[],
+                    ),
+                    ops=[ast.Gt()],
+                    comparators=[ast.Constant(value=0.0)],
+                ),
+                msg=None,
+                lineno=4,
+            )
+        ]
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            ast.Import(
+                module="numpy",
+                names=[ast.alias(name="numpy")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras",
+                names=[ast.alias(name="backend")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras",
+                names=[ast.alias(name="initializers")],
+                level=0,
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        _, fail_ = self._generate_one()
+        initializer_id, seed_value  = fail_
+        test = self.get_empty_test()
+        test.body = self._get_assert(initializer_id, seed_value)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_, _ = self._generate_one()
+        initializer_id, seed_value = pass_
+        test = self.get_empty_test()
+        test.body = self._get_assert(initializer_id, seed_value)
+        return test, TestResult.PASSING
+
+
+class KerasSystemtestGenerator1(SystemtestGenerator, KerasTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.spacy1_generate)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.spacy1_generate)
+        return f"{pass_}", TestResult.PASSING
+
+
+grammar: Grammar = {
+    "<start>": ["<structure_>"],
+    "<structure_>": ["<str_int_sym_><structure_>"],
+    "<str_int_sym_>": [
+        "<string_><str_int_sym_>",
+        "<integer_><str_int_sym_>",
+        "<symbols_><str_int_sym_>",
+        " ",
+    ],
+    "<string_>": ["<char_><string_>", "<char_>", ""],
+    "<integer_>": ["<digit_><integer_>", "<digit_>", ""],
+    "<symbols_>": ["<symbol_><symbols_>", "<symbol_>", ""],
+    "<symbol_>": srange(string.punctuation),
+    "<digit_>": srange(string.digits),
+    "<char_>": srange(string.ascii_letters),
+}
+assert is_valid_grammar(grammar)
