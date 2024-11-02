@@ -144,6 +144,9 @@ def register():
             "(test_function and not test_function_tf)",
             "test_resize_images_bilinear",
         ],
+        api=KerasAPI2(),
+        unittests=KerasUnittestGenerator2(),
+        systemtests=KerasSystemtestGenerator2(),
         loc=22758,
     )
     Keras(
@@ -883,6 +886,23 @@ class KerasAPI1(API):
             return TestResult.FAILING, f"Expected {expected}, but was {result}"
 
 
+class KerasAPI2(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
 class KerasTestGenerator:
     @staticmethod
     def generate_values(producer: Callable) -> str:
@@ -899,6 +919,10 @@ class KerasTestGenerator:
         passing = initializer_id, seed_value
         failing = initializer_id, seed_value
         return passing, failing
+
+    @staticmethod
+    def spacy2_generate():
+        return "", ""
 
 
 class KerasUnittestGenerator1(
@@ -1038,7 +1062,7 @@ class KerasUnittestGenerator1(
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
-        initializer_id, seed_value  = fail_
+        initializer_id, seed_value = fail_
         test = self.get_empty_test()
         test.body = self._get_assert(initializer_id, seed_value)
         return test, TestResult.FAILING
@@ -1051,6 +1075,453 @@ class KerasUnittestGenerator1(
         return test, TestResult.PASSING
 
 
+class KerasUnittestGenerator2(
+    python.PythonGenerator, UnittestGenerator, KerasTestGenerator
+):
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.spacy2_generate)
+
+    @staticmethod
+    def _get_assert() -> list[Call]:
+        return [
+            ast.Assign(
+                targets=[ast.Name(id="batch_size")],
+                value=ast.Constant(value=20),
+                lineno=1,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="num_classes")],
+                value=ast.Constant(value=10),
+                lineno=2,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="WITH_NP")],
+                value=ast.List(elts=[ast.Name(id="KC"),
+                                     ast.Name(id="KNP")]),
+                lineno=3,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="predictions")],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Attribute(value=ast.Name(id="numpy"), attr="random",
+                                                    ),
+                                attr="random",
+
+                            ),
+                            args=[
+                                ast.Tuple(
+                                    elts=[
+                                        ast.Name(id="batch_size"),
+                                        ast.Name(id="num_classes")
+                                    ],
+
+                                )
+                            ],
+                            keywords=[]
+                        ),
+                        attr="astype",
+
+                    ),
+                    args=[ast.Constant(value="float32")],
+                    keywords=[]
+                ),
+                lineno=3
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="targets")],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Attribute(value=ast.Name(id="numpy"), attr="random"),
+                        attr="randint",
+
+                    ),
+                    args=[ast.Name(id="num_classes")],
+                    keywords=[
+                        ast.keyword(arg="size", value=ast.Name(id="batch_size")),
+                        ast.keyword(arg="dtype", value=ast.Constant(value="int32"))
+                    ]
+                ),
+                lineno=4
+            ),
+            ast.For(
+                target=ast.Name(id="k"),
+                iter=ast.Call(
+                    func=ast.Name(id="range"),
+                    args=[
+                        ast.Constant(value=1),
+                        ast.BinOp(left=ast.Name(id="num_classes"), op=ast.Add(),
+                                  right=ast.Constant(value=1))
+                    ],
+                    keywords=[]
+                ),
+                body=[
+                    # z_list = [b.eval(b.in_top_k(b.variable(predictions, dtype='float32'),
+                    # b.variable(targets, dtype='int32'), k)) for b in WITH_NP]
+                    ast.Assign(
+                        targets=[ast.Name(id="z_list")],
+                        value=ast.ListComp(
+                            elt=ast.Call(
+                                func=ast.Attribute(value=ast.Name(id="b"), attr="eval"),
+                                args=[
+                                    ast.Call(
+                                        func=ast.Attribute(value=ast.Name(id="b"), attr="in_top_k",
+                                                           ),
+                                        args=[
+                                            ast.Call(
+                                                func=ast.Attribute(value=ast.Name(id="b"),
+                                                                   attr="variable"),
+                                                args=[ast.Name(id="predictions")],
+                                                keywords=[ast.keyword(arg="dtype", value=ast.Constant(value="float32"))]
+                                            ),
+                                            ast.Call(
+                                                func=ast.Attribute(value=ast.Name(id="b"),
+                                                                   attr="variable"),
+                                                args=[ast.Name(id="targets")],
+                                                keywords=[ast.keyword(arg="dtype", value=ast.Constant(value="int32"))]
+                                            ),
+                                            ast.Name(id="k")
+                                        ],
+                                        keywords=[]
+                                    )
+                                ],
+                                keywords=[]
+                            ),
+                            generators=[
+                                ast.comprehension(target=ast.Name(id="b"),
+                                                  iter=ast.Name(id="WITH_NP"), ifs=[], is_async=0)
+                            ]
+                        ),
+                        lineno=5
+                    ),
+                    ast.For(
+                        target=ast.Tuple(
+                            elts=[
+                                ast.Name(id="z1"),
+                                ast.Name(id="z2")
+                            ],
+                            ctx=ast.Store()
+                        ),
+                        iter=ast.Call(
+                            func=ast.Name(id="zip"),
+                            args=[
+                                ast.Subscript(
+                                    value=ast.Name(id="z_list"),
+                                    slice=ast.Slice(lower=ast.Constant(value=1), upper=None),
+
+                                ),
+                                ast.Subscript(
+                                    value=ast.Name(id="z_list"),
+                                    slice=ast.Slice(lower=None, upper=ast.Constant(value=-1)),
+
+                                )
+                            ],
+                            keywords=[]
+                        ),
+                        body=[
+                            ast.If(
+                                test=ast.Constant(value=True),  # Corrected
+                                body=[
+                                    # assert z1.shape == z2.shape
+                                    ast.Assert(
+                                        test=ast.Compare(
+                                            left=ast.Attribute(value=ast.Name(id="z1"), attr="shape",
+                                                               ),
+                                            ops=[ast.Eq()],
+                                            comparators=[
+                                                ast.Attribute(value=ast.Name(id="z2"), attr="shape",
+                                                              )]
+                                        ),
+                                        msg=None
+                                    )
+                                ],
+                                orelse=[]
+                            ),
+
+                            # if allclose:
+                            ast.If(
+                                test=ast.Constant(value=True),  # Corrected
+                                body=[
+                                    # assert_allclose(z1, z2, atol=1e-05)
+                                    ast.Expr(
+                                        value=ast.Call(
+                                            func=ast.Name(id="assert_allclose"),
+                                            args=[
+                                                ast.Name(id="z1"),
+                                                ast.Name(id="z2")
+                                            ],
+                                            keywords=[ast.keyword(arg="atol", value=ast.Constant(value=1e-05))]
+                                            # Corrected
+                                        )
+                                    )
+                                ],
+                                orelse=[]
+                            ),
+
+                            # if itself:
+                            ast.If(
+                                test=ast.Constant(value=False),  # Corrected
+                                body=[
+                                    # assert z1 == z2
+                                    ast.Assert(
+                                        test=ast.Compare(
+                                            left=ast.Name(id="z1"),
+                                            ops=[ast.Eq()],
+                                            comparators=[ast.Name(id="z2")]
+                                        ),
+                                        msg=None
+                                    )
+                                ],
+                                orelse=[]
+                            )
+                        ],
+                        orelse=[],
+                        lineno=13
+                    ),
+                ],
+                orelse=[],
+                lineno=6
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="num_identical")],
+                value=ast.BinOp(left=ast.Name(id="num_classes"), op=ast.FloorDiv(),
+                                right=ast.Constant(value=2)),
+                lineno=7
+            ),
+            ast.For(
+                target=ast.Name(id="i"),
+                iter=ast.Call(
+                    func=ast.Name(id="range"),
+                    args=[ast.Name(id="batch_size")],
+                    keywords=[]
+                ),
+                body=[
+                    ast.Assign(
+                        targets=[ast.Name(id="idx_identical")],
+                        value=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Attribute(value=ast.Name(id="np"), attr="random",
+                                                    ),
+                                attr="choice",
+
+                            ),
+                            args=[ast.Name(id="num_classes")],
+                            keywords=[
+                                ast.keyword(arg="size", value=ast.Name(id="num_identical")),
+                                ast.keyword(arg="replace", value=ast.Constant(value=False))
+                            ]
+                        ),
+                        lineno=8
+                    ),
+                    ast.Assign(
+                        targets=[ast.Subscript(
+                            value=ast.Name(id="predictions"),
+                            slice=ast.Index(value=ast.Tuple(
+                                elts=[ast.Name(id="i"), ast.Name(id="idx_identical")],
+                                )),
+                            ctx=ast.Store()
+                        )],
+                        value=ast.Subscript(
+                            value=ast.Name(id="predictions"),
+                            slice=ast.Index(
+                                value=ast.Tuple(elts=[ast.Name(id="i"), ast.Constant(value=0)],
+                                                )),
+
+                        ),
+                        lineno=9
+                    )
+                ],
+                orelse=[],
+                lineno=10
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="targets")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="numpy"), attr="zeros"),
+                    args=[ast.Name(id="batch_size")],
+                    keywords=[ast.keyword(arg="dtype", value=ast.Constant(value="int32"))]
+                ),
+                lineno=11
+            ),
+            ast.For(
+                target=ast.Name(id="k"),
+                iter=ast.Call(
+                    func=ast.Name(id="range"),
+                    args=[
+                        ast.Constant(value=1),
+                        ast.BinOp(left=ast.Name(id="num_classes"), op=ast.Add(),
+                                  right=ast.Constant(value=1))
+                    ],
+                    keywords=[]
+                ),
+                body=[
+                    ast.Assign(
+                        targets=[ast.Name(id="z_list")],
+                        value=ast.ListComp(
+                            elt=ast.Call(
+                                func=ast.Attribute(value=ast.Name(id="b"), attr="eval"),
+                                args=[
+                                    ast.Call(
+                                        func=ast.Attribute(value=ast.Name(id="b"), attr="in_top_k",
+                                                           ),
+                                        args=[
+                                            ast.Call(
+                                                func=ast.Attribute(value=ast.Name(id="b"),
+                                                                   attr="variable"),
+                                                args=[ast.Name(id="predictions")],
+                                                keywords=[ast.keyword(arg="dtype", value=ast.Constant(value="float32"))]
+                                            ),
+                                            ast.Call(
+                                                func=ast.Attribute(value=ast.Name(id="b"),
+                                                                   attr="variable"),
+                                                args=[ast.Name(id="targets")],
+                                                keywords=[ast.keyword(arg="dtype", value=ast.Constant(value="int32"))]
+                                            ),
+                                            ast.Name(id="k")
+                                        ],
+                                        keywords=[]
+                                    )
+                                ],
+                                keywords=[]
+                            ),
+                            generators=[
+                                ast.comprehension(target=ast.Name(id="b"),
+                                                  iter=ast.Name(id="WITH_NP"), ifs=[], is_async=0)
+                            ]
+                        ),
+                        lineno=12
+                    ),
+
+                ],
+                orelse=[],
+
+            lineno=13
+            ),
+            ast.For(
+                target=ast.Tuple(
+                    elts=[
+                        ast.Name(id="z1"),
+                        ast.Name(id="z2")
+                    ],
+                    ctx=ast.Store()
+                ),
+                iter=ast.Call(
+                    func=ast.Name(id="zip"),
+                    args=[
+                        ast.Subscript(
+                            value=ast.Name(id="z_list"),
+                            slice=ast.Slice(lower=ast.Constant(value=1), upper=None),
+
+                        ),
+                        ast.Subscript(
+                            value=ast.Name(id="z_list"),
+                            slice=ast.Slice(lower=None, upper=ast.Constant(value=-1)),
+
+                        )
+                    ],
+                    keywords=[]
+                ),
+                body=[
+                    ast.If(
+                        test=ast.Constant(value=True),  # Corrected
+                        body=[
+                            # assert z1.shape == z2.shape
+                            ast.Assert(
+                                test=ast.Compare(
+                                    left=ast.Attribute(value=ast.Name(id="z1"), attr="shape",
+                                                       ),
+                                    ops=[ast.Eq()],
+                                    comparators=[ast.Attribute(value=ast.Name(id="z2"), attr="shape",
+                                                               )]
+                                ),
+                                msg=None
+                            )
+                        ],
+                        orelse=[]
+                    ),
+
+                    # if allclose:
+                    ast.If(
+                        test=ast.Constant(value=True),  # Corrected
+                        body=[
+                            # assert_allclose(z1, z2, atol=1e-05)
+                            ast.Expr(
+                                value=ast.Call(
+                                    func=ast.Name(id="assert_allclose"),
+                                    args=[
+                                        ast.Name(id="z1"),
+                                        ast.Name(id="z2")
+                                    ],
+                                    keywords=[ast.keyword(arg="atol", value=ast.Constant(value=1e-05))]  # Corrected
+                                )
+                            )
+                        ],
+                        orelse=[]
+                    ),
+
+                    # if itself:
+                    ast.If(
+                        test=ast.Constant(value=False),  # Corrected
+                        body=[
+                            # assert z1 == z2
+                            ast.Assert(
+                                test=ast.Compare(
+                                    left=ast.Name(id="z1"),
+                                    ops=[ast.Eq()],
+                                    comparators=[ast.Name(id="z2")]
+                                ),
+                                msg=None
+                            )
+                        ],
+                        orelse=[]
+                    )
+                ],
+                orelse=[],
+                lineno=13
+            ),
+        ]
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            ast.Import(
+                module="numpy",
+                names=[ast.alias(name="numpy")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras.backend",
+                names=[ast.alias(name="cntk_backend", asname="KC")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras.backend",
+                names=[ast.alias(name="numpy_backend", asname="KNP")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="numpy.testing._private.utils",
+                names=[ast.alias(name="assert_allclose")],
+                level=0,
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        _, fail_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_, _ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.PASSING
+
+
 class KerasSystemtestGenerator1(SystemtestGenerator, KerasTestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
         _, fail_ = self.generate_values(self.spacy1_generate)
@@ -1058,6 +1529,16 @@ class KerasSystemtestGenerator1(SystemtestGenerator, KerasTestGenerator):
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
         pass_, _ = self.generate_values(self.spacy1_generate)
+        return f"{pass_}", TestResult.PASSING
+
+
+class KerasSystemtestGenerator2(SystemtestGenerator, KerasTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.spacy2_generate)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.spacy2_generate)
         return f"{pass_}", TestResult.PASSING
 
 
