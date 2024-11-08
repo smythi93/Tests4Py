@@ -161,6 +161,9 @@ def register():
                 "test_sequential_model.py::test_clone_functional_model_with_multi_outputs",
             )
         ],
+        api=KerasAPI3(),
+        unittests=KerasUnittestGenerator3(),
+        systemtests=KerasSystemtestGenerator3(),
         loc=22751,
     )
     Keras(
@@ -175,6 +178,9 @@ def register():
                 "optimizers_test.py::test_tfoptimizer_pass_correct_named_params_to_native_tensorflow_optimizer",
             )
         ],
+        api=KerasAPI4(),
+        unittests=KerasUnittestGenerator4(),
+        systemtests=KerasSystemtestGenerator4(),
         loc=22459,
     )
     Keras(
@@ -187,6 +193,9 @@ def register():
                 "tests", "keras", "utils", "data_utils_test.py::test_data_utils"
             )
         ],
+        api=KerasAPI5(),
+        unittests=KerasUnittestGenerator5(),
+        systemtests=KerasSystemtestGenerator5(),
         loc=22261,
     )
     Keras(
@@ -903,6 +912,57 @@ class KerasAPI2(API):
             return TestResult.FAILING, f"Expected {expected}, but was {result}"
 
 
+class KerasAPI3(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class KerasAPI4(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class KerasAPI5(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
 class KerasTestGenerator:
     @staticmethod
     def generate_values(producer: Callable) -> str:
@@ -923,6 +983,21 @@ class KerasTestGenerator:
     @staticmethod
     def spacy2_generate():
         return "", ""
+
+    @staticmethod
+    def spacy3_generate():
+        return "", ""
+
+    @staticmethod
+    def spacy4_generate():
+        return "", ""
+
+    @staticmethod
+    def spacy5_generate():
+        randomise = KerasTestGenerator.generate_random_string()
+        passing = randomise
+        failing = randomise
+        return passing, failing
 
 
 class KerasUnittestGenerator1(
@@ -1160,8 +1235,6 @@ class KerasUnittestGenerator2(
                     keywords=[]
                 ),
                 body=[
-                    # z_list = [b.eval(b.in_top_k(b.variable(predictions, dtype='float32'),
-                    # b.variable(targets, dtype='int32'), k)) for b in WITH_NP]
                     ast.Assign(
                         targets=[ast.Name(id="z_list")],
                         value=ast.ListComp(
@@ -1204,7 +1277,7 @@ class KerasUnittestGenerator2(
                                 ast.Name(id="z1"),
                                 ast.Name(id="z2")
                             ],
-                            ctx=ast.Store()
+
                         ),
                         iter=ast.Call(
                             func=ast.Name(id="zip"),
@@ -1224,9 +1297,8 @@ class KerasUnittestGenerator2(
                         ),
                         body=[
                             ast.If(
-                                test=ast.Constant(value=True),  # Corrected
+                                test=ast.Constant(value=True),
                                 body=[
-                                    # assert z1.shape == z2.shape
                                     ast.Assert(
                                         test=ast.Compare(
                                             left=ast.Attribute(value=ast.Name(id="z1"), attr="shape",
@@ -1241,12 +1313,9 @@ class KerasUnittestGenerator2(
                                 ],
                                 orelse=[]
                             ),
-
-                            # if allclose:
                             ast.If(
-                                test=ast.Constant(value=True),  # Corrected
+                                test=ast.Constant(value=True),
                                 body=[
-                                    # assert_allclose(z1, z2, atol=1e-05)
                                     ast.Expr(
                                         value=ast.Call(
                                             func=ast.Name(id="assert_allclose"),
@@ -1255,18 +1324,15 @@ class KerasUnittestGenerator2(
                                                 ast.Name(id="z2")
                                             ],
                                             keywords=[ast.keyword(arg="atol", value=ast.Constant(value=1e-05))]
-                                            # Corrected
                                         )
                                     )
                                 ],
                                 orelse=[]
                             ),
 
-                            # if itself:
                             ast.If(
-                                test=ast.Constant(value=False),  # Corrected
+                                test=ast.Constant(value=False),
                                 body=[
-                                    # assert z1 == z2
                                     ast.Assert(
                                         test=ast.Compare(
                                             left=ast.Name(id="z1"),
@@ -1322,8 +1388,8 @@ class KerasUnittestGenerator2(
                             value=ast.Name(id="predictions"),
                             slice=ast.Index(value=ast.Tuple(
                                 elts=[ast.Name(id="i"), ast.Name(id="idx_identical")],
-                                )),
-                            ctx=ast.Store()
+                            )),
+
                         )],
                         value=ast.Subscript(
                             value=ast.Name(id="predictions"),
@@ -1399,7 +1465,7 @@ class KerasUnittestGenerator2(
                 ],
                 orelse=[],
 
-            lineno=13
+                lineno=13
             ),
             ast.For(
                 target=ast.Tuple(
@@ -1407,7 +1473,7 @@ class KerasUnittestGenerator2(
                         ast.Name(id="z1"),
                         ast.Name(id="z2")
                     ],
-                    ctx=ast.Store()
+
                 ),
                 iter=ast.Call(
                     func=ast.Name(id="zip"),
@@ -1427,9 +1493,8 @@ class KerasUnittestGenerator2(
                 ),
                 body=[
                     ast.If(
-                        test=ast.Constant(value=True),  # Corrected
+                        test=ast.Constant(value=True),
                         body=[
-                            # assert z1.shape == z2.shape
                             ast.Assert(
                                 test=ast.Compare(
                                     left=ast.Attribute(value=ast.Name(id="z1"), attr="shape",
@@ -1443,12 +1508,9 @@ class KerasUnittestGenerator2(
                         ],
                         orelse=[]
                     ),
-
-                    # if allclose:
                     ast.If(
-                        test=ast.Constant(value=True),  # Corrected
+                        test=ast.Constant(value=True),
                         body=[
-                            # assert_allclose(z1, z2, atol=1e-05)
                             ast.Expr(
                                 value=ast.Call(
                                     func=ast.Name(id="assert_allclose"),
@@ -1456,18 +1518,15 @@ class KerasUnittestGenerator2(
                                         ast.Name(id="z1"),
                                         ast.Name(id="z2")
                                     ],
-                                    keywords=[ast.keyword(arg="atol", value=ast.Constant(value=1e-05))]  # Corrected
+                                    keywords=[ast.keyword(arg="atol", value=ast.Constant(value=1e-05))]
                                 )
                             )
                         ],
                         orelse=[]
                     ),
-
-                    # if itself:
                     ast.If(
-                        test=ast.Constant(value=False),  # Corrected
+                        test=ast.Constant(value=False),
                         body=[
-                            # assert z1 == z2
                             ast.Assert(
                                 test=ast.Compare(
                                     left=ast.Name(id="z1"),
@@ -1522,6 +1581,508 @@ class KerasUnittestGenerator2(
         return test, TestResult.PASSING
 
 
+class KerasUnittestGenerator3(
+    python.PythonGenerator, UnittestGenerator, KerasTestGenerator
+):
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.spacy3_generate)
+
+    @staticmethod
+    def _get_assert() -> list[Call]:
+        return [
+
+        ]
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            ast.Import(
+                module="numpy",
+                names=[ast.alias(name="numpy")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras",
+                names=[ast.alias(name="backend")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras",
+                names=[ast.alias(name="initializers")],
+                level=0,
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        _, fail_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_, _ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.PASSING
+
+
+class KerasUnittestGenerator4(
+    python.PythonGenerator, UnittestGenerator, KerasTestGenerator
+):
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.spacy4_generate)
+
+    @staticmethod
+    def _get_assert() -> list[Call]:
+        return [
+
+        ]
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            ast.Import(
+                module="numpy",
+                names=[ast.alias(name="numpy")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras",
+                names=[ast.alias(name="backend")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras",
+                names=[ast.alias(name="initializers")],
+                level=0,
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        _, fail_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_, _ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.PASSING
+
+
+class KerasUnittestGenerator5(
+    python.PythonGenerator, UnittestGenerator, KerasTestGenerator
+):
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.spacy5_generate)
+
+    @staticmethod
+    def _get_assert(randomise: str) -> list[Call]:
+        return [
+            ast.Assign(
+                targets=[ast.Name(id="dirname")],
+                value=ast.Constant(value="data_utils"),
+                lineno=1,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="origin")],
+                value=ast.Call(
+                    func=ast.Name(id="urljoin"),
+                    args=[
+                        ast.Constant(value="file://"),
+                        ast.Call(
+                            func=ast.Name(id="pathname2url"),
+                            args=[
+                                ast.Call(
+                                    func=ast.Attribute(
+                                        value=ast.Attribute(
+                                            value=ast.Name(id="os"),
+                                            attr="path",
+                                        ),
+                                        attr="abspath",
+                                    ),
+                                    args=[ast.Constant(value=f"test.{randomise}.gz")],
+                                    keywords=[]
+                                )
+                            ],
+                            keywords=[]
+                        ),
+                    ],
+                    keywords=[]
+                ),
+                lineno=1,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="path")],
+                value=ast.Call(
+                    func=ast.Name(id="get_file"),
+                    args=[
+                        ast.Name(id="dirname"),
+                        ast.Name(id="origin"),
+                    ],
+                    keywords=[ast.keyword(arg="untar", value=ast.Constant(value=True))]
+                ),
+                lineno=2,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="filepath")],
+                value=ast.BinOp(
+                    left=ast.Name(id="path"),
+                    op=ast.Add(),
+                    right=ast.Constant(value=f".{randomise}.gz")
+                ),
+                lineno=3,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="data_keras_home")],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Attribute(
+                            value=ast.Name(id="os"),
+                            attr="path",
+
+                        ),
+                        attr="dirname",
+
+                    ),
+                    args=[
+                        ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Attribute(
+                                    value=ast.Name(id="os"),
+                                    attr="path",
+
+                                ),
+                                attr="dirname",
+
+                            ),
+                            args=[
+                                ast.Call(
+                                    func=ast.Attribute(
+                                        value=ast.Attribute(
+                                            value=ast.Name(id="os"),
+                                            attr="path",
+
+                                        ),
+                                        attr="abspath",
+
+                                    ),
+                                    args=[ast.Name(id="filepath")],
+                                    keywords=[]
+                                )
+                            ],
+                            keywords=[]
+                        )
+                    ],
+                    keywords=[]
+                ),
+                lineno=4,
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Name(id="data_keras_home"),
+                    ops=[ast.Eq()],
+                    comparators=[
+                        ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Attribute(
+                                    value=ast.Name(id="os"),
+                                    attr="path",
+
+                                ),
+                                attr="dirname",
+
+                            ),
+                            args=[
+                                ast.Attribute(
+                                    value=ast.Name(id="K"),
+                                    attr="_config_path",
+
+                                )
+                            ],
+                            keywords=[]
+                        )
+                    ]
+                ),
+                msg=None,
+                lineno=5,
+            ),
+        ]
+
+    @staticmethod
+    def _get_assert2(randomise: str) -> list[Call]:
+        return [
+            ast.Assign(
+                targets=[ast.Name(id="dirname")],
+                value=ast.Constant(value="data_utils"),
+                lineno=1,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="origin")],
+                value=ast.Call(
+                    func=ast.Name(id="urljoin"),
+                    args=[
+                        ast.Constant(value="file://"),
+                        ast.Call(
+                            func=ast.Name(id="pathname2url"),
+                            args=[
+                                ast.Call(
+                                    func=ast.Attribute(
+                                        value=ast.Attribute(
+                                            value=ast.Name(id="os"),
+                                            attr="path",
+                                        ),
+                                        attr="abspath",
+                                    ),
+                                    args=[ast.Constant(value=f"test.{randomise}.gz")],
+                                    keywords=[]
+                                )
+                            ],
+                            keywords=[]
+                        ),
+                    ],
+                    keywords=[]
+                ),
+                lineno=2,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="_keras_home", ctx=ast.Store())],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Attribute(
+                            value=ast.Name(id="os", ctx=ast.Load()),
+                            attr="path",
+                            ctx=ast.Load()
+                        ),
+                        attr="join",
+                        ctx=ast.Load()
+                    ),
+                    args=[
+                        ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Attribute(
+                                    value=ast.Name(id="os", ctx=ast.Load()),
+                                    attr="path",
+                                    ctx=ast.Load()
+                                ),
+                                attr="abspath",
+                                ctx=ast.Load()
+                            ),
+                            args=[ast.Constant(value=".")],
+                            keywords=[]
+                        ),
+                        ast.Constant(value=".keras")
+                    ],
+                    keywords=[]
+                ),
+                lineno=3,
+            ),
+            ast.If(
+                test=ast.UnaryOp(
+                    op=ast.Not(),
+                    operand=ast.Call(
+                        func=ast.Attribute(
+                            value=ast.Attribute(
+                                value=ast.Name(id="os", ctx=ast.Load()),
+                                attr="path",
+                                ctx=ast.Load()
+                            ),
+                            attr="exists",
+                            ctx=ast.Load()
+                        ),
+                        args=[ast.Name(id="_keras_home", ctx=ast.Load())],
+                        keywords=[]
+                    )
+                ),
+                body=[
+                    ast.Expr(
+                        value=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id="os", ctx=ast.Load()),
+                                attr="makedirs",
+                                ctx=ast.Load()
+                            ),
+                            args=[ast.Name(id="_keras_home", ctx=ast.Load())],
+                            keywords=[]
+                        )
+                    )
+                ],
+                orelse=[],
+                lineno=4,
+            ),
+            ast.Assign(
+                targets=[
+                    ast.Subscript(
+                        value=ast.Attribute(
+                            value=ast.Name(id="os", ctx=ast.Load()),
+                            attr="environ",
+                            ctx=ast.Load()
+                        ),
+                        slice=ast.Index(value=ast.Constant(value="KERAS_HOME")),
+                        ctx=ast.Store()
+                    )
+                ],
+                value=ast.Name(id="_keras_home", ctx=ast.Load()),
+                lineno=5,
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Name(id="reload_module", ctx=ast.Load()),
+                    args=[ast.Name(id="K", ctx=ast.Load())],
+                    keywords=[]
+                ),
+                lineno=6,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="path", ctx=ast.Store())],
+                value=ast.Call(
+                    func=ast.Name(id="get_file", ctx=ast.Load()),
+                    args=[
+                        ast.Name(id="dirname", ctx=ast.Load()),
+                        ast.Name(id="origin", ctx=ast.Load())
+                    ],
+                    keywords=[ast.keyword(arg="untar", value=ast.Constant(value=True))]
+                ),
+                lineno=7,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="filepath", ctx=ast.Store())],
+                value=ast.BinOp(
+                    left=ast.Name(id="path", ctx=ast.Load()),
+                    op=ast.Add(),
+                    right=ast.Constant(value=".tar.gz")
+                ),
+                lineno=8,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="data_keras_home", ctx=ast.Store())],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Attribute(
+                            value=ast.Name(id="os", ctx=ast.Load()),
+                            attr="path",
+                            ctx=ast.Load()
+                        ),
+                        attr="dirname",
+                        ctx=ast.Load()
+                    ),
+                    args=[
+                        ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Attribute(
+                                    value=ast.Name(id="os", ctx=ast.Load()),
+                                    attr="path",
+                                    ctx=ast.Load()
+                                ),
+                                attr="dirname",
+                                ctx=ast.Load()
+                            ),
+                            args=[
+                                ast.Call(
+                                    func=ast.Attribute(
+                                        value=ast.Attribute(
+                                            value=ast.Name(id="os", ctx=ast.Load()),
+                                            attr="path",
+                                            ctx=ast.Load()
+                                        ),
+                                        attr="abspath",
+                                        ctx=ast.Load()
+                                    ),
+                                    args=[ast.Name(id="filepath", ctx=ast.Load())],
+                                    keywords=[]
+                                )
+                            ],
+                            keywords=[]
+                        )
+                    ],
+                    keywords=[]
+                ),
+                lineno=9,
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Name(id="data_keras_home", ctx=ast.Load()),
+                    ops=[ast.Eq()],
+                    comparators=[
+                        ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Attribute(
+                                    value=ast.Name(id="os", ctx=ast.Load()),
+                                    attr="path",
+                                    ctx=ast.Load()
+                                ),
+                                attr="dirname",
+                                ctx=ast.Load()
+                            ),
+                            args=[
+                                ast.Attribute(
+                                    value=ast.Name(id="K", ctx=ast.Load()),
+                                    attr="_config_path",
+                                    ctx=ast.Load()
+                                )
+                            ],
+                            keywords=[]
+                        )
+                    ]
+                ),
+                msg=None,
+                lineno=10,
+            ),
+        ]
+
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            ast.Import(
+                module="os",
+                names=[ast.alias(name="os")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="six.moves.urllib.parse",
+                names=[ast.alias(name="urljoin")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="six.moves.urllib.request",
+                names=[ast.alias(name="pathname2url")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras.utils.data_utils",
+                names=[ast.alias(name="get_file")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="six.moves",
+                names=[ast.alias(name="reload_module")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras",
+                names=[ast.alias(name="backend", asname="K")],
+                level=0,
+            ),
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        _, fail_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert2(fail_)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_, _ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert(pass_)
+        return test, TestResult.PASSING
+
+
 class KerasSystemtestGenerator1(SystemtestGenerator, KerasTestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
         _, fail_ = self.generate_values(self.spacy1_generate)
@@ -1539,6 +2100,36 @@ class KerasSystemtestGenerator2(SystemtestGenerator, KerasTestGenerator):
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
         pass_, _ = self.generate_values(self.spacy2_generate)
+        return f"{pass_}", TestResult.PASSING
+
+
+class KerasSystemtestGenerator3(SystemtestGenerator, KerasTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.spacy3_generate)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.spacy3_generate)
+        return f"{pass_}", TestResult.PASSING
+
+
+class KerasSystemtestGenerator4(SystemtestGenerator, KerasTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.spacy4_generate)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.spacy4_generate)
+        return f"{pass_}", TestResult.PASSING
+
+
+class KerasSystemtestGenerator5(SystemtestGenerator, KerasTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.spacy5_generate)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.spacy5_generate)
         return f"{pass_}", TestResult.PASSING
 
 
