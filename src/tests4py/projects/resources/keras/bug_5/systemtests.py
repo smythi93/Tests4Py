@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return "rtjhiertg"
+        return "asjhdashjb .keras"
 
     def test_diversity_2(self):
-        return "hfuhw"
+        return "HFWEIFHWKEW .keras"
 
     def test_diversity_3(self):
-        return "jhdashjdgasj"
+        return "KGRTGJRT .keras"
 
     def test_diversity_4(self):
-        return "MDFJBHSS"
+        return "VNKBVEHI .keras"
 
     def test_diversity_5(self):
-        return "ERKLGEIHGN"
+        return "KSJDFISHEW .keras"
 
     def test_diversity_6(self):
-        return "ERNGKJEG"
+        return "wehwhjee .keras"
 
     def test_diversity_7(self):
-        return "erjkfhwi"
+        return "HUEGFIW .keras"
 
     def test_diversity_8(self):
-        return "ewfrwhehbe"
+        return "gwfjwew .keras"
 
     def test_diversity_9(self):
-        return "rthtrhgergw"
+        return "hfwjebw .keras"
 
     def test_diversity_10(self):
-        return "gergrgerw"
+        return "hbdqwkjsd .keras"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return "rfgnkwrbkw TypeError"
+        return "DVHQWGVDQHWDQ"
 
     def test_diversity_2(self):
-        return "jkwehgfuew TypeError"
+        return "jhwbefwhbfkw"
 
     def test_diversity_3(self):
-        return "wrjkgwhfnw TypeError"
+        return "HJBEWVWBEHI"
 
     def test_diversity_4(self):
-        return "wfgguwww TypeError"
+        return "kjpijhohljl"
 
     def test_diversity_5(self):
-        return "ERJHGUgshg TypeError"
+        return "FHWEBFWEFKW"
 
     def test_diversity_6(self):
-        return "erjghuer TypeError"
+        return "ejfhwefhjw"
 
     def test_diversity_7(self):
-        return "akjsahjDSFSD TypeError"
+        return "EFUWEFW"
 
     def test_diversity_8(self):
-        return "KJWEFIW TypeError"
+        return "JKRFEKJBREO"
 
     def test_diversity_9(self):
-        return "SDKJFHDSBFK TypeError"
+        return "FJHWBEFWFWK"
 
     def test_diversity_10(self):
-        return "jehwbfwej TypeError"
+        return "jdhbjwdbhwjj"

@@ -955,8 +955,13 @@ class KerasAPI5(API):
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
         expected = process.args[2]
+        expected = expected[1:]
+        expected = expected[:-1]
         result = process.stdout.decode("utf8")
         result = result.strip()
+        print("ex ", expected)
+        print("res ", result)
+        print(args)
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -996,7 +1001,7 @@ class KerasTestGenerator:
     def spacy5_generate():
         randomise = KerasTestGenerator.generate_random_string()
         passing = randomise
-        failing = randomise
+        failing = randomise, ".keras"
         return passing, failing
 
 
@@ -1685,9 +1690,50 @@ class KerasUnittestGenerator5(
     def _get_assert(randomise: str) -> list[Call]:
         return [
             ast.Assign(
+                targets=[ast.Name(id="original_keras_home")],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Attribute(
+                            value=ast.Name(id="os"),
+                            attr="environ"
+                        ),
+                        attr="get"
+                    ),
+                    args=[ast.Constant(value="KERAS_HOME")],
+                    keywords=[]
+                ),
+                lineno=1,
+            ),
+            ast.If(
+                test=ast.Compare(
+                    left=ast.Constant(value="KERAS_HOME"),
+                    ops=[ast.In()],
+                    comparators=[ast.Attribute(value=ast.Name(id="os"), attr="environ")]
+                ),
+                body=[
+                    ast.Delete(
+                        targets=[
+                            ast.Subscript(
+                                value=ast.Attribute(value=ast.Name(id="os"), attr="environ"),
+                                slice=ast.Constant(value="KERAS_HOME")
+                            )
+                        ]
+                    )
+                ],
+                orelse=[]
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Name(id="reload_module"),
+                    args=[ast.Name(id="K")],
+                    keywords=[]
+                ),
+                lineno=3,
+            ),
+            ast.Assign(
                 targets=[ast.Name(id="dirname")],
                 value=ast.Constant(value="data_utils"),
-                lineno=1,
+                lineno=4,
             ),
             ast.Assign(
                 targets=[ast.Name(id="origin")],
@@ -1700,11 +1746,8 @@ class KerasUnittestGenerator5(
                             args=[
                                 ast.Call(
                                     func=ast.Attribute(
-                                        value=ast.Attribute(
-                                            value=ast.Name(id="os"),
-                                            attr="path",
-                                        ),
-                                        attr="abspath",
+                                        value=ast.Attribute(value=ast.Name(id="os"), attr="path"),
+                                        attr="abspath"
                                     ),
                                     args=[ast.Constant(value=f"test.{randomise}.gz")],
                                     keywords=[]
@@ -1715,7 +1758,7 @@ class KerasUnittestGenerator5(
                     ],
                     keywords=[]
                 ),
-                lineno=1,
+                lineno=5,
             ),
             ast.Assign(
                 targets=[ast.Name(id="path")],
@@ -1723,54 +1766,39 @@ class KerasUnittestGenerator5(
                     func=ast.Name(id="get_file"),
                     args=[
                         ast.Name(id="dirname"),
-                        ast.Name(id="origin"),
+                        ast.Name(id="origin")
                     ],
                     keywords=[ast.keyword(arg="untar", value=ast.Constant(value=True))]
                 ),
-                lineno=2,
+                lineno=6,
             ),
             ast.Assign(
                 targets=[ast.Name(id="filepath")],
                 value=ast.BinOp(
                     left=ast.Name(id="path"),
                     op=ast.Add(),
-                    right=ast.Constant(value=f".{randomise}.gz")
+                    right=ast.Constant(value=".tar.gz")
                 ),
-                lineno=3,
+                lineno=7,
             ),
             ast.Assign(
                 targets=[ast.Name(id="data_keras_home")],
                 value=ast.Call(
                     func=ast.Attribute(
-                        value=ast.Attribute(
-                            value=ast.Name(id="os"),
-                            attr="path",
-
-                        ),
-                        attr="dirname",
-
+                        value=ast.Attribute(value=ast.Name(id="os"), attr="path"),
+                        attr="dirname"
                     ),
                     args=[
                         ast.Call(
                             func=ast.Attribute(
-                                value=ast.Attribute(
-                                    value=ast.Name(id="os"),
-                                    attr="path",
-
-                                ),
-                                attr="dirname",
-
+                                value=ast.Attribute(value=ast.Name(id="os"), attr="path"),
+                                attr="dirname"
                             ),
                             args=[
                                 ast.Call(
                                     func=ast.Attribute(
-                                        value=ast.Attribute(
-                                            value=ast.Name(id="os"),
-                                            attr="path",
-
-                                        ),
-                                        attr="abspath",
-
+                                        value=ast.Attribute(value=ast.Name(id="os"), attr="path"),
+                                        attr="abspath"
                                     ),
                                     args=[ast.Name(id="filepath")],
                                     keywords=[]
@@ -1781,7 +1809,7 @@ class KerasUnittestGenerator5(
                     ],
                     keywords=[]
                 ),
-                lineno=4,
+                lineno=8,
             ),
             ast.Assert(
                 test=ast.Compare(
@@ -1790,37 +1818,127 @@ class KerasUnittestGenerator5(
                     comparators=[
                         ast.Call(
                             func=ast.Attribute(
-                                value=ast.Attribute(
-                                    value=ast.Name(id="os"),
-                                    attr="path",
-
-                                ),
-                                attr="dirname",
-
+                                value=ast.Attribute(value=ast.Name(id="os"), attr="path"),
+                                attr="dirname"
                             ),
-                            args=[
-                                ast.Attribute(
-                                    value=ast.Name(id="K"),
-                                    attr="_config_path",
-
-                                )
-                            ],
+                            args=[ast.Attribute(value=ast.Name(id="K"), attr="_config_path")],
                             keywords=[]
                         )
                     ]
                 ),
                 msg=None,
-                lineno=5,
+                lineno=9,
             ),
+            ast.If(
+                test=ast.Compare(
+                    left=ast.Name(id="original_keras_home"),
+                    ops=[ast.IsNot()],
+                    comparators=[ast.Constant(value=None)]
+                ),
+                body=[
+                    ast.Assign(
+                        targets=[
+                            ast.Subscript(
+                                value=ast.Attribute(value=ast.Name(id="os"), attr="environ"),
+                                slice=ast.Constant(value="KERAS_HOME")
+                            )
+                        ],
+                        value=ast.Name(id="original_keras_home"),
+                        lineno=10,
+                    ),
+                ],
+                orelse=[
+                    ast.Expr(
+                        value=ast.Call(
+                            func=ast.Attribute(value=ast.Attribute(value=ast.Name(id="os"), attr="environ"),
+                                               attr="pop"),
+                            args=[ast.Constant(value="KERAS_HOME"), ast.Constant(value=None)],
+                            keywords=[]
+                        )
+                    )
+                ]
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Name(id="reload_module"),
+                    args=[ast.Name(id="K")],
+                    keywords=[]
+                ),
+                lineno=10,
+            )
         ]
 
     @staticmethod
-    def _get_assert2(randomise: str) -> list[Call]:
+    def _get_assert2(randomise: str, keras_home: str) -> list[Call]:
         return [
+            ast.Assign(
+                targets=[ast.Name(id="original_keras_home")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Attribute(value=ast.Name(id="os"), attr="environ"), attr="get"),
+                    args=[ast.Constant(value="KERAS_HOME")],
+                    keywords=[]
+                ),
+                lineno=1,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="_keras_home")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Attribute(value=ast.Name(id="os"), attr="path"), attr="join"),
+                    args=[
+                        ast.Call(
+                            func=ast.Attribute(value=ast.Attribute(value=ast.Name(id="os"), attr="path"),
+                                               attr="abspath"),
+                            args=[ast.Constant(value=".")],
+                            keywords=[]
+                        ),
+                        ast.Constant(value=keras_home)
+                    ],
+                    keywords=[]
+                ),
+                lineno=2,
+            ),
+            ast.If(
+                test=ast.UnaryOp(
+                    op=ast.Not(),
+                    operand=ast.Call(
+                        func=ast.Attribute(value=ast.Name(id="os"), attr="path.exists"),
+                        args=[ast.Name(id="_keras_home")],
+                        keywords=[]
+                    ),
+                ),
+                body=[
+                    ast.Expr(
+                        value=ast.Call(
+                            func=ast.Attribute(value=ast.Name(id="os"), attr="makedirs"),
+                            args=[ast.Name(id="_keras_home")],
+                            keywords=[]
+                        )
+                    )
+                ],
+                orelse=[]
+            ),
+            ast.Assign(
+                targets=[
+                    ast.Subscript(
+                        value=ast.Attribute(value=ast.Name(id="os"), attr="environ"),
+                        slice=ast.Constant(value="KERAS_HOME")
+                    )
+                ],
+                value=ast.Name(id="_keras_home"),
+                lineno=3,
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Name(id="reload_module"),
+                    args=[ast.Name(id="K")],
+                    keywords=[]
+                ),
+                lineno=4,
+            ),
             ast.Assign(
                 targets=[ast.Name(id="dirname")],
                 value=ast.Constant(value="data_utils"),
-                lineno=1,
+                lineno=5,
             ),
             ast.Assign(
                 targets=[ast.Name(id="origin")],
@@ -1833,11 +1951,8 @@ class KerasUnittestGenerator5(
                             args=[
                                 ast.Call(
                                     func=ast.Attribute(
-                                        value=ast.Attribute(
-                                            value=ast.Name(id="os"),
-                                            attr="path",
-                                        ),
-                                        attr="abspath",
+                                        value=ast.Attribute(value=ast.Name(id="os"), attr="path"),
+                                        attr="abspath"
                                     ),
                                     args=[ast.Constant(value=f"test.{randomise}.gz")],
                                     keywords=[]
@@ -1848,152 +1963,46 @@ class KerasUnittestGenerator5(
                     ],
                     keywords=[]
                 ),
-                lineno=2,
-            ),
-            ast.Assign(
-                targets=[ast.Name(id="_keras_home", ctx=ast.Store())],
-                value=ast.Call(
-                    func=ast.Attribute(
-                        value=ast.Attribute(
-                            value=ast.Name(id="os", ctx=ast.Load()),
-                            attr="path",
-                            ctx=ast.Load()
-                        ),
-                        attr="join",
-                        ctx=ast.Load()
-                    ),
-                    args=[
-                        ast.Call(
-                            func=ast.Attribute(
-                                value=ast.Attribute(
-                                    value=ast.Name(id="os", ctx=ast.Load()),
-                                    attr="path",
-                                    ctx=ast.Load()
-                                ),
-                                attr="abspath",
-                                ctx=ast.Load()
-                            ),
-                            args=[ast.Constant(value=".")],
-                            keywords=[]
-                        ),
-                        ast.Constant(value=".keras")
-                    ],
-                    keywords=[]
-                ),
-                lineno=3,
-            ),
-            ast.If(
-                test=ast.UnaryOp(
-                    op=ast.Not(),
-                    operand=ast.Call(
-                        func=ast.Attribute(
-                            value=ast.Attribute(
-                                value=ast.Name(id="os", ctx=ast.Load()),
-                                attr="path",
-                                ctx=ast.Load()
-                            ),
-                            attr="exists",
-                            ctx=ast.Load()
-                        ),
-                        args=[ast.Name(id="_keras_home", ctx=ast.Load())],
-                        keywords=[]
-                    )
-                ),
-                body=[
-                    ast.Expr(
-                        value=ast.Call(
-                            func=ast.Attribute(
-                                value=ast.Name(id="os", ctx=ast.Load()),
-                                attr="makedirs",
-                                ctx=ast.Load()
-                            ),
-                            args=[ast.Name(id="_keras_home", ctx=ast.Load())],
-                            keywords=[]
-                        )
-                    )
-                ],
-                orelse=[],
-                lineno=4,
-            ),
-            ast.Assign(
-                targets=[
-                    ast.Subscript(
-                        value=ast.Attribute(
-                            value=ast.Name(id="os", ctx=ast.Load()),
-                            attr="environ",
-                            ctx=ast.Load()
-                        ),
-                        slice=ast.Index(value=ast.Constant(value="KERAS_HOME")),
-                        ctx=ast.Store()
-                    )
-                ],
-                value=ast.Name(id="_keras_home", ctx=ast.Load()),
-                lineno=5,
-            ),
-            ast.Expr(
-                value=ast.Call(
-                    func=ast.Name(id="reload_module", ctx=ast.Load()),
-                    args=[ast.Name(id="K", ctx=ast.Load())],
-                    keywords=[]
-                ),
                 lineno=6,
             ),
             ast.Assign(
-                targets=[ast.Name(id="path", ctx=ast.Store())],
+                targets=[ast.Name(id="path")],
                 value=ast.Call(
-                    func=ast.Name(id="get_file", ctx=ast.Load()),
-                    args=[
-                        ast.Name(id="dirname", ctx=ast.Load()),
-                        ast.Name(id="origin", ctx=ast.Load())
-                    ],
+                    func=ast.Name(id="get_file"),
+                    args=[ast.Name(id="dirname"), ast.Name(id="origin")],
                     keywords=[ast.keyword(arg="untar", value=ast.Constant(value=True))]
                 ),
                 lineno=7,
             ),
             ast.Assign(
-                targets=[ast.Name(id="filepath", ctx=ast.Store())],
+                targets=[ast.Name(id="filepath")],
                 value=ast.BinOp(
-                    left=ast.Name(id="path", ctx=ast.Load()),
+                    left=ast.Name(id="path"),
                     op=ast.Add(),
                     right=ast.Constant(value=".tar.gz")
                 ),
                 lineno=8,
             ),
             ast.Assign(
-                targets=[ast.Name(id="data_keras_home", ctx=ast.Store())],
+                targets=[ast.Name(id="data_keras_home")],
                 value=ast.Call(
                     func=ast.Attribute(
-                        value=ast.Attribute(
-                            value=ast.Name(id="os", ctx=ast.Load()),
-                            attr="path",
-                            ctx=ast.Load()
-                        ),
-                        attr="dirname",
-                        ctx=ast.Load()
+                        value=ast.Attribute(value=ast.Name(id="os"), attr="path"),
+                        attr="dirname"
                     ),
                     args=[
                         ast.Call(
                             func=ast.Attribute(
-                                value=ast.Attribute(
-                                    value=ast.Name(id="os", ctx=ast.Load()),
-                                    attr="path",
-                                    ctx=ast.Load()
-                                ),
-                                attr="dirname",
-                                ctx=ast.Load()
+                                value=ast.Attribute(value=ast.Name(id="os"), attr="path"),
+                                attr="dirname"
                             ),
                             args=[
                                 ast.Call(
                                     func=ast.Attribute(
-                                        value=ast.Attribute(
-                                            value=ast.Name(id="os", ctx=ast.Load()),
-                                            attr="path",
-                                            ctx=ast.Load()
-                                        ),
-                                        attr="abspath",
-                                        ctx=ast.Load()
+                                        value=ast.Attribute(value=ast.Name(id="os"), attr="path"),
+                                        attr="abspath"
                                     ),
-                                    args=[ast.Name(id="filepath", ctx=ast.Load())],
+                                    args=[ast.Name(id="filepath")],
                                     keywords=[]
                                 )
                             ],
@@ -2006,26 +2015,15 @@ class KerasUnittestGenerator5(
             ),
             ast.Assert(
                 test=ast.Compare(
-                    left=ast.Name(id="data_keras_home", ctx=ast.Load()),
+                    left=ast.Name(id="data_keras_home"),
                     ops=[ast.Eq()],
                     comparators=[
                         ast.Call(
                             func=ast.Attribute(
-                                value=ast.Attribute(
-                                    value=ast.Name(id="os", ctx=ast.Load()),
-                                    attr="path",
-                                    ctx=ast.Load()
-                                ),
-                                attr="dirname",
-                                ctx=ast.Load()
+                                value=ast.Attribute(value=ast.Name(id="os"), attr="path"),
+                                attr="dirname"
                             ),
-                            args=[
-                                ast.Attribute(
-                                    value=ast.Name(id="K", ctx=ast.Load()),
-                                    attr="_config_path",
-                                    ctx=ast.Load()
-                                )
-                            ],
+                            args=[ast.Attribute(value=ast.Name(id="K"), attr="_config_path")],
                             keywords=[]
                         )
                     ]
@@ -2033,8 +2031,44 @@ class KerasUnittestGenerator5(
                 msg=None,
                 lineno=10,
             ),
+            ast.If(
+                test=ast.Compare(
+                    left=ast.Name(id="original_keras_home"),
+                    ops=[ast.IsNot()],
+                    comparators=[ast.Constant(value=None)]
+                ),
+                body=[
+                    ast.Assign(
+                        targets=[
+                            ast.Subscript(
+                                value=ast.Attribute(value=ast.Name(id="os"), attr="environ"),
+                                slice=ast.Constant(value="KERAS_HOME")
+                            )
+                        ],
+                        value=ast.Name(id="original_keras_home"),
+                        lineno=11,
+                    )
+                ],
+                orelse=[
+                    ast.Expr(
+                        value=ast.Call(
+                            func=ast.Attribute(value=ast.Attribute(value=ast.Name(id="os"), attr="environ"),
+                                               attr="pop"),
+                            args=[ast.Constant(value="KERAS_HOME"), ast.Constant(value=None)],
+                            keywords=[]
+                        )
+                    )
+                ]
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Name(id="reload_module"),
+                    args=[ast.Name(id="K")],
+                    keywords=[]
+                ),
+                lineno=12,
+            ),
         ]
-
 
     def get_imports(self) -> list[ImportFrom]:
         return [
@@ -2072,8 +2106,9 @@ class KerasUnittestGenerator5(
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
+        randomise, keras_home = fail_
         test = self.get_empty_test()
-        test.body = self._get_assert2(fail_)
+        test.body = self._get_assert2(randomise, keras_home)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
