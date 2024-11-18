@@ -1,229 +1,150 @@
 import unittest
-from spacy.language import Language
-from spacy.vocab import Vocab
+import numpy
+from keras import backend
+from keras import initializers
 
 
 class TestsFailing(unittest.TestCase):
 
     def test_diversity_1(self):
-
-        def pipe(doc):
-            return doc
-        text = 'TJmoNjMrwMpZf'
-        annots = {'cats': {'POSITIVE': 1.0, 'NEGATIVE': 0.0}}
-        nlp = Language(Vocab())
-        nlp.add_pipe(pipe)
-        nlp.evaluate([(text, annots)])
+        initializer = initializers.truncated_normal
+        init = initializer(seed=71)
+        samples = [init((2, 2)) for _ in range(2)]
+        samples = [backend.get_value(backend.variable(x)) for x in samples]
+        assert numpy.mean(numpy.abs(samples[0] - samples[1])) > 0.0
 
     def test_diversity_2(self):
-
-        def pipe(doc):
-            return doc
-        text = 'zwWhrxAvWAN'
-        annots = {'cats': {'POSITIVE': 1.0, 'NEGATIVE': 0.0}}
-        nlp = Language(Vocab())
-        nlp.add_pipe(pipe)
-        nlp.evaluate([(text, annots)])
+        initializer = initializers.truncated_normal
+        init = initializer(seed=55)
+        samples = [init((2, 2)) for _ in range(2)]
+        samples = [backend.get_value(backend.variable(x)) for x in samples]
+        assert numpy.mean(numpy.abs(samples[0] - samples[1])) < 0.0
 
     def test_diversity_3(self):
-
-        def pipe(doc):
-            return doc
-        text = 'wYognIXwId'
-        annots = {'cats': {'POSITIVE': 1.0, 'NEGATIVE': 0.0}}
-        nlp = Language(Vocab())
-        nlp.add_pipe(pipe)
-        nlp.evaluate([(text, annots)])
+        initializer = initializers.normal
+        init = initializer(seed=1829)
+        samples = [init((2, 2)) for _ in range(2)]
+        samples = [backend.get_value(backend.variable(x)) for x in samples]
+        assert numpy.mean(numpy.abs(samples[0] - samples[1])) > 0.0
 
     def test_diversity_4(self):
-
-        def pipe(doc):
-            return doc
-        text = 'qzrMVjLNIScniti'
-        annots = {'cats': {'POSITIVE': 1.0, 'NEGATIVE': 0.0}}
-        nlp = Language(Vocab())
-        nlp.add_pipe(pipe)
-        nlp.evaluate([(text, annots)])
+        initializer = initializers.orthogonal
+        init = initializer(seed=752)
+        samples = [init((2, 2)) for _ in range(2)]
+        samples = [backend.get_value(backend.variable(x)) for x in samples]
+        assert numpy.mean(numpy.abs(samples[0] - samples[1])) > 0.0
 
     def test_diversity_5(self):
-
-        def pipe(doc):
-            return doc
-        text = 'wmCkuS'
-        annots = {'cats': {'POSITIVE': 1.0, 'NEGATIVE': 0.0}}
-        nlp = Language(Vocab())
-        nlp.add_pipe(pipe)
-        nlp.evaluate([(text, annots)])
+        initializer = initializers.uniform
+        init = initializer(seed=1029)
+        samples = [init((2, 2)) for _ in range(2)]
+        samples = [backend.get_value(backend.variable(x)) for x in samples]
+        assert numpy.mean(numpy.abs(samples[0] - samples[1])) > 0.0
 
     def test_diversity_6(self):
-
-        def pipe(doc):
-            return doc
-        text = 'JxWApFi'
-        annots = {'cats': {'POSITIVE': 1.0, 'NEGATIVE': 0.0}}
-        nlp = Language(Vocab())
-        nlp.add_pipe(pipe)
-        nlp.evaluate([(text, annots)])
+        initializer = initializers.normal
+        init = initializer(seed=1979)
+        samples = [init((2, 2)) for _ in range(2)]
+        samples = [backend.get_value(backend.variable(x)) for x in samples]
+        assert numpy.mean(numpy.abs(samples[0] - samples[1])) < 0.0
 
     def test_diversity_7(self):
-
-        def pipe(doc):
-            return doc
-        text = 'oShCvKCHFctg'
-        annots = {'cats': {'POSITIVE': 1.0, 'NEGATIVE': 0.0}}
-        nlp = Language(Vocab())
-        nlp.add_pipe(pipe)
-        nlp.evaluate([(text, annots)])
+        initializer = initializers.normal
+        init = initializer(seed=31)
+        samples = [init((2, 2)) for _ in range(2)]
+        samples = [backend.get_value(backend.variable(x)) for x in samples]
+        assert numpy.mean(numpy.abs(samples[0] - samples[1])) > 0.0
 
     def test_diversity_8(self):
-
-        def pipe(doc):
-            return doc
-        text = 'LbOMfcA'
-        annots = {'cats': {'POSITIVE': 1.0, 'NEGATIVE': 0.0}}
-        nlp = Language(Vocab())
-        nlp.add_pipe(pipe)
-        nlp.evaluate([(text, annots)])
+        initializer = initializers.VarianceScaling
+        init = initializer(seed=625)
+        samples = [init((2, 2)) for _ in range(2)]
+        samples = [backend.get_value(backend.variable(x)) for x in samples]
+        assert numpy.mean(numpy.abs(samples[0] - samples[1])) < 0.0
 
     def test_diversity_9(self):
-
-        def pipe(doc):
-            return doc
-        text = 'HWYmdzcbdvX'
-        annots = {'cats': {'POSITIVE': 1.0, 'NEGATIVE': 0.0}}
-        nlp = Language(Vocab())
-        nlp.add_pipe(pipe)
-        nlp.evaluate([(text, annots)])
+        initializer = initializers.uniform
+        init = initializer(seed=778)
+        samples = [init((2, 2)) for _ in range(2)]
+        samples = [backend.get_value(backend.variable(x)) for x in samples]
+        assert numpy.mean(numpy.abs(samples[0] - samples[1])) > 0.0
 
     def test_diversity_10(self):
-
-        def pipe(doc):
-            return doc
-        text = 'dIaVb'
-        annots = {'cats': {'POSITIVE': 1.0, 'NEGATIVE': 0.0}}
-        nlp = Language(Vocab())
-        nlp.add_pipe(pipe)
-        nlp.evaluate([(text, annots)])
+        initializer = initializers.truncated_normal
+        init = initializer(seed=1730)
+        samples = [init((2, 2)) for _ in range(2)]
+        samples = [backend.get_value(backend.variable(x)) for x in samples]
+        assert numpy.mean(numpy.abs(samples[0] - samples[1])) < 0.0
 
 
 class TestsPassing(unittest.TestCase):
 
     def test_diversity_1(self):
-        def pipe(doc):
-            return doc
-
-        text = 'ZGofI'
-        annots = {'cats': {'POSITIVE': 1.0, 'NEGATIVE': 0.0}}
-        nlp = Language(Vocab())
-        doc = nlp(text)
-        nlp.add_pipe(pipe)
-        with self.assertRaises(TypeError):
-            nlp.evaluate([(doc, annots)])
+        initializer = initializers.normal
+        init = initializer(seed=85)
+        samples = [init((2, 2)) for _ in range(2)]
+        samples = [backend.get_value(backend.variable(x)) for x in samples]
+        assert numpy.mean(numpy.abs(samples[0] - samples[1])) == 0.0
 
     def test_diversity_2(self):
-        def pipe(doc):
-            return doc
-
-        text = 'fKmgfatpjH'
-        annots = {'cats': {'POSITIVE': 1.0, 'NEGATIVE': 0.0}}
-        nlp = Language(Vocab())
-        doc = nlp(text)
-        nlp.add_pipe(pipe)
-        with self.assertRaises(TypeError):
-            nlp.evaluate([(doc, annots)])
+        initializer = initializers.uniform
+        init = initializer(seed=197)
+        samples = [init((2, 2)) for _ in range(2)]
+        samples = [backend.get_value(backend.variable(x)) for x in samples]
+        assert numpy.mean(numpy.abs(samples[0] - samples[1])) == 0.0
 
     def test_diversity_3(self):
-        def pipe(doc):
-            return doc
-
-        text = 'FKsssXlyFlgVNq'
-        annots = {'cats': {'POSITIVE': 1.0, 'NEGATIVE': 0.0}}
-        nlp = Language(Vocab())
-        doc = nlp(text)
-        nlp.add_pipe(pipe)
-        with self.assertRaises(TypeError):
-            nlp.evaluate([(doc, annots)])
+        initializer = initializers.truncated_normal
+        init = initializer(seed=1811)
+        samples = [init((2, 2)) for _ in range(2)]
+        samples = [backend.get_value(backend.variable(x)) for x in samples]
+        assert numpy.mean(numpy.abs(samples[0] - samples[1])) == 0.0
 
     def test_diversity_4(self):
-        def pipe(doc):
-            return doc
-
-        text = 'LZGKT'
-        annots = {'cats': {'POSITIVE': 1.0, 'NEGATIVE': 0.0}}
-        nlp = Language(Vocab())
-        doc = nlp(text)
-        nlp.add_pipe(pipe)
-        with self.assertRaises(TypeError):
-            nlp.evaluate([(doc, annots)])
+        initializer = initializers.normal
+        init = initializer(seed=34)
+        samples = [init((2, 2)) for _ in range(2)]
+        samples = [backend.get_value(backend.variable(x)) for x in samples]
+        assert numpy.mean(numpy.abs(samples[0] - samples[1])) == 0.0
 
     def test_diversity_5(self):
-        def pipe(doc):
-            return doc
-
-        text = 'sJkVeiHxIS'
-        annots = {'cats': {'POSITIVE': 1.0, 'NEGATIVE': 0.0}}
-        nlp = Language(Vocab())
-        doc = nlp(text)
-        nlp.add_pipe(pipe)
-        with self.assertRaises(TypeError):
-            nlp.evaluate([(doc, annots)])
+        initializer = initializers.truncated_normal
+        init = initializer(seed=1508)
+        samples = [init((2, 2)) for _ in range(2)]
+        samples = [backend.get_value(backend.variable(x)) for x in samples]
+        assert numpy.mean(numpy.abs(samples[0] - samples[1])) == 0.0
 
     def test_diversity_6(self):
-        def pipe(doc):
-            return doc
-
-        text = 'QbSlPMGZcwmBz'
-        annots = {'cats': {'POSITIVE': 1.0, 'NEGATIVE': 0.0}}
-        nlp = Language(Vocab())
-        doc = nlp(text)
-        nlp.add_pipe(pipe)
-        with self.assertRaises(TypeError):
-            nlp.evaluate([(doc, annots)])
+        initializer = initializers.truncated_normal
+        init = initializer(seed=1498)
+        samples = [init((2, 2)) for _ in range(2)]
+        samples = [backend.get_value(backend.variable(x)) for x in samples]
+        assert numpy.mean(numpy.abs(samples[0] - samples[1])) == 0.0
 
     def test_diversity_7(self):
-        def pipe(doc):
-            return doc
-
-        text = 'XbIFBeOeTIT'
-        annots = {'cats': {'POSITIVE': 1.0, 'NEGATIVE': 0.0}}
-        nlp = Language(Vocab())
-        doc = nlp(text)
-        nlp.add_pipe(pipe)
-        with self.assertRaises(TypeError):
-            nlp.evaluate([(doc, annots)])
+        initializer = initializers.truncated_normal
+        init = initializer(seed=1112)
+        samples = [init((2, 2)) for _ in range(2)]
+        samples = [backend.get_value(backend.variable(x)) for x in samples]
+        assert numpy.mean(numpy.abs(samples[0] - samples[1])) == 0.0
 
     def test_diversity_8(self):
-        def pipe(doc):
-            return doc
-
-        text = 'BGKrAH'
-        annots = {'cats': {'POSITIVE': 1.0, 'NEGATIVE': 0.0}}
-        nlp = Language(Vocab())
-        doc = nlp(text)
-        nlp.add_pipe(pipe)
-        with self.assertRaises(TypeError):
-            nlp.evaluate([(doc, annots)])
+        initializer = initializers.orthogonal
+        init = initializer(seed=229)
+        samples = [init((2, 2)) for _ in range(2)]
+        samples = [backend.get_value(backend.variable(x)) for x in samples]
+        assert numpy.mean(numpy.abs(samples[0] - samples[1])) == 0.0
 
     def test_diversity_9(self):
-        def pipe(doc):
-            return doc
-
-        text = 'IblRBuUzDFOA'
-        annots = {'cats': {'POSITIVE': 1.0, 'NEGATIVE': 0.0}}
-        nlp = Language(Vocab())
-        doc = nlp(text)
-        nlp.add_pipe(pipe)
-        with self.assertRaises(TypeError):
-            nlp.evaluate([(doc, annots)])
+        initializer = initializers.orthogonal
+        init = initializer(seed=732)
+        samples = [init((2, 2)) for _ in range(2)]
+        samples = [backend.get_value(backend.variable(x)) for x in samples]
+        assert numpy.mean(numpy.abs(samples[0] - samples[1])) == 0.0
 
     def test_diversity_10(self):
-        def pipe(doc):
-            return doc
-
-        text = 'AZbwuVEqvS'
-        annots = {'cats': {'POSITIVE': 1.0, 'NEGATIVE': 0.0}}
-        nlp = Language(Vocab())
-        doc = nlp(text)
-        nlp.add_pipe(pipe)
-        with self.assertRaises(TypeError):
-            nlp.evaluate([(doc, annots)])
+        initializer = initializers.normal
+        init = initializer(seed=1092)
+        samples = [init((2, 2)) for _ in range(2)]
+        samples = [backend.get_value(backend.variable(x)) for x in samples]
+        assert numpy.mean(numpy.abs(samples[0] - samples[1])) == 0.0

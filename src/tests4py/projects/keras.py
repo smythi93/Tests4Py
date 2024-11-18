@@ -4,7 +4,7 @@ import os.path
 import random
 import string
 import subprocess
-from _ast import Call, ImportFrom, Assign, Expr, Assert, Module, ClassDef, With
+from _ast import Call, ImportFrom
 from pathlib import Path
 from typing import List, Optional, Tuple, Any, Callable
 from tests4py.constants import PYTHON
@@ -887,8 +887,13 @@ class KerasAPI1(API):
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
         expected = process.args[2]
+        expected = expected[1:]
+        expected = expected[:-1]
         result = process.stdout.decode("utf8")
         result = result.strip()
+        print("ex ", expected)
+        print("res ", result)
+        print(args)
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -979,10 +984,12 @@ class KerasTestGenerator:
 
     @staticmethod
     def spacy1_generate():
-        initializer_id = random.choice(['orthogonal', 'uniform', 'normal', 'truncated_normal'])
+        initializer_id = random.choice(['orthogonal', 'uniform', 'normal', 'truncated_normal', "VarianceScaling"])
+        # Ast greater, lesser or equal
+        greater_or_lesser = random.choice([ast.Gt(), ast.Lt()])
         seed_value = random.randint(0, 2000)
-        passing = initializer_id, seed_value
-        failing = initializer_id, seed_value
+        passing = initializer_id, seed_value, ast.Eq()
+        failing = initializer_id, seed_value, greater_or_lesser
         return passing, failing
 
     @staticmethod
@@ -1014,9 +1021,9 @@ class KerasUnittestGenerator1(
         return self.generate_values(self.spacy1_generate)
 
     @staticmethod
-    def _get_assert(initializer_id: str, random_seed: int
+    def _get_assert(initializer_id: str, random_seed: int, comparison: Any
                     ) -> list[Call]:
-        return [
+        return[
             ast.Assign(
                 targets=[ast.Name(id="initializer")],
                 value=ast.Attribute(
@@ -1040,7 +1047,7 @@ class KerasUnittestGenerator1(
                 value=ast.ListComp(
                     elt=ast.Call(
                         func=ast.Name(id="init"),
-                        args=[ast.Tuple(elts=[ast.Constant(value=1), ast.Constant(value=1)])],
+                        args=[ast.Tuple(elts=[ast.Constant(value=2), ast.Constant(value=2)])],
                         keywords=[],
                     ),
                     generators=[ast.comprehension(
@@ -1113,12 +1120,120 @@ class KerasUnittestGenerator1(
                         ],
                         keywords=[],
                     ),
-                    ops=[ast.Gt()],
+                    ops=[comparison],
                     comparators=[ast.Constant(value=0.0)],
                 ),
                 msg=None,
                 lineno=4,
             )
+        ]
+
+    @staticmethod
+    def _get_assert2(initializer_id: str, random_seed: int, compare_operator: Any
+                    ) -> list[Call]:
+        return[
+            ast.Assign(
+                targets=[ast.Name(id="initializer")],
+                value=ast.Attribute(
+                    value=ast.Name(id="initializers"),
+                    attr=initializer_id,
+                    keywords=[ast.keyword(arg="seed", value=ast.Constant(value=random_seed))]
+                ),
+                lineno=1,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="init")],
+                value=ast.Call(
+                    func=ast.Name(id="initializer"),
+                    args=[ast.keyword(arg="seed", value=ast.Constant(value=random_seed))],
+                    keywords=[],
+                ),
+                lineno=1,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="samples")],
+                value=ast.ListComp(
+                    elt=ast.Call(
+                        func=ast.Name(id="init"),
+                        args=[ast.Tuple(elts=[ast.Constant(value=2), ast.Constant(value=2)])],
+                        keywords=[],
+                    ),
+                    generators=[ast.comprehension(
+                        target=ast.Name(id="_"),
+                        iter=ast.Call(func=ast.Name(id="range"), args=[ast.Constant(value=2)],
+                                      keywords=[]),
+                        ifs=[],
+                        is_async=0,
+                    )],
+                ),
+                lineno=2,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="samples")],
+                value=ast.ListComp(
+                    elt=ast.Call(
+                        func=ast.Attribute(
+                            value=ast.Name(id="backend"),
+                            attr="get_value",
+                        ),
+                        args=[
+                            ast.Call(
+                                func=ast.Attribute(
+                                    value=ast.Name(id="backend"),
+                                    attr="variable",
+                                ),
+                                args=[ast.Name(id="x")],
+                                keywords=[],
+                            )
+                        ],
+                        keywords=[],
+                    ),
+                    generators=[ast.comprehension(
+                        target=ast.Name(id="x"),
+                        iter=ast.Name(id="samples"),
+                        ifs=[],
+                        is_async=0,
+                    )],
+                ),
+                lineno=3,
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Call(
+                        func=ast.Attribute(
+                            value=ast.Name(id="numpy"),
+                            attr="mean",
+                        ),
+                        args=[
+                            ast.Call(
+                                func=ast.Attribute(
+                                    value=ast.Name(id="numpy"),
+                                    attr="abs",
+                                ),
+                                args=[
+                                    ast.BinOp(
+                                        left=ast.Subscript(
+                                            value=ast.Name(id="samples"),
+                                            slice=ast.Constant(value=0),
+                                        ),
+                                        op=ast.Sub(),
+                                        right=ast.Subscript(
+                                            value=ast.Name(id="samples"),
+                                            slice=ast.Constant(value=1),
+                                        ),
+                                    )
+                                ],
+                                keywords=[],
+                            )
+                        ],
+                        keywords=[],
+                    ),
+                    ops=[compare_operator],
+                    comparators=[ast.Constant(value=0.0)],
+                ),
+                msg=None,
+                lineno=4,
+            ),
         ]
 
     def get_imports(self) -> list[ImportFrom]:
@@ -1142,16 +1257,16 @@ class KerasUnittestGenerator1(
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
-        initializer_id, seed_value = fail_
+        initializer_id, seed_value, comparison = fail_
         test = self.get_empty_test()
-        test.body = self._get_assert(initializer_id, seed_value)
+        test.body = self._get_assert2(initializer_id, seed_value, comparison)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
-        initializer_id, seed_value = pass_
+        initializer_id, seed_value, comparison = pass_
         test = self.get_empty_test()
-        test.body = self._get_assert(initializer_id, seed_value)
+        test.body = self._get_assert(initializer_id, seed_value, comparison)
         return test, TestResult.PASSING
 
 
