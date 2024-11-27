@@ -1712,19 +1712,387 @@ class KerasUnittestGenerator3(
     @staticmethod
     def _get_assert() -> list[Call]:
         return [
+            ast.Assign(
+                targets=[ast.Name(id="input_layer")],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id="keras"),
+                        attr="Input",
 
+                    ),
+                    args=[],
+                    keywords=[
+                        ast.keyword(arg="shape", value=ast.Tuple(
+                            elts=[ast.Constant(value=4)],
+
+                        ))
+                    ],
+                ),
+                lineno=1
+
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="layer1")],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Attribute(value=ast.Name(id="keras"), attr="layers"),
+                        attr="Lambda"
+                    ),
+                    args=[
+                        ast.Lambda(
+                            args=ast.arguments(
+                                args=[ast.arg(arg="x", annotation=None)],
+                                vararg=None,
+                                kwonlyargs=[],
+                                posonlyargs=[],
+                                kw_defaults=[],
+                                kwarg=None,
+                                defaults=[]
+                            ),
+                            body=ast.List(
+                                elts=[
+                                    ast.BinOp(left=ast.Name(id="x"), op=ast.Add(),
+                                              right=ast.Constant(value=1)),
+                                    ast.Name(id="x")
+                                ]
+                            )
+                        ),
+                        ast.Lambda(
+                            args=ast.arguments(
+                                args=[ast.arg(arg="shapes", annotation=None)],
+                                vararg=None,
+                                kwonlyargs=[],
+                                posonlyargs=[],
+                                kw_defaults=[],
+                                kwarg=None,
+                                defaults=[]
+                            ),
+                            body=ast.List(elts=[ast.Name(id="shapes"), ast.Name(id="shapes")])
+                        )
+                    ],
+                    keywords=[]
+                ),
+                lineno=1
+            ),
+            ast.Assign(
+                targets=[
+                    ast.Tuple(
+                        elts=[ast.Name(id="x_a"), ast.Name(id="x_b")],
+
+                    )
+                ],
+                value=ast.Call(
+                    func=ast.Name(id="layer1"),
+                    args=[ast.Name(id="input_layer")],
+                    keywords=[]
+                ),
+                lineno=2
+            ),
+            ast.ClassDef(
+                name="SwapLayer",
+                bases=[ast.Attribute(value=ast.Attribute(value=ast.Name(id="keras"), attr="layers"), attr="Layer")],
+                keywords=[],
+                body=[
+                    ast.FunctionDef(
+                        name="call",
+                        args=ast.arguments(
+                            args=[
+                                ast.arg(arg="self", annotation=None),
+                                ast.arg(arg="inputs", annotation=None),
+                                ast.arg(arg="**kwargs", annotation=None)
+                            ],
+                            vararg=None,
+                            kwonlyargs=[],
+                            posonlyargs=[],
+                            kw_defaults=[],
+                            kwarg=None,
+                            defaults=[]
+                        ),
+                        body=[
+                            ast.Return(
+                                value=ast.List(
+                                    elts=[
+                                        ast.Subscript(
+                                            value=ast.Name(id="inputs"),
+                                            slice=ast.Index(value=ast.Constant(value=1)),
+
+                                        ),
+                                        ast.Subscript(
+                                            value=ast.Name(id="inputs"),
+                                            slice=ast.Index(value=ast.Constant(value=0)),
+
+                                        )
+                                    ]
+                                )
+                            )
+                        ],
+                        decorator_list=[],
+                        lineno=4
+
+                    ),
+                    ast.FunctionDef(
+                        name="compute_output_shape",
+                        args=ast.arguments(
+                            args=[
+                                ast.arg(arg="self", annotation=None),
+                                ast.arg(arg="input_shape", annotation=None)
+                            ],
+                            vararg=None,
+                            kwonlyargs=[],
+                            posonlyargs=[],
+                            kw_defaults=[],
+                            kwarg=None,
+                            defaults=[]
+                        ),
+                        body=[
+                            ast.Return(
+                                value=ast.List(
+                                    elts=[
+                                        ast.Subscript(
+                                            value=ast.Name(id="input_shape"),
+                                            slice=ast.Index(value=ast.Constant(value=1)),
+
+                                        ),
+                                        ast.Subscript(
+                                            value=ast.Name(id="input_shape"),
+                                            slice=ast.Index(value=ast.Constant(value=0)),
+
+                                        )
+                                    ]
+                                )
+                            )
+                        ],
+                        decorator_list=[],
+                        lineno=4
+
+                    ),
+                    ast.FunctionDef(
+                        name="get_config",
+                        args=ast.arguments(
+                            args=[ast.arg(arg="self", annotation=None),],
+                            vararg=None,
+                            kwonlyargs=[],
+                            posonlyargs=[],
+                            kw_defaults=[],
+                            kwarg=None,
+                            defaults=[]
+                        ),
+                        body=[
+                            ast.Assign(
+                                targets=[ast.Name(id="base_config")],
+                                value=ast.Call(
+                                    func=ast.Attribute(
+                                        value=ast.Call(
+                                            func=ast.Name(id="super"),
+                                            args=[
+                                                ast.Name(id="SwapLayer"),
+                                                ast.Name(id="self")
+                                            ],
+                                            keywords=[]
+                                        ),
+                                        attr="get_config",
+
+                                    ),
+                                    args=[],
+                                    keywords=[]
+                                ),
+                                lineno=1
+
+                            ),
+                            ast.Return(
+                                value=ast.Name(id="base_config")
+                            )
+                        ],
+                        decorator_list=[],
+                        returns=None,
+                        lineno=1
+                    )
+                ],
+                decorator_list=[]
+            ),
+            ast.Assign(
+                targets=[
+                    ast.Tuple(
+                        elts=[ast.Name(id="x_a"), ast.Name(id="x_b")],
+
+                    )
+                ],
+                value=ast.Call(
+                    func=ast.Call(
+                        func=ast.Name(id="SwapLayer"),
+                        args=[],
+                        keywords=[]
+                    ),
+                    args=[
+                        ast.List(
+                            elts=[
+                                ast.Name(id="x_a"),
+                                ast.Name(id="x_b")
+                            ],
+
+                        )
+                    ],
+                    keywords=[]
+                ),
+                lineno=1
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="model")],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id="keras"),
+                        attr="Model",
+                    ),
+                    args=[],
+                    keywords=[
+                        ast.keyword(
+                            arg="inputs",
+                            value=ast.List(
+                                elts=[ast.Name(id="input_layer")],
+
+                            )
+                        ),
+                        ast.keyword(
+                            arg="outputs",
+                            value=ast.List(
+                                elts=[ast.Name(id="x_a"), ast.Name(id="x_b")],
+
+                            )
+                        )
+                    ]
+                ),
+                lineno=2
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="new_model")],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Attribute(value=ast.Name(id="keras"), attr="models"),
+                        attr="clone_model",
+
+                    ),
+                    args=[ast.Name(id="model")],
+                    keywords=[]
+                ),
+                lineno=3
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="x_test")],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Attribute(value=ast.Name(id="np"), attr="random"),
+                        attr="random",
+
+                    ),
+                    args=[ast.Tuple(elts=[ast.Constant(value=10), ast.Constant(value=4)])],
+                    keywords=[]
+                ),
+                lineno=4
+            ),
+            ast.Assign(
+                targets=[
+                    ast.Tuple(
+                        elts=[ast.Name(id="pred_a"), ast.Name(id="pred_b")],
+
+                    )
+                ],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="model"), attr="predict"),
+                    args=[ast.Name(id="x_test")],
+                    keywords=[]
+                ),
+                lineno=5
+            ),
+            ast.Assign(
+                targets=[
+                    ast.Tuple(
+                        elts=[ast.Name(id="pred_new_a"), ast.Name(id="pred_new_b")],
+
+                    )
+                ],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="new_model"), attr="predict"),
+                    args=[ast.Name(id="x_test")],
+                    keywords=[]
+                ),
+                lineno=6
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Name(id="assert"),
+                    args=[
+                        ast.Compare(
+                            left=ast.Call(
+                                func=ast.Attribute(
+                                    value=ast.Name(id="pred_a"),
+                                    attr="all",
+
+                                ),
+                                args=[],
+                                keywords=[]
+                            ),
+                            ops=[ast.Eq()],
+                            comparators=[
+                                ast.Call(
+                                    func=ast.Attribute(
+                                        value=ast.Name(id="pred_new_a"),
+                                        attr="all",
+
+                                    ),
+                                    args=[],
+                                    keywords=[]
+                                )
+                            ]
+                        )
+                    ],
+                    keywords=[]
+                ),
+                lineno=7
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Name(id="assert"),
+                    args=[
+                        ast.Compare(
+                            left=ast.Call(
+                                func=ast.Attribute(
+                                    value=ast.Name(id="pred_b"),
+                                    attr="all",
+
+                                ),
+                                args=[],
+                                keywords=[]
+                            ),
+                            ops=[ast.Eq()],
+                            comparators=[
+                                ast.Call(
+                                    func=ast.Attribute(
+                                        value=ast.Name(id="pred_new_b"),
+                                        attr="all",
+
+                                    ),
+                                    args=[],
+                                    keywords=[]
+                                )
+                            ]
+                        )
+                    ],
+                    keywords=[]
+                ),
+                lineno=8
+            )
         ]
 
     def get_imports(self) -> list[ImportFrom]:
         return [
             ast.Import(
                 module="numpy",
-                names=[ast.alias(name="numpy")],
+                names=[ast.alias(name="numpy", asname="np")],
                 level=0,
             ),
-            ast.ImportFrom(
+            ast.Import(
                 module="keras",
-                names=[ast.alias(name="backend")],
+                names=[ast.alias(name="keras")],
                 level=0,
             ),
             ast.ImportFrom(
