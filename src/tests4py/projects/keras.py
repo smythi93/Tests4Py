@@ -209,6 +209,9 @@ def register():
         test_cases=[
             os.path.join("tests", "test_loss_masking.py::test_masking_is_all_zeros")
         ],
+        api=KerasAPI6(),
+        unittests=KerasUnittestGenerator6(),
+        systemtests=KerasSystemtestGenerator6(),
         loc=22060,
     )
     Keras(
@@ -225,6 +228,9 @@ def register():
             )
         ],
         test_status_fixed=TestStatus.FAILING,
+        api=KerasAPI7(),
+        unittests=KerasUnittestGenerator7(),
+        systemtests=KerasSystemtestGenerator7(),
         loc=21990,
     )
     Keras(
@@ -244,6 +250,9 @@ def register():
             "test_recursion",
             "test_constant_initializer_with_numpy",
         ],
+        api=KerasAPI8(),
+        unittests=KerasUnittestGenerator8(),
+        systemtests=KerasSystemtestGenerator8(),
         loc=22427,
     )
     Keras(
@@ -258,6 +267,9 @@ def register():
                 "tests", "test_doc_auto_generation.py::test_doc_lists[docs_descriptor1]"
             ),
         ],
+        api=KerasAPI9(),
+        unittests=KerasUnittestGenerator9(),
+        systemtests=KerasSystemtestGenerator9(),
         loc=22278,
     )
     Keras(
@@ -270,6 +282,9 @@ def register():
                 "tests", "keras", "engine", "test_training.py::test_sample_weights"
             )
         ],
+        api=KerasAPI10(),
+        unittests=KerasUnittestGenerator10(),
+        systemtests=KerasSystemtestGenerator10(),
         loc=22083,
     )
     Keras(
@@ -973,6 +988,116 @@ class KerasAPI5(API):
             return TestResult.FAILING, f"Expected {expected}, but was {result}"
 
 
+class KerasAPI6(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        expected = expected[1:]
+        expected = expected[:-1]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        print("ex ", expected)
+        print("res ", result)
+        print(args)
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class KerasAPI7(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        expected = expected[1:]
+        expected = expected[:-1]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        print("ex ", expected)
+        print("res ", result)
+        print(args)
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class KerasAPI8(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        expected = expected[1:]
+        expected = expected[:-1]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        print("ex ", expected)
+        print("res ", result)
+        print(args)
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class KerasAPI9(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        expected = expected[1:]
+        expected = expected[:-1]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        print("ex ", expected)
+        print("res ", result)
+        print(args)
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class KerasAPI10(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        expected = expected[1:]
+        expected = expected[:-1]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        print("ex ", expected)
+        print("res ", result)
+        print(args)
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
 class KerasTestGenerator:
     @staticmethod
     def generate_values(producer: Callable) -> str:
@@ -1023,7 +1148,7 @@ class KerasUnittestGenerator1(
     @staticmethod
     def _get_assert(initializer_id: str, random_seed: int, comparison: Any
                     ) -> list[Call]:
-        return[
+        return [
             ast.Assign(
                 targets=[ast.Name(id="initializer")],
                 value=ast.Attribute(
@@ -1130,8 +1255,8 @@ class KerasUnittestGenerator1(
 
     @staticmethod
     def _get_assert2(initializer_id: str, random_seed: int, compare_operator: Any
-                    ) -> list[Call]:
-        return[
+                     ) -> list[Call]:
+        return [
             ast.Assign(
                 targets=[ast.Name(id="initializer")],
                 value=ast.Attribute(
@@ -1293,7 +1418,7 @@ class KerasUnittestGenerator2(
             ),
             ast.Assign(
                 targets=[ast.Name(id="WITH_NP")],
-                value=ast.List(elts=[ast.Name(id="KC"),
+                value=ast.List(elts=[ast.Constant(value=None),
                                      ast.Name(id="KNP")]),
                 lineno=3,
             ),
@@ -1449,7 +1574,6 @@ class KerasUnittestGenerator2(
                                 ],
                                 orelse=[]
                             ),
-
                             ast.If(
                                 test=ast.Constant(value=False),
                                 body=[
@@ -1671,11 +1795,11 @@ class KerasUnittestGenerator2(
                 names=[ast.alias(name="numpy")],
                 level=0,
             ),
-            ast.ImportFrom(
-                module="keras.backend",
-                names=[ast.alias(name="cntk_backend", asname="KC")],
-                level=0,
-            ),
+            # ast.ImportFrom(
+            #     module="keras.backend",
+            #     names=[ast.alias(name="cntk_backend", asname="KC")],
+            #     level=0,
+            # ),
             ast.ImportFrom(
                 module="keras.backend",
                 names=[ast.alias(name="numpy_backend", asname="KNP")],
@@ -1869,7 +1993,7 @@ class KerasUnittestGenerator3(
                     ast.FunctionDef(
                         name="get_config",
                         args=ast.arguments(
-                            args=[ast.arg(arg="self", annotation=None),],
+                            args=[ast.arg(arg="self", annotation=None), ],
                             vararg=None,
                             kwonlyargs=[],
                             posonlyargs=[],
@@ -2126,24 +2250,215 @@ class KerasUnittestGenerator4(
     @staticmethod
     def _get_assert() -> list[Call]:
         return [
-
+            ast.ClassDef(
+                name="MyTfOptimizer",
+                bases=[ast.Attribute(value=ast.Name(id="train"), attr="Optimizer")],
+                keywords=[],
+                body=[
+                    ast.Assign(
+                        targets=[ast.Name(id="wrapping_optimizer")],
+                        value=ast.Call(
+                            func=ast.Attribute(value=ast.Name(id="train"), attr="AdamOptimizer"),
+                            args=[],
+                            keywords=[]
+                        ),
+                        lineno=1
+                    ),
+                    ast.FunctionDef(
+                        name="compute_gradients",
+                        args=ast.arguments(
+                            posonlyargs=[],
+                            args=[
+                                ast.arg(arg="self"),
+                                ast.arg(arg="loss"),
+                            ],
+                            vararg=None,
+                            kwonlyargs=[],
+                            kw_defaults=[],
+                            kwarg=ast.arg(arg="kwargs"),
+                            defaults=[]
+                        ),
+                        body=[
+                            ast.Return(
+                                value=ast.Call(
+                                    func=ast.Attribute(
+                                        value=ast.Call(
+                                            func=ast.Name(id="super"),
+                                            args=[
+                                                ast.Name(id="MyTfOptimizer"),
+                                                ast.Name(id="self")
+                                            ],
+                                            keywords=[]
+                                        ),
+                                        attr="compute_gradients"
+                                    ),
+                                    args=[ast.Name(id="loss")],
+                                    keywords=[ast.keyword(arg=None, value=ast.Name(id="kwargs"))]
+                                )
+                            )
+                        ],
+                        decorator_list=[],
+                        lineno=2
+                    ),
+                    ast.FunctionDef(
+                        name="apply_gradients",
+                        args=ast.arguments(
+                            posonlyargs=[],
+                            args=[
+                                ast.arg(arg="self"),
+                                ast.arg(arg="grads_and_vars"),
+                            ],
+                            vararg=None,
+                            kwonlyargs=[],
+                            kw_defaults=[],
+                            kwarg=ast.arg(arg="kwargs"),
+                            defaults=[]
+                        ),
+                        body=[
+                            ast.Return(
+                                value=ast.Call(
+                                    func=ast.Attribute(
+                                        value=ast.Attribute(value=ast.Name(id="self"), attr="wrapping_optimizer"),
+                                        attr="apply_gradients"
+                                    ),
+                                    args=[ast.Name(id="grads_and_vars")],
+                                    keywords=[ast.keyword(arg=None, value=ast.Name(id="kwargs"))]
+                                )
+                            )
+                        ],
+                        decorator_list=[],
+                        lineno=3
+                    )
+                ],
+                decorator_list=[],
+                lineno=1
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="my_tf_optimizer")],
+                value=ast.Call(
+                    func=ast.Name(id="MyTfOptimizer"),
+                    args=[],
+                    keywords=[
+                        ast.keyword(arg="use_locking", value=ast.Constant(value=False)),
+                        ast.keyword(arg="name", value=ast.Constant(value="MyTfOptimizer"))
+                    ]
+                ),
+                lineno=4
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="optimizer")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="optimizers"), attr="TFOptimizer"),
+                    args=[ast.Name(id="my_tf_optimizer")],
+                    keywords=[]
+                ),
+                lineno=5
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="model")],
+                value=ast.Call(
+                    func=ast.Name(id="Sequential"),
+                    args=[],
+                    keywords=[]
+                ),
+                lineno=6
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="model"), attr="add"),
+                    args=[
+                        ast.Call(
+                            func=ast.Name(id="Dense"),
+                            args=[
+                                ast.Constant(value=2)
+                            ],
+                            keywords=[
+                                ast.keyword(arg="input_shape", value=ast.Tuple(elts=[ast.Constant(value=3)])),
+                                ast.keyword(arg="kernel_constraint",
+                                            value=ast.Call(
+                                                func=ast.Attribute(value=ast.Name(id="constraints"), attr="MaxNorm"),
+                                                args=[ast.Constant(value=1)],
+                                                keywords=[]
+                                            ))
+                            ]
+                        )
+                    ],
+                    keywords=[]
+                ),
+                lineno=7
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="model"), attr="compile"),
+                    args=[],
+                    keywords=[
+                        ast.keyword(arg="loss", value=ast.Constant(value="mean_squared_error")),
+                        ast.keyword(arg="optimizer", value=ast.Name(id="optimizer"))
+                    ]
+                ),
+                lineno=8
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="model"), attr="fit"),
+                    args=[
+                        ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Attribute(value=ast.Name(id="np"), attr="random"),
+                                attr="random"
+                            ),
+                            args=[ast.Tuple(elts=[ast.Constant(value=5), ast.Constant(value=3)])],
+                            keywords=[]
+                        ),
+                        ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Attribute(value=ast.Name(id="np"), attr="random"),
+                                attr="random"
+                            ),
+                            args=[ast.Tuple(elts=[ast.Constant(value=5), ast.Constant(value=2)])],
+                            keywords=[]
+                        ),
+                    ],
+                    keywords=[
+                        ast.keyword(arg="epochs", value=ast.Constant(value=1)),
+                        ast.keyword(arg="batch_size", value=ast.Constant(value=5)),
+                        ast.keyword(arg="verbose", value=ast.Constant(value=0))
+                    ]
+                ),
+                lineno=9
+            )
         ]
 
     def get_imports(self) -> list[ImportFrom]:
         return [
             ast.Import(
                 module="numpy",
-                names=[ast.alias(name="numpy")],
+                names=[ast.alias(name="numpy", asname="np")],
                 level=0,
             ),
             ast.ImportFrom(
                 module="keras",
-                names=[ast.alias(name="backend")],
+                names=[ast.alias(name="constraints")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="tensorflow",
+                names=[ast.alias(name="train")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras.models",
+                names=[ast.alias(name="Sequential")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras.layers.core",
+                names=[ast.alias(name="Dense")],
                 level=0,
             ),
             ast.ImportFrom(
                 module="keras",
-                names=[ast.alias(name="initializers")],
+                names=[ast.alias(name="optimizers")],
                 level=0,
             )
         ]
@@ -2601,6 +2916,306 @@ class KerasUnittestGenerator5(
         return test, TestResult.PASSING
 
 
+class KerasUnittestGenerator6(
+    python.PythonGenerator, UnittestGenerator, KerasTestGenerator
+):
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.spacy6_generate)
+
+    @staticmethod
+    def _get_assert() -> list[Call]:
+        return [
+        ]
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            ast.Import(
+                module="numpy",
+                names=[ast.alias(name="numpy", asname="np")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras",
+                names=[ast.alias(name="constraints")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="tensorflow",
+                names=[ast.alias(name="train")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras.models",
+                names=[ast.alias(name="Sequential")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras.layers.core",
+                names=[ast.alias(name="Dense")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras",
+                names=[ast.alias(name="optimizers")],
+                level=0,
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        _, fail_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_, _ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.PASSING
+
+
+class KerasUnittestGenerator7(
+    python.PythonGenerator, UnittestGenerator, KerasTestGenerator
+):
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.spacy7_generate)
+
+    @staticmethod
+    def _get_assert() -> list[Call]:
+        return [
+        ]
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            ast.Import(
+                module="numpy",
+                names=[ast.alias(name="numpy", asname="np")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras",
+                names=[ast.alias(name="constraints")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="tensorflow",
+                names=[ast.alias(name="train")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras.models",
+                names=[ast.alias(name="Sequential")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras.layers.core",
+                names=[ast.alias(name="Dense")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras",
+                names=[ast.alias(name="optimizers")],
+                level=0,
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        _, fail_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_, _ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.PASSING
+
+
+class KerasUnittestGenerator8(
+    python.PythonGenerator, UnittestGenerator, KerasTestGenerator
+):
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.spacy8_generate)
+
+    @staticmethod
+    def _get_assert() -> list[Call]:
+        return [
+        ]
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            ast.Import(
+                module="numpy",
+                names=[ast.alias(name="numpy", asname="np")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras",
+                names=[ast.alias(name="constraints")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="tensorflow",
+                names=[ast.alias(name="train")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras.models",
+                names=[ast.alias(name="Sequential")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras.layers.core",
+                names=[ast.alias(name="Dense")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras",
+                names=[ast.alias(name="optimizers")],
+                level=0,
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        _, fail_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_, _ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.PASSING
+
+
+class KerasUnittestGenerator9(
+    python.PythonGenerator, UnittestGenerator, KerasTestGenerator
+):
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.spacy9_generate)
+
+    @staticmethod
+    def _get_assert() -> list[Call]:
+        return [
+        ]
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            ast.Import(
+                module="numpy",
+                names=[ast.alias(name="numpy", asname="np")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras",
+                names=[ast.alias(name="constraints")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="tensorflow",
+                names=[ast.alias(name="train")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras.models",
+                names=[ast.alias(name="Sequential")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras.layers.core",
+                names=[ast.alias(name="Dense")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras",
+                names=[ast.alias(name="optimizers")],
+                level=0,
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        _, fail_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_, _ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.PASSING
+
+
+class KerasUnittestGenerator10(
+    python.PythonGenerator, UnittestGenerator, KerasTestGenerator
+):
+    def _generate_one(
+            self,
+    ) -> str:
+        return self.generate_values(self.spacy10_generate)
+
+    @staticmethod
+    def _get_assert() -> list[Call]:
+        return [
+        ]
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            ast.Import(
+                module="numpy",
+                names=[ast.alias(name="numpy", asname="np")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras",
+                names=[ast.alias(name="constraints")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="tensorflow",
+                names=[ast.alias(name="train")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras.models",
+                names=[ast.alias(name="Sequential")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras.layers.core",
+                names=[ast.alias(name="Dense")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras",
+                names=[ast.alias(name="optimizers")],
+                level=0,
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        _, fail_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_, _ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.PASSING
+
+
 class KerasSystemtestGenerator1(SystemtestGenerator, KerasTestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
         _, fail_ = self.generate_values(self.spacy1_generate)
@@ -2648,6 +3263,56 @@ class KerasSystemtestGenerator5(SystemtestGenerator, KerasTestGenerator):
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
         pass_, _ = self.generate_values(self.spacy5_generate)
+        return f"{pass_}", TestResult.PASSING
+
+
+class KerasSystemtestGenerator6(SystemtestGenerator, KerasTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.spacy6_generate)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.spacy6_generate)
+        return f"{pass_}", TestResult.PASSING
+
+
+class KerasSystemtestGenerator7(SystemtestGenerator, KerasTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.spacy7_generate)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.spacy7_generate)
+        return f"{pass_}", TestResult.PASSING
+
+
+class KerasSystemtestGenerator8(SystemtestGenerator, KerasTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.spacy8_generate)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.spacy8_generate)
+        return f"{pass_}", TestResult.PASSING
+
+
+class KerasSystemtestGenerator9(SystemtestGenerator, KerasTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.spacy9_generate)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.spacy9_generate)
+        return f"{pass_}", TestResult.PASSING
+
+
+class KerasSystemtestGenerator10(SystemtestGenerator, KerasTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.spacy10_generate)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.spacy10_generate)
         return f"{pass_}", TestResult.PASSING
 
 
