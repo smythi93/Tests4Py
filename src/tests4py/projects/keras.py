@@ -1136,6 +1136,30 @@ class KerasTestGenerator:
         failing = randomise, ".keras"
         return passing, failing
 
+    @staticmethod
+    def spacy6_generate():
+        value1 = random.randint(0, 999)
+        value2 = random.randint(0, 999)
+        passing = value1, value2, 0
+        failing = value1, value2, 1
+        return passing, failing
+
+    @staticmethod
+    def spacy7_generate():
+        return "", ""
+
+    @staticmethod
+    def spacy8_generate():
+        return "", ""
+
+    @staticmethod
+    def spacy9_generate():
+        return "", ""
+
+    @staticmethod
+    def spacy10_generate():
+        return "", ""
+
 
 class KerasUnittestGenerator1(
     python.PythonGenerator, UnittestGenerator, KerasTestGenerator
@@ -1418,7 +1442,7 @@ class KerasUnittestGenerator2(
             ),
             ast.Assign(
                 targets=[ast.Name(id="WITH_NP")],
-                value=ast.List(elts=[ast.Constant(value=None),
+                value=ast.List(elts=[ast.Name(id="KTF"),
                                      ast.Name(id="KNP")]),
                 lineno=3,
             ),
@@ -1795,11 +1819,11 @@ class KerasUnittestGenerator2(
                 names=[ast.alias(name="numpy")],
                 level=0,
             ),
-            # ast.ImportFrom(
-            #     module="keras.backend",
-            #     names=[ast.alias(name="cntk_backend", asname="KC")],
-            #     level=0,
-            # ),
+            ast.ImportFrom(
+                module="keras.backend",
+                names=[ast.alias(name="tensorflow_backend", asname="KTF")],
+                level=0,
+            ),
             ast.ImportFrom(
                 module="keras.backend",
                 names=[ast.alias(name="numpy_backend", asname="KNP")],
@@ -2925,54 +2949,169 @@ class KerasUnittestGenerator6(
         return self.generate_values(self.spacy6_generate)
 
     @staticmethod
-    def _get_assert() -> list[Call]:
+    def _get_assert(value1: int, value2: int, loss: int) -> list[Call]:
         return [
+            ast.Assign(
+                targets=[
+                    ast.Name(id="x"),
+                    ast.Name(id="y"),
+                ],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id="np"),
+                        attr="array"
+                    ),
+                    args=[
+                        ast.List(
+                            elts=[
+                                ast.List(
+                                    elts=[
+                                        ast.List(elts=[ast.Constant(value=value1)]),
+                                        ast.List(elts=[ast.Constant(value=value2)])
+                                    ]
+                                )
+                            ]
+                        )
+                    ],
+                    keywords=[]
+                ),
+                lineno=1
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="model")],
+                value=ast.Call(
+                    func=ast.Name(id="Sequential"),
+                    args=[],
+                    keywords=[]
+                ),
+                lineno=1
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id="model"),
+                        attr="add"
+                    ),
+                    args=[
+                        ast.Call(
+                            func=ast.Name(id="Masking"),
+                            args=[],
+                            keywords=[
+                                ast.keyword(arg="mask_value", value=ast.Constant(value=0)),
+                                ast.keyword(
+                                    arg="input_shape",
+                                    value=ast.Tuple(
+                                        elts=[ast.Constant(value=None), ast.Constant(value=1)]
+                                    )
+                                )
+                            ]
+                        )
+                    ],
+                    keywords=[]
+                ),
+                lineno=2
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id="model"),
+                        attr="add"
+                    ),
+                    args=[
+                        ast.Call(
+                            func=ast.Name(id="TimeDistributed"),
+                            args=[
+                                ast.Call(
+                                    func=ast.Name(id="Dense"),
+                                    args=[ast.Constant(value=1)],
+                                    keywords=[
+                                        ast.keyword(
+                                            arg="kernel_initializer",
+                                            value=ast.Constant(value="one")
+                                        )
+                                    ]
+                                )
+                            ],
+                            keywords=[]
+                        )
+                    ],
+                    keywords=[]
+                ),
+                lineno=3
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id="model"),
+                        attr="compile"
+                    ),
+                    args=[],
+                    keywords=[
+                        ast.keyword(arg="loss", value=ast.Constant(value="mse")),
+                        ast.keyword(arg="optimizer", value=ast.Constant(value="sgd"))
+                    ]
+                ),
+                lineno=4
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="loss")],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id="model"),
+                        attr="train_on_batch"
+                    ),
+                    args=[
+                        ast.Name(id="x"),
+                        ast.Name(id="y")
+                    ],
+                    keywords=[]
+                ),
+                lineno=3
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Name(id="loss"),
+                    ops=[ast.Eq()],
+                    comparators=[ast.Constant(value=loss)]
+                ),
+                msg=None,
+                lineno=4
+            )
         ]
 
     def get_imports(self) -> list[ImportFrom]:
         return [
-            ast.Import(
-                module="numpy",
-                names=[ast.alias(name="numpy", asname="np")],
-                level=0,
-            ),
-            ast.ImportFrom(
-                module="keras",
-                names=[ast.alias(name="constraints")],
-                level=0,
-            ),
-            ast.ImportFrom(
-                module="tensorflow",
-                names=[ast.alias(name="train")],
-                level=0,
-            ),
             ast.ImportFrom(
                 module="keras.models",
                 names=[ast.alias(name="Sequential")],
                 level=0,
             ),
             ast.ImportFrom(
-                module="keras.layers.core",
-                names=[ast.alias(name="Dense")],
+                module="keras.layers",
+                names=[ast.alias(name="TimeDistributed"),
+                       ast.alias(name="Masking"),
+                       ast.alias(name="Dense")],
                 level=0,
             ),
-            ast.ImportFrom(
-                module="keras",
-                names=[ast.alias(name="optimizers")],
+            ast.Import(
+                module="numpy",
+                names=[ast.alias(name="numpy", asname="np")],
                 level=0,
             )
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
+        value1, value2, loss = fail_
         test = self.get_empty_test()
-        test.body = self._get_assert()
+        test.body = self._get_assert(value1, value2, loss)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
+        value1, value2, loss = pass_
         test = self.get_empty_test()
-        test.body = self._get_assert()
+        test.body = self._get_assert(value1, value2, loss)
         return test, TestResult.PASSING
 
 
