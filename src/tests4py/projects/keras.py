@@ -2984,7 +2984,7 @@ class KerasUnittestGenerator6(
                     args=[],
                     keywords=[]
                 ),
-                lineno=1
+                lineno=2
             ),
             ast.Expr(
                 value=ast.Call(
@@ -3009,7 +3009,7 @@ class KerasUnittestGenerator6(
                     ],
                     keywords=[]
                 ),
-                lineno=2
+                lineno=3
             ),
             ast.Expr(
                 value=ast.Call(
@@ -3037,7 +3037,7 @@ class KerasUnittestGenerator6(
                     ],
                     keywords=[]
                 ),
-                lineno=3
+                lineno=4
             ),
             ast.Expr(
                 value=ast.Call(
@@ -3051,7 +3051,7 @@ class KerasUnittestGenerator6(
                         ast.keyword(arg="optimizer", value=ast.Constant(value="sgd"))
                     ]
                 ),
-                lineno=4
+                lineno=5
             ),
             ast.Assign(
                 targets=[ast.Name(id="loss")],
@@ -3066,7 +3066,7 @@ class KerasUnittestGenerator6(
                     ],
                     keywords=[]
                 ),
-                lineno=3
+                lineno=6
             ),
             ast.Assert(
                 test=ast.Compare(
@@ -3075,7 +3075,7 @@ class KerasUnittestGenerator6(
                     comparators=[ast.Constant(value=loss)]
                 ),
                 msg=None,
-                lineno=4
+                lineno=7
             )
         ]
 
@@ -3126,23 +3126,209 @@ class KerasUnittestGenerator7(
     @staticmethod
     def _get_assert() -> list[Call]:
         return [
+            ast.Assign(
+                targets=[
+                    ast.Tuple(
+                        elts=[
+                            ast.Tuple(elts=[ast.Name(id="X_train"), ast.Name(id="y_train")]),
+                            ast.Tuple(elts=[ast.Name(id="X_test"), ast.Name(id="y_test")]),
+                        ]
+                    )
+                ],
+                value=ast.Call(
+                    func=ast.Name(id="get_test_data"),
+                    args=[],
+                    keywords=[
+                        ast.keyword(arg="num_train", value=ast.Constant(value=100)),
+                        ast.keyword(arg="num_test", value=ast.Constant(value=50)),
+                        ast.keyword(arg="input_shape", value=ast.Tuple(elts=[ast.Constant(value=5)])),
+                        ast.keyword(arg="classification", value=ast.Constant(value=True)),
+                        ast.keyword(arg="num_classes", value=ast.Constant(value=3)),
+                    ],
+                ),
+                lineno=1
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="model")],
+                value=ast.Call(func=ast.Name(id="Sequential"), args=[], keywords=[]),
+                lineno=1
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="model"), attr="add"),
+                    args=[
+                        ast.Call(
+                            func=ast.Name(id="Dense"),
+                            args=[ast.Constant(value=5)],
+                            keywords=[
+                                ast.keyword(
+                                    arg="input_shape",
+                                    value=ast.Tuple(elts=[ast.Constant(value=5)]),
+                                )
+                            ],
+                        )
+                    ],
+                    keywords=[],
+                ),
+                lineno=1
+
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="model"), attr="add"),
+                    args=[
+                        ast.Call(
+                            func=ast.Name(id="Activation"),
+                            args=[ast.Constant(value="relu")],
+                            keywords=[],
+                        )
+                    ],
+                    keywords=[],
+                ),
+                lineno=1
+
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="model"), attr="add"),
+                    args=[
+                        ast.Call(
+                            func=ast.Name(id="Dense"),
+                            args=[ast.Constant(value=5)],
+                            keywords=[],
+                        )
+                    ],
+                    keywords=[],
+                ),
+                lineno=1
+
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="model"), attr="add"),
+                    args=[
+                        ast.Call(
+                            func=ast.Name(id="Activation"),
+                            args=[ast.Constant(value="relu")],
+                            keywords=[],
+                        )
+                    ],
+                    keywords=[],
+                ),
+                lineno=1
+
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="model"), attr="add"),
+                    args=[
+                        ast.Call(
+                            func=ast.Name(id="Dense"),
+                            args=[ast.Constant(value=1)],
+                            keywords=[],
+                        )
+                    ],
+                    keywords=[],
+                ),
+                lineno=1
+
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="model"), attr="add"),
+                    args=[
+                        ast.Call(
+                            func=ast.Name(id="Activation"),
+                            args=[ast.Constant(value="linear")],
+                            keywords=[],
+                        )
+                    ],
+                    keywords=[],
+                ),
+                lineno=1
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="model"), attr="compile"),
+                    args=[],
+                    keywords=[
+                        ast.keyword(arg="optimizer", value=ast.Constant(value="sgd")),
+                        ast.keyword(arg="loss", value=ast.Constant(value="mean_absolute_error")),
+                        ast.keyword(
+                            arg="metrics",
+                            value=ast.List(elts=[ast.Constant(value="accuracy")]),
+                        ),
+                    ],
+                ),
+                lineno=1
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="reg")],
+                value=ast.Call(
+                    func=ast.Name(id="KerasRegressor"),
+                    args=[],
+                    keywords=[
+                        ast.keyword(arg="build_fn", value=ast.Name(id="model")),
+                        ast.keyword(arg="hidden_dims", value=ast.Constant(value=5)),
+                        ast.keyword(arg="batch_size", value=ast.Constant(value=32)),
+                        ast.keyword(arg="epochs", value=ast.Constant(value=1)),
+                    ],
+                ),
+                lineno=1
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="reg"), attr="fit"),
+                    args=[
+                        ast.Name(id="X_train"),
+                        ast.Name(id="y_train"),
+                    ],
+                    keywords=[
+                        ast.keyword(arg="batch_size", value=ast.Constant(value=32)),
+                        ast.keyword(arg="epochs", value=ast.Constant(value=1)),
+                    ],
+                ),
+                lineno=2
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="preds")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="reg"), attr="predict"),
+                    args=[
+                        ast.Subscript(
+                            value=ast.Name(id="X_test"),
+                            slice=ast.Slice(lower=None, upper=ast.Constant(value=1)),
+                        ),
+                    ],
+                    keywords=[
+                        ast.keyword(arg="batch_size", value=ast.Constant(value=32)),
+                    ],
+                ),
+                lineno=3
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Attribute(value=ast.Name(id="preds"), attr="shape"),
+                    ops=[ast.Eq()],
+                    comparators=[
+                        ast.Tuple(elts=[ast.Constant(value=1)]),
+                    ],
+                ),
+                msg=None,
+                lineno=4
+            ),
         ]
 
     def get_imports(self) -> list[ImportFrom]:
         return [
-            ast.Import(
-                module="numpy",
-                names=[ast.alias(name="numpy", asname="np")],
+            ast.ImportFrom(
+                module="keras.wrappers.scikit_learn",
+                names=[ast.alias(name="KerasRegressor")],
                 level=0,
             ),
             ast.ImportFrom(
-                module="keras",
-                names=[ast.alias(name="constraints")],
-                level=0,
-            ),
-            ast.ImportFrom(
-                module="tensorflow",
-                names=[ast.alias(name="train")],
+                module="keras.utils.test_utils",
+                names=[ast.alias(name="get_test_data")],
                 level=0,
             ),
             ast.ImportFrom(
@@ -3151,15 +3337,11 @@ class KerasUnittestGenerator7(
                 level=0,
             ),
             ast.ImportFrom(
-                module="keras.layers.core",
-                names=[ast.alias(name="Dense")],
+                module="keras.layers",
+                names=[ast.alias(name="Activation"),
+                       ast.alias(name="Dense")],
                 level=0,
             ),
-            ast.ImportFrom(
-                module="keras",
-                names=[ast.alias(name="optimizers")],
-                level=0,
-            )
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
@@ -3186,7 +3368,385 @@ class KerasUnittestGenerator8(
     @staticmethod
     def _get_assert() -> list[Call]:
         return [
+            ast.Assign(
+                targets=[ast.Name(id="input_shape")],
+                value=ast.Tuple(elts=[ast.Constant(value=1), ast.Constant(value=12)]),
+                lineno=1
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="input_layer")],
+                value=ast.Call(
+                    func=ast.Name(id="Input"),
+                    args=[],
+                    keywords=[ast.keyword(arg="shape", value=ast.Name(id="input_shape"))],
+                ),
+                lineno=2
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="A")],
+                value=ast.Call(
+                    func=ast.Name(id="Dense"),
+                    args=[ast.Constant(value=12)],
+                    keywords=[ast.keyword(arg="name", value=ast.Constant(value="layer_a"))],
+                ),
+                lineno=3
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="r1")],
+                value=ast.Call(
+                    func=ast.Call(
+                        func=ast.Attribute(value=ast.Name(id="layers"), attr="Reshape"),
+                        args=[ast.Tuple(elts=[ast.Constant(value=12)])],
+                        keywords=[],
+                    ),
+                    args=[ast.Name(id="input_layer")],
+                    keywords=[],
+                ),
+                lineno=4
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="Aout1")],
+                value=ast.Call(func=ast.Name(id="A"), args=[ast.Name(id="r1")], keywords=[]),
+                lineno=5
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="r2")],
+                value=ast.Call(
+                    func=ast.Call(
+                        func=ast.Attribute(value=ast.Name(id="layers"), attr="Reshape"),
+                        args=[ast.Tuple(elts=[ast.Constant(value=12)])],
+                        keywords=[],
+                    ),
+                    args=[ast.Name(id="input_layer")],
+                    keywords=[],
+                ),
+                lineno=6
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="Aout2")],
+                value=ast.Call(func=ast.Name(id="A"), args=[ast.Name(id="r2")], keywords=[]),
+                lineno=7
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="c1")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="layers"), attr="concatenate"),
+                    args=[
+                        ast.List(elts=[ast.Name(id="Aout2"), ast.Name(id="Aout1")]),
+                    ],
+                    keywords=[],
+                ),
+                lineno=8
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="output")],
+                value=ast.Call(
+                    func=ast.Call(
+                        func=ast.Name(id="Dense"),
+                        args=[ast.Constant(value=2)],
+                        keywords=[
+                            ast.keyword(arg="name", value=ast.Constant(value="layer_b"))
+                        ],
+                    ),
+                    args=[ast.Name(id="c1")],
+                    keywords=[],
+                ),
+                lineno=9
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="M")],
+                value=ast.Call(
+                    func=ast.Name(id="Model"),
+                    args=[],
+                    keywords=[
+                        ast.keyword(arg="inputs", value=ast.Name(id="input_layer")),
+                        ast.keyword(arg="outputs", value=ast.Name(id="output")),
+                    ],
+                ),
+                lineno=10
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="x_val")],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Attribute(
+                            value=ast.Name(id="np"), attr="random"
+                        ),
+                        attr="random",
+                    ),
+                    args=[
+                        ast.BinOp(
+                            left=ast.Tuple(elts=[ast.Constant(value=10)]),
+                            op=ast.Add(),
+                            right=ast.Name(id="input_shape"),
+                        )
+                    ],
+                    keywords=[],
+                ),
+                lineno=11
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="output_val")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="M"), attr="predict"),
+                    args=[ast.Name(id="x_val")],
+                    keywords=[],
+                ),
+                lineno=12
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="config")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="M"), attr="get_config"),
+                    args=[],
+                    keywords=[],
+                ),
+                lineno=13
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="weights")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="M"), attr="get_weights"),
+                    args=[],
+                    keywords=[],
+                ),
+                lineno=14
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="M2")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="Model"), attr="from_config"),
+                    args=[ast.Name(id="config")],
+                    keywords=[],
+                ),
+                lineno=15
+            ),
+            # M2.set_weights(weights)
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="M2"), attr="set_weights"),
+                    args=[ast.Name(id="weights")],
+                    keywords=[],
+                ),
+                lineno=16
+            ),
+            # output_val_2 = M2.predict(x_val)
+            ast.Assign(
+                targets=[ast.Name(id="output_val_2")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="M2"), attr="predict"),
+                    args=[ast.Name(id="x_val")],
+                    keywords=[],
+                ),
+                lineno=17
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Attribute(value=ast.Name(id="np"), attr="testing"),
+                        attr="assert_allclose",
+                    ),
+                    args=[ast.Name(id="output_val"), ast.Name(id="output_val_2")],
+                    keywords=[
+                        ast.keyword(arg="atol", value=ast.Constant(value=1e-6)),
+                    ],
+                ),
+                lineno=18
+            )
         ]
+
+    @staticmethod
+    def _get_assert2() -> list[Call]:
+        return [
+            ast.Assign(
+                targets=[ast.Name(id="input_shape")],
+                value=ast.Tuple(elts=[ast.Constant(value=1), ast.Constant(value=12)]),
+                lineno=1
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="input_layer")],
+                value=ast.Call(
+                    func=ast.Name(id="Input"),
+                    args=[],
+                    keywords=[ast.keyword(arg="shape", value=ast.Name(id="input_shape"))],
+                ),
+                lineno=2
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="A")],
+                value=ast.Call(
+                    func=ast.Name(id="Dense"),
+                    args=[ast.Constant(value=12)],
+                    keywords=[ast.keyword(arg="name", value=ast.Constant(value="layer_a"))],
+                ),
+                lineno=3
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="r1")],
+                value=ast.Call(
+                    func=ast.Call(
+                        func=ast.Attribute(value=ast.Name(id="layers"), attr="Reshape"),
+                        args=[ast.Tuple(elts=[ast.Constant(value=12)])],
+                        keywords=[],
+                    ),
+                    args=[ast.Name(id="input_layer")],
+                    keywords=[],
+                ),
+                lineno=4
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="Aout1")],
+                value=ast.Call(func=ast.Name(id="A"), args=[ast.Name(id="r1")], keywords=[]),
+                lineno=5
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="r2")],
+                value=ast.Call(
+                    func=ast.Call(
+                        func=ast.Attribute(value=ast.Name(id="layers"), attr="Reshape"),
+                        args=[ast.Tuple(elts=[ast.Constant(value=12)])],
+                        keywords=[],
+                    ),
+                    args=[
+                        ast.Call(func=ast.Name(id="A"), args=[ast.Name(id="input_layer")], keywords=[],)
+                    ],
+                    keywords=[],
+                ),
+                lineno=6
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="Aout2")],
+                value=ast.Call(func=ast.Name(id="A"), args=[ast.Name(id="r2")], keywords=[]),
+                lineno=7
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="c1")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="layers"), attr="concatenate"),
+                    args=[
+                        ast.List(elts=[ast.Name(id="Aout2"), ast.Name(id="Aout1")]),
+                    ],
+                    keywords=[],
+                ),
+                lineno=8
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="output")],
+                value=ast.Call(
+                    func=ast.Call(
+                        func=ast.Name(id="Dense"),
+                        args=[ast.Constant(value=2)],
+                        keywords=[
+                            ast.keyword(arg="name", value=ast.Constant(value="layer_b"))
+                        ],
+                    ),
+                    args=[ast.Name(id="c1")],
+                    keywords=[],
+                ),
+                lineno=9
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="M")],
+                value=ast.Call(
+                    func=ast.Name(id="Model"),
+                    args=[],
+                    keywords=[
+                        ast.keyword(arg="inputs", value=ast.Name(id="input_layer")),
+                        ast.keyword(arg="outputs", value=ast.Name(id="output")),
+                    ],
+                ),
+                lineno=10
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="x_val")],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Attribute(
+                            value=ast.Name(id="np"), attr="random"
+                        ),
+                        attr="random",
+                    ),
+                    args=[
+                        ast.BinOp(
+                            left=ast.Tuple(elts=[ast.Constant(value=10)]),
+                            op=ast.Add(),
+                            right=ast.Name(id="input_shape"),
+                        )
+                    ],
+                    keywords=[],
+                ),
+                lineno=11
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="output_val")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="M"), attr="predict"),
+                    args=[ast.Name(id="x_val")],
+                    keywords=[],
+                ),
+                lineno=12
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="config")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="M"), attr="get_config"),
+                    args=[],
+                    keywords=[],
+                ),
+                lineno=13
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="weights")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="M"), attr="get_weights"),
+                    args=[],
+                    keywords=[],
+                ),
+                lineno=14
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="M2")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="Model"), attr="from_config"),
+                    args=[ast.Name(id="config")],
+                    keywords=[],
+                ),
+                lineno=15
+            ),
+            # M2.set_weights(weights)
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="M2"), attr="set_weights"),
+                    args=[ast.Name(id="weights")],
+                    keywords=[],
+                ),
+                lineno=16
+            ),
+            # output_val_2 = M2.predict(x_val)
+            ast.Assign(
+                targets=[ast.Name(id="output_val_2")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="M2"), attr="predict"),
+                    args=[ast.Name(id="x_val")],
+                    keywords=[],
+                ),
+                lineno=17
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Attribute(value=ast.Name(id="np"), attr="testing"),
+                        attr="assert_allclose",
+                    ),
+                    args=[ast.Name(id="output_val"), ast.Name(id="output_val_2")],
+                    keywords=[
+                        ast.keyword(arg="atol", value=ast.Constant(value=1e-6)),
+                    ],
+                ),
+                lineno=18
+            )
+        ]
+
 
     def get_imports(self) -> list[ImportFrom]:
         return [
@@ -3197,27 +3757,22 @@ class KerasUnittestGenerator8(
             ),
             ast.ImportFrom(
                 module="keras",
-                names=[ast.alias(name="constraints")],
-                level=0,
-            ),
-            ast.ImportFrom(
-                module="tensorflow",
-                names=[ast.alias(name="train")],
+                names=[ast.alias(name="layers")],
                 level=0,
             ),
             ast.ImportFrom(
                 module="keras.models",
-                names=[ast.alias(name="Sequential")],
+                names=[ast.alias(name="Model")],
                 level=0,
             ),
             ast.ImportFrom(
-                module="keras.layers.core",
+                module="keras.engine",
+                names=[ast.alias(name="Input")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras.layers",
                 names=[ast.alias(name="Dense")],
-                level=0,
-            ),
-            ast.ImportFrom(
-                module="keras",
-                names=[ast.alias(name="optimizers")],
                 level=0,
             )
         ]
