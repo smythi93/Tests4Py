@@ -1150,7 +1150,11 @@ class KerasTestGenerator:
 
     @staticmethod
     def spacy8_generate():
-        return "", ""
+        value1 = random.randint(0, 999)
+        value2 = random.randint(0, 999)
+        passing = value1, value1
+        failing = value1, value2
+        return passing, failing
 
     @staticmethod
     def spacy9_generate():
@@ -3366,11 +3370,11 @@ class KerasUnittestGenerator8(
         return self.generate_values(self.spacy8_generate)
 
     @staticmethod
-    def _get_assert() -> list[Call]:
+    def _get_assert(value1: int, value2: int) -> list[Call]:
         return [
             ast.Assign(
                 targets=[ast.Name(id="input_shape")],
-                value=ast.Tuple(elts=[ast.Constant(value=1), ast.Constant(value=12)]),
+                value=ast.Tuple(elts=[ast.Constant(value=1), ast.Constant(value=value1)]),
                 lineno=1
             ),
             ast.Assign(
@@ -3396,7 +3400,7 @@ class KerasUnittestGenerator8(
                 value=ast.Call(
                     func=ast.Call(
                         func=ast.Attribute(value=ast.Name(id="layers"), attr="Reshape"),
-                        args=[ast.Tuple(elts=[ast.Constant(value=12)])],
+                        args=[ast.Tuple(elts=[ast.Constant(value=value1)])],
                         keywords=[],
                     ),
                     args=[ast.Name(id="input_layer")],
@@ -3414,7 +3418,7 @@ class KerasUnittestGenerator8(
                 value=ast.Call(
                     func=ast.Call(
                         func=ast.Attribute(value=ast.Name(id="layers"), attr="Reshape"),
-                        args=[ast.Tuple(elts=[ast.Constant(value=12)])],
+                        args=[ast.Tuple(elts=[ast.Constant(value=value2)])],
                         keywords=[],
                     ),
                     args=[ast.Name(id="input_layer")],
@@ -3521,7 +3525,6 @@ class KerasUnittestGenerator8(
                 ),
                 lineno=15
             ),
-            # M2.set_weights(weights)
             ast.Expr(
                 value=ast.Call(
                     func=ast.Attribute(value=ast.Name(id="M2"), attr="set_weights"),
@@ -3530,7 +3533,6 @@ class KerasUnittestGenerator8(
                 ),
                 lineno=16
             ),
-            # output_val_2 = M2.predict(x_val)
             ast.Assign(
                 targets=[ast.Name(id="output_val_2")],
                 value=ast.Call(
@@ -3556,11 +3558,11 @@ class KerasUnittestGenerator8(
         ]
 
     @staticmethod
-    def _get_assert2() -> list[Call]:
+    def _get_assert2(value1: int, value2: int) -> list[Call]:
         return [
             ast.Assign(
                 targets=[ast.Name(id="input_shape")],
-                value=ast.Tuple(elts=[ast.Constant(value=1), ast.Constant(value=12)]),
+                value=ast.Tuple(elts=[ast.Constant(value=1), ast.Constant(value=value1)]),
                 lineno=1
             ),
             ast.Assign(
@@ -3586,7 +3588,7 @@ class KerasUnittestGenerator8(
                 value=ast.Call(
                     func=ast.Call(
                         func=ast.Attribute(value=ast.Name(id="layers"), attr="Reshape"),
-                        args=[ast.Tuple(elts=[ast.Constant(value=12)])],
+                        args=[ast.Tuple(elts=[ast.Constant(value=value1)])],
                         keywords=[],
                     ),
                     args=[ast.Name(id="input_layer")],
@@ -3604,11 +3606,11 @@ class KerasUnittestGenerator8(
                 value=ast.Call(
                     func=ast.Call(
                         func=ast.Attribute(value=ast.Name(id="layers"), attr="Reshape"),
-                        args=[ast.Tuple(elts=[ast.Constant(value=12)])],
+                        args=[ast.Tuple(elts=[ast.Constant(value=value2)])],
                         keywords=[],
                     ),
                     args=[
-                        ast.Call(func=ast.Name(id="A"), args=[ast.Name(id="input_layer")], keywords=[],)
+                        ast.Call(func=ast.Name(id="A"), args=[ast.Name(id="input_layer")], keywords=[], )
                     ],
                     keywords=[],
                 ),
@@ -3713,7 +3715,6 @@ class KerasUnittestGenerator8(
                 ),
                 lineno=15
             ),
-            # M2.set_weights(weights)
             ast.Expr(
                 value=ast.Call(
                     func=ast.Attribute(value=ast.Name(id="M2"), attr="set_weights"),
@@ -3722,7 +3723,6 @@ class KerasUnittestGenerator8(
                 ),
                 lineno=16
             ),
-            # output_val_2 = M2.predict(x_val)
             ast.Assign(
                 targets=[ast.Name(id="output_val_2")],
                 value=ast.Call(
@@ -3746,7 +3746,6 @@ class KerasUnittestGenerator8(
                 lineno=18
             )
         ]
-
 
     def get_imports(self) -> list[ImportFrom]:
         return [
@@ -3779,14 +3778,16 @@ class KerasUnittestGenerator8(
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
+        value1, value2 = fail_
         test = self.get_empty_test()
-        test.body = self._get_assert()
+        test.body = self._get_assert2(value1, value2)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
+        value1, value2 = pass_
         test = self.get_empty_test()
-        test.body = self._get_assert()
+        test.body = self._get_assert(value1, value2)
         return test, TestResult.PASSING
 
 
