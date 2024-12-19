@@ -1158,11 +1158,360 @@ class KerasTestGenerator:
 
     @staticmethod
     def spacy9_generate():
-        return "", ""
+        test_doc1 = {
+            'doc': """Base class for recurrent layers.
+
+            # Arguments
+                cell: A RNN cell instance. A RNN cell is a class that has:
+                    - a `call(input_at_t, states_at_t)` method, returning
+                        `(output_at_t, states_at_t_plus_1)`. The call method of the
+                        cell can also take the optional argument `constants`, see
+                        section "Note on passing external constants" below.
+                    - a `state_size` attribute. This can be a single integer
+                        (single state) in which case it is
+                        the size of the recurrent state
+                        (which should be the same as the size of the cell output).
+                        This can also be a list/tuple of integers
+                        (one size per state). In this case, the first entry
+                        (`state_size[0]`) should be the same as
+                        the size of the cell output.
+                    It is also possible for `cell` to be a list of RNN cell instances,
+                    in which cases the cells get stacked on after the other in the RNN,
+                    implementing an efficient stacked RNN.
+                return_sequences: Boolean. Whether to return the last output
+                    in the output sequence, or the full sequence.
+                return_state: Boolean. Whether to return the last state
+                    in addition to the output.
+                go_backwards: Boolean (default False).
+                    If True, process the input sequence backwards and return the
+                    reversed sequence.
+                stateful: Boolean (default False). If True, the last state
+                    for each sample at index i in a batch will be used as initial
+                    state for the sample of index i in the following batch.
+                unroll: Boolean (default False).
+                    If True, the network will be unrolled,
+                    else a symbolic loop will be used.
+                    Unrolling can speed-up a RNN,
+                    although it tends to be more memory-intensive.
+                    Unrolling is only suitable for short sequences.
+                input_dim: dimensionality of the input (integer).
+                    This argument (or alternatively,
+                    the keyword argument `input_shape`)
+                    is required when using this layer as the first layer in a model.
+                input_length: Length of input sequences, to be specified
+                    when it is constant.
+                    This argument is required if you are going to connect
+                    `Flatten` then `Dense` layers upstream
+                    (without it, the shape of the dense outputs cannot be computed).
+                    Note that if the recurrent layer is not the first layer
+                    in your model, you would need to specify the input length
+                    at the level of the first layer
+                    (e.g. via the `input_shape` argument)
+
+            # Input shape
+                3D tensor with shape `(batch_size, timesteps, input_dim)`.
+
+            # Output shape
+                - if `return_state`: a list of tensors. The first tensor is
+                    the output. The remaining tensors are the last states,
+                    each with shape `(batch_size, units)`.
+                - if `return_sequences`: 3D tensor with shape
+                    `(batch_size, timesteps, units)`.
+                - else, 2D tensor with shape `(batch_size, units)`.
+
+            # Masking
+                This layer supports masking for input data with a variable number
+                of timesteps. To introduce masks to your data,
+                use an [Embedding](embeddings.md) layer with the `mask_zero` parameter
+                set to `True`.
+
+            # Note on using statefulness in RNNs
+                You can set RNN layers to be 'stateful', which means that the states
+                computed for the samples in one batch will be reused as initial states
+                for the samples in the next batch. This assumes a one-to-one mapping
+                between samples in different successive batches.
+
+                To enable statefulness:
+                    - specify `stateful=True` in the layer constructor.
+                    - specify a fixed batch size for your model, by passing
+                        if sequential model:
+                          `batch_input_shape=(...)` to the first layer in your model.
+                        else for functional model with 1 or more Input layers:
+                          `batch_shape=(...)` to all the first layers in your model.
+                        This is the expected shape of your inputs
+                        *including the batch size*.
+                        It should be a tuple of integers, e.g. `(32, 10, 100)`.
+                    - specify `shuffle=False` when calling fit().
+
+                To reset the states of your model, call `.reset_states()` on either
+                a specific layer, or on your entire model.
+
+            # Note on specifying the initial state of RNNs
+            Note: that
+                One: You can specify the initial state of RNN layers symbolically by
+                    calling them with the keyword argument `initial_state`.
+                Two: The value of `initial_state` should be a tensor or list of
+                    tensors representing
+                    the initial state of the RNN layer.
+                You can specify the initial state of RNN layers numerically by:
+                One: calling `reset_states`
+                    - With the keyword argument `states`.
+                        - The value of
+                    `states` should be a numpy array or
+                    list of numpy arrays representing
+                the initial state of the RNN layer.
+
+            # Note on passing external constants to RNNs
+                You can pass "external" constants to the cell using the `constants`
+                keyword: argument of `RNN.__call__` (as well as `RNN.call`) method.
+                This: requires that the `cell.call` method accepts the same keyword argument
+                `constants`. Such constants can be used to condition the cell
+                transformation on additional static inputs (not changing over time),
+                a.k.a. an attention mechanism.
+
+            # Examples
+
+            ```python
+                # First, let's define a RNN Cell, as a layer subclass.
+
+                class MinimalRNNCell(keras.layers.Layer):
+
+                    def __init__(self, units, **kwargs):
+                        self.units = units
+                        self.state_size = units
+                        super(MinimalRNNCell, self).__init__(**kwargs)
+
+                    def build(self, input_shape):
+                        self.kernel = self.add_weight(shape=(input_shape[-1], self.units),
+                                                      initializer='uniform',
+                                                      name='kernel')
+                        self.recurrent_kernel = self.add_weight(
+                            shape=(self.units, self.units),
+                            initializer='uniform',
+                            name='recurrent_kernel')
+                        self.built = True
+
+                    def call(self, inputs, states):
+                        prev_output = states[0]
+                        h = K.dot(inputs, self.kernel)
+                        output = h + K.dot(prev_output, self.recurrent_kernel)
+                        return output, [output]
+
+                # Let's use this cell in a RNN layer:
+
+                cell = MinimalRNNCell(32)
+                x = keras.Input((None, 5))
+                layer = RNN(cell)
+                y = layer(x)
+
+                # Here's how to use the cell to build a stacked RNN:
+
+                cells = [MinimalRNNCell(32), MinimalRNNCell(64)]
+                x = keras.Input((None, 5))
+                layer = RNN(cells)
+                y = layer(x)
+            ```
+            """,
+            'result': '''Base class for recurrent layers.
+
+        __Arguments__
+
+        - __cell__: A RNN cell instance. A RNN cell is a class that has:
+            - a `call(input_at_t, states_at_t)` method, returning
+                `(output_at_t, states_at_t_plus_1)`. The call method of the
+                cell can also take the optional argument `constants`, see
+                section "Note on passing external constants" below.
+            - a `state_size` attribute. This can be a single integer
+                (single state) in which case it is
+                the size of the recurrent state
+                (which should be the same as the size of the cell output).
+                This can also be a list/tuple of integers
+                (one size per state). In this case, the first entry
+                (`state_size[0]`) should be the same as
+                the size of the cell output.
+
+            It is also possible for `cell` to be a list of RNN cell instances,
+            in which cases the cells get stacked on after the other in the RNN,
+            implementing an efficient stacked RNN.
+
+        - __return_sequences__: Boolean. Whether to return the last output
+            in the output sequence, or the full sequence.
+        - __return_state__: Boolean. Whether to return the last state
+            in addition to the output.
+        - __go_backwards__: Boolean (default False).
+            If True, process the input sequence backwards and return the
+            reversed sequence.
+        - __stateful__: Boolean (default False). If True, the last state
+            for each sample at index i in a batch will be used as initial
+            state for the sample of index i in the following batch.
+        - __unroll__: Boolean (default False).
+            If True, the network will be unrolled,
+            else a symbolic loop will be used.
+            Unrolling can speed-up a RNN,
+            although it tends to be more memory-intensive.
+            Unrolling is only suitable for short sequences.
+        - __input_dim__: dimensionality of the input (integer).
+            This argument (or alternatively,
+            the keyword argument `input_shape`)
+            is required when using this layer as the first layer in a model.
+        - __input_length__: Length of input sequences, to be specified
+            when it is constant.
+            This argument is required if you are going to connect
+            `Flatten` then `Dense` layers upstream
+            (without it, the shape of the dense outputs cannot be computed).
+            Note that if the recurrent layer is not the first layer
+            in your model, you would need to specify the input length
+            at the level of the first layer
+            (e.g. via the `input_shape` argument)
+
+        __Input shape__
+
+        3D tensor with shape `(batch_size, timesteps, input_dim)`.
+
+        __Output shape__
+
+        - if `return_state`: a list of tensors. The first tensor is
+            the output. The remaining tensors are the last states,
+            each with shape `(batch_size, units)`.
+        - if `return_sequences`: 3D tensor with shape
+            `(batch_size, timesteps, units)`.
+        - else, 2D tensor with shape `(batch_size, units)`.
+
+        __Masking__
+
+        This layer supports masking for input data with a variable number
+        of timesteps. To introduce masks to your data,
+        use an [Embedding](embeddings.md) layer with the `mask_zero` parameter
+        set to `True`.
+
+        __Note on using statefulness in RNNs__
+
+        You can set RNN layers to be 'stateful', which means that the states
+        computed for the samples in one batch will be reused as initial states
+        for the samples in the next batch. This assumes a one-to-one mapping
+        between samples in different successive batches.
+
+        To enable statefulness:
+        - specify `stateful=True` in the layer constructor.
+        - specify a fixed batch size for your model, by passing
+        if sequential model:
+        `batch_input_shape=(...)` to the first layer in your model.
+        else for functional model with 1 or more Input layers:
+        `batch_shape=(...)` to all the first layers in your model.
+        This is the expected shape of your inputs
+        *including the batch size*.
+        It should be a tuple of integers, e.g. `(32, 10, 100)`.
+        - specify `shuffle=False` when calling fit().
+
+        To reset the states of your model, call `.reset_states()` on either
+        a specific layer, or on your entire model.
+
+        __Note on specifying the initial state of RNNs__
+
+        Note: that
+        - __One__: You can specify the initial state of RNN layers symbolically by
+            calling them with the keyword argument `initial_state`.
+        - __Two__: The value of `initial_state` should be a tensor or list of
+            tensors representing
+            the initial state of the RNN layer.
+
+        You can specify the initial state of RNN layers numerically by:
+
+        - __One__: calling `reset_states`
+            - With the keyword argument `states`.
+                - The value of
+
+            `states` should be a numpy array or
+            list of numpy arrays representing
+
+        the initial state of the RNN layer.
+
+        __Note on passing external constants to RNNs__
+
+        You can pass "external" constants to the cell using the `constants`
+        - __keyword__: argument of `RNN.__call__` (as well as `RNN.call`) method.
+        - __This__: requires that the `cell.call` method accepts the same keyword argument
+
+        `constants`. Such constants can be used to condition the cell
+        transformation on additional static inputs (not changing over time),
+        a.k.a. an attention mechanism.
+
+        __Examples__
+
+
+        ```python
+        # First, let's define a RNN Cell, as a layer subclass.
+
+        class MinimalRNNCell(keras.layers.Layer):
+
+            def __init__(self, units, **kwargs):
+                self.units = units
+                self.state_size = units
+                super(MinimalRNNCell, self).__init__(**kwargs)
+
+            def build(self, input_shape):
+                self.kernel = self.add_weight(shape=(input_shape[-1], self.units),
+                                              initializer='uniform',
+                                              name='kernel')
+                self.recurrent_kernel = self.add_weight(
+                    shape=(self.units, self.units),
+                    initializer='uniform',
+                    name='recurrent_kernel')
+                self.built = True
+
+            def call(self, inputs, states):
+                prev_output = states[0]
+                h = K.dot(inputs, self.kernel)
+                output = h + K.dot(prev_output, self.recurrent_kernel)
+                return output, [output]
+
+        # Let's use this cell in a RNN layer:
+
+        cell = MinimalRNNCell(32)
+        x = keras.Input((None, 5))
+        layer = RNN(cell)
+        y = layer(x)
+
+        # Here's how to use the cell to build a stacked RNN:
+
+        cells = [MinimalRNNCell(32), MinimalRNNCell(64)]
+        x = keras.Input((None, 5))
+        layer = RNN(cells)
+        y = layer(x)
+        ```
+        '''}
+        test_doc_with_arguments_as_last_block = {
+            'doc': """Base class for recurrent layers.
+
+            # Arguments
+                return_sequences: Boolean. Whether to return the last output
+                    in the output sequence, or the full sequence.
+                return_state: Boolean. Whether to return the last state
+                    in addition to the output.
+            """,
+            'result': '''Base class for recurrent layers.
+
+        __Arguments__
+
+        - __return_sequences__: Boolean. Whether to return the last output
+            in the output sequence, or the full sequence.
+        - __return_state__: Boolean. Whether to return the last state
+            in addition to the output.
+        '''}
+        passing = test_doc_with_arguments_as_last_block
+        failing = test_doc1
+        return passing, failing
 
     @staticmethod
     def spacy10_generate():
-        return "", ""
+        value1 = random.randint(0, 999)
+        value2 = random.randint(0, 999)
+        value3 = random.randint(0, 999)
+        value4 = random.randint(0, 999)
+        value5 = random.randint(0, 999)
+        passing = value1, value2, value3, value4, value5, [[0], [1], [2], [3], [4]]
+        failing = value1, value2, value3, value4, value5, [0, 1, 0, 0, 2]
+        return passing, failing
 
 
 class KerasUnittestGenerator1(
@@ -3800,8 +4149,50 @@ class KerasUnittestGenerator9(
         return self.generate_values(self.spacy9_generate)
 
     @staticmethod
-    def _get_assert() -> list[Call]:
+    def _get_assert(value: Any) -> list[Call]:
         return [
+            ast.Assign(
+                targets=[ast.Name(id="docs_descriptor")],
+                value=ast.Constant(value=value),
+                lineno=2,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="docstring")],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id="autogen"),
+                        attr="process_docstring"),
+                    args=[
+                        ast.Subscript(
+                            value=ast.Name(id="docs_descriptor"),
+                            slice=ast.Index(value=ast.Constant(value="doc")))
+                    ],
+                    keywords=[],
+                ),
+                lineno=1
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Call(
+                        func=ast.Name(id="markdown"),
+                        args=[ast.Name(id="docstring")],
+                        keywords=[],
+                    ),
+                    ops=[ast.Eq()],
+                    comparators=[
+                        ast.Call(
+                            func=ast.Name(id="markdown"),
+                            args=[
+                                ast.Subscript(
+                                    value=ast.Name(id="docs_descriptor"),
+                                    slice=ast.Index(value=ast.Constant(value="result")))
+                            ],
+                            keywords=[],
+                        )
+                    ],
+                ),
+                msg=None,
+            )
         ]
 
     def get_imports(self) -> list[ImportFrom]:
@@ -3812,28 +4203,13 @@ class KerasUnittestGenerator9(
                 level=0,
             ),
             ast.ImportFrom(
-                module="keras",
-                names=[ast.alias(name="constraints")],
+                module="markdown",
+                names=[ast.alias(name="markdown")],
                 level=0,
             ),
             ast.ImportFrom(
-                module="tensorflow",
-                names=[ast.alias(name="train")],
-                level=0,
-            ),
-            ast.ImportFrom(
-                module="keras.models",
-                names=[ast.alias(name="Sequential")],
-                level=0,
-            ),
-            ast.ImportFrom(
-                module="keras.layers.core",
-                names=[ast.alias(name="Dense")],
-                level=0,
-            ),
-            ast.ImportFrom(
-                module="keras",
-                names=[ast.alias(name="optimizers")],
+                module="docs",
+                names=[ast.alias(name="autogen")],
                 level=0,
             )
         ]
@@ -3841,13 +4217,13 @@ class KerasUnittestGenerator9(
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert()
+        test.body = self._get_assert(fail_)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert()
+        test.body = self._get_assert(pass_)
         return test, TestResult.PASSING
 
 
@@ -3860,8 +4236,235 @@ class KerasUnittestGenerator10(
         return self.generate_values(self.spacy10_generate)
 
     @staticmethod
-    def _get_assert() -> list[Call]:
+    def _get_assert(value1: int, value2: int, value3: int, value4: int, value5: int, value6: Any) -> list[Call]:
         return [
+            ast.Assign(
+                targets=[ast.Name(id='y')],
+                value=ast.Call(
+                    func=ast.Name(id='np.array'),
+                    args=[ast.Constant(value=value6)],
+                    keywords=[]
+                ),
+                lineno=1,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id='sample_weights')],
+                value=ast.Call(
+                    func=ast.Name(id='np.array'),
+                    args=[ast.List(
+                        elts=[
+                            ast.Constant(value=value1),
+                            ast.Constant(value=value2),
+                            ast.Constant(value=value3),
+                            ast.Constant(value=value4),
+                            ast.Constant(value=value5)
+                        ],
+
+                    )],
+                    keywords=[]
+                ),
+                lineno=2
+            ),
+            ast.Assign(
+                targets=[ast.Name(id='class_weights')],
+                value=ast.Dict(
+                    keys=[
+                        ast.Constant(value=0),
+                        ast.Constant(value=1),
+                        ast.Constant(value=2),
+                        ast.Constant(value=3),
+                        ast.Constant(value=4)
+                    ],
+                    values=[
+                        ast.Constant(value=value1),
+                        ast.Constant(value=value2),
+                        ast.Constant(value=value3),
+                        ast.Constant(value=value4),
+                        ast.Constant(value=value5)
+                    ]
+                ),
+                lineno=3
+            ),
+            ast.Assign(
+                targets=[ast.Name(id='weights')],
+                value=ast.Call(
+                    func=ast.Name(id='training_utils.standardize_weights'),
+                    args=[
+                        ast.Name(id='y'),
+                        ast.Name(id='sample_weights')
+                    ],
+                    keywords=[]
+                ),
+                lineno=4
+            ),
+            ast.Assert(
+                test=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id='np'),
+                        attr='allclose',
+
+                    ),
+                    args=[
+                        ast.Name(id='weights'),
+                        ast.Name(id='sample_weights')
+                    ],
+                    keywords=[]
+                )
+            ),
+            ast.Assign(
+                targets=[ast.Name(id='weights')],
+                value=ast.Call(
+                    func=ast.Name(id='training_utils.standardize_weights'),
+                    args=[
+                        ast.Name(id='y')
+                    ],
+                    keywords=[
+                        ast.keyword(arg='class_weight', value=ast.Name(id='class_weights'))
+                    ]
+                ),
+                lineno=5
+            ),
+            ast.Assert(
+                test=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id='np'),
+                        attr='allclose',
+
+                    ),
+                    args=[
+                        ast.Name(id='weights'),
+                        ast.Call(
+                            func=ast.Name(id='np.array'),
+                            args=[ast.List(
+                                elts=[
+                                    ast.Constant(value=value1),
+                                    ast.Constant(value=value2),
+                                    ast.Constant(value=value3),
+                                    ast.Constant(value=value4),
+                                    ast.Constant(value=value5)
+                                ],
+                            )],
+                            keywords=[]
+                        )
+                    ],
+                    keywords=[]
+                )
+            )
+        ]
+
+    @staticmethod
+    def _get_assert2(value1: int, value2: int, value3: int, value4: int, value5: int, value6: Any) -> list[Call]:
+        return [
+            ast.Assign(
+                targets=[ast.Name(id='y')],
+                value=ast.Call(
+                    func=ast.Name(id='np.array'),
+                    args=[ast.Constant(value=value6)],
+                    keywords=[]
+                ),
+                lineno=1,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id='sample_weights')],
+                value=ast.Call(
+                    func=ast.Name(id='np.array'),
+                    args=[ast.List(
+                        elts=[
+                            ast.Constant(value=value1),
+                            ast.Constant(value=value2),
+                            ast.Constant(value=value3),
+                            ast.Constant(value=value4),
+                            ast.Constant(value=value5)
+                        ],
+
+                    )],
+                    keywords=[]
+                ),
+                lineno=2
+            ),
+            ast.Assign(
+                targets=[ast.Name(id='class_weights')],
+                value=ast.Dict(
+                    keys=[
+                        ast.Constant(value=0),
+                        ast.Constant(value=1),
+                        ast.Constant(value=2)
+                    ],
+                    values=[
+                        ast.Constant(value=value1),
+                        ast.Constant(value=value2),
+                        ast.Constant(value=value3),
+                        ast.Constant(value=value4),
+                        ast.Constant(value=value5)
+                    ]
+                ),
+                lineno=3
+            ),
+            ast.Assign(
+                targets=[ast.Name(id='weights')],
+                value=ast.Call(
+                    func=ast.Name(id='training_utils.standardize_weights'),
+                    args=[
+                        ast.Name(id='y'),
+                        ast.Name(id='sample_weights')
+                    ],
+                    keywords=[]
+                ),
+                lineno=4
+            ),
+            ast.Assert(
+                test=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id='np'),
+                        attr='allclose',
+
+                    ),
+                    args=[
+                        ast.Name(id='weights'),
+                        ast.Name(id='sample_weights')
+                    ],
+                    keywords=[]
+                )
+            ),
+            ast.Assign(
+                targets=[ast.Name(id='weights')],
+                value=ast.Call(
+                    func=ast.Name(id='training_utils.standardize_weights'),
+                    args=[
+                        ast.Name(id='y')
+                    ],
+                    keywords=[
+                        ast.keyword(arg='class_weight', value=ast.Name(id='class_weights'))
+                    ]
+                ),
+                lineno=5
+            ),
+            ast.Assert(
+                test=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id='np'),
+                        attr='allclose',
+
+                    ),
+                    args=[
+                        ast.Name(id='weights'),
+                        ast.Call(
+                            func=ast.Name(id='np.array'),
+                            args=[ast.List(
+                                elts=[
+                                    ast.Constant(value=value1),
+                                    ast.Constant(value=value2),
+                                    ast.Constant(value=value3),
+                                    ast.Constant(value=value4),
+                                    ast.Constant(value=value5)
+                                ],
+                            )],
+                            keywords=[]
+                        )
+                    ],
+                    keywords=[]
+                )
+            )
         ]
 
     def get_imports(self) -> list[ImportFrom]:
@@ -3872,42 +4475,25 @@ class KerasUnittestGenerator10(
                 level=0,
             ),
             ast.ImportFrom(
-                module="keras",
-                names=[ast.alias(name="constraints")],
-                level=0,
-            ),
-            ast.ImportFrom(
-                module="tensorflow",
-                names=[ast.alias(name="train")],
-                level=0,
-            ),
-            ast.ImportFrom(
-                module="keras.models",
-                names=[ast.alias(name="Sequential")],
-                level=0,
-            ),
-            ast.ImportFrom(
-                module="keras.layers.core",
-                names=[ast.alias(name="Dense")],
-                level=0,
-            ),
-            ast.ImportFrom(
-                module="keras",
-                names=[ast.alias(name="optimizers")],
+                module="keras.engine",
+                names=[ast.alias(name="training_utils")],
                 level=0,
             )
+
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
+        value1, value2, value3, value4, value5, value6 = fail_
         test = self.get_empty_test()
-        test.body = self._get_assert()
+        test.body = self._get_assert2(value1, value2, value3, value4, value5, value6)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
+        value1, value2, value3, value4, value5, value6 = pass_
         test = self.get_empty_test()
-        test.body = self._get_assert()
+        test.body = self._get_assert(value1, value2, value3, value4, value5, value6)
         return test, TestResult.PASSING
 
 
