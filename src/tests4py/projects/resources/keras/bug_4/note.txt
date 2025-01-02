@@ -1,0 +1,3 @@
+Keras bug4 needs import of train from tensorflow:
+
+from tensorflow import train

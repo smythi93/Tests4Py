@@ -960,6 +960,11 @@ class KerasAPI4(API):
         expected = process.args[2]
         result = process.stdout.decode("utf8")
         result = result.strip()
+        expected = expected[1:]
+        expected = expected[:-1]
+        print("ex ", expected)
+        print("res ", result)
+        print(args)
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -1089,9 +1094,6 @@ class KerasAPI10(API):
         expected = expected[:-1]
         result = process.stdout.decode("utf8")
         result = result.strip()
-        print("ex ", expected)
-        print("res ", result)
-        print(args)
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -1127,7 +1129,11 @@ class KerasTestGenerator:
 
     @staticmethod
     def spacy4_generate():
-        return "", ""
+        randomise = random.randint(0, 9999)
+        third_argument = "param"
+        passing = randomise, third_argument
+        failing = randomise
+        return passing, failing
 
     @staticmethod
     def spacy5_generate():
@@ -1146,9 +1152,9 @@ class KerasTestGenerator:
 
     @staticmethod
     def spacy7_generate():
-        num_train = random.randint(0, 999)
-        num_test = random.randint(0, 999)
-        result = random.randint(0, 999)
+        num_train = random.randint(0, 1999)
+        num_test = random.randint(0, 1999)
+        result = random.randint(0, 1999)
         passing = num_train, num_test
         failing = num_train, num_test, result
         return passing, failing
@@ -2630,7 +2636,7 @@ class KerasUnittestGenerator4(
         return self.generate_values(self.spacy4_generate)
 
     @staticmethod
-    def _get_assert() -> list[Call]:
+    def _get_assert(randomise: int, third_argument: str) -> list[Call]:
         return [
             ast.ClassDef(
                 name="MyTfOptimizer",
@@ -2653,6 +2659,7 @@ class KerasUnittestGenerator4(
                             args=[
                                 ast.arg(arg="self"),
                                 ast.arg(arg="loss"),
+                                ast.arg(arg=third_argument),
                             ],
                             vararg=None,
                             kwonlyargs=[],
@@ -2674,7 +2681,8 @@ class KerasUnittestGenerator4(
                                         ),
                                         attr="compute_gradients"
                                     ),
-                                    args=[ast.Name(id="loss")],
+                                    args=[ast.Name(id="loss"),
+                                        ast.arg(arg=third_argument)],
                                     keywords=[ast.keyword(arg=None, value=ast.Name(id="kwargs"))]
                                 )
                             )
@@ -2713,7 +2721,7 @@ class KerasUnittestGenerator4(
                     )
                 ],
                 decorator_list=[],
-                lineno=1
+                lineno=3
             ),
             ast.Assign(
                 targets=[ast.Name(id="my_tf_optimizer")],
@@ -2789,7 +2797,7 @@ class KerasUnittestGenerator4(
                                 value=ast.Attribute(value=ast.Name(id="np"), attr="random"),
                                 attr="random"
                             ),
-                            args=[ast.Tuple(elts=[ast.Constant(value=5), ast.Constant(value=3)])],
+                            args=[ast.Tuple(elts=[ast.Constant(value=randomise), ast.Constant(value=3)])],
                             keywords=[]
                         ),
                         ast.Call(
@@ -2797,7 +2805,188 @@ class KerasUnittestGenerator4(
                                 value=ast.Attribute(value=ast.Name(id="np"), attr="random"),
                                 attr="random"
                             ),
-                            args=[ast.Tuple(elts=[ast.Constant(value=5), ast.Constant(value=2)])],
+                            args=[ast.Tuple(elts=[ast.Constant(value=randomise), ast.Constant(value=2)])],
+                            keywords=[]
+                        ),
+                    ],
+                    keywords=[
+                        ast.keyword(arg="epochs", value=ast.Constant(value=1)),
+                        ast.keyword(arg="batch_size", value=ast.Constant(value=5)),
+                        ast.keyword(arg="verbose", value=ast.Constant(value=0))
+                    ]
+                ),
+                lineno=9
+            )
+        ]
+
+    @staticmethod
+    def _get_assert2(randomise: int) -> list[Call]:
+        return [
+            ast.ClassDef(
+                name="MyTfOptimizer",
+                bases=[ast.Attribute(value=ast.Name(id="train"), attr="Optimizer")],
+                keywords=[],
+                body=[
+                    ast.Assign(
+                        targets=[ast.Name(id="wrapping_optimizer")],
+                        value=ast.Call(
+                            func=ast.Attribute(value=ast.Name(id="train"), attr="AdamOptimizer"),
+                            args=[],
+                            keywords=[]
+                        ),
+                        lineno=1
+                    ),
+                    ast.FunctionDef(
+                        name="compute_gradients",
+                        args=ast.arguments(
+                            posonlyargs=[],
+                            args=[
+                                ast.arg(arg="self"),
+                                ast.arg(arg="loss")                            ],
+                            vararg=None,
+                            kwonlyargs=[],
+                            kw_defaults=[],
+                            kwarg=ast.arg(arg="kwargs"),
+                            defaults=[]
+                        ),
+                        body=[
+                            ast.Return(
+                                value=ast.Call(
+                                    func=ast.Attribute(
+                                        value=ast.Call(
+                                            func=ast.Name(id="super"),
+                                            args=[
+                                                ast.Name(id="MyTfOptimizer"),
+                                                ast.Name(id="self")
+                                            ],
+                                            keywords=[]
+                                        ),
+                                        attr="compute_gradients"
+                                    ),
+                                    args=[ast.Name(id="loss")],
+                                    keywords=[ast.keyword(arg=None, value=ast.Name(id="kwargs"))]
+                                )
+                            )
+                        ],
+                        decorator_list=[],
+                        lineno=2
+                    ),
+                    ast.FunctionDef(
+                        name="apply_gradients",
+                        args=ast.arguments(
+                            posonlyargs=[],
+                            args=[
+                                ast.arg(arg="self"),
+                                ast.arg(arg="grads_and_vars"),
+                            ],
+                            vararg=None,
+                            kwonlyargs=[],
+                            kw_defaults=[],
+                            kwarg=ast.arg(arg="kwargs"),
+                            defaults=[]
+                        ),
+                        body=[
+                            ast.Return(
+                                value=ast.Call(
+                                    func=ast.Attribute(
+                                        value=ast.Attribute(value=ast.Name(id="self"), attr="wrapping_optimizer"),
+                                        attr="apply_gradients"
+                                    ),
+                                    args=[ast.Name(id="grads_and_vars")],
+                                    keywords=[ast.keyword(arg=None, value=ast.Name(id="kwargs"))]
+                                )
+                            )
+                        ],
+                        decorator_list=[],
+                        lineno=3
+                    )
+                ],
+                decorator_list=[],
+                lineno=3
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="my_tf_optimizer")],
+                value=ast.Call(
+                    func=ast.Name(id="MyTfOptimizer"),
+                    args=[],
+                    keywords=[
+                        ast.keyword(arg="use_locking", value=ast.Constant(value=False)),
+                        ast.keyword(arg="name", value=ast.Constant(value="MyTfOptimizer"))
+                    ]
+                ),
+                lineno=4
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="optimizer")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="optimizers"), attr="TFOptimizer"),
+                    args=[ast.Name(id="my_tf_optimizer")],
+                    keywords=[]
+                ),
+                lineno=5
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="model")],
+                value=ast.Call(
+                    func=ast.Name(id="Sequential"),
+                    args=[],
+                    keywords=[]
+                ),
+                lineno=6
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="model"), attr="add"),
+                    args=[
+                        ast.Call(
+                            func=ast.Name(id="Dense"),
+                            args=[
+                                ast.Constant(value=2)
+                            ],
+                            keywords=[
+                                ast.keyword(arg="input_shape", value=ast.Tuple(elts=[ast.Constant(value=3)])),
+                                ast.keyword(arg="kernel_constraint",
+                                            value=ast.Call(
+                                                func=ast.Attribute(value=ast.Name(id="constraints"), attr="MaxNorm"),
+                                                args=[ast.Constant(value=1)],
+                                                keywords=[]
+                                            ))
+                            ]
+                        )
+                    ],
+                    keywords=[]
+                ),
+                lineno=7
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="model"), attr="compile"),
+                    args=[],
+                    keywords=[
+                        ast.keyword(arg="loss", value=ast.Constant(value="mean_squared_error")),
+                        ast.keyword(arg="optimizer", value=ast.Name(id="optimizer"))
+                    ]
+                ),
+                lineno=8
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="model"), attr="fit"),
+                    args=[
+                        ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Attribute(value=ast.Name(id="np"), attr="random"),
+                                attr="random"
+                            ),
+                            args=[ast.Tuple(elts=[ast.Constant(value=randomise), ast.Constant(value=3)])],
+                            keywords=[]
+                        ),
+                        ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Attribute(value=ast.Name(id="np"), attr="random"),
+                                attr="random"
+                            ),
+                            args=[ast.Tuple(elts=[ast.Constant(value=randomise), ast.Constant(value=2)])],
                             keywords=[]
                         ),
                     ],
@@ -2848,13 +3037,14 @@ class KerasUnittestGenerator4(
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
         test = self.get_empty_test()
-        test.body = self._get_assert()
+        test.body = self._get_assert2(fail_)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
+        randomise, third_value = pass_
         test = self.get_empty_test()
-        test.body = self._get_assert()
+        test.body = self._get_assert(randomise, third_value)
         return test, TestResult.PASSING
 
 
