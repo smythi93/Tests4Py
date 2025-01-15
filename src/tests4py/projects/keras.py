@@ -5112,23 +5112,237 @@ class KerasUnittestGenerator11(
     @staticmethod
     def _get_assert() -> list[Call]:
         return [
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Attribute(value=ast.Name(id="np"), attr="random"), attr="seed"),
+                    args=[ast.Constant(value=1337)],
+                    keywords=[]
+                ),
+                lineno=1,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="img_gen")],
+                value=ast.Call(
+                    func=ast.Name(id="ImageDataGenerator"),
+                    args=[],
+                    keywords=[ast.keyword(arg="rescale", value=ast.Constant(value=1.0))],
+                ),
+                lineno=2,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="input_shape")],
+                value=ast.Tuple(elts=[ast.Constant(value=16), ast.Constant(value=16), ast.Constant(value=3)],
+                                ),
+                lineno=3,
+            ),
+            ast.Assign(
+                targets=[
+                    ast.Tuple(elts=[ast.Name(id="x_train"), ast.Name(id="y_train")],
+                              ),
+                    ast.Tuple(elts=[ast.Name(id="x_test"), ast.Name(id="y_test")],
+                              )
+                ],
+                value=ast.Call(
+                    func=ast.Name(id="get_test_data"),
+                    args=[],
+                    keywords=[
+                        ast.keyword(arg="num_train", value=ast.Constant(value=500)),
+                        ast.keyword(arg="num_test", value=ast.Constant(value=200)),
+                        ast.keyword(arg="input_shape", value=ast.Name(id="input_shape")),
+                        ast.keyword(arg="classification", value=ast.Constant(value=True)),
+                        ast.keyword(arg="num_classes", value=ast.Constant(value=4))
+                    ]
+                ),
+                lineno=4,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="y_train")],
+                value=ast.Call(
+                    func=ast.Name(id="to_categorical"),
+                    args=[ast.Name(id="y_train")],
+                    keywords=[]
+                ),
+                lineno=5,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="y_test")],
+                value=ast.Call(
+                    func=ast.Name(id="to_categorical"),
+                    args=[ast.Name(id="y_test")],
+                    keywords=[]
+                ),
+                lineno=6,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="model")],
+                value=ast.Call(
+                    func=ast.Name(id="Sequential"),
+                    args=[
+                        ast.List(elts=[
+                            ast.Call(
+                                func=ast.Attribute(value=ast.Name(id="layers"), attr="Conv2D"),
+                                args=[],
+                                keywords=[
+                                    ast.keyword(arg="filters", value=ast.Constant(value=8)),
+                                    ast.keyword(arg="kernel_size", value=ast.Constant(value=3)),
+                                    ast.keyword(arg="activation", value=ast.Constant(value="relu")),
+                                    ast.keyword(arg="input_shape", value=ast.Name(id="input_shape"))
+                                ]
+                            ),
+                            ast.Call(
+                                func=ast.Attribute(value=ast.Name(id="layers"), attr="MaxPooling2D"),
+                                args=[],
+                                keywords=[
+                                    ast.keyword(arg="pool_size", value=ast.Constant(value=2))
+                                ]
+                            ),
+                            ast.Call(
+                                func=ast.Attribute(value=ast.Name(id="layers"), attr="Conv2D"),
+                                args=[],
+                                keywords=[
+                                    ast.keyword(arg="filters", value=ast.Constant(value=4)),
+                                    ast.keyword(arg="kernel_size",
+                                                value=ast.Tuple(elts=[ast.Constant(value=3), ast.Constant(value=3)],
+                                                                )),
+                                    ast.keyword(arg="activation", value=ast.Constant(value="relu")),
+                                    ast.keyword(arg="padding", value=ast.Constant(value="same"))
+                                ]
+                            ),
+                            ast.Call(
+                                func=ast.Attribute(value=ast.Name(id="layers"),
+                                                   attr="GlobalAveragePooling2D"),
+                                args=[],
+                                keywords=[]
+                            ),
+                            ast.Call(
+                                func=ast.Attribute(value=ast.Name(id="layers"), attr="Dense"),
+                                args=[],
+                                keywords=[
+                                    ast.keyword(arg="units", value=ast.Subscript(
+                                        value=ast.Attribute(value=ast.Name(id="y_test"), attr="shape"),
+                                        slice=ast.Index(
+                                            value=ast.UnaryOp(op=ast.USub(), operand=ast.Constant(value=1))),
+
+                                    )),
+                                    ast.keyword(arg="activation", value=ast.Constant(value="softmax"))
+                                ]
+                            )
+                        ])
+                    ],
+                    keywords=[]
+                ),
+                lineno=7,
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="model"), attr="compile"),
+                    args=[],
+                    keywords=[
+                        ast.keyword(arg="loss", value=ast.Constant(value="categorical_crossentropy")),
+                        ast.keyword(arg="optimizer", value=ast.Constant(value="rmsprop")),
+                        ast.keyword(arg="metrics",
+                                    value=ast.List(elts=[ast.Constant(value="accuracy")]))
+                    ]
+                ),
+                lineno=8,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="history")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="model"), attr="fit_generator"),
+                    args=[
+                        ast.Call(
+                            func=ast.Attribute(value=ast.Name(id="img_gen"), attr="flow"),
+                            args=[
+                                ast.Name(id="x_train"),
+                                ast.Name(id="y_train")
+                            ],
+                            keywords=[
+                                ast.keyword(arg="batch_size", value=ast.Constant(value=16))
+                            ]
+                        )
+                    ],
+                    keywords=[
+                        ast.keyword(arg="epochs", value=ast.Constant(value=10)),
+                        ast.keyword(arg="validation_data", value=ast.Call(
+                            func=ast.Attribute(value=ast.Name(id="img_gen"), attr="flow"),
+                            args=[
+                                ast.Name(id="x_test"),
+                                ast.Name(id="y_test")
+                            ],
+                            keywords=[
+                                ast.keyword(arg="batch_size", value=ast.Constant(value=16))
+                            ]
+                        )),
+                        ast.keyword(arg="verbose", value=ast.Constant(value=0))
+                    ]
+                ),
+                lineno=9,
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Subscript(
+                        value=ast.Attribute(value=ast.Name(id="history"), attr="history"),
+                        slice=ast.Index(value=ast.Constant(value="val_acc")),
+
+                    ),
+                    ops=[ast.Gt()],
+                    comparators=[ast.Constant(value=0.75)]
+                ),
+                msg=None,
+                lineno=10,
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="model"), attr="evaluate_generator"),
+                    args=[
+                        ast.Call(
+                            func=ast.Attribute(value=ast.Name(id="img_gen"), attr="flow"),
+                            args=[
+                                ast.Name(id="x_train"),
+                                ast.Name(id="y_train")
+                            ],
+                            keywords=[
+                                ast.keyword(arg="batch_size", value=ast.Constant(value=16))
+                            ]
+                        )
+                    ],
+                    keywords=[]
+                ),
+                lineno=11,
+            )
         ]
 
     def get_imports(self) -> list[ImportFrom]:
         return [
             ast.Import(
                 module="numpy",
-                names=[ast.alias(name="numpy")],
+                names=[ast.alias(name="numpy", asname="np")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras.models",
+                names=[ast.alias(name="Sequential")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras.utils.np_utils",
+                names=[ast.alias(name="to_categorical")],
                 level=0,
             ),
             ast.ImportFrom(
                 module="keras",
-                names=[ast.alias(name="backend")],
+                names=[ast.alias(name="layers")],
                 level=0,
             ),
             ast.ImportFrom(
-                module="keras",
-                names=[ast.alias(name="initializers")],
+                module="keras.preprocessing.image",
+                names=[ast.alias(name="ImageDataGenerator")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras.utils.test_utils",
+                names=[ast.alias(name="get_test_data")],
                 level=0,
             )
         ]
@@ -5157,23 +5371,215 @@ class KerasUnittestGenerator12(
     @staticmethod
     def _get_assert() -> list[Call]:
         return [
+            ast.Assign(
+                targets=[ast.Name(id="y_a")],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id="K"),
+                        attr="variable"
+                    ),
+                    args=[
+                        ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Attribute(
+                                    value=ast.Name(id="np"),
+                                    attr="random"
+                                ),
+                                attr="randint"
+                            ),
+                            args=[
+                                ast.Constant(value=0),
+                                ast.Constant(value=7),
+                                ast.Constant(value=(6, 3, 1))
+                                # (6,)
+                                # (6, 3)
+                                # (6, 3, 1)
+                            ],
+                            keywords=[]
+                        )
+                    ],
+                    keywords=[
+                        ast.keyword(
+                            arg="dtype",
+                            value=ast.Call(
+                                func=ast.Attribute(
+                                    value=ast.Name(id="K"),
+                                    attr="floatx"
+                                ),
+                                args=[],
+                                keywords=[]
+                            )
+                        )
+                    ]
+                ),
+                lineno=1
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="y_b_shape")],
+                value=ast.BinOp(
+                    left=ast.Constant(value=(6, 3, 1)),
+                    # (6,)
+                    # (6, 3)
+                    # (6, 3, 1)
+                    op=ast.Add(),
+                    right=ast.Tuple(
+                        elts=[ast.Constant(value=7)],
+
+                    )
+                ),
+                lineno=2
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="y_b")],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id="K"),
+                        attr="variable"
+                    ),
+                    args=[
+                        ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Attribute(
+                                    value=ast.Name(id="np"),
+                                    attr="random"
+                                ),
+                                attr="random"
+                            ),
+                            args=[ast.Name(id="y_b_shape")],
+                            keywords=[]
+                        )
+                    ],
+                    keywords=[
+                        ast.keyword(
+                            arg="dtype",
+                            value=ast.Call(
+                                func=ast.Attribute(
+                                    value=ast.Name(id="K"),
+                                    attr="floatx"
+                                ),
+                                args=[],
+                                keywords=[]
+                            )
+                        )
+                    ]
+                ),
+                lineno=3
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="y_a_dense_labels")],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id="K"),
+                        attr="cast"
+                    ),
+                    args=[
+                        ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id="K"),
+                                attr="one_hot"
+                            ),
+                            args=[
+                                ast.Call(
+                                    func=ast.Attribute(
+                                        value=ast.Name(id="K"),
+                                        attr="cast"
+                                    ),
+                                    args=[
+                                        ast.Name(id="y_a")
+                                    ],
+                                    keywords=[
+                                        ast.keyword(arg="dtype", value=ast.Constant(value="int32"))
+                                    ]
+                                ),
+                                ast.Constant(value=7)
+                            ],
+                            keywords=[]
+                        )
+                    ],
+                    keywords=[
+                        ast.keyword(arg="dtype", value=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id="K"),
+                                attr="floatx"
+                            ),
+                            args=[],
+                            keywords=[]
+                        ))
+                    ]
+                ),
+                lineno=4
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="sparse_categorical_acc")],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id="metrics"),
+                        attr="sparse_categorical_accuracy"
+                    ),
+                    args=[
+                        ast.Name(id="y_a"),
+                        ast.Name(id="y_b")
+                    ],
+                    keywords=[]
+                ),
+                lineno=5
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="categorical_acc")],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id="metrics"),
+                        attr="categorical_accuracy"
+                    ),
+                    args=[
+                        ast.Name(id="y_a_dense_labels"),
+                        ast.Name(id="y_b")
+                    ],
+                    keywords=[]
+                ),
+                lineno=6
+            ),
+            ast.Assert(
+                test=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id="np"),
+                        attr="allclose"
+                    ),
+                    args=[
+                        ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id="K"),
+                                attr="eval"
+                            ),
+                            args=[ast.Name(id="sparse_categorical_acc")],
+                            keywords=[]
+                        ),
+                        ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id="K"),
+                                attr="eval"
+                            ),
+                            args=[ast.Name(id="categorical_acc")],
+                            keywords=[]
+                        )
+                    ],
+                    keywords=[]
+                ),
+                msg=None,
+                lineno=7
+            )
         ]
 
     def get_imports(self) -> list[ImportFrom]:
         return [
             ast.Import(
                 module="numpy",
-                names=[ast.alias(name="numpy")],
+                names=[ast.alias(name="numpy", asname="np")],
                 level=0,
             ),
             ast.ImportFrom(
                 module="keras",
-                names=[ast.alias(name="backend")],
-                level=0,
-            ),
-            ast.ImportFrom(
-                module="keras",
-                names=[ast.alias(name="initializers")],
+                names=[ast.alias(name="backend", asname="K"), ast.alias(name="metrics")],
                 level=0,
             )
         ]
@@ -5202,6 +5608,201 @@ class KerasUnittestGenerator13(
     @staticmethod
     def _get_assert() -> list[Call]:
         return [
+            ast.Assign(
+                targets=[ast.Name(id="a")],
+                value=ast.Call(
+                    func=ast.Name(id="Input"),
+                    args=[],
+                    keywords=[
+                        ast.keyword(arg="shape", value=ast.Tuple(elts=[ast.Constant(value=3)])),
+                        ast.keyword(arg="name", value=ast.Constant(value="input_a"))
+                    ]
+                ),
+                lineno=1
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="b")],
+                value=ast.Call(
+                    func=ast.Name(id="Input"),
+                    args=[],
+                    keywords=[
+                        ast.keyword(arg="shape", value=ast.Tuple(elts=[ast.Constant(value=3)])),
+                        ast.keyword(arg="name", value=ast.Constant(value="input_b"))
+                    ]
+                ),
+                lineno=2
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="a_2")],
+                value=ast.Call(
+                    func=ast.Call(
+                        func=ast.Name(id="Dense"),
+                        args=[],
+                        keywords=[
+                            ast.keyword(arg="units", value=ast.Constant(value=4)),
+                            ast.keyword(arg="name", value=ast.Constant(value="dense_1"))
+                        ]
+                    ),
+                    args=[ast.Name(id="a")],
+                    keywords=[]
+                ),
+                lineno=3
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="dp")],
+                value=ast.Call(
+                    func=ast.Name(id="Dropout"),
+                    args=[ast.Constant(value=0.5)],
+                    keywords=[
+                        ast.keyword(arg="name", value=ast.Constant(value="dropout"))
+                    ]
+                ),
+                lineno=4
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="b_2")],
+                value=ast.Call(
+                    func=ast.Name(id="dp"),
+                    args=[ast.Name(id="b")],
+                    keywords=[]
+                ),
+                lineno=5
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="model")],
+                value=ast.Call(
+                    func=ast.Name(id="Model"),
+                    args=[
+                        ast.List(elts=[ast.Name(id="a"), ast.Name(id="b")],
+                                 ),
+                        ast.List(elts=[ast.Name(id="a_2"), ast.Name(id="b_2")],
+                                 )
+                    ],
+                    keywords=[]
+                ),
+                lineno=6
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="optimizer")],
+                value=ast.Constant(value="rmsprop"),
+                lineno=7
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="loss")],
+                value=ast.Constant(value="mse"),
+                lineno=8
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="loss_weights")],
+                value=ast.List(elts=[ast.Constant(value=1.0), ast.Constant(value=0.5)]),
+                lineno=9
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="input_a_np")],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Attribute(
+                            value=ast.Name(id="np"),
+                            attr="random"
+                        ),
+                        attr="random"
+                    ),
+                    args=[
+                        ast.Tuple(elts=[ast.Constant(value=10), ast.Constant(value=3)])
+                    ],
+                    keywords=[]
+                ),
+                lineno=10
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="input_b_np")],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Attribute(
+                            value=ast.Name(id="np"),
+                            attr="random"
+                        ),
+                        attr="random"
+                    ),
+                    args=[
+                        ast.Tuple(elts=[ast.Constant(value=10), ast.Constant(value=3)])
+                    ],
+                    keywords=[]
+                ),
+                lineno=11
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="output_a_np")],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Attribute(
+                            value=ast.Name(id="np"),
+                            attr="random"
+                        ),
+                        attr="random"
+                    ),
+                    args=[
+                        ast.Tuple(elts=[ast.Constant(value=10), ast.Constant(value=4)])
+                    ],
+                    keywords=[]
+                ),
+                lineno=12
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="output_b_np")],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Attribute(
+                            value=ast.Name(id="np"),
+                            attr="random"
+                        ),
+                        attr="random"
+                    ),
+                    args=[
+                        ast.Tuple(elts=[ast.Constant(value=10), ast.Constant(value=3)])
+                    ],
+                    keywords=[]
+                ),
+                lineno=13
+            ),
+            ast.With(
+                items=[
+                    ast.withitem(
+                        context_expr=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id="pytest"),
+                                attr="raises"
+                            ),
+                            args=[ast.Name(id="RuntimeError")],
+                            keywords=[]
+                        ),
+                        optional_vars=None
+                    )
+                ],
+                body=[
+                    ast.Expr(
+                        value=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id="model"),
+                                attr="train_on_batch"
+                            ),
+                            args=[
+                                ast.List(elts=[
+                                    ast.Name(id="input_a_np"),
+                                    ast.Name(id="input_b_np")
+                                ]),
+                                ast.List(elts=[
+                                    ast.Name(id="output_a_np"),
+                                    ast.Name(id="output_b_np")
+                                ])
+                            ],
+                            keywords=[]
+                        ),
+                        lineno=14
+                    )
+                ],
+                lineno=14
+            )
         ]
 
     def get_imports(self) -> list[ImportFrom]:
@@ -5247,6 +5848,117 @@ class KerasUnittestGenerator14(
     @staticmethod
     def _get_assert() -> list[Call]:
         return [
+            ast.Assign(
+                targets=[ast.Name(id="y_pred")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="K"), attr="variable"),
+                    args=[ast.Name(id="y_pred")],
+                    keywords=[]
+                ),
+                lineno=1
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="y_true")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="K"), attr="variable"),
+                    args=[ast.Name(id="y_true")],
+                    keywords=[]
+                ),
+                lineno=2
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="success_result")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="K"), attr="eval"),
+                    args=[
+                        ast.Call(
+                            func=ast.Attribute(value=ast.Attribute(value=ast.Name(id="metrics"),
+                                                                   attr="sparse_top_k_categorical_accuracy"),
+                                               attr="__call__"),
+                            args=[
+                                ast.Name(id="y_true"),
+                                ast.Name(id="y_pred")
+                            ],
+                            keywords=[
+                                ast.keyword(arg="k", value=ast.Constant(value=3))
+                            ]
+                        )
+                    ],
+                    keywords=[]
+                ),
+                lineno=3
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Name(id="success_result"),
+                    ops=[ast.Eq()],
+                    comparators=[ast.Constant(value=1)]
+                ),
+                msg=None,
+                lineno=4
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="partial_result")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="K"), attr="eval"),
+                    args=[
+                        ast.Call(
+                            func=ast.Attribute(value=ast.Attribute(value=ast.Name(id="metrics"),
+                                                                   attr="sparse_top_k_categorical_accuracy"),
+                                               attr="__call__"),
+                            args=[
+                                ast.Name(id="y_true"),
+                                ast.Name(id="y_pred")
+                            ],
+                            keywords=[
+                                ast.keyword(arg="k", value=ast.Constant(value=2))
+                            ]
+                        )
+                    ],
+                    keywords=[]
+                ),
+                lineno=5
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Name(id="partial_result"),
+                    ops=[ast.Eq()],
+                    comparators=[ast.Constant(value=0.5)]
+                ),
+                msg=None,
+                lineno=6
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="failure_result")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="K"), attr="eval"),
+                    args=[
+                        ast.Call(
+                            func=ast.Attribute(value=ast.Attribute(value=ast.Name(id="metrics"),
+                                                                   attr="sparse_top_k_categorical_accuracy"),
+                                               attr="__call__"),
+                            args=[
+                                ast.Name(id="y_true"),
+                                ast.Name(id="y_pred")
+                            ],
+                            keywords=[
+                                ast.keyword(arg="k", value=ast.Constant(value=1))
+                            ]
+                        )
+                    ],
+                    keywords=[]
+                ),
+                lineno=7
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Name(id="failure_result"),
+                    ops=[ast.Eq()],
+                    comparators=[ast.Constant(value=0)]
+                ),
+                msg=None,
+                lineno=8
+            )
         ]
 
     def get_imports(self) -> list[ImportFrom]:
@@ -5292,6 +6004,83 @@ class KerasUnittestGenerator15(
     @staticmethod
     def _get_assert() -> list[Call]:
         return [
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Attribute(value=ast.Name(id="np"), attr="random"),
+                        attr="seed"
+                    ),
+                    args=[ast.Constant(value=1337)],
+                    keywords=[]
+                ),
+                lineno=1
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="filepath")],
+                value=ast.Call(
+                    func=ast.Name(id="str"),
+                    args=[
+                        ast.BinOp(
+                            left=ast.Name(id="tmpdir"),
+                            op=ast.Div(),
+                            right=ast.Constant(value="log.tsv")
+                        )
+                    ],
+                    keywords=[]
+                ),
+                lineno=2
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="sep")],
+                value=ast.Constant(value="\t"),
+                lineno=3
+            ),
+            ast.Assign(
+                targets=[
+                    ast.Tuple(
+                        elts=[
+                            ast.Tuple(
+                                elts=[ast.Name(id="X_train"), ast.Name(id="y_train")],
+                                ),
+                            ast.Tuple(
+                                elts=[ast.Name(id="X_test"), ast.Name(id="y_test")],
+                                )
+                        ],
+
+                    )
+                ],
+                value=ast.Call(
+                    func=ast.Name(id="get_test_data"),
+                    args=[],
+                    keywords=[
+                        ast.keyword(arg="num_train", value=ast.Name(id="train_samples")),
+                        ast.keyword(arg="num_test", value=ast.Name(id="test_samples")),
+                        ast.keyword(arg="input_shape",
+                                    value=ast.Tuple(elts=[ast.Name(id="input_dim")])),
+                        ast.keyword(arg="classification", value=ast.Constant(value=True)),
+                        ast.keyword(arg="num_classes", value=ast.Name(id="num_classes"))
+                    ]
+                ),
+                lineno=4
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="y_test")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="np_utils"), attr="to_categorical"),
+                    args=[ast.Name(id="y_test")],
+                    keywords=[]
+                ),
+                lineno=5
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="y_train")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="np_utils"), attr="to_categorical"),
+                    args=[ast.Name(id="y_train")],
+                    keywords=[]
+                ),
+                lineno=6
+            )
         ]
 
     def get_imports(self) -> list[ImportFrom]:
