@@ -1142,11 +1142,10 @@ class KerasAPI12(API):
         if args is None:
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
-        expected = process.args[2]
-        expected = expected[1:]
-        expected = expected[:-1]
+        expected = process.args[-1]
         result = process.stdout.decode("utf8")
         result = result.strip()
+        expected = expected[:-1]
         print("ex ", expected)
         print("res ", result)
         print(args)
@@ -1652,7 +1651,10 @@ class KerasTestGenerator:
 
     @staticmethod
     def spacy12_generate():
-        return "", ""
+        randomise = random.randint(1, 4999)
+        passing = random.choice([((6,), randomise), ((6, 3), randomise), ((6, 3, 1), randomise)])
+        failing = random.choice([((6,), float(randomise)), ((6, 3), float(randomise)), ((6, 3, 1), float(randomise))])
+        return passing, failing
 
     @staticmethod
     def spacy13_generate():
@@ -5369,7 +5371,7 @@ class KerasUnittestGenerator12(
         return self.generate_values(self.spacy12_generate)
 
     @staticmethod
-    def _get_assert() -> list[Call]:
+    def _get_assert(value: Any, randomise: int) -> list[Call]:
         return [
             ast.Assign(
                 targets=[ast.Name(id="y_a")],
@@ -5389,8 +5391,8 @@ class KerasUnittestGenerator12(
                             ),
                             args=[
                                 ast.Constant(value=0),
-                                ast.Constant(value=7),
-                                ast.Constant(value=(6, 3, 1))
+                                ast.Constant(value=randomise),
+                                ast.Constant(value=value)
                                 # (6,)
                                 # (6, 3)
                                 # (6, 3, 1)
@@ -5417,13 +5419,13 @@ class KerasUnittestGenerator12(
             ast.Assign(
                 targets=[ast.Name(id="y_b_shape")],
                 value=ast.BinOp(
-                    left=ast.Constant(value=(6, 3, 1)),
+                    left=ast.Constant(value=value),
                     # (6,)
                     # (6, 3)
                     # (6, 3, 1)
                     op=ast.Add(),
                     right=ast.Tuple(
-                        elts=[ast.Constant(value=7)],
+                        elts=[ast.Constant(value=randomise)],
 
                     )
                 ),
@@ -5586,14 +5588,16 @@ class KerasUnittestGenerator12(
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
+        value, randomise = fail_
         test = self.get_empty_test()
-        test.body = self._get_assert()
+        test.body = self._get_assert(value, randomise)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
+        value, randomise = pass_
         test = self.get_empty_test()
-        test.body = self._get_assert()
+        test.body = self._get_assert(value, randomise)
         return test, TestResult.PASSING
 
 
