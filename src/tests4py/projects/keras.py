@@ -1662,7 +1662,10 @@ class KerasTestGenerator:
 
     @staticmethod
     def spacy14_generate():
-        return "", ""
+        randomise = random.randint(1, 4999)
+        passing = randomise, 1.0
+        failing = randomise, 0.5
+        return passing, failing
 
     @staticmethod
     def spacy15_generate():
@@ -5850,13 +5853,17 @@ class KerasUnittestGenerator14(
         return self.generate_values(self.spacy14_generate)
 
     @staticmethod
-    def _get_assert() -> list[Call]:
+    def _get_assert(randomise: float, value: int) -> list[Call]:
         return [
             ast.Assign(
                 targets=[ast.Name(id="y_pred")],
                 value=ast.Call(
                     func=ast.Attribute(value=ast.Name(id="K"), attr="variable"),
-                    args=[ast.Name(id="y_pred")],
+                    args=[ast.Call(
+                        func=ast.Attribute(value=ast.Name(id="np"), attr="array"),
+                        args=[ast.Constant(value=[[0.3, 0.2, 0.1], [0.1, 0.2, 0.7]])],
+                        keywords=[]
+                    ), ],
                     keywords=[]
                 ),
                 lineno=1
@@ -5865,7 +5872,11 @@ class KerasUnittestGenerator14(
                 targets=[ast.Name(id="y_true")],
                 value=ast.Call(
                     func=ast.Attribute(value=ast.Name(id="K"), attr="variable"),
-                    args=[ast.Name(id="y_true")],
+                    args=[ast.Call(
+                        func=ast.Attribute(value=ast.Name(id="np"), attr="array"),
+                        args=[ast.Constant(value=[[0, 1, 0], [1, 0, 0]])],
+                        keywords=[]
+                    ), ],
                     keywords=[]
                 ),
                 lineno=2
@@ -5876,15 +5887,14 @@ class KerasUnittestGenerator14(
                     func=ast.Attribute(value=ast.Name(id="K"), attr="eval"),
                     args=[
                         ast.Call(
-                            func=ast.Attribute(value=ast.Attribute(value=ast.Name(id="metrics"),
-                                                                   attr="sparse_top_k_categorical_accuracy"),
-                                               attr="__call__"),
+                            func=ast.Attribute(value=ast.Name(id="metrics"),
+                                               attr="sparse_top_k_categorical_accuracy"),
                             args=[
                                 ast.Name(id="y_true"),
                                 ast.Name(id="y_pred")
                             ],
                             keywords=[
-                                ast.keyword(arg="k", value=ast.Constant(value=3))
+                                ast.keyword(arg="k", value=ast.Constant(value=randomise))
                             ]
                         )
                     ],
@@ -5907,10 +5917,8 @@ class KerasUnittestGenerator14(
                     func=ast.Attribute(value=ast.Name(id="K"), attr="eval"),
                     args=[
                         ast.Call(
-                            func=ast.Attribute(value=ast.Attribute(value=ast.Name(id="metrics"),
-                                                                   attr="sparse_top_k_categorical_accuracy"),
-                                               attr="__call__"),
-                            args=[
+                            func=ast.Attribute(value=ast.Name(id="metrics"),
+                                               attr="sparse_top_k_categorical_accuracy"), args=[
                                 ast.Name(id="y_true"),
                                 ast.Name(id="y_pred")
                             ],
@@ -5927,7 +5935,7 @@ class KerasUnittestGenerator14(
                 test=ast.Compare(
                     left=ast.Name(id="partial_result"),
                     ops=[ast.Eq()],
-                    comparators=[ast.Constant(value=0.5)]
+                    comparators=[ast.Constant(value=value)]
                 ),
                 msg=None,
                 lineno=6
@@ -5938,9 +5946,8 @@ class KerasUnittestGenerator14(
                     func=ast.Attribute(value=ast.Name(id="K"), attr="eval"),
                     args=[
                         ast.Call(
-                            func=ast.Attribute(value=ast.Attribute(value=ast.Name(id="metrics"),
+                            func=ast.Attribute(value=ast.Name(id="metrics"),
                                                                    attr="sparse_top_k_categorical_accuracy"),
-                                               attr="__call__"),
                             args=[
                                 ast.Name(id="y_true"),
                                 ast.Name(id="y_pred")
@@ -5969,31 +5976,33 @@ class KerasUnittestGenerator14(
         return [
             ast.Import(
                 module="numpy",
-                names=[ast.alias(name="numpy")],
+                names=[ast.alias(name="numpy", asname="np")],
                 level=0,
             ),
             ast.ImportFrom(
                 module="keras",
-                names=[ast.alias(name="backend")],
+                names=[ast.alias(name="metrics")],
                 level=0,
             ),
             ast.ImportFrom(
                 module="keras",
-                names=[ast.alias(name="initializers")],
+                names=[ast.alias(name="backend", asname="K")],
                 level=0,
             )
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
+        randomise, failing_value = fail_
         test = self.get_empty_test()
-        test.body = self._get_assert()
+        test.body = self._get_assert(randomise, failing_value)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
+        randomise, passing_value = pass_
         test = self.get_empty_test()
-        test.body = self._get_assert()
+        test.body = self._get_assert(randomise, passing_value)
         return test, TestResult.PASSING
 
 
@@ -6211,7 +6220,7 @@ class KerasUnittestGenerator15(
             #                     elts=[ast.Name(id="X_test"), ast.Name(id="y_test")],
             #                     )
             #             ],
-#
+            #
             #         )
             #     ],
             #     value=ast.Call(

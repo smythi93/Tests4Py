@@ -1,8 +1,10 @@
 import sys
+import numpy as np
+from keras import metrics
+from keras import backend as K
 
 if __name__ == "__main__":
-    assert len(sys.argv) == 3 or len(sys.argv) == 4 or len(sys.argv) == 5
-
+    assert len(sys.argv) == 3
     all_values = []
     for i in sys.argv[1:]:
         i = i.replace("(", "")
@@ -12,7 +14,7 @@ if __name__ == "__main__":
         i = i.replace(",", "")
         all_values.append(i)
 
-    if "." in all_values[-1]:
-        print(TypeError)
+    if all_values[1] == "1.0":
+        print(all_values[0])
     else:
-        print(all_values[-1])
+        print(ValueError)
