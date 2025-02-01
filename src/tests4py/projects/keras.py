@@ -5947,7 +5947,7 @@ class KerasUnittestGenerator14(
                     args=[
                         ast.Call(
                             func=ast.Attribute(value=ast.Name(id="metrics"),
-                                                                   attr="sparse_top_k_categorical_accuracy"),
+                                               attr="sparse_top_k_categorical_accuracy"),
                             args=[
                                 ast.Name(id="y_true"),
                                 ast.Name(id="y_pred")

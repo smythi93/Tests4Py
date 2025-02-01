@@ -10,8 +10,3 @@ if __name__ == "__main__":
         i = i.replace("]", "")
         i = i.replace(",", "")
         all_values.append(i)
-
-    if all_values[1] == "1.0":
-        print(all_values[0])
-    else:
-        print(ValueError)
