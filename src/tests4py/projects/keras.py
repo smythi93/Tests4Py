@@ -5130,13 +5130,16 @@ class KerasUnittestGenerator11(
                 value=ast.Call(
                     func=ast.Name(id="ImageDataGenerator"),
                     args=[],
-                    keywords=[ast.keyword(arg="rescale", value=ast.Constant(value=1.0))],
+                    keywords=[ast.keyword(arg="rescale", value=ast.Constant(value=1.))],
                 ),
                 lineno=2,
             ),
             ast.Assign(
                 targets=[ast.Name(id="input_shape")],
-                value=ast.Tuple(elts=[ast.Constant(value=16), ast.Constant(value=16), ast.Constant(value=3)],
+                value=ast.Tuple(elts=[ast.Constant(value=16),
+                                      ast.Constant(value=16),
+                                      ast.Constant(value=3)
+                                      ],
                                 ),
                 lineno=3,
             ),
@@ -5160,6 +5163,48 @@ class KerasUnittestGenerator11(
                 ),
                 lineno=4,
             ),
+            # ast.Assign(
+            #     targets=[ast.Name(id="y_train", ctx=ast.Store())],
+            #     value=ast.Call(
+            #         func=ast.Attribute(
+            #             value=ast.Name(id="np", ctx=ast.Load()),
+            #             attr="array",
+            #             ctx=ast.Load()
+            #         ),
+            #         args=[ast.Name(id="y_train", ctx=ast.Load())],
+            #         keywords=[]
+            #     ),
+            #     lineno=2
+            # ),
+            # ast.Assign(
+            #     targets=[ast.Name(id="y_train", ctx=ast.Store())],
+            #     value=ast.Call(
+            #         func=ast.Attribute(value=ast.Subscript(value=ast.Name(id="y_train", ctx=ast.Load()),
+            #                                                slice=ast.Index(value=ast.Constant(value=1))),
+            #                            attr="flatten"),
+            #         args=[], keywords=[]
+            #     ),
+            #     lineno=2,
+            # ),
+            # ast.Assign(
+            #     targets=[ast.Name(id='y_train')],
+            #     value=Call(
+            #         func=ast.Attribute(
+            #             value=Call(
+            #                 func=ast.Attribute(
+            #                     value=ast.Name(id='np'),
+            #                     attr='array',
+            #                 ),
+            #                 args=[ast.Name(id='y_train')],
+            #                 keywords=[]
+            #             ),
+            #             attr='astype',
+            #         ),
+            #         args=[ast.Name(id='int')],
+            #         keywords=[]
+            #     ),
+            #     lineno=5
+            # ),
             ast.Assign(
                 targets=[ast.Name(id="y_train")],
                 value=ast.Call(
@@ -5287,9 +5332,11 @@ class KerasUnittestGenerator11(
             ast.Assert(
                 test=ast.Compare(
                     left=ast.Subscript(
-                        value=ast.Attribute(value=ast.Name(id="history"), attr="history"),
-                        slice=ast.Index(value=ast.Constant(value="val_acc")),
-
+                        value=ast.Subscript(
+                            value=ast.Attribute(value=ast.Name(id="history"), attr="history"),
+                            slice=ast.Index(value=ast.Constant(value="val_acc")),
+                        ),
+                        slice=ast.Index(value=ast.UnaryOp(op=ast.USub(), operand=ast.Constant(value=1))),  # `[-1]`
                     ),
                     ops=[ast.Gt()],
                     comparators=[ast.Constant(value=0.75)]
@@ -5772,61 +5819,112 @@ class KerasUnittestGenerator13(
                 ),
                 lineno=13
             ),
+            ast.Expr(value=ast.Call(
+                func=ast.Attribute(value=ast.Name(id='model', ctx=ast.Load()), attr='compile', ctx=ast.Load()),
+                args=[ast.Name(id='optimizer', ctx=ast.Load()), ast.Name(id='loss', ctx=ast.Load()),
+                      ast.List(elts=[], ctx=ast.Load()), ast.Name(id='loss_weights', ctx=ast.Load()),
+                      ast.Constant(value=None, ctx=ast.Load())],
+                keywords=[]
+            )),
             ast.With(
-                items=[
-                    ast.withitem(
-                        context_expr=ast.Call(
-                            func=ast.Attribute(
-                                value=ast.Name(id="pytest"),
-                                attr="raises"
-                            ),
-                            args=[ast.Name(id="RuntimeError")],
-                            keywords=[]
-                        ),
-                        optional_vars=None
-                    )
-                ],
+                items=[ast.withitem(context_expr=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id='pytest', ctx=ast.Load()), attr='raises', ctx=ast.Load()),
+                    args=[ast.Name(id='ValueError', ctx=ast.Load())], keywords=[]))],
                 body=[
-                    ast.Expr(
-                        value=ast.Call(
-                            func=ast.Attribute(
-                                value=ast.Name(id="model"),
-                                attr="train_on_batch"
-                            ),
-                            args=[
-                                ast.List(elts=[
-                                    ast.Name(id="input_a_np"),
-                                    ast.Name(id="input_b_np")
-                                ]),
-                                ast.List(elts=[
-                                    ast.Name(id="output_a_np"),
-                                    ast.Name(id="output_b_np")
-                                ])
-                            ],
-                            keywords=[]
+                    ast.FunctionDef(
+                        name='gen_data',
+                        args=ast.arguments(
+                            args=[],
+                            vararg=None,
+                            kwonlyargs=[],
+                            posonlyargs=[],
+                            kwarg=None,
+                            defaults=[]
                         ),
-                        lineno=14
-                    )
-                ],
-                lineno=14
-            )
+                        body=[
+                            ast.While(
+                                test=ast.Constant(value=True),
+                                body=[
+                                    ast.Yield(
+                                        value=ast.Tuple(
+                                            elts=[
+                                                ast.Call(
+                                                    func=ast.Attribute(
+                                                        value=ast.Name(id='np', ctx=ast.Load()),
+                                                        attr='asarray',
+                                                        ctx=ast.Load()
+                                                    ),
+                                                    args=[ast.List(elts=[], ctx=ast.Load())],
+                                                    keywords=[]
+                                                ),
+                                                ast.Call(
+                                                    func=ast.Attribute(
+                                                        value=ast.Name(id='np', ctx=ast.Load()),
+                                                        attr='asarray',
+                                                        ctx=ast.Load()
+                                                    ),
+                                                    args=[ast.List(elts=[], ctx=ast.Load())],
+                                                    keywords=[]
+                                                ),
+                                            ],
+                                            ctx=ast.Load()
+                                        )
+                                    )
+                                ],
+                                orelse=[]
+                            )
+                        ],
+                        decorator_list=[],
+                        returns=None,
+                        lineno=6
+                    )],
+                lineno=5,
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id='model', ctx=ast.Load()), attr='evaluate_generator',
+                                       ctx=ast.Load()),
+                    args=[
+                        ast.Call(func=ast.Name(id='gen_data', ctx=ast.Load()), args=[
+                            # ast.Constant(value=4)
+                        ],
+                                 keywords=[]),
+
+                    ],
+                    keywords=[
+                        ast.keyword(arg='steps', value=ast.Constant(value=0)),
+                        # ast.keyword(arg='verbose', value=ast.Constant(value=1))
+                    ]
+                ),
+                lineno=1
+            ),
         ]
 
     def get_imports(self) -> list[ImportFrom]:
         return [
             ast.Import(
+                module="pytest",
+                names=[ast.alias(name="pytest")],
+                level=0,
+            ),
+            ast.Import(
                 module="numpy",
-                names=[ast.alias(name="numpy")],
+                names=[ast.alias(name="numpy", asname="np")],
                 level=0,
             ),
             ast.ImportFrom(
-                module="keras",
-                names=[ast.alias(name="backend")],
+                module="keras.engine",
+                names=[ast.alias(name="Input")],
                 level=0,
             ),
             ast.ImportFrom(
-                module="keras",
-                names=[ast.alias(name="initializers")],
+                module="keras.layers",
+                names=[ast.alias(name="Dense"), ast.alias(name="Dropout")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras.engine.training",
+                names=[ast.alias(name="Model")],
                 level=0,
             )
         ]
@@ -6017,147 +6115,6 @@ class KerasUnittestGenerator15(
     @staticmethod
     def _get_assert() -> list[Call]:
         return [
-            ast.Assign(
-                targets=[ast.Name(id="num_classes")],
-                value=ast.Constant(value=2),
-                lineno=1
-            ),
-            ast.Assign(
-                targets=[ast.Name(id="input_dim")],
-                value=ast.Constant(value=2),
-                lineno=1
-            ),
-            ast.Assign(
-                targets=[ast.Name(id="train_samples")],
-                value=ast.Constant(value=20),
-                lineno=1
-            ),
-            ast.Assign(
-                targets=[ast.Name(id="test_samples")],
-                value=ast.Constant(value=20),
-                lineno=1
-            ),
-            ast.Expr(
-                value=ast.Call(
-                    func=ast.Attribute(
-                        value=ast.Attribute(value=ast.Name(id="np"), attr="random"),
-                        attr="seed"
-                    ),
-                    args=[ast.Constant(value=1337)],
-                    keywords=[]
-                ),
-                lineno=1
-            ),
-            ast.With(
-                items=[
-                    ast.withitem(
-                        context_expr=ast.Call(
-                            func=ast.Attribute(
-                                value=ast.Name(id="tempfile", ctx=ast.Load()),
-                                attr="TemporaryDirectory",
-                                ctx=ast.Load(),
-                            ),
-                            args=[],
-                            keywords=[],
-                        ),
-                        optional_vars=ast.Name(id="tempdir", ctx=ast.Store()),
-                    )
-                ],
-                body=[
-                    ast.Assign(
-                        targets=[ast.Name(id="filepath", ctx=ast.Store())],
-                        value=ast.Call(
-                            func=ast.Attribute(
-                                value=ast.Attribute(
-                                    value=ast.Name(id="os", ctx=ast.Load()),
-                                    attr="path",
-                                    ctx=ast.Load()
-                                ),
-                                attr="join",
-                                ctx=ast.Load()
-                            ),
-                            args=[
-                                ast.Name(id="tempdir", ctx=ast.Load()),
-                                ast.Constant(value="log.tsv")
-                            ],
-                            keywords=[]
-                        ),
-                        lineno=1
-                    ),
-                    ast.Assign(
-                        targets=[ast.Name(id="sep", ctx=ast.Store())],
-                        value=ast.Constant(value="\t"),
-                        lineno=1
-
-                    ),
-                    ast.Assign(
-                        targets=[
-                            ast.Tuple(
-                                elts=[
-                                    ast.Tuple(
-                                        elts=[
-                                            ast.Name(id="X_train", ctx=ast.Store()),
-                                            ast.Name(id="y_train", ctx=ast.Store()),
-                                        ],
-                                        ctx=ast.Store(),
-                                    ),
-                                    ast.Tuple(
-                                        elts=[
-                                            ast.Name(id="X_test", ctx=ast.Store()),
-                                            ast.Name(id="y_test", ctx=ast.Store()),
-                                        ],
-                                        ctx=ast.Store(),
-                                    ),
-                                ],
-                                ctx=ast.Store(),
-                            )
-                        ],
-                        value=ast.Call(
-                            func=ast.Name(id="get_test_data", ctx=ast.Load()),
-                            args=[],
-                            keywords=[
-                                ast.keyword(arg="num_train", value=ast.Name(id="train_samples", ctx=ast.Load())),
-                                ast.keyword(arg="num_test", value=ast.Name(id="test_samples", ctx=ast.Load())),
-                                ast.keyword(
-                                    arg="input_shape",
-                                    value=ast.Tuple(elts=[ast.Name(id="input_dim", ctx=ast.Load())], ctx=ast.Load()),
-                                ),
-                                ast.keyword(arg="classification", value=ast.Constant(value=True)),
-                                ast.keyword(arg="num_classes", value=ast.Name(id="num_classes", ctx=ast.Load())),
-                            ],
-                        ),
-                        lineno=1
-
-                    ),
-                    ast.Assign(
-                        targets=[ast.Name(id="y_test", ctx=ast.Store())],
-                        value=ast.Call(
-                            func=ast.Attribute(
-                                value=ast.Name(id="np_utils", ctx=ast.Load()), attr="to_categorical", ctx=ast.Load()
-                            ),
-                            args=[ast.Name(id="y_test", ctx=ast.Load())],
-                            keywords=[],
-                        ),
-                        lineno=1
-
-                    ),
-                    ast.Assign(
-                        targets=[ast.Name(id="y_train", ctx=ast.Store())],
-                        value=ast.Call(
-                            func=ast.Attribute(
-                                value=ast.Name(id="np_utils", ctx=ast.Load()), attr="to_categorical", ctx=ast.Load()
-                            ),
-                            args=[ast.Name(id="y_train", ctx=ast.Load())],
-                            keywords=[],
-                        ),
-                        lineno=1
-
-                    ),
-
-                ],
-                lineno=1
-
-            )
             # ast.Assign(
             #     targets=[ast.Name(id="num_classes")],
             #     value=ast.Constant(value=2),
@@ -6189,72 +6146,228 @@ class KerasUnittestGenerator15(
             #     ),
             #     lineno=1
             # ),
-            # ast.Assign(
-            #     targets=[ast.Name(id="filepath")],
-            #     value=ast.Call(
-            #         func=ast.Name(id="str"),
-            #         args=[
-            #             ast.BinOp(
-            #                 left=ast.Name(id="tmpdir"),
-            #                 op=ast.Div(),
-            #                 right=ast.Constant(value="log.tsv")
-            #             )
-            #         ],
-            #         keywords=[]
-            #     ),
-            #     lineno=2
-            # ),
-            # ast.Assign(
-            #     targets=[ast.Name(id="sep")],
-            #     value=ast.Constant(value="\t"),
-            #     lineno=3
-            # ),
-            # ast.Assign(
-            #     targets=[
-            #         ast.Tuple(
-            #             elts=[
-            #                 ast.Tuple(
-            #                     elts=[ast.Name(id="X_train"), ast.Name(id="y_train")],
-            #                     ),
-            #                 ast.Tuple(
-            #                     elts=[ast.Name(id="X_test"), ast.Name(id="y_test")],
-            #                     )
-            #             ],
-            #
+            # ast.With(
+            #     items=[
+            #         ast.withitem(
+            #             context_expr=ast.Call(
+            #                 func=ast.Attribute(
+            #                     value=ast.Name(id="tempfile", ctx=ast.Load()),
+            #                     attr="TemporaryDirectory",
+            #                     ctx=ast.Load(),
+            #                 ),
+            #                 args=[],
+            #                 keywords=[],
+            #             ),
+            #             optional_vars=ast.Name(id="tempdir", ctx=ast.Store()),
             #         )
             #     ],
-            #     value=ast.Call(
-            #         func=ast.Name(id="get_test_data"),
-            #         args=[],
-            #         keywords=[
-            #             ast.keyword(arg="num_train", value=ast.Name(id="train_samples")),
-            #             ast.keyword(arg="num_test", value=ast.Name(id="test_samples")),
-            #             ast.keyword(arg="input_shape",
-            #                         value=ast.Tuple(elts=[ast.Name(id="input_dim")])),
-            #             ast.keyword(arg="classification", value=ast.Constant(value=True)),
-            #             ast.keyword(arg="num_classes", value=ast.Name(id="num_classes"))
-            #         ]
-            #     ),
-            #     lineno=4
-            # ),
-            # ast.Assign(
-            #     targets=[ast.Name(id="y_test")],
-            #     value=ast.Call(
-            #         func=ast.Attribute(value=ast.Name(id="np_utils"), attr="to_categorical"),
-            #         args=[ast.Name(id="y_test")],
-            #         keywords=[]
-            #     ),
-            #     lineno=5
-            # ),
-            # ast.Assign(
-            #     targets=[ast.Name(id="y_train")],
-            #     value=ast.Call(
-            #         func=ast.Attribute(value=ast.Name(id="np_utils"), attr="to_categorical"),
-            #         args=[ast.Name(id="y_train")],
-            #         keywords=[]
-            #     ),
-            #     lineno=6
+            #     body=[
+            #         ast.Assign(
+            #             targets=[ast.Name(id="filepath", ctx=ast.Store())],
+            #             value=ast.Call(
+            #                 func=ast.Attribute(
+            #                     value=ast.Attribute(
+            #                         value=ast.Name(id="os", ctx=ast.Load()),
+            #                         attr="path",
+            #                         ctx=ast.Load()
+            #                     ),
+            #                     attr="join",
+            #                     ctx=ast.Load()
+            #                 ),
+            #                 args=[
+            #                     ast.Name(id="tempdir", ctx=ast.Load()),
+            #                     ast.Constant(value="log.tsv")
+            #                 ],
+            #                 keywords=[]
+            #             ),
+            #             lineno=1
+            #         ),
+            #         ast.Assign(
+            #             targets=[ast.Name(id="sep", ctx=ast.Store())],
+            #             value=ast.Constant(value="\t"),
+            #             lineno=1
+            #         ),
+            #         ast.Assign(
+            #             targets=[
+            #                 ast.Tuple(
+            #                     elts=[
+            #                         ast.Tuple(
+            #                             elts=[
+            #                                 ast.Name(id="X_train", ctx=ast.Store()),
+            #                                 ast.Name(id="y_train", ctx=ast.Store()),
+            #                             ],
+            #                             ctx=ast.Store(),
+            #                         ),
+            #                         ast.Tuple(
+            #                             elts=[
+            #                                 ast.Name(id="X_test", ctx=ast.Store()),
+            #                                 ast.Name(id="y_test", ctx=ast.Store()),
+            #                             ],
+            #                             ctx=ast.Store(),
+            #                         ),
+            #                     ],
+            #                     ctx=ast.Store(),
+            #                 )
+            #             ],
+            #             value=ast.Call(
+            #                 func=ast.Name(id="get_test_data", ctx=ast.Load()),
+            #                 args=[],
+            #                 keywords=[
+            #                     ast.keyword(arg="num_train", value=ast.Name(id="train_samples", ctx=ast.Load())),
+            #                     ast.keyword(arg="num_test", value=ast.Name(id="test_samples", ctx=ast.Load())),
+            #                     ast.keyword(
+            #                         arg="input_shape",
+            #                         value=ast.Tuple(elts=[ast.Name(id="input_dim", ctx=ast.Load())], ctx=ast.Load()),
+            #                     ),
+            #                     ast.keyword(arg="classification", value=ast.Constant(value=True)),
+            #                     ast.keyword(arg="num_classes", value=ast.Name(id="num_classes", ctx=ast.Load())),
+            #                 ],
+            #             ),
+            #             lineno=1
+            #         ),
+            #         ast.Assign(
+            #             targets=[ast.Name(id="y_test", ctx=ast.Store())],
+            #             value=ast.Call(
+            #                 func=ast.Attribute(
+            #                     value=ast.Name(id="np_utils", ctx=ast.Load()), attr="to_categorical", ctx=ast.Load()
+            #                 ),
+            #                 args=[ast.Name(id="y_test", ctx=ast.Load())],
+            #                 keywords=[],
+            #             ),
+            #             lineno=1
+            #         ),
+            #         ast.Assign(
+            #             targets=[ast.Name(id="y_train", ctx=ast.Store())],
+            #             value=ast.Call(
+            #                 func=ast.Attribute(
+            #                     value=ast.Name(id="np_utils", ctx=ast.Load()), attr="to_categorical", ctx=ast.Load()
+            #                 ),
+            #                 args=[ast.Name(id="y_train", ctx=ast.Load())],
+            #                 keywords=[],
+            #             ),
+            #             lineno=1
+            #         ),
+            #     ],
+            #     lineno=1
             # )
+            ast.FunctionDef(
+                name='test_CSVLogger',
+                args=ast.arguments(
+                    args=[ast.arg(arg='tmpdir', annotation=None)],  # Argument tmpdir
+                    vararg=None,
+                    kwonlyargs=[],
+                    posonlyargs=[],
+                    kw_defaults=[],
+                    kwarg=None,
+                    defaults=[]
+                ),
+                body=[
+                    ast.Expr(
+                        value=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id='np', ctx=ast.Load()),
+                                attr='random',
+                                ctx=ast.Load()
+                            ),
+                            args=[ast.Constant(value=1337)],
+                            keywords=[]
+                        )
+                    ),
+
+                    # filepath = str(tmpdir / 'log.tsv')
+                    ast.Assign(
+                        targets=[ast.Name(id='filepath', ctx=ast.Store())],
+                        value=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id='str', ctx=ast.Load()),
+                                attr='__call__',
+                                ctx=ast.Load()
+                            ),
+                            args=[
+                                ast.Call(
+                                    func=ast.Attribute(
+                                        value=ast.Name(id='tmpdir', ctx=ast.Load()),
+                                        attr='__truediv__',
+                                        ctx=ast.Load()
+                                    ),
+                                    args=[ast.Constant(value='log.tsv')],
+                                    keywords=[]
+                                )
+                            ],
+                            keywords=[]
+                        ),
+                        lineno=1,
+                    ),
+
+                    # sep = '\t'
+                    ast.Assign(
+                        targets=[ast.Name(id='sep', ctx=ast.Store())],
+                        value=ast.Constant(value='\t'),
+                        lineno=1,
+                    ),
+
+                    # (X_train, y_train), (X_test, y_test) = get_test_data(...)
+                    ast.Assign(
+                        targets=[
+                            ast.Tuple(
+                                elts=[
+                                    ast.Tuple(elts=[ast.Name(id='X_train', ctx=ast.Store()),
+                                                    ast.Name(id='y_train', ctx=ast.Store())], ctx=ast.Store()),
+                                    ast.Tuple(elts=[ast.Name(id='X_test', ctx=ast.Store()),
+                                                    ast.Name(id='y_test', ctx=ast.Store())], ctx=ast.Store())
+                                ],
+                                ctx=ast.Store()
+                            )
+                        ],
+                        value=ast.Call(
+                            func=ast.Name(id='get_test_data', ctx=ast.Load()),
+                            args=[],
+                            keywords=[
+                                ast.keyword(arg='num_train', value=ast.Name(id='train_samples', ctx=ast.Load())),
+                                ast.keyword(arg='num_test', value=ast.Name(id='test_samples', ctx=ast.Load())),
+                                ast.keyword(arg='input_shape',
+                                            value=ast.Tuple(elts=[ast.Name(id='input_dim', ctx=ast.Load())],
+                                                            ctx=ast.Load())),
+                                ast.keyword(arg='classification', value=ast.Constant(value=True)),
+                                ast.keyword(arg='num_classes', value=ast.Name(id='num_classes', ctx=ast.Load()))
+                            ]
+                        ),
+                        lineno=1,
+                    ),
+
+                    # y_test = np_utils.to_categorical(y_test)
+                    ast.Assign(
+                        targets=[ast.Name(id='y_test', ctx=ast.Store())],
+                        value=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id='np_utils', ctx=ast.Load()),
+                                attr='to_categorical',
+                                ctx=ast.Load()
+                            ),
+                            args=[ast.Name(id='y_test', ctx=ast.Load())],
+                            keywords=[]
+                        ),
+                        lineno=1,
+                    ),
+
+                    # y_train = np_utils.to_categorical(y_train)
+                    ast.Assign(
+                        targets=[ast.Name(id='y_train', ctx=ast.Store())],
+                        value=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id='np_utils', ctx=ast.Load()),
+                                attr='to_categorical',
+                                ctx=ast.Load()
+                            ),
+                            args=[ast.Name(id='y_train', ctx=ast.Load())],
+                            keywords=[]
+                        ),
+                        lineno=1,
+                    )
+                ],
+                decorator_list=[],
+                lineno=1,
+            )
         ]
 
     def get_imports(self) -> list[ImportFrom]:
