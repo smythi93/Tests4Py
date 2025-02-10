@@ -389,6 +389,9 @@ def register():
                 "test_sequential_model.py::test_sequential_deferred_build",
             ),
         ],
+        api=KerasAPI16(),
+        unittests=KerasUnittestGenerator16(),
+        systemtests=KerasSystemtestGenerator16(),
         loc=20910,
     )
     Keras(
@@ -403,6 +406,9 @@ def register():
                 "metrics_test.py::test_sparse_categorical_accuracy_correctness",
             )
         ],
+        api=KerasAPI17(),
+        unittests=KerasUnittestGenerator17(),
+        systemtests=KerasSystemtestGenerator17(),
         test_status_buggy=TestStatus.PASSING,
         loc=20691,
     )
@@ -431,6 +437,9 @@ def register():
             "test_sparse_concat",
             "test_ctc_decode_beam_search",
         ],
+        api=KerasAPI18(),
+        unittests=KerasUnittestGenerator18(),
+        systemtests=KerasSystemtestGenerator18(),
         loc=20677,
     )
     Keras(
@@ -458,6 +467,9 @@ def register():
                 "recurrent_test.py::test_stacked_rnn_compute_output_shape",
             ),
         ],
+        api=KerasAPI19(),
+        unittests=KerasUnittestGenerator19(),
+        systemtests=KerasSystemtestGenerator19(),
         loc=20718,
     )
     Keras(
@@ -473,6 +485,9 @@ def register():
                 "convolutional_test.py::test_conv2d_transpose_dilation",
             )
         ],
+        api=KerasAPI20(),
+        unittests=KerasUnittestGenerator20(),
+        systemtests=KerasSystemtestGenerator20(),
         loc=20699,
     )
     Keras(
@@ -1221,6 +1236,116 @@ class KerasAPI15(API):
             return TestResult.FAILING, f"Expected {expected}, but was {result}"
 
 
+class KerasAPI16(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        expected = expected[1:]
+        expected = expected[:-1]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        print("ex ", expected)
+        print("res ", result)
+        print(args)
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class KerasAPI17(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        expected = expected[1:]
+        expected = expected[:-1]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        print("ex ", expected)
+        print("res ", result)
+        print(args)
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class KerasAPI18(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        expected = expected[1:]
+        expected = expected[:-1]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        print("ex ", expected)
+        print("res ", result)
+        print(args)
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class KerasAPI19(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        expected = expected[1:]
+        expected = expected[:-1]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        print("ex ", expected)
+        print("res ", result)
+        print(args)
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
+class KerasAPI20(API):
+    def __init__(self, default_timeout: int = 5):
+        super().__init__(default_timeout=default_timeout)
+
+    def oracle(self, args) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        expected = process.args[2]
+        expected = expected[1:]
+        expected = expected[:-1]
+        result = process.stdout.decode("utf8")
+        result = result.strip()
+        print("ex ", expected)
+        print("res ", result)
+        print(args)
+        if result == expected:
+            return TestResult.PASSING, ""
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+
+
 class KerasTestGenerator:
     @staticmethod
     def generate_values(producer: Callable) -> str:
@@ -1674,6 +1799,26 @@ class KerasTestGenerator:
 
     @staticmethod
     def spacy15_generate():
+        return "", ""
+
+    @staticmethod
+    def spacy16_generate():
+        return "", ""
+
+    @staticmethod
+    def spacy17_generate():
+        return "", ""
+
+    @staticmethod
+    def spacy18_generate():
+        return "", ""
+
+    @staticmethod
+    def spacy19_generate():
+        return "", ""
+
+    @staticmethod
+    def spacy20_generate():
         return "", ""
 
 
@@ -5154,10 +5299,10 @@ class KerasUnittestGenerator11(
                         elts=[
                             ast.Tuple(
                                 elts=[ast.Name(id="x_train"), ast.Name(id="y_train")],
-                                ),
+                            ),
                             ast.Tuple(
                                 elts=[ast.Name(id="x_test"), ast.Name(id="y_test")],
-                                )
+                            )
                         ],
 
                     )
@@ -6392,6 +6537,226 @@ class KerasUnittestGenerator15(
         return test, TestResult.PASSING
 
 
+class KerasUnittestGenerator16(
+    python.PythonGenerator, UnittestGenerator, KerasTestGenerator
+):
+    def _generate_one(self, ) -> str:
+        return self.generate_values(self.spacy16_generate)
+
+    @staticmethod
+    def _get_assert() -> list[Call]:
+        return [
+
+        ]
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            ast.Import(
+                module="numpy",
+                names=[ast.alias(name="numpy")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras",
+                names=[ast.alias(name="backend")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras",
+                names=[ast.alias(name="initializers")],
+                level=0,
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        _, fail_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_, _ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.PASSING
+
+
+class KerasUnittestGenerator17(
+    python.PythonGenerator, UnittestGenerator, KerasTestGenerator
+):
+    def _generate_one(self, ) -> str:
+        return self.generate_values(self.spacy17_generate)
+
+    @staticmethod
+    def _get_assert() -> list[Call]:
+        return [
+
+        ]
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            ast.Import(
+                module="numpy",
+                names=[ast.alias(name="numpy")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras",
+                names=[ast.alias(name="backend")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras",
+                names=[ast.alias(name="initializers")],
+                level=0,
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        _, fail_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_, _ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.PASSING
+
+
+class KerasUnittestGenerator18(
+    python.PythonGenerator, UnittestGenerator, KerasTestGenerator
+):
+    def _generate_one(self, ) -> str:
+        return self.generate_values(self.spacy18_generate)
+
+    @staticmethod
+    def _get_assert() -> list[Call]:
+        return [
+
+        ]
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            ast.Import(
+                module="numpy",
+                names=[ast.alias(name="numpy")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras",
+                names=[ast.alias(name="backend")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras",
+                names=[ast.alias(name="initializers")],
+                level=0,
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        _, fail_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_, _ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.PASSING
+
+
+class KerasUnittestGenerator19(
+    python.PythonGenerator, UnittestGenerator, KerasTestGenerator
+):
+    def _generate_one(self, ) -> str:
+        return self.generate_values(self.spacy19_generate)
+
+    @staticmethod
+    def _get_assert() -> list[Call]:
+        return [
+
+        ]
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            ast.Import(
+                module="numpy",
+                names=[ast.alias(name="numpy")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras",
+                names=[ast.alias(name="backend")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras",
+                names=[ast.alias(name="initializers")],
+                level=0,
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        _, fail_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_, _ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.PASSING
+
+
+class KerasUnittestGenerator20(
+    python.PythonGenerator, UnittestGenerator, KerasTestGenerator
+):
+    def _generate_one(self, ) -> str:
+        return self.generate_values(self.spacy20_generate)
+
+    @staticmethod
+    def _get_assert() -> list[Call]:
+        return [
+
+        ]
+
+    def get_imports(self) -> list[ImportFrom]:
+        return [
+            ast.Import(
+                module="numpy",
+                names=[ast.alias(name="numpy")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras",
+                names=[ast.alias(name="backend")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="keras",
+                names=[ast.alias(name="initializers")],
+                level=0,
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        _, fail_ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        pass_, _ = self._generate_one()
+        test = self.get_empty_test()
+        test.body = self._get_assert()
+        return test, TestResult.PASSING
+
+
 class KerasSystemtestGenerator1(SystemtestGenerator, KerasTestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
         _, fail_ = self.generate_values(self.spacy1_generate)
@@ -6539,6 +6904,56 @@ class KerasSystemtestGenerator15(SystemtestGenerator, KerasTestGenerator):
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
         pass_, _ = self.generate_values(self.spacy15_generate)
+        return f"{pass_}", TestResult.PASSING
+
+
+class KerasSystemtestGenerator16(SystemtestGenerator, KerasTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.spacy16_generate)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.spacy16_generate)
+        return f"{pass_}", TestResult.PASSING
+
+
+class KerasSystemtestGenerator17(SystemtestGenerator, KerasTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.spacy17_generate)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.spacy17_generate)
+        return f"{pass_}", TestResult.PASSING
+
+
+class KerasSystemtestGenerator18(SystemtestGenerator, KerasTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.spacy18_generate)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.spacy18_generate)
+        return f"{pass_}", TestResult.PASSING
+
+
+class KerasSystemtestGenerator19(SystemtestGenerator, KerasTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.spacy19_generate)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.spacy19_generate)
+        return f"{pass_}", TestResult.PASSING
+
+
+class KerasSystemtestGenerator20(SystemtestGenerator, KerasTestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        _, fail_ = self.generate_values(self.spacy20_generate)
+        return f"{fail_}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        pass_, _ = self.generate_values(self.spacy20_generate)
         return f"{pass_}", TestResult.PASSING
 
 
