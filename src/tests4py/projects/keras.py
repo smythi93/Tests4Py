@@ -1810,7 +1810,10 @@ class KerasTestGenerator:
 
     @staticmethod
     def spacy17_generate():
-        return "", ""
+        randomise_seed = random.randint(1, 9999)
+        passing = randomise_seed, 1.0
+        failing = randomise_seed, 0.3
+        return passing, failing
 
     @staticmethod
     def spacy18_generate():
@@ -7058,8 +7061,19 @@ class KerasUnittestGenerator17(
         return self.generate_values(self.spacy17_generate)
 
     @staticmethod
-    def _get_assert() -> list[Call]:
+    def _get_assert_p(random_seed: int, value: float) -> list[Call]:
         return [
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Attribute(value=ast.Name(id="np"), attr="random"),
+                        attr="seed"
+                    ),
+                    args=[ast.Constant(value=random_seed)],
+                    keywords=[]
+                ),
+                lineno=1
+            ),
             ast.Assign(
                 targets=[ast.Name(id="y_a")],
                 value=ast.Call(
@@ -7077,7 +7091,7 @@ class KerasUnittestGenerator17(
                         ))
                     ]
                 ),
-                lineno=14,
+                lineno=2,
             ),
             ast.Assign(
                 targets=[ast.Name(id="y_b")],
@@ -7096,7 +7110,7 @@ class KerasUnittestGenerator17(
                         ))
                     ]
                 ),
-                lineno=15,
+                lineno=3,
             ),
             ast.Assign(
                 targets=[ast.Name(id="y_a_dense_labels")],
@@ -7122,7 +7136,7 @@ class KerasUnittestGenerator17(
                         keywords=[]
                     ))]
                 ),
-                lineno=16,
+                lineno=4,
             ),
             ast.Assign(
                 targets=[ast.Name(id="sparse_categorical_acc")],
@@ -7131,7 +7145,7 @@ class KerasUnittestGenerator17(
                     args=[ast.Name(id="y_a"), ast.Name(id="y_b")],
                     keywords=[]
                 ),
-                lineno=17,
+                lineno=5,
             ),
             ast.Assign(
                 targets=[ast.Name(id="categorical_acc")],
@@ -7140,27 +7154,175 @@ class KerasUnittestGenerator17(
                     args=[ast.Name(id="y_a_dense_labels"), ast.Name(id="y_b")],
                     keywords=[]
                 ),
-                lineno=18,
+                lineno=6,
             ),
-            ast.Assert(
-                test=ast.Call(
-                    func=ast.Attribute(value=ast.Name(id="np"), attr="allclose"),
+            ast.Assign(
+                targets=[ast.Name(id="match", ctx=ast.Store())],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="np", ctx=ast.Load()), attr="isclose", ctx=ast.Load()),
                     args=[
                         ast.Call(
-                            func=ast.Attribute(value=ast.Name(id="K"), attr="eval"),
-                            args=[ast.Name(id="sparse_categorical_acc")],
+                            func=ast.Attribute(value=ast.Name(id="K", ctx=ast.Load()), attr="eval", ctx=ast.Load()),
+                            args=[ast.Name(id="sparse_categorical_acc", ctx=ast.Load())],
                             keywords=[]
                         ),
                         ast.Call(
-                            func=ast.Attribute(value=ast.Name(id="K"), attr="eval"),
-                            args=[ast.Name(id="categorical_acc")],
+                            func=ast.Attribute(value=ast.Name(id="K", ctx=ast.Load()), attr="eval", ctx=ast.Load()),
+                            args=[ast.Name(id="categorical_acc", ctx=ast.Load())],
                             keywords=[]
                         )
                     ],
-                    keywords=[]
+                    keywords=[
+                        ast.keyword(arg="atol", value=ast.Constant(value=1e-3))
+                    ]
+                ),
+                lineno=7,
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Call(
+                        func=ast.Attribute(value=ast.Name(id="match", ctx=ast.Load()), attr="mean", ctx=ast.Load()),
+                        args=[],
+                        keywords=[]
+                    ),
+                    ops=[ast.LtE()],
+                    comparators=[ast.Constant(value=value)]
                 ),
                 msg=None,
-                lineno=19,
+                lineno=8,
+            )
+        ]
+
+    @staticmethod
+    def _get_assert_f(random_seed: int, value: float) -> list[Call]:
+        return [
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Attribute(value=ast.Name(id="np"), attr="random"),
+                        attr="seed"
+                    ),
+                    args=[ast.Constant(value=random_seed)],
+                    keywords=[]
+                ),
+                lineno=1
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="y_a")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="K"), attr="variable"),
+                    args=[ast.Call(
+                        func=ast.Attribute(value=ast.Name(id="np"), attr="random.randint"),
+                        args=[ast.Constant(value=0), ast.Constant(value=7), ast.Tuple(elts=[ast.Constant(value=6)])],
+                        keywords=[]
+                    )],
+                    keywords=[
+                        ast.keyword(arg="dtype", value=ast.Call(
+                            func=ast.Attribute(value=ast.Name(id="K"), attr="floatx"),
+                            args=[],
+                            keywords=[]
+                        ))
+                    ]
+                ),
+                lineno=2,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="y_b")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="K"), attr="variable"),
+                    args=[ast.Call(
+                        func=ast.Attribute(value=ast.Name(id="np"), attr="random.random"),
+                        args=[ast.Tuple(elts=[ast.Constant(value=6), ast.Constant(value=7)])],
+                        keywords=[]
+                    )],
+                    keywords=[
+                        ast.keyword(arg="dtype", value=ast.Call(
+                            func=ast.Attribute(value=ast.Name(id="K"), attr="floatx"),
+                            args=[],
+                            keywords=[]
+                        ))
+                    ]
+                ),
+                lineno=3,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="y_a_dense_labels")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="K"), attr="cast"),
+                    args=[
+                        ast.Call(
+                            func=ast.Attribute(value=ast.Name(id="K"), attr="one_hot"),
+                            args=[
+                                ast.Call(
+                                    func=ast.Attribute(value=ast.Name(id="K"), attr="cast"),
+                                    args=[ast.Name(id="y_a")],
+                                    keywords=[ast.keyword(arg="dtype", value=ast.Constant(value="int32"))]
+                                ),
+                                ast.Constant(value=7)
+                            ],
+                            keywords=[]
+                        )
+                    ],
+                    keywords=[ast.keyword(arg="dtype", value=ast.Call(
+                        func=ast.Attribute(value=ast.Name(id="K"), attr="floatx"),
+                        args=[],
+                        keywords=[]
+                    ))]
+                ),
+                lineno=4,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="sparse_categorical_acc")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="metrics"), attr="sparse_categorical_accuracy"),
+                    args=[ast.Name(id="y_a"), ast.Name(id="y_b")],
+                    keywords=[]
+                ),
+                lineno=5,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="categorical_acc")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="metrics"), attr="categorical_accuracy"),
+                    args=[ast.Name(id="y_a_dense_labels"), ast.Name(id="y_b")],
+                    keywords=[]
+                ),
+                lineno=6,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="match", ctx=ast.Store())],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="np", ctx=ast.Load()), attr="isclose", ctx=ast.Load()),
+                    args=[
+                        ast.Call(
+                            func=ast.Attribute(value=ast.Name(id="K", ctx=ast.Load()), attr="eval", ctx=ast.Load()),
+                            args=[ast.Name(id="sparse_categorical_acc", ctx=ast.Load())],
+                            keywords=[]
+                        ),
+                        ast.Call(
+                            func=ast.Attribute(value=ast.Name(id="K", ctx=ast.Load()), attr="eval", ctx=ast.Load()),
+                            args=[ast.Name(id="categorical_acc", ctx=ast.Load())],
+                            keywords=[]
+                        )
+                    ],
+                    keywords=[
+                        ast.keyword(arg="atol", value=ast.Constant(value=1e-3))
+                    ]
+                ),
+                lineno=7,
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Call(
+                        func=ast.Attribute(value=ast.Name(id="match", ctx=ast.Load()), attr="mean", ctx=ast.Load()),
+                        args=[],
+                        keywords=[]
+                    ),
+                    ops=[ast.LtE()],
+                    comparators=[ast.Constant(value=value)]
+                ),
+                msg=None,
+                lineno=8,
             )
         ]
 
@@ -7185,14 +7347,16 @@ class KerasUnittestGenerator17(
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
+        randomise_seed, value = fail_
         test = self.get_empty_test()
-        test.body = self._get_assert()
+        test.body = self._get_assert_f(randomise_seed, value)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
+        randomise_seed, value = pass_
         test = self.get_empty_test()
-        test.body = self._get_assert()
+        test.body = self._get_assert_p(randomise_seed, value)
         return test, TestResult.PASSING
 
 
