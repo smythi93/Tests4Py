@@ -1817,7 +1817,12 @@ class KerasTestGenerator:
 
     @staticmethod
     def spacy18_generate():
-        return "", ""
+        random1 = random.randint(1, 4999)
+        random2 = random.randint(1, 4999)
+        sum_randoms = random1 + random2
+        passing = random1, random2, sum_randoms, ast.Eq()
+        failing = random1, random2, sum_randoms, ast.Gt()
+        return passing, failing
 
     @staticmethod
     def spacy19_generate():
@@ -7367,7 +7372,149 @@ class KerasUnittestGenerator18(
         return self.generate_values(self.spacy18_generate)
 
     @staticmethod
-    def _get_assert() -> list[Call]:
+    def _get_assert_passing(random1: int, random2: int, sum_randoms: int, operator: str) -> list[Call]:
+        return [
+            ast.Assign(
+                targets=[ast.Name(id="x_placeholder")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="K"), attr="placeholder"),
+                    args=[],
+                    keywords=[ast.keyword(arg="shape", value=ast.Tuple(elts=[]))],
+                ),
+                lineno=1,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="y_placeholder")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="K"), attr="placeholder"),
+                    args=[],
+                    keywords=[ast.keyword(arg="shape", value=ast.Tuple(elts=[]))],
+                ),
+                lineno=2,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="run_metadata")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="config_pb2"), attr="RunMetadata"),
+                    args=[],
+                    keywords=[],
+                ),
+                lineno=3,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="f")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="K"), attr="function"),
+                    args=[],
+                    keywords=[
+                        ast.keyword(arg="inputs", value=ast.List(elts=[
+                            ast.Name(id="x_placeholder"),
+                            ast.Name(id="y_placeholder")
+                        ])),
+                        ast.keyword(arg="outputs", value=ast.List(elts=[
+                            ast.BinOp(
+                                left=ast.Name(id="x_placeholder"),
+                                op=ast.Add(),
+                                right=ast.Name(id="y_placeholder")
+                            )
+                        ]))
+                        ],
+                ),
+                lineno=4,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="output")],
+                value=ast.Call(
+                    func=ast.Name(id="f"),
+                    args=[ast.List(elts=[
+                        ast.Constant(value=random1),
+                        ast.Constant(value=random2)
+                    ])],
+                    keywords=[],
+                ),
+                lineno=5,
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Name(id="output"),
+                    ops=[ast.Eq()],
+                    comparators=[ast.List(elts=[ast.Constant(value=sum_randoms)])],
+                ),
+                msg=None,
+                lineno=6,
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Call(
+                        func=ast.Name(id="len"),
+                        args=[ast.Attribute(value=ast.Name(id="run_metadata"), attr="partition_graphs")],
+                        keywords=[]
+                    ),
+                    ops=[operator],
+                    comparators=[ast.Constant(value=0)]
+                ),
+                msg=None,
+                lineno=7,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="f")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="K"), attr="function"),
+                    args=[],
+                    keywords=[
+                        ast.keyword(arg="inputs", value=ast.List(elts=[
+                            ast.Name(id="x_placeholder"),
+                            ast.Name(id="y_placeholder")
+                        ])),
+                        ast.keyword(arg="outputs", value=ast.List(elts=[
+                            ast.BinOp(
+                                left=ast.Name(id="x_placeholder"),
+                                op=ast.Add(),
+                                right=ast.Name(id="y_placeholder")
+                            )
+                        ])),
+                    ],
+                ),
+                lineno=8,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="output")],
+                value=ast.Call(
+                    func=ast.Name(id="f"),
+                    args=[ast.List(elts=[
+                        ast.Constant(value=random1),
+                        ast.Constant(value=random2)
+                    ])],
+                    keywords=[],
+                ),
+                lineno=9,
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Name(id="output"),
+                    ops=[ast.Eq()],
+                    comparators=[ast.List(elts=[ast.Constant(value=sum_randoms)])],
+                ),
+                msg=None,
+                lineno=10,
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Call(
+                        func=ast.Name(id="len"),
+                        args=[ast.Attribute(value=ast.Name(id="run_metadata"), attr="partition_graphs")],
+                        keywords=[]
+                    ),
+                    ops=[ast.Eq()],
+                    comparators=[ast.Constant(value=0)]
+                ),
+                msg=None,
+                lineno=11,
+            )
+        ]
+
+    @staticmethod
+    def _get_assert_failing(random1: int, random2: int, sum_randoms: int, operator: str) -> list[Call]:
         return [
             ast.Assign(
                 targets=[ast.Name(id="x_placeholder")],
@@ -7435,8 +7582,8 @@ class KerasUnittestGenerator18(
                 value=ast.Call(
                     func=ast.Name(id="f"),
                     args=[ast.List(elts=[
-                        ast.Constant(value=10.0),
-                        ast.Constant(value=20.0)
+                        ast.Constant(value=random1),
+                        ast.Constant(value=random2)
                     ])],
                     keywords=[],
                 ),
@@ -7446,7 +7593,7 @@ class KerasUnittestGenerator18(
                 test=ast.Compare(
                     left=ast.Name(id="output"),
                     ops=[ast.Eq()],
-                    comparators=[ast.List(elts=[ast.Constant(value=30.0)])],
+                    comparators=[ast.List(elts=[ast.Constant(value=sum_randoms)])],
                 ),
                 msg=None,
                 lineno=7,
@@ -7458,11 +7605,11 @@ class KerasUnittestGenerator18(
                         args=[ast.Attribute(value=ast.Name(id="run_metadata"), attr="partition_graphs")],
                         keywords=[]
                     ),
-                    ops=[ast.Gt()],
+                    ops=[operator],
                     comparators=[ast.Constant(value=2)]
                 ),
                 msg=None,
-                lineno=6,
+                lineno=8,
             ),
             ast.Assign(
                 targets=[ast.Name(id="f")],
@@ -7491,8 +7638,8 @@ class KerasUnittestGenerator18(
                 value=ast.Call(
                     func=ast.Name(id="f"),
                     args=[ast.List(elts=[
-                        ast.Constant(value=10.0),
-                        ast.Constant(value=20.0)
+                        ast.Constant(value=random1),
+                        ast.Constant(value=random2)
                     ])],
                     keywords=[],
                 ),
@@ -7502,7 +7649,7 @@ class KerasUnittestGenerator18(
                 test=ast.Compare(
                     left=ast.Name(id="output"),
                     ops=[ast.Eq()],
-                    comparators=[ast.List(elts=[ast.Constant(value=30.0)])],
+                    comparators=[ast.List(elts=[ast.Constant(value=sum_randoms)])],
                 ),
                 msg=None,
                 lineno=11,
@@ -7518,8 +7665,8 @@ class KerasUnittestGenerator18(
                     comparators=[ast.Constant(value=0)]
                 ),
                 msg=None,
-                lineno=6,
-            ),
+                lineno=12,
+            )
         ]
 
     def get_imports(self) -> list[ImportFrom]:
@@ -7538,14 +7685,16 @@ class KerasUnittestGenerator18(
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
+        random1, random2, sum_randoms, operator = fail_
         test = self.get_empty_test()
-        test.body = self._get_assert()
+        test.body = self._get_assert_failing(random1, random2, sum_randoms, operator)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
+        random1, random2, sum_randoms, operator = pass_
         test = self.get_empty_test()
-        test.body = self._get_assert()
+        test.body = self._get_assert_passing(random1, random2, sum_randoms, operator)
         return test, TestResult.PASSING
 
 
