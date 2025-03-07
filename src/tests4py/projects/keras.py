@@ -2840,14 +2840,19 @@ class KerasUnittestGenerator2(
                 names=[ast.alias(name="tensorflow_backend", asname="KTF")],
                 level=0,
             ),
-            ast.ImportFrom(
-                module="keras.backend",
-                names=[ast.alias(name="numpy_backend", asname="KNP")],
+            ast.Import(
+                module="keras.backend.numpy_backend",
+                names=[ast.alias(name="keras.backend.numpy_backend", asname="KNP")],
                 level=0,
             ),
             ast.ImportFrom(
                 module="tests.keras.backend.backend_test",
                 names=[ast.alias(name="assert_list_pairwise")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="tensorflow.python.ops.nn_ops",
+                names=[ast.alias(name="in_top_k")],
                 level=0,
             )
         ]
@@ -7069,7 +7074,7 @@ class KerasUnittestGenerator17(
         return self.generate_values(self.spacy17_generate)
 
     @staticmethod
-    def _get_assert_p(random_seed: int, value: float) -> list[Call]:
+    def _get_assert_passing(random_seed: int, value: float) -> list[Call]:
         return [
             ast.Expr(
                 value=ast.Call(
@@ -7202,7 +7207,7 @@ class KerasUnittestGenerator17(
         ]
 
     @staticmethod
-    def _get_assert_f(random_seed: int, value: float) -> list[Call]:
+    def _get_assert_failing(random_seed: int, value: float) -> list[Call]:
         return [
             ast.Expr(
                 value=ast.Call(
@@ -7357,14 +7362,14 @@ class KerasUnittestGenerator17(
         _, fail_ = self._generate_one()
         randomise_seed, value = fail_
         test = self.get_empty_test()
-        test.body = self._get_assert_f(randomise_seed, value)
+        test.body = self._get_assert_failing(randomise_seed, value)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
         randomise_seed, value = pass_
         test = self.get_empty_test()
-        test.body = self._get_assert_p(randomise_seed, value)
+        test.body = self._get_assert_passing(randomise_seed, value)
         return test, TestResult.PASSING
 
 
@@ -8040,11 +8045,11 @@ class KerasUnittestGenerator20(
                                     ast.Constant(value="dilation_rate")
                                 ],
                                 values=[
-                                    ast.Constant(value=randomise2),
+                                    ast.Constant(value=2),
                                     ast.Constant(value=3),
                                     ast.Constant(value="same"),
                                     ast.Constant(value="channels_last"),
-                                    ast.Tuple(elts=[ast.Constant(value=randomise), ast.Constant(value=randomise1)])
+                                    ast.Tuple(elts=[ast.Constant(value=2), ast.Constant(value=2)])
                                 ]
                             )
                         ),
@@ -8147,11 +8152,11 @@ class KerasUnittestGenerator20(
                                     ast.Constant(value="kernel_initializer")
                                 ],
                                 values=[
-                                    ast.Constant(value=randomise3),
+                                    ast.Constant(value=1),
                                     ast.Constant(value=3),
                                     ast.Constant(value="same"),
                                     ast.Constant(value="channels_last"),
-                                    ast.Tuple(elts=[ast.Constant(value=randomise), ast.Constant(value=randomise1)]),
+                                    ast.Tuple(elts=[ast.Constant(value=2), ast.Constant(value=2)]),
                                     ast.Constant(value=kernel_initializer)
                                 ]
                             )
