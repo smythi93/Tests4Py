@@ -115,7 +115,7 @@ def install_pyenv() -> str:
         shutil.rmtree(PYENV_TMP, ignore_errors=True)
     else:
         process = subprocess.check_output(["curl", "https://pyenv.run"])
-        subprocess.check_call(["bash"], stdin=process)
+        subprocess.run(["bash"], input=process, check=True)
 
 
 class ActivateShellPopen(DEFAULT_POPEN):
