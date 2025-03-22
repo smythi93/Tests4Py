@@ -2088,7 +2088,14 @@ class KerasTestGenerator:
 
     @staticmethod
     def spacy21_generate():
-        return "", ""
+        random1 = round(random.uniform(0, 1), 2)
+        random2 = round(random.uniform(0, 1), 2)
+        random3 = round(random.uniform(0, 1), 2)
+        random4 = round(random.uniform(0, 1), 2)
+        random5 = round(random.uniform(0, 1), 2)
+        passing = random1, random2, random3, random4, random5
+        failing = random1, random2, random3, random4, random5, "restore_best_weights", True
+        return passing, failing
 
     @staticmethod
     def spacy22_generate():
@@ -8517,7 +8524,7 @@ class KerasUnittestGenerator21(
         return self.generate_values(self.spacy21_generate)
 
     @staticmethod
-    def _get_assert() -> list[Call]:
+    def _get_assert_passing(val1: float, val2: float, val3: float, val4: float, val5: float) -> list[Call]:
         return [
             ast.ClassDef(
                 name="DummyModel",
@@ -8555,7 +8562,7 @@ class KerasUnittestGenerator21(
                         ),
                         body=[
                             ast.Return(value=ast.Attribute(value=ast.Name(id="self"), attr="weights",
-                                                           ctx=ast.Load()))
+                                                           ))
                         ],
                         decorator_list=[],
                         lineno=1
@@ -8603,14 +8610,12 @@ class KerasUnittestGenerator21(
                     func=ast.Attribute(
                         value=ast.Name(id="callbacks"),
                         attr="EarlyStopping",
-                        ctx=ast.Load()
+
                     ),
                     args=[],
                     keywords=[
                         ast.keyword(arg="monitor", value=ast.Constant(value="val_loss")),
-                        ast.keyword(arg="patience", value=ast.Constant(value=2)),
-                        ast.keyword(arg="restore_best_weights", value=ast.Constant(value=True))
-                    ]
+                        ast.keyword(arg="patience", value=ast.Constant(value=2))]
                 ),
                 lineno=1
             ),
@@ -8626,8 +8631,8 @@ class KerasUnittestGenerator21(
             ast.Assign(
                 targets=[ast.Name(id="losses")],
                 value=ast.List(
-                    elts=[ast.Constant(value=v) for v in [0.2, 0.15, 0.1, 0.11, 0.12]],
-                    ctx=ast.Load()
+                    elts=[ast.Constant(value=v) for v in [val1, val2, val3, val4, val5]],
+
                 ),
                 lineno=1
             ),
@@ -8641,7 +8646,7 @@ class KerasUnittestGenerator21(
                     func=ast.Attribute(
                         value=ast.Name(id="early_stop"),
                         attr="on_train_begin",
-                        ctx=ast.Load()
+
                     ),
                     args=[],
                     keywords=[]
@@ -8667,10 +8672,10 @@ class KerasUnittestGenerator21(
                             func=ast.Attribute(
                                 value=ast.Name(id="early_stop.model"),
                                 attr="set_weight_to_epoch",
-                                ctx=ast.Load()
+
                             ),
-                            args=[ast.Name(id="epoch")],
-                            keywords=[]
+                            args=[],
+                            keywords=[ast.keyword(arg="epoch", value=ast.Name(id="epoch"))]
                         ),
                     ),
                     ast.Expr(
@@ -8678,20 +8683,21 @@ class KerasUnittestGenerator21(
                             func=ast.Attribute(
                                 value=ast.Name(id="early_stop"),
                                 attr="on_epoch_end",
-                                ctx=ast.Load()
+
                             ),
-                            args=[ast.Name(id="epoch"), ast.Dict(
-                                keys=[ast.Constant(value="val_loss")],
-                                values=[ast.Name(id="losses")]
-                            )],
-                            keywords=[]
+                            args=[ast.Name(id="epoch")],
+                            keywords=[
+                                ast.keyword(arg="logs", value=ast.Dict(keys=[ast.Constant(value="val_loss")], values=[ast.Subscript(
+                                        value=ast.Name(id="losses"),
+                                        slice=ast.Index(value=ast.Name(id="epoch")))]))
+                            ]
                         ),
                     ),
                     ast.If(
                         test=ast.Attribute(
                             value=ast.Name(id="early_stop.model"),
                             attr="stop_training",
-                            ctx=ast.Load()
+
                         ),
                         body=[ast.Break()],
                         orelse=[]
@@ -8706,7 +8712,210 @@ class KerasUnittestGenerator21(
                         func=ast.Attribute(
                             value=ast.Name(id="early_stop.model"),
                             attr="get_weights",
-                            ctx=ast.Load()
+
+                        ),
+                        args=[],
+                        keywords=[]
+                    ),
+                    ops=[ast.LtE()],
+                    comparators=[ast.Constant(value=4)]
+                ),
+                msg=None
+            ),
+        ]
+
+    @staticmethod
+    def _get_assert_failing(val1: float, val2: float, val3: float, val4: float, val5: float, argument: str, argument_value: True | False) -> list[Call]:
+        return [
+            ast.ClassDef(
+                name="DummyModel",
+                bases=[ast.Name(id="object")],
+                keywords=[],
+                body=[
+                    ast.FunctionDef(
+                        name="__init__",
+                        args=ast.arguments(
+                            args=[ast.arg(arg="self", annotation=None)],
+                            vararg=None, kwonlyargs=[], posonlyargs=[], kw_defaults=[], defaults=[], kwarg=None
+                        ),
+                        body=[
+                            ast.Assign(
+                                targets=[ast.Attribute(value=ast.Name(id="self"), attr="stop_training",
+                                                       )],
+                                value=ast.Constant(value=False),
+                                lineno=1
+                            ),
+                            ast.Assign(
+                                targets=[ast.Attribute(value=ast.Name(id="self"), attr="weights",
+                                                       )],
+                                value=ast.Constant(value=-1),
+                                lineno=1
+                            ),
+                        ],
+                        decorator_list=[],
+                        lineno=1
+                    ),
+                    ast.FunctionDef(
+                        name="get_weights",
+                        args=ast.arguments(
+                            args=[ast.arg(arg="self", annotation=None)],
+                            vararg=None, kwonlyargs=[], posonlyargs=[], kw_defaults=[], defaults=[], kwarg=None
+                        ),
+                        body=[
+                            ast.Return(value=ast.Attribute(value=ast.Name(id="self"), attr="weights",
+                                                           ))
+                        ],
+                        decorator_list=[],
+                        lineno=1
+                    ),
+                    ast.FunctionDef(
+                        name="set_weights",
+                        args=ast.arguments(
+                            args=[ast.arg(arg="self", annotation=None), ast.arg(arg="weights", annotation=None)],
+                            vararg=None, kwonlyargs=[], posonlyargs=[], kw_defaults=[], defaults=[], kwarg=None
+                        ),
+                        body=[
+                            ast.Assign(
+                                targets=[ast.Attribute(value=ast.Name(id="self"), attr="weights",
+                                                       )],
+                                value=ast.Name(id="weights"),
+                                lineno=1
+                            )
+                        ],
+                        decorator_list=[],
+                        lineno=1
+                    ),
+                    ast.FunctionDef(
+                        name="set_weight_to_epoch",
+                        args=ast.arguments(
+                            args=[ast.arg(arg="self", annotation=None), ast.arg(arg="epoch", annotation=None)],
+                            vararg=None, kwonlyargs=[], posonlyargs=[], kw_defaults=[], defaults=[], kwarg=None
+                        ),
+                        body=[
+                            ast.Assign(
+                                targets=[ast.Attribute(value=ast.Name(id="self"), attr="weights",
+                                                       )],
+                                value=ast.Name(id="epoch"),
+                                lineno=1
+                            )
+                        ],
+                        decorator_list=[],
+                        lineno=1
+                    ),
+                ],
+                decorator_list=[]
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="early_stop")],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id="callbacks"),
+                        attr="EarlyStopping",
+
+                    ),
+                    args=[],
+                    keywords=[
+                        ast.keyword(arg="monitor", value=ast.Constant(value="val_loss")),
+                        ast.keyword(arg="patience", value=ast.Constant(value=2)),
+                        ast.keyword(arg=argument, value=ast.Constant(value=argument_value))
+                    ]
+                ),
+                lineno=1
+            ),
+            ast.Assign(
+                targets=[ast.Attribute(value=ast.Name(id="early_stop"), attr="model")],
+                value=ast.Call(
+                    func=ast.Name(id="DummyModel"),
+                    args=[],
+                    keywords=[]
+                ),
+                lineno=1
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="losses")],
+                value=ast.List(
+                    elts=[ast.Constant(value=v) for v in [val1, val2, val3, val4, val5]],
+
+                ),
+                lineno=1
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="epochs_trained")],
+                value=ast.Constant(value=0),
+                lineno=1
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id="early_stop"),
+                        attr="on_train_begin",
+
+                    ),
+                    args=[],
+                    keywords=[]
+                )
+            ),
+            ast.For(
+                target=ast.Name(id="epoch"),
+                iter=ast.Call(
+                    func=ast.Name(id="range"),
+                    args=[
+                        ast.Call(func=ast.Name(id="len"), args=[ast.Name(id="losses")],
+                                 keywords=[])],
+                    keywords=[]
+                ),
+                body=[
+                    ast.AugAssign(
+                        target=ast.Name(id="epochs_trained"),
+                        op=ast.Add(),
+                        value=ast.Constant(value=1)
+                    ),
+                    ast.Expr(
+                        value=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id="early_stop.model"),
+                                attr="set_weight_to_epoch",
+
+                            ),
+                            args=[],
+                            keywords=[ast.keyword(arg="epoch", value=ast.Name(id="epoch"))]
+                        ),
+                    ),
+                    ast.Expr(
+                        value=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id="early_stop"),
+                                attr="on_epoch_end",
+
+                            ),
+                            args=[ast.Name(id="epoch")],
+                            keywords=[
+                                ast.keyword(arg="logs", value=ast.Dict(keys=[ast.Constant(value="val_loss")], values=[ast.Subscript(
+                                        value=ast.Name(id="losses"),
+                                        slice=ast.Index(value=ast.Name(id="epoch")))]))
+                            ]
+                        ),
+                    ),
+                    ast.If(
+                        test=ast.Attribute(
+                            value=ast.Name(id="early_stop.model"),
+                            attr="stop_training",
+
+                        ),
+                        body=[ast.Break()],
+                        orelse=[]
+                    ),
+                ],
+                orelse=[],
+                lineno=1
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Call(
+                        func=ast.Attribute(
+                            value=ast.Name(id="early_stop.model"),
+                            attr="get_weights",
+
                         ),
                         args=[],
                         keywords=[]
@@ -8720,28 +8929,25 @@ class KerasUnittestGenerator21(
 
     def get_imports(self) -> list[ImportFrom]:
         return [
-            ast.Import(
-                module="numpy",
-                names=[ast.alias(name="numpy", asname="np")],
-                level=0,
-            ),
             ast.ImportFrom(
                 module="keras",
-                names=[ast.alias(name="backend", asname="K")],
+                names=[ast.alias(name="callbacks")],
                 level=0,
             )
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, fail_ = self._generate_one()
+        val1, val2, val3, val4, val5, argument, argument_value = fail_
         test = self.get_empty_test()
-        test.body = self._get_assert()
+        test.body = self._get_assert_failing(val1, val2, val3, val4, val5, argument, argument_value)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         pass_, _ = self._generate_one()
+        val1, val2, val3, val4, val5 = pass_
         test = self.get_empty_test()
-        test.body = self._get_assert()
+        test.body = self._get_assert_passing(val1, val2, val3, val4, val5)
         return test, TestResult.PASSING
 
 
@@ -8916,94 +9122,106 @@ class KerasUnittestGenerator22(
                 ),
                 lineno=11
             ),
-        ast.Assign(
-            targets=[ast.Name(id="mask_outputs")],
-            value=ast.List(
-                elts=[
-                    ast.Call(
-                        func=ast.Attribute(
-                            value=ast.Subscript(
-                                value=ast.Attribute(value=ast.Name(id="model"), attr="layers"),
-                                slice=ast.Index(value=ast.Constant(value=1)),
+            ast.Assign(
+                targets=[ast.Name(id="mask_outputs")],
+                value=ast.List(
+                    elts=[
+                        ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Subscript(
+                                    value=ast.Attribute(value=ast.Name(id="model"), attr="layers"),
+                                    slice=ast.Index(value=ast.Constant(value=1)),
 
+                                ),
+                                attr="compute_mask",
                             ),
-                            attr="compute_mask",
-                        ),
-                        args=[
-                            ast.Attribute(value=ast.Subscript(value=ast.Attribute(value=ast.Name(id="model"), attr="layers"), slice=ast.Index(value=ast.Constant(value=1))), attr="input")
-                        ],
-                        keywords=[],
-                    )
-                ],
+                            args=[
+                                ast.Attribute(
+                                    value=ast.Subscript(value=ast.Attribute(value=ast.Name(id="model"), attr="layers"),
+                                                        slice=ast.Index(value=ast.Constant(value=1))), attr="input")
+                            ],
+                            keywords=[],
+                        )
+                    ],
 
+                ),
+                lineno=12
             ),
-            lineno=12
-        ),
-        ast.AugAssign(
-            target=ast.Name(id="mask_outputs"),
-            op=ast.Add(),
-            value=ast.List(
-                elts=[
-                    ast.Call(
-                        func=ast.Attribute(
-                            value=ast.Subscript(
-                                value=ast.Attribute(value=ast.Name(id="model"), attr="layers"),
-                                slice=ast.Index(value=ast.Constant(value=2)),
+            ast.AugAssign(
+                target=ast.Name(id="mask_outputs"),
+                op=ast.Add(),
+                value=ast.List(
+                    elts=[
+                        ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Subscript(
+                                    value=ast.Attribute(value=ast.Name(id="model"), attr="layers"),
+                                    slice=ast.Index(value=ast.Constant(value=2)),
 
+                                ),
+                                attr="compute_mask",
                             ),
-                            attr="compute_mask",
-                        ),
-                        args=[
-                            ast.Attribute(value=ast.Subscript(value=ast.Attribute(value=ast.Name(id="model"), attr="layers"), slice=ast.Index(value=ast.Constant(value=2))), attr="input"),
-                            ast.Subscript(value=ast.Name(id="mask_outputs"), slice=ast.Index(value=ast.UnaryOp(op=ast.USub(), operand=ast.Constant(value=1))))
-                        ],
-                        keywords=[],
-                    )
-                ],
+                            args=[
+                                ast.Attribute(
+                                    value=ast.Subscript(value=ast.Attribute(value=ast.Name(id="model"), attr="layers"),
+                                                        slice=ast.Index(value=ast.Constant(value=2))), attr="input"),
+                                ast.Subscript(value=ast.Name(id="mask_outputs"), slice=ast.Index(
+                                    value=ast.UnaryOp(op=ast.USub(), operand=ast.Constant(value=1))))
+                            ],
+                            keywords=[],
+                        )
+                    ],
 
+                ),
+                lineno=13
             ),
-            lineno=13
-        ),
-        ast.Assign(
-            targets=[ast.Name(id="func")],
-            value=ast.Call(
-                func=ast.Attribute(value=ast.Name(id="K"), attr="function"),
-                args=[ast.List(elts=[ast.Attribute(value=ast.Name(id="model"), attr="input")]), ast.Name(id="mask_outputs")],
-                keywords=[],
+            ast.Assign(
+                targets=[ast.Name(id="func")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="K"), attr="function"),
+                    args=[ast.List(elts=[ast.Attribute(value=ast.Name(id="model"), attr="input")]),
+                          ast.Name(id="mask_outputs")],
+                    keywords=[],
+                ),
+                lineno=14
             ),
-            lineno=14
-        ),
-        ast.Assign(
-            targets=[ast.Name(id="mask_outputs_val")],
-            value=ast.Call(
-                func=ast.Name(id="func"),
-                args=[ast.List(elts=[ast.Name(id="model_input")])],
-                keywords=[],
+            ast.Assign(
+                targets=[ast.Name(id="mask_outputs_val")],
+                value=ast.Call(
+                    func=ast.Name(id="func"),
+                    args=[ast.List(elts=[ast.Name(id="model_input")])],
+                    keywords=[],
+                ),
+                lineno=15
             ),
-            lineno=15
-        ),
-        ast.Assert(
-            test=ast.Call(
-                func=ast.Attribute(value=ast.Name(id="np"), attr="array_equal"),
-                args=[
-                    ast.Subscript(value=ast.Name(id="mask_outputs_val"), slice=ast.Index(value=ast.Constant(value=0))),
-                    ast.Call(func=ast.Attribute(value=ast.Name(id="np"), attr="any"), args=[ast.Name(id="model_input")], keywords=[ast.keyword(arg="axis", value=ast.Constant(value=-1))]),
-                ],
-                keywords=[],
+            ast.Assert(
+                test=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="np"), attr="array_equal"),
+                    args=[
+                        ast.Subscript(value=ast.Name(id="mask_outputs_val"),
+                                      slice=ast.Index(value=ast.Constant(value=0))),
+                        ast.Call(func=ast.Attribute(value=ast.Name(id="np"), attr="any"),
+                                 args=[ast.Name(id="model_input")],
+                                 keywords=[ast.keyword(arg="axis", value=ast.Constant(value=-1))]),
+                    ],
+                    keywords=[],
+                ),
+                lineno=16
             ),
-            lineno=16
-        ),
-        ast.Assert(
-            test=ast.Call(
-                func=ast.Attribute(value=ast.Name(id="np"), attr="array_equal"),
-                args=[
-                    ast.Subscript(value=ast.Name(id="mask_outputs_val"), slice=ast.Index(value=ast.Constant(value=1))),
-                    ast.Call(func=ast.Attribute(value=ast.Name(id="np"), attr="any"), args=[ast.Name(id="model_input")], keywords=[ast.keyword(arg="axis", value=ast.Constant(value=-1))]),
-                ],
-                keywords=[],
-            ),
-            lineno=16
-        )
+            ast.Assert(
+                test=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="np"), attr="array_equal"),
+                    args=[
+                        ast.Subscript(value=ast.Name(id="mask_outputs_val"),
+                                      slice=ast.Index(value=ast.Constant(value=1))),
+                        ast.Call(func=ast.Attribute(value=ast.Name(id="np"), attr="any"),
+                                 args=[ast.Name(id="model_input")],
+                                 keywords=[ast.keyword(arg="axis", value=ast.Constant(value=-1))]),
+                    ],
+                    keywords=[],
+                ),
+                lineno=16
+            )
         ]
 
     def get_imports(self) -> list[ImportFrom]:
@@ -9044,223 +9262,223 @@ class KerasUnittestGenerator23(
     @staticmethod
     def _get_assert() -> list[Call]:
         return [
-        ast.Assign(
-            targets=[ast.Name(id="model")],
-            value=ast.Call(
-                func=ast.Attribute(
-                    value=ast.Attribute(
-                        value=ast.Name(id="keras"),
-                        attr="models"
-                    ),
-                    attr="Sequential"
-                ),
-                args=[],
-                keywords=[],
-            ),
-            lineno=1
-        ),
-        ast.Expr(
-            value=ast.Call(
-                func=ast.Attribute(value=ast.Name(id="model"), attr="add"),
-                args=[
-                    ast.Call(
-                        func=ast.Attribute(
-                            value=ast.Attribute(value=ast.Name(id="keras"), attr="layers"),
-                            attr="Dense"
+            ast.Assign(
+                targets=[ast.Name(id="model")],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Attribute(
+                            value=ast.Name(id="keras"),
+                            attr="models"
                         ),
-                        args=[ast.Constant(value=3)],
-                        keywords=[],
-                    )
-                ],
-                keywords=[],
-            ),
-            lineno=2
-        ),
-        ast.Expr(
-            value=ast.Call(
-                func=ast.Attribute(value=ast.Name(id="model"), attr="add"),
-                args=[
-                    ast.Call(
-                        func=ast.Attribute(
-                            value=ast.Attribute(value=ast.Name(id="keras"), attr="layers"),
-                            attr="Dense"
-                        ),
-                        args=[ast.Constant(value=3)],
-                        keywords=[],
-                    )
-                ],
-                keywords=[],
-            ),
-            lineno=3
-        ),
-        ast.Expr(
-            value=ast.Call(
-                func=ast.Attribute(value=ast.Name(id="model"), attr="compile"),
-                args=[
-                    ast.Constant(value="sgd"),
-                    ast.Constant(value="mse"),
-                ],
-                keywords=[],
-            ),
-            lineno=4
-        ),
-        ast.Assert(
-            test=ast.Compare(
-                left=ast.Attribute(value=ast.Name(id="model"), attr="built"),
-                ops=[ast.Is()],
-                comparators=[ast.Constant(value=False)],
-            ),
-            lineno=5
-        ),
-        ast.Assert(
-            test=ast.Compare(
-                left=ast.Call(
-                    func=ast.Name(id="len"),
-                    args=[
-                        ast.Attribute(value=ast.Name(id="model"), attr="layers")
-                    ],
-                    keywords=[],
-                ),
-                ops=[ast.Eq()],
-                comparators=[ast.Constant(value=2)],
-            ),
-            lineno=6
-        ),
-        ast.Assert(
-            test=ast.Compare(
-                left=ast.Call(
-                    func=ast.Name(id="len"),
-                    args=[
-                        ast.Attribute(value=ast.Name(id="model"), attr="weights")
-                    ],
-                    keywords=[],
-                ),
-                ops=[ast.Eq()],
-                comparators=[ast.Constant(value=0)],
-            ),
-            lineno=7
-        ),
-        ast.Expr(
-            value=ast.Call(
-                func=ast.Attribute(value=ast.Name(id="model"), attr="train_on_batch"),
-                args=[
-                    ast.Call(
-                        func=ast.Attribute(
-                            value=ast.Attribute(value=ast.Name(id="np"), attr="random"),
-                            attr="random"
-                        ),
-                        args=[ast.Tuple(elts=[ast.Constant(value=2), ast.Constant(value=4)])],
-                        keywords=[],
-                    ),
-                    ast.Call(
-                        func=ast.Attribute(
-                            value=ast.Attribute(value=ast.Name(id="np"), attr="random"),
-                            attr="random"
-                        ),
-                        args=[ast.Tuple(elts=[ast.Constant(value=2), ast.Constant(value=3)])],
-                        keywords=[],
-                    ),
-                ],
-                keywords=[],
-            ),
-            lineno=8
-        ),
-        ast.Assert(
-            test=ast.Compare(
-                left=ast.Attribute(value=ast.Name(id="model"), attr="built"),
-                ops=[ast.Is()],
-                comparators=[ast.Constant(value=True)],
-            ),
-            lineno=9
-        ),
-        ast.Assert(
-            test=ast.Compare(
-                left=ast.Call(
-                    func=ast.Name(id="len"),
-                    args=[
-                        ast.Attribute(value=ast.Name(id="model"), attr="layers")
-                    ],
-                    keywords=[],
-                ),
-                ops=[ast.Eq()],
-                comparators=[ast.Constant(value=2)],
-            ),
-            lineno=10
-        ),
-        ast.Assert(
-            test=ast.Compare(
-                left=ast.Call(
-                    func=ast.Name(id="len"),
-                    args=[
-                        ast.Attribute(value=ast.Name(id="model"), attr="weights")
-                    ],
-                    keywords=[],
-                ),
-                ops=[ast.Eq()],
-                comparators=[ast.Constant(value=4)],
-            ),
-            lineno=11
-        ),
-        ast.Assign(
-            targets=[ast.Name(id="config")],
-            value=ast.Call(
-                func=ast.Attribute(value=ast.Name(id="model"), attr="get_config"),
-                args=[],
-                keywords=[],
-            ),
-            lineno=12
-        ),
-        ast.Assign(
-            targets=[ast.Name(id="new_model")],
-            value=ast.Call(
-                func=ast.Attribute(
-                    value=ast.Attribute(
-                        value=ast.Attribute(value=ast.Name(id="keras"), attr="models"),
                         attr="Sequential"
                     ),
-                    attr="from_config"
+                    args=[],
+                    keywords=[],
                 ),
-                args=[ast.Name(id="config")],
-                keywords=[],
+                lineno=1
             ),
-            lineno=13
-        ),
-        ast.Assert(
-            test=ast.Compare(
-                left=ast.Attribute(value=ast.Name(id="new_model"), attr="built"),
-                ops=[ast.Is()],
-                comparators=[ast.Constant(value=True)],
-            ),
-            lineno=14
-        ),
-        ast.Assert(
-            test=ast.Compare(
-                left=ast.Call(
-                    func=ast.Name(id="len"),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="model"), attr="add"),
                     args=[
-                        ast.Attribute(value=ast.Name(id="new_model"), attr="layers")
+                        ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Attribute(value=ast.Name(id="keras"), attr="layers"),
+                                attr="Dense"
+                            ),
+                            args=[ast.Constant(value=3)],
+                            keywords=[],
+                        )
                     ],
                     keywords=[],
                 ),
-                ops=[ast.Eq()],
-                comparators=[ast.Constant(value=2)],
+                lineno=2
             ),
-            lineno=15
-        ),
-        ast.Assert(
-            test=ast.Compare(
-                left=ast.Call(
-                    func=ast.Name(id="len"),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="model"), attr="add"),
                     args=[
-                        ast.Attribute(value=ast.Name(id="new_model"), attr="weights")
+                        ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Attribute(value=ast.Name(id="keras"), attr="layers"),
+                                attr="Dense"
+                            ),
+                            args=[ast.Constant(value=3)],
+                            keywords=[],
+                        )
                     ],
                     keywords=[],
                 ),
-                ops=[ast.Eq()],
-                comparators=[ast.Constant(value=4)],
+                lineno=3
             ),
-            lineno=16
-        )
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="model"), attr="compile"),
+                    args=[
+                        ast.Constant(value="sgd"),
+                        ast.Constant(value="mse"),
+                    ],
+                    keywords=[],
+                ),
+                lineno=4
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Attribute(value=ast.Name(id="model"), attr="built"),
+                    ops=[ast.Is()],
+                    comparators=[ast.Constant(value=False)],
+                ),
+                lineno=5
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Call(
+                        func=ast.Name(id="len"),
+                        args=[
+                            ast.Attribute(value=ast.Name(id="model"), attr="layers")
+                        ],
+                        keywords=[],
+                    ),
+                    ops=[ast.Eq()],
+                    comparators=[ast.Constant(value=2)],
+                ),
+                lineno=6
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Call(
+                        func=ast.Name(id="len"),
+                        args=[
+                            ast.Attribute(value=ast.Name(id="model"), attr="weights")
+                        ],
+                        keywords=[],
+                    ),
+                    ops=[ast.Eq()],
+                    comparators=[ast.Constant(value=0)],
+                ),
+                lineno=7
+            ),
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="model"), attr="train_on_batch"),
+                    args=[
+                        ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Attribute(value=ast.Name(id="np"), attr="random"),
+                                attr="random"
+                            ),
+                            args=[ast.Tuple(elts=[ast.Constant(value=2), ast.Constant(value=4)])],
+                            keywords=[],
+                        ),
+                        ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Attribute(value=ast.Name(id="np"), attr="random"),
+                                attr="random"
+                            ),
+                            args=[ast.Tuple(elts=[ast.Constant(value=2), ast.Constant(value=3)])],
+                            keywords=[],
+                        ),
+                    ],
+                    keywords=[],
+                ),
+                lineno=8
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Attribute(value=ast.Name(id="model"), attr="built"),
+                    ops=[ast.Is()],
+                    comparators=[ast.Constant(value=True)],
+                ),
+                lineno=9
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Call(
+                        func=ast.Name(id="len"),
+                        args=[
+                            ast.Attribute(value=ast.Name(id="model"), attr="layers")
+                        ],
+                        keywords=[],
+                    ),
+                    ops=[ast.Eq()],
+                    comparators=[ast.Constant(value=2)],
+                ),
+                lineno=10
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Call(
+                        func=ast.Name(id="len"),
+                        args=[
+                            ast.Attribute(value=ast.Name(id="model"), attr="weights")
+                        ],
+                        keywords=[],
+                    ),
+                    ops=[ast.Eq()],
+                    comparators=[ast.Constant(value=4)],
+                ),
+                lineno=11
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="config")],
+                value=ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="model"), attr="get_config"),
+                    args=[],
+                    keywords=[],
+                ),
+                lineno=12
+            ),
+            ast.Assign(
+                targets=[ast.Name(id="new_model")],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Attribute(
+                            value=ast.Attribute(value=ast.Name(id="keras"), attr="models"),
+                            attr="Sequential"
+                        ),
+                        attr="from_config"
+                    ),
+                    args=[ast.Name(id="config")],
+                    keywords=[],
+                ),
+                lineno=13
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Attribute(value=ast.Name(id="new_model"), attr="built"),
+                    ops=[ast.Is()],
+                    comparators=[ast.Constant(value=True)],
+                ),
+                lineno=14
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Call(
+                        func=ast.Name(id="len"),
+                        args=[
+                            ast.Attribute(value=ast.Name(id="new_model"), attr="layers")
+                        ],
+                        keywords=[],
+                    ),
+                    ops=[ast.Eq()],
+                    comparators=[ast.Constant(value=2)],
+                ),
+                lineno=15
+            ),
+            ast.Assert(
+                test=ast.Compare(
+                    left=ast.Call(
+                        func=ast.Name(id="len"),
+                        args=[
+                            ast.Attribute(value=ast.Name(id="new_model"), attr="weights")
+                        ],
+                        keywords=[],
+                    ),
+                    ops=[ast.Eq()],
+                    comparators=[ast.Constant(value=4)],
+                ),
+                lineno=16
+            )
         ]
 
     def get_imports(self) -> list[ImportFrom]:
@@ -9463,7 +9681,7 @@ class KerasUnittestGenerator24(
                                                                             left=ast.Name(id="i"),
                                                                             op=ast.Mult(),
                                                                             right=ast.Name(id="batch_size",
-                                                                                           ctx=ast.Load())
+                                                                                           )
                                                                         ),
                                                                         upper=ast.BinOp(
                                                                             left=ast.BinOp(
@@ -9473,14 +9691,14 @@ class KerasUnittestGenerator24(
                                                                             ),
                                                                             op=ast.Mult(),
                                                                             right=ast.Name(id="batch_size",
-                                                                                           ctx=ast.Load())
+                                                                                           )
                                                                         ),
                                                                         step=None
                                                                     ),
-                                                                    ctx=ast.Load()
+
                                                                 )
                                                             ],
-                                                            ctx=ast.Load()
+
                                                         ),
                                                         op=ast.Mult(),
                                                         right=ast.Constant(value=2)
@@ -9495,7 +9713,7 @@ class KerasUnittestGenerator24(
                                                                             left=ast.Name(id="i"),
                                                                             op=ast.Mult(),
                                                                             right=ast.Name(id="batch_size",
-                                                                                           ctx=ast.Load())
+                                                                                           )
                                                                         ),
                                                                         upper=ast.BinOp(
                                                                             left=ast.BinOp(
@@ -9505,14 +9723,14 @@ class KerasUnittestGenerator24(
                                                                             ),
                                                                             op=ast.Mult(),
                                                                             right=ast.Name(id="batch_size",
-                                                                                           ctx=ast.Load())
+                                                                                           )
                                                                         ),
                                                                         step=None
                                                                     ),
-                                                                    ctx=ast.Load()
+
                                                                 )
                                                             ],
-                                                            ctx=ast.Load()
+
                                                         ),
                                                         op=ast.Mult(),
                                                         right=ast.Constant(value=2)
@@ -9537,7 +9755,7 @@ class KerasUnittestGenerator24(
                                                                             left=ast.Name(id="i"),
                                                                             op=ast.Mult(),
                                                                             right=ast.Name(id="batch_size",
-                                                                                           ctx=ast.Load())
+                                                                                           )
                                                                         ),
                                                                         upper=ast.BinOp(
                                                                             left=ast.BinOp(
@@ -9547,14 +9765,14 @@ class KerasUnittestGenerator24(
                                                                             ),
                                                                             op=ast.Mult(),
                                                                             right=ast.Name(id="batch_size",
-                                                                                           ctx=ast.Load())
+                                                                                           )
                                                                         ),
                                                                         step=None
                                                                     ),
-                                                                    ctx=ast.Load()
+
                                                                 )
                                                             ],
-                                                            ctx=ast.Load()
+
                                                         ),
                                                         op=ast.Mult(),
                                                         right=ast.Constant(value=2)
@@ -9569,7 +9787,7 @@ class KerasUnittestGenerator24(
                                                                             left=ast.Name(id="i"),
                                                                             op=ast.Mult(),
                                                                             right=ast.Name(id="batch_size",
-                                                                                           ctx=ast.Load())
+                                                                                           )
                                                                         ),
                                                                         upper=ast.BinOp(
                                                                             left=ast.BinOp(
@@ -9579,14 +9797,14 @@ class KerasUnittestGenerator24(
                                                                             ),
                                                                             op=ast.Mult(),
                                                                             right=ast.Name(id="batch_size",
-                                                                                           ctx=ast.Load())
+                                                                                           )
                                                                         ),
                                                                         step=None
                                                                     ),
-                                                                    ctx=ast.Load()
+
                                                                 )
                                                             ],
-                                                            ctx=ast.Load()
+
                                                         ),
                                                         op=ast.Mult(),
                                                         right=ast.Constant(value=2)
@@ -9669,7 +9887,7 @@ class KerasUnittestGenerator24(
                                 ast.Name(id="input_dim"),
                                 ast.Name(id="input_dim")
                             ],
-                            ctx=ast.Load()
+
                         )
                     ],
                     keywords=[]
@@ -9686,7 +9904,7 @@ class KerasUnittestGenerator24(
                                 ast.Name(id="input_dim"),
                                 ast.Name(id="input_dim")
                             ],
-                            ctx=ast.Load()
+
                         )
                     ],
                     keywords=[]
@@ -9703,7 +9921,7 @@ class KerasUnittestGenerator24(
                                 ast.Name(id="inp1"),
                                 ast.Name(id="inp2")
                             ],
-                            ctx=ast.Load()
+
                         )
                     ],
                     keywords=[]
@@ -9746,7 +9964,7 @@ class KerasUnittestGenerator24(
                                 ast.Name(id="inp_3d"),
                                 ast.Name(id="inp_2d")
                             ],
-                            ctx=ast.Load()
+
                         )
                     ],
                     keywords=[]
@@ -9910,10 +10128,10 @@ class KerasUnittestGenerator25(
                         value=ast.Attribute(
                             value=ast.Name(id="np"),
                             attr="random",
-                            ctx=ast.Load()
+
                         ),
                         attr="uniform",
-                        ctx=ast.Load()
+
                     ),
                     args=[
                         ast.Constant(value=0),
@@ -9925,7 +10143,7 @@ class KerasUnittestGenerator25(
                                 ast.Constant(value=10),
                                 ast.Constant(value=3)
                             ],
-                            ctx=ast.Load()
+
                         )
                     ],
                     keywords=[]
@@ -9939,7 +10157,7 @@ class KerasUnittestGenerator25(
                     func=ast.Attribute(
                         value=ast.Name(id="x"),
                         attr="astype",
-                        ctx=ast.Load()
+
                     ),
                     args=[ast.Constant(value="int32")],
                     keywords=[]
@@ -9954,20 +10172,20 @@ class KerasUnittestGenerator25(
                             func=ast.Attribute(
                                 value=ast.Name(id="utils"),
                                 attr="preprocess_input",
-                                ctx=ast.Load()
+
                             ),
                             args=[ast.Name(id="x")],
                             keywords=[]
                         ),
                         attr="shape",
-                        ctx=ast.Load()
+
                     ),
                     ops=[ast.Eq()],
                     comparators=[
                         ast.Attribute(
                             value=ast.Name(id="x"),
                             attr="shape",
-                            ctx=ast.Load()
+
                         )
                     ]
                 )
@@ -9979,20 +10197,20 @@ class KerasUnittestGenerator25(
                             func=ast.Attribute(
                                 value=ast.Name(id="utils"),
                                 attr="preprocess_input",
-                                ctx=ast.Load()
+
                             ),
                             args=[ast.Name(id="xint")],
                             keywords=[]
                         ),
                         attr="shape",
-                        ctx=ast.Load()
+
                     ),
                     ops=[ast.Eq()],
                     comparators=[
                         ast.Attribute(
                             value=ast.Name(id="xint"),
                             attr="shape",
-                            ctx=ast.Load()
+
                         )
                     ]
                 )
@@ -10003,7 +10221,7 @@ class KerasUnittestGenerator25(
                     func=ast.Attribute(
                         value=ast.Name(id="utils"),
                         attr="preprocess_input",
-                        ctx=ast.Load()
+
                     ),
                     args=[
                         ast.Name(id="x"),
@@ -10020,7 +10238,7 @@ class KerasUnittestGenerator25(
                     func=ast.Attribute(
                         value=ast.Name(id="utils"),
                         attr="preprocess_input",
-                        ctx=ast.Load()
+
                     ),
                     args=[
                         ast.Name(id="xint"),
@@ -10037,14 +10255,14 @@ class KerasUnittestGenerator25(
                     func=ast.Attribute(
                         value=ast.Name(id="utils"),
                         attr="preprocess_input",
-                        ctx=ast.Load()
+
                     ),
                     args=[
                         ast.Call(
                             func=ast.Attribute(
                                 value=ast.Name(id="np"),
                                 attr="transpose",
-                                ctx=ast.Load()
+
                             ),
                             args=[
                                 ast.Name(id="x"),
@@ -10055,7 +10273,7 @@ class KerasUnittestGenerator25(
                                         ast.Constant(value=1),
                                         ast.Constant(value=2)
                                     ],
-                                    ctx=ast.Load()
+
                                 )
                             ],
                             keywords=[]
@@ -10073,14 +10291,14 @@ class KerasUnittestGenerator25(
                     func=ast.Attribute(
                         value=ast.Name(id="utils"),
                         attr="preprocess_input",
-                        ctx=ast.Load()
+
                     ),
                     args=[
                         ast.Call(
                             func=ast.Attribute(
                                 value=ast.Name(id="np"),
                                 attr="transpose",
-                                ctx=ast.Load()
+
                             ),
                             args=[
                                 ast.Name(id="xint"),
@@ -10091,7 +10309,7 @@ class KerasUnittestGenerator25(
                                         ast.Constant(value=1),
                                         ast.Constant(value=2)
                                     ],
-                                    ctx=ast.Load()
+
                                 )
                             ],
                             keywords=[]
@@ -10112,7 +10330,7 @@ class KerasUnittestGenerator25(
                             func=ast.Attribute(
                                 value=ast.Name(id="out2"),
                                 attr="transpose",
-                                ctx=ast.Load()
+
                             ),
                             args=[
                                 ast.Tuple(
@@ -10122,7 +10340,7 @@ class KerasUnittestGenerator25(
                                         ast.Constant(value=3),
                                         ast.Constant(value=1)
                                     ],
-                                    ctx=ast.Load()
+
                                 )
                             ],
                             keywords=[]
@@ -10140,7 +10358,7 @@ class KerasUnittestGenerator25(
                             func=ast.Attribute(
                                 value=ast.Name(id="out2int"),
                                 attr="transpose",
-                                ctx=ast.Load()
+
                             ),
                             args=[
                                 ast.Tuple(
@@ -10150,7 +10368,7 @@ class KerasUnittestGenerator25(
                                         ast.Constant(value=3),
                                         ast.Constant(value=1)
                                     ],
-                                    ctx=ast.Load()
+
                                 )
                             ],
                             keywords=[]
@@ -10166,10 +10384,10 @@ class KerasUnittestGenerator25(
                         value=ast.Attribute(
                             value=ast.Name(id="np"),
                             attr="random",
-                            ctx=ast.Load()
+
                         ),
                         attr="uniform",
-                        ctx=ast.Load()
+
                     ),
                     args=[
                         ast.Constant(value=0),
@@ -10180,7 +10398,7 @@ class KerasUnittestGenerator25(
                                 ast.Constant(value=10),
                                 ast.Constant(value=3)
                             ],
-                            ctx=ast.Load()
+
                         )
                     ],
                     keywords=[]
@@ -10194,7 +10412,7 @@ class KerasUnittestGenerator25(
                     func=ast.Attribute(
                         value=ast.Name(id="x"),
                         attr="astype",
-                        ctx=ast.Load()
+
                     ),
                     args=[ast.Constant(value="int32")],
                     keywords=[]
@@ -10209,20 +10427,20 @@ class KerasUnittestGenerator25(
                             func=ast.Attribute(
                                 value=ast.Name(id="utils"),
                                 attr="preprocess_input",
-                                ctx=ast.Load()
+
                             ),
                             args=[ast.Name(id="x")],
                             keywords=[]
                         ),
                         attr="shape",
-                        ctx=ast.Load()
+
                     ),
                     ops=[ast.Eq()],
                     comparators=[
                         ast.Attribute(
                             value=ast.Name(id="x"),
                             attr="shape",
-                            ctx=ast.Load()
+
                         )
                     ]
                 )
@@ -10234,20 +10452,20 @@ class KerasUnittestGenerator25(
                             func=ast.Attribute(
                                 value=ast.Name(id="utils"),
                                 attr="preprocess_input",
-                                ctx=ast.Load()
+
                             ),
                             args=[ast.Name(id="xint")],
                             keywords=[]
                         ),
                         attr="shape",
-                        ctx=ast.Load()
+
                     ),
                     ops=[ast.Eq()],
                     comparators=[
                         ast.Attribute(
                             value=ast.Name(id="xint"),
                             attr="shape",
-                            ctx=ast.Load()
+
                         )
                     ]
                 )
@@ -10258,7 +10476,7 @@ class KerasUnittestGenerator25(
                     func=ast.Attribute(
                         value=ast.Name(id="utils"),
                         attr="preprocess_input",
-                        ctx=ast.Load()
+
                     ),
                     args=[
                         ast.Name(id="x"),
@@ -10275,7 +10493,7 @@ class KerasUnittestGenerator25(
                     func=ast.Attribute(
                         value=ast.Name(id="utils"),
                         attr="preprocess_input",
-                        ctx=ast.Load()
+
                     ),
                     args=[
                         ast.Name(id="xint"),
@@ -10292,14 +10510,14 @@ class KerasUnittestGenerator25(
                     func=ast.Attribute(
                         value=ast.Name(id="utils"),
                         attr="preprocess_input",
-                        ctx=ast.Load()
+
                     ),
                     args=[
                         ast.Call(
                             func=ast.Attribute(
                                 value=ast.Name(id="np"),
                                 attr="transpose",
-                                ctx=ast.Load()
+
                             ),
                             args=[
                                 ast.Name(id="x"),
@@ -10309,7 +10527,7 @@ class KerasUnittestGenerator25(
                                         ast.Constant(value=0),
                                         ast.Constant(value=1)
                                     ],
-                                    ctx=ast.Load()
+
                                 )
                             ],
                             keywords=[]
@@ -10327,14 +10545,14 @@ class KerasUnittestGenerator25(
                     func=ast.Attribute(
                         value=ast.Name(id="utils"),
                         attr="preprocess_input",
-                        ctx=ast.Load()
+
                     ),
                     args=[
                         ast.Call(
                             func=ast.Attribute(
                                 value=ast.Name(id="np"),
                                 attr="transpose",
-                                ctx=ast.Load()
+
                             ),
                             args=[
                                 ast.Name(id="xint"),
@@ -10344,7 +10562,7 @@ class KerasUnittestGenerator25(
                                         ast.Constant(value=0),
                                         ast.Constant(value=1)
                                     ],
-                                    ctx=ast.Load()
+
                                 )
                             ],
                             keywords=[]
@@ -10364,7 +10582,7 @@ class KerasUnittestGenerator25(
                             func=ast.Attribute(
                                 value=ast.Name(id="out2"),
                                 attr="transpose",
-                                ctx=ast.Load()
+
                             ),
                             args=[
                                 ast.Tuple(
@@ -10373,7 +10591,7 @@ class KerasUnittestGenerator25(
                                         ast.Constant(value=2),
                                         ast.Constant(value=0)
                                     ],
-                                    ctx=ast.Load()
+
                                 )
                             ],
                             keywords=[]
@@ -10391,7 +10609,7 @@ class KerasUnittestGenerator25(
                             func=ast.Attribute(
                                 value=ast.Name(id="out2int"),
                                 attr="transpose",
-                                ctx=ast.Load()
+
                             ),
                             args=[
                                 ast.Tuple(
@@ -10400,7 +10618,7 @@ class KerasUnittestGenerator25(
                                         ast.Constant(value=2),
                                         ast.Constant(value=0)
                                     ],
-                                    ctx=ast.Load()
+
                                 )
                             ],
                             keywords=[]
@@ -10485,7 +10703,7 @@ class KerasUnittestGenerator26(
                             ast.Name(id="timesteps"),
                             ast.Name(id="input_dim")
                         ],
-                        ctx=ast.Load()
+
                     )],
                     keywords=[]
                 ),
@@ -10504,7 +10722,7 @@ class KerasUnittestGenerator26(
                             ast.Name(id="num_samples"),
                             ast.Name(id="output_dim")
                         ],
-                        ctx=ast.Load()
+
                     )],
                     keywords=[]
                 ),
@@ -10523,7 +10741,7 @@ class KerasUnittestGenerator26(
                             ast.Name(id="input_dim"),
                             ast.Name(id="output_dim")
                         ],
-                        ctx=ast.Load()
+
                     )],
                     keywords=[]
                 ),
@@ -10542,7 +10760,7 @@ class KerasUnittestGenerator26(
                             ast.Name(id="output_dim"),
                             ast.Name(id="output_dim")
                         ],
-                        ctx=ast.Load()
+
                     )],
                     keywords=[]
                 ),
@@ -10555,7 +10773,7 @@ class KerasUnittestGenerator26(
                     func=ast.Attribute(
                         value=ast.Name(id="np"),
                         attr="random",
-                        ctx=ast.Load()
+
                     ),
                     args=[ast.Constant(value=2)],
                     keywords=[ast.keyword(arg="size", value=ast.Tuple(
@@ -10563,7 +10781,7 @@ class KerasUnittestGenerator26(
                             ast.Name(id="num_samples"),
                             ast.Name(id="timesteps")
                         ],
-                        ctx=ast.Load()
+
                     ))]
                 ),
                 lineno=1
@@ -10575,7 +10793,7 @@ class KerasUnittestGenerator26(
                     func=ast.Attribute(
                         value=ast.Name(id="K"),
                         attr="variable",
-                        ctx=ast.Load()
+
                     ),
                     args=[ast.Name(id="x")],
                     keywords=[]
@@ -10591,7 +10809,7 @@ class KerasUnittestGenerator26(
                             func=ast.Attribute(
                                 value=ast.Name(id="K"),
                                 attr="variable",
-                                ctx=ast.Load()
+
                             ),
                             args=[ast.Name(id="h0")],
                             keywords=[]
@@ -10600,20 +10818,20 @@ class KerasUnittestGenerator26(
                             func=ast.Attribute(
                                 value=ast.Name(id="K"),
                                 attr="variable",
-                                ctx=ast.Load()
+
                             ),
                             args=[ast.Call(
                                 func=ast.Attribute(
                                     value=ast.Name(id="np"),
                                     attr="concatenate",
-                                    ctx=ast.Load()
+
                                 ),
                                 args=[ast.List(
                                     elts=[
                                         ast.Name(id="h0"),
                                         ast.Name(id="h0")
                                     ],
-                                    ctx=ast.Load()
+
                                 )],
                                 keywords=[ast.keyword(arg="axis", value=ast.UnaryOp(
                                     op=ast.USub(),
@@ -10623,7 +10841,7 @@ class KerasUnittestGenerator26(
                             keywords=[]
                         )
                     ],
-                    ctx=ast.Load()
+
                 ),
                 lineno=1
 
@@ -10634,7 +10852,7 @@ class KerasUnittestGenerator26(
                     func=ast.Attribute(
                         value=ast.Name(id="K"),
                         attr="variable",
-                        ctx=ast.Load()
+
                     ),
                     args=[ast.Name(id="wi")],
                     keywords=[]
@@ -10648,7 +10866,7 @@ class KerasUnittestGenerator26(
                     func=ast.Attribute(
                         value=ast.Name(id="K"),
                         attr="variable",
-                        ctx=ast.Load()
+
                     ),
                     args=[ast.Name(id="wh")],
                     keywords=[]
@@ -10662,7 +10880,7 @@ class KerasUnittestGenerator26(
                     func=ast.Attribute(
                         value=ast.Name(id="K"),
                         attr="variable",
-                        ctx=ast.Load()
+
                     ),
                     args=[ast.Name(id="mask")],
                     keywords=[]
@@ -10690,7 +10908,7 @@ class KerasUnittestGenerator26(
                                 func=ast.Attribute(
                                     value=ast.Name(id="len"),
                                     attr="__call__",
-                                    ctx=ast.Load()
+
                                 ),
                                 args=[ast.Name(id="h_k")],
                                 keywords=[]
@@ -10707,7 +10925,7 @@ class KerasUnittestGenerator26(
                                 func=ast.Attribute(
                                     value=ast.Name(id="K"),
                                     attr="dot",
-                                    ctx=ast.Load()
+
                                 ),
                                 args=[ast.Name(id="x_k"), ast.Name(id="wi_k")],
                                 keywords=[]
@@ -10717,13 +10935,13 @@ class KerasUnittestGenerator26(
                                 func=ast.Attribute(
                                     value=ast.Name(id="K"),
                                     attr="dot",
-                                    ctx=ast.Load()
+
                                 ),
                                 args=[
                                     ast.Subscript(
                                         value=ast.Name(id="h_k"),
                                         slice=ast.Index(value=ast.Constant(value=0)),
-                                        ctx=ast.Load()
+
                                     ),
                                     ast.Name(id="wh_k")
                                 ],
@@ -10744,14 +10962,14 @@ class KerasUnittestGenerator26(
                                             func=ast.Attribute(
                                                 value=ast.Name(id="K"),
                                                 attr="concatenate",
-                                                ctx=ast.Load()
+
                                             ),
                                             args=[ast.List(
                                                 elts=[
                                                     ast.Name(id="y_k"),
                                                     ast.Name(id="y_k")
                                                 ],
-                                                ctx=ast.Load()
+
                                             )],
                                             keywords=[ast.keyword(arg="axis", value=ast.UnaryOp(
                                                 op=ast.USub(),
@@ -10759,10 +10977,10 @@ class KerasUnittestGenerator26(
                                             ))]
                                         )
                                     ],
-                                    ctx=ast.Load()
+
                                 )
                             ],
-                            ctx=ast.Load()
+
                         )
                     )
                 ],
@@ -10862,7 +11080,7 @@ class KerasUnittestGenerator26(
                             ]
                         )
                     ],
-                    ctx=ast.Load()
+
                 ),
                 lineno=1
             )
@@ -10913,7 +11131,7 @@ class KerasUnittestGenerator27(
                     args=[],
                     keywords=[ast.keyword(arg="shape", value=ast.Tuple(
                         elts=[ast.Constant(value=3), ast.Constant(value=2)],
-                        ctx=ast.Load()
+
                     ))]
                 ),
                 lineno=1,
@@ -10924,13 +11142,13 @@ class KerasUnittestGenerator27(
                     func=ast.Attribute(
                         value=ast.Name(id="wrappers"),
                         attr="Bidirectional",
-                        ctx=ast.Load()
+
                     ),
                     args=[ast.Call(
                         func=ast.Attribute(
                             value=ast.Name(id="layers"),
                             attr="SimpleRNN",
-                            ctx=ast.Load()
+
                         ),
                         args=[ast.Constant(value=3)],
                         keywords=[]
@@ -10947,10 +11165,10 @@ class KerasUnittestGenerator27(
                             value=ast.Attribute(
                                 value=ast.Name(id="layer"),
                                 attr="updates",
-                                ctx=ast.Load()
+
                             ),
                             attr="",
-                            ctx=ast.Load()
+
                         )],
                         keywords=[]
                     ),
@@ -10967,7 +11185,7 @@ class KerasUnittestGenerator27(
                             func=ast.Attribute(
                                 value=ast.Name(id="layer"),
                                 attr="get_updates_for",
-                                ctx=ast.Load()
+
                             ),
                             args=[ast.Name(id="None")],
                             keywords=[]
@@ -10987,7 +11205,7 @@ class KerasUnittestGenerator27(
                             func=ast.Attribute(
                                 value=ast.Name(id="layer"),
                                 attr="get_updates_for",
-                                ctx=ast.Load()
+
                             ),
                             args=[ast.Name(id="x")],
                             keywords=[]
@@ -11005,10 +11223,10 @@ class KerasUnittestGenerator27(
                         value=ast.Attribute(
                             value=ast.Name(id="layer"),
                             attr="forward_layer",
-                            ctx=ast.Load()
+
                         ),
                         attr="add_update",
-                        ctx=ast.Load()
+
                     ),
                     args=[ast.Constant(value=0)],
                     keywords=[ast.keyword(arg="inputs", value=ast.Name(id="x"))]
@@ -11020,10 +11238,10 @@ class KerasUnittestGenerator27(
                         value=ast.Attribute(
                             value=ast.Name(id="layer"),
                             attr="forward_layer",
-                            ctx=ast.Load()
+
                         ),
                         attr="add_update",
-                        ctx=ast.Load()
+
                     ),
                     args=[ast.Constant(value=1)],
                     keywords=[ast.keyword(arg="inputs", value=ast.Constant(value=None))]
@@ -11035,10 +11253,10 @@ class KerasUnittestGenerator27(
                         value=ast.Attribute(
                             value=ast.Name(id="layer"),
                             attr="backward_layer",
-                            ctx=ast.Load()
+
                         ),
                         attr="add_update",
-                        ctx=ast.Load()
+
                     ),
                     args=[ast.Constant(value=0)],
                     keywords=[ast.keyword(arg="inputs", value=ast.Name(id="x"))]
@@ -11050,10 +11268,10 @@ class KerasUnittestGenerator27(
                         value=ast.Attribute(
                             value=ast.Name(id="layer"),
                             attr="backward_layer",
-                            ctx=ast.Load()
+
                         ),
                         attr="add_update",
-                        ctx=ast.Load()
+
                     ),
                     args=[ast.Constant(value=1)],
                     keywords=[ast.keyword(arg="inputs", value=ast.Constant(value=None))]
@@ -11067,10 +11285,10 @@ class KerasUnittestGenerator27(
                             value=ast.Attribute(
                                 value=ast.Name(id="layer"),
                                 attr="updates",
-                                ctx=ast.Load()
+
                             ),
                             attr="",
-                            ctx=ast.Load()
+
                         )],
                         keywords=[]
                     ),
@@ -11087,7 +11305,7 @@ class KerasUnittestGenerator27(
                             func=ast.Attribute(
                                 value=ast.Name(id="layer"),
                                 attr="get_updates_for",
-                                ctx=ast.Load()
+
                             ),
                             args=[ast.Name(id="None")],
                             keywords=[]
@@ -11107,7 +11325,7 @@ class KerasUnittestGenerator27(
                             func=ast.Attribute(
                                 value=ast.Name(id="layer"),
                                 attr="get_updates_for",
-                                ctx=ast.Load()
+
                             ),
                             args=[ast.Name(id="x")],
                             keywords=[]
@@ -11165,7 +11383,7 @@ class KerasUnittestGenerator28(
                     func=ast.Attribute(
                         value=ast.Name(id="np"),
                         attr="array",
-                        ctx=ast.Load()
+
                     ),
                     args=[
                         ast.ListComp(
@@ -11194,7 +11412,6 @@ class KerasUnittestGenerator28(
                     func=ast.Attribute(
                         value=ast.Name(id="np"),
                         attr="array",
-                        ctx=ast.Load()
                     ),
                     args=[
                         ast.ListComp(
@@ -11247,30 +11464,26 @@ class KerasUnittestGenerator28(
                     func=ast.Attribute(
                         value=ast.Name(id="np"),
                         attr="allclose",
-                        ctx=ast.Load()
                     ),
                     args=[
                         ast.Subscript(
                             value=ast.Subscript(
                                 value=ast.Name(id="data_gen"),
                                 slice=ast.Index(value=ast.Constant(value=0)),
-                                ctx=ast.Load()
+
                             ),
                             slice=ast.Index(value=ast.Constant(value=0)),
-                            ctx=ast.Load()
                         ),
                         ast.Call(
                             func=ast.Attribute(
                                 value=ast.Name(id="np"),
                                 attr="array",
-                                ctx=ast.Load()
                             ),
                             args=[
                                 ast.Call(
                                     func=ast.Attribute(
                                         value=ast.Name(id="np"),
                                         attr="array",
-
                                     ),
                                     args=[
                                         ast.List(
@@ -11334,27 +11547,27 @@ class KerasUnittestGenerator28(
                     func=ast.Attribute(
                         value=ast.Name(id="np"),
                         attr="allclose",
-                        ctx=ast.Load()
+
                     ),
                     args=[
                         ast.Subscript(
                             value=ast.Subscript(
                                 value=ast.Name(id="data_gen"),
                                 slice=ast.Index(value=ast.Constant(value=0)),
-                                ctx=ast.Load()
+
                             ),
                             slice=ast.Index(value=ast.Constant(value=1)),
-                            ctx=ast.Load()
+
                         ),
                         ast.Call(
                             func=ast.Attribute(
                                 value=ast.Name(id="np"),
                                 attr="array",
-                                ctx=ast.Load()
+
                             ),
                             args=[ast.List(
                                 elts=[ast.List(elts=[ast.Constant(value=10)]), ast.List(elts=[ast.Constant(value=11)])],
-                                ctx=ast.Load())],
+                                )],
                             keywords=[]
                         )
                     ],
@@ -11367,23 +11580,23 @@ class KerasUnittestGenerator28(
                     func=ast.Attribute(
                         value=ast.Name(id="np"),
                         attr="allclose",
-                        ctx=ast.Load()
+
                     ),
                     args=[
                         ast.Subscript(
                             value=ast.Subscript(
                                 value=ast.Name(id="data_gen"),
                                 slice=ast.Index(value=ast.Constant(value=1)),
-                                ctx=ast.Load()
+
                             ),
                             slice=ast.Index(value=ast.Constant(value=0)),
-                            ctx=ast.Load()
+
                         ),
                         ast.Call(
                             func=ast.Attribute(
                                 value=ast.Name(id="np"),
                                 attr="array",
-                                ctx=ast.Load()
+
                             ),
                             args=[
                                 ast.Call(
@@ -11451,27 +11664,27 @@ class KerasUnittestGenerator28(
                     func=ast.Attribute(
                         value=ast.Name(id="np"),
                         attr="allclose",
-                        ctx=ast.Load()
+
                     ),
                     args=[
                         ast.Subscript(
                             value=ast.Subscript(
                                 value=ast.Name(id="data_gen"),
                                 slice=ast.Index(value=ast.Constant(value=1)),
-                                ctx=ast.Load()
+
                             ),
                             slice=ast.Index(value=ast.Constant(value=1)),
-                            ctx=ast.Load()
+
                         ),
                         ast.Call(
                             func=ast.Attribute(
                                 value=ast.Name(id="np"),
                                 attr="array",
-                                ctx=ast.Load()
+
                             ),
                             args=[ast.List(
                                 elts=[ast.List(elts=[ast.Constant(value=12)]), ast.List(elts=[ast.Constant(value=13)])],
-                                ctx=ast.Load())],
+                                )],
                             keywords=[]
                         )
                     ],
