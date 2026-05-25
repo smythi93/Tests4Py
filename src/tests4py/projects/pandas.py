@@ -35,7 +35,6 @@ class Pandas(Project):
         loc: int = 0,
         relevant_test_files: Optional[List[Path]] = None,
     ):
-        # noinspection SqlDialectInspection,SqlNoDataSourceInspection
         super().__init__(
             bug_id=bug_id,
             project_name=PROJECT_NAME,
@@ -57,11 +56,16 @@ class Pandas(Project):
             api=api,
             grammar=None,
             loc=loc,
-            relevant_test_files=relevant_test_files,
+            relevant_test_files=relevant_test_files or test_files,
             setup=[
-                [PYTHON, "-m", "pip", "install", "-e", "."],
+                [PYTHON, "setup.py", "build_ext", "--inplace", "--force"],
             ],
-        )  # TODO adjust parameters
+            setup_env={"CC": "gcc-10"},
+            included_files=[os.path.join(PROJECT_NAME)],
+            excluded_files=[os.path.join(PROJECT_NAME, "tests")],
+            source_base=Path(PROJECT_NAME),
+            test_base=Path(PROJECT_NAME, "tests"),
+        )
 
     def patch(self, location: Path):
         with open(location / "pyproject.toml", "r") as fp:
@@ -85,6 +89,12 @@ def register():
                 "test_dtypes.py::TestCategoricalDtype::test_not_string",
             )
         ],
+        relevant_test_files=[
+            os.path.join(
+                "pandas", "tests", "dtypes", "test_dtypes.py::TestCategoricalDtype"
+            )
+        ],
+        loc=76721,
         api=PandasAPI1(),
         unittests=PandasUnittestGenerator1(),
         systemtests=PandasSystemtestGenerator1(),
@@ -114,6 +124,7 @@ def register():
                 "pandas", "tests", "indexing", "test_scalar.py::test_multiindex_at_set"
             ),
         ],
+        loc=76753,
     )
     Pandas(
         bug_id=3,
@@ -139,6 +150,23 @@ def register():
                 "test_to_timestamp.py::TestToTimestamp::test_to_timestamp_raises",
             ),
         ],
+        relevant_test_files=[
+            os.path.join(
+                "pandas",
+                "tests",
+                "series",
+                "methods",
+                "test_to_period.py::TestToPeriod",
+            ),
+            os.path.join(
+                "pandas",
+                "tests",
+                "series",
+                "methods",
+                "test_to_timestamp.py::TestToTimestamp",
+            ),
+        ],
+        loc=76720,
     )
     Pandas(
         bug_id=4,
@@ -154,6 +182,7 @@ def register():
                 "test_join.py::test_join_multi_return_indexers",
             )
         ],
+        loc=76699,
     )
     Pandas(
         bug_id=5,
@@ -206,6 +235,15 @@ def register():
                 "test_replace.py::TestDataFrameReplace::test_replace_no_replacement_dtypes",
             )
         ],
+        relevant_test_files=[
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "methods",
+                "test_replace.py::TestDataFrameReplace",
+            )
+        ],
     )
     Pandas(
         bug_id=9,
@@ -223,6 +261,15 @@ def register():
                 "test_indexing.py::TestContains::test_contains_na_dtype",
             )
         ],
+        relevant_test_files=[
+            os.path.join(
+                "pandas",
+                "tests",
+                "indexes",
+                "categorical",
+                "test_indexing.py::TestContains",
+            )
+        ],
     )
     Pandas(
         bug_id=10,
@@ -236,6 +283,15 @@ def register():
                 "series",
                 "methods",
                 "test_update.py::TestUpdate::test_update_extension_array_series",
+            )
+        ],
+        relevant_test_files=[
+            os.path.join(
+                "pandas",
+                "tests",
+                "series",
+                "methods",
+                "test_update.py::TestUpdate",
             )
         ],
     )
@@ -264,6 +320,15 @@ def register():
                 "test_cov_corr.py::TestDataFrameCov::test_cov_nullable_integer",
             )
         ],
+        relevant_test_files=[
+            os.path.join(
+                "pandas",
+                "tests",
+                "frame",
+                "methods",
+                "test_cov_corr.py::TestDataFrameCov",
+            )
+        ],
     )
     Pandas(
         bug_id=13,
@@ -285,9 +350,17 @@ def register():
                 "tests",
                 "arrays",
                 "categorical",
-                "test_missing.py::TestCategoricalMissing"
-                "::test_use_inf_as_na_outside_context",
+                "test_missing.py::TestCategoricalMissing::test_use_inf_as_na_outside_context",
             ),
+        ],
+        relevant_test_files=[
+            os.path.join(
+                "pandas",
+                "tests",
+                "arrays",
+                "categorical",
+                "test_missing.py::TestCategoricalMissing",
+            )
         ],
     )
     Pandas(
@@ -680,7 +753,7 @@ def register():
         bug_id=36,
         buggy_commit_id="cb41651",
         fixed_commit_id="51f114b9882a5cf819efddb8be74524814f437e1",
-        test_files=[Path("pandas", "tests", "dtypes", "", "test_missing.py")],
+        test_files=[Path("pandas", "tests", "dtypes", "test_missing.py")],
         test_cases=[
             os.path.join(
                 "pandas",
@@ -735,9 +808,7 @@ def register():
         bug_id=39,
         buggy_commit_id="8a5f291",
         fixed_commit_id="a3097b5bd172e76dd3524eb5dbe18b6b4c22df50",
-        test_files=[
-            Path("pandas", "tests", "frame", "", "test_axis_select_reindex.py")
-        ],
+        test_files=[Path("pandas", "tests", "frame", "test_axis_select_reindex.py")],
         test_cases=[
             os.path.join(
                 "pandas",
@@ -964,7 +1035,7 @@ def register():
                 "reshape",
                 "merge",
                 "test_merge.py::test_categorical_non_unique_monotonic",
-            )
+            ),
         ],
     )
     Pandas(
@@ -1592,7 +1663,6 @@ def register():
         fixed_commit_id="bde25278ccf4fb2d751c5e99e24b2270e0d62ef7",
         test_files=[
             Path("pandas", "tests", "indexes", "period", "test_indexing.py"),
-            Path(""),
         ],
         test_cases=[
             os.path.join(

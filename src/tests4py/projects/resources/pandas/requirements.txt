@@ -11,7 +11,7 @@ Click==7.0
 clifford==1.3.1
 colorama==0.4.3
 cycler==0.10.0
-Cython==0.29.19
+Cython==0.29.16
 distlib==0.3.0
 et-xmlfile==1.0.1
 filelock==3.0.12

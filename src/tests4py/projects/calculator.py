@@ -58,7 +58,7 @@ class Calculator(Project):
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
             source_base=Path("src"),
-            test_base=Path("test"),
+            test_base=Path("tests"),
             included_files=[os.path.join("src", "calc")],
         )
 

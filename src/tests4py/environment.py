@@ -99,7 +99,10 @@ def install_version(project: Project):
         return v
 
 
-def install_pyenv() -> str:
+def install_pyenv() -> None:
+    """Install pyenv. On Windows clone pyenv-win, otherwise run the
+    installer script. This function does not return a value.
+    """
     if sys.platform.startswith("win"):
         shutil.rmtree(PYENV_TMP, ignore_errors=True)
         subprocess.check_call(
@@ -115,7 +118,9 @@ def install_pyenv() -> str:
         shutil.rmtree(PYENV_TMP, ignore_errors=True)
     else:
         process = subprocess.check_output(["curl", "https://pyenv.run"])
-        subprocess.check_call(["bash"], stdin=process)
+        # subprocess.check_call's stdin parameter expects a file-like object;
+        # pass the downloaded script as input bytes to run(...) instead.
+        subprocess.run(["bash"], input=process, check=True)
 
 
 class ActivateShellPopen(DEFAULT_POPEN):

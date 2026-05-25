@@ -1,7 +1,7 @@
 atomicwrites==1.4.0
 attrs==19.3.0
 colorama==0.4.3
-Cython==0.29.19
+Cython==0.29.16
 hypothesis==5.16.0
 more-itertools==8.3.0
 numpy==1.18.4
