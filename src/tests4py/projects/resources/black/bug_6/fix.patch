@@ -189,32 +189,59 @@ index 63b60bb..e681b52 100644
          return self.parse_tokens(tokens, debug)
  
      def _partially_consume_prefix(self, prefix, column):
+diff --git a/blib2to3/pgen2/driver.pyi b/blib2to3/pgen2/driver.pyi
+index f098bf5..a4a3546 100644
+--- a/blib2to3/pgen2/driver.pyi
++++ b/blib2to3/pgen2/driver.pyi
+@@ -8,13 +8,20 @@ from logging import Logger
+ from blib2to3.pytree import _Convert, _NL
+ from blib2to3.pgen2 import _Path
+ from blib2to3.pgen2.grammar import Grammar
++from blib2to3.pgen2.tokenize import TokenizerConfig
+
+
+ class Driver:
+     grammar: Grammar
+     logger: Logger
+     convert: _Convert
+-    def __init__(self, grammar: Grammar, convert: Optional[_Convert] = ..., logger: Optional[Logger] = ...) -> None: ...
++    def __init__(
++        self,
++        grammar: Grammar,
++        convert: Optional[_Convert] = ...,
++        logger: Optional[Logger] = ...,
++        tokenizer_config: TokenizerConfig = ...
++    ) -> None: ...
+     def parse_tokens(self, tokens: Iterable[Any], debug: bool = ...) -> _NL: ...
+     def parse_stream_raw(self, stream: IO[Text], debug: bool = ...) -> _NL: ...
+     def parse_stream(self, stream: IO[Text], debug: bool = ...) -> _NL: ...
 diff --git a/blib2to3/pgen2/tokenize.py b/blib2to3/pgen2/tokenize.py
 index 1f51ff0..43e1d59 100644
 --- a/blib2to3/pgen2/tokenize.py
 +++ b/blib2to3/pgen2/tokenize.py
-@@ -31,6 +31,7 @@ __credits__ =
+@@ -31,6 +31,7 @@ __credits__ = \
+
  import re
  from codecs import BOM_UTF8, lookup
 +from attr import dataclass
  from blib2to3.pgen2.token import *
- 
+
  from . import token
 @@ -137,6 +138,10 @@ single_quoted = (
- 
+
  tabsize = 8
- 
+
 +@dataclass(frozen=True)
 +class TokenizerConfig:
 +    async_is_reserved_keyword: bool = False
 +
  class TokenError(Exception): pass
- 
+
  class StopTokenizing(Exception): pass
 @@ -334,7 +339,7 @@ def untokenize(iterable):
      ut = Untokenizer()
      return ut.untokenize(iterable)
- 
+
 -def generate_tokens(readline):
 +def generate_tokens(readline, config: TokenizerConfig = TokenizerConfig()):
      """
@@ -223,7 +250,7 @@ index 1f51ff0..43e1d59 100644
 @@ -356,6 +361,9 @@ def generate_tokens(readline):
      contline = None
      indents = [0]
- 
+
 +    # If we know we're parsing 3.7+, we can unconditionally parse `async` and
 +    # `await` as keywords.
 +    async_is_reserved_keyword = config.async_is_reserved_keyword
@@ -239,6 +266,83 @@ index 1f51ff0..43e1d59 100644
                              yield (ASYNC if token == 'async' else AWAIT,
                                     token, spos, epos, line)
                              continue
+diff --git a/blib2to3/pgen2/tokenize.pyi b/blib2to3/pgen2/tokenize.pyi
+index 62352e9..ac0f0f1 100644
+--- a/blib2to3/pgen2/tokenize.pyi
++++ b/blib2to3/pgen2/tokenize.pyi
+@@ -2,6 +2,7 @@
+ # NOTE: Only elements from __all__ are present.
+
+ from typing import Callable, Iterable, Iterator, List, Text, Tuple
++from attr import dataclass
+ from blib2to3.pgen2.token import *  # noqa
+
+
+@@ -9,6 +10,9 @@ _Coord = Tuple[int, int]
+ _TokenEater = Callable[[int, Text, _Coord, _Coord, Text], None]
+ _TokenInfo = Tuple[int, Text, _Coord, _Coord, Text]
+
++@dataclass(frozen=True)
++class TokenizerConfig:
++    async_is_reserved_keyword: bool = False
+
+ class TokenError(Exception): ...
+ class StopTokenizing(Exception): ...
+diff --git a/tests/data/async_as_identifier.py b/tests/data/async_as_identifier.py
+new file mode 100644
+index 0000000..c36a5e5
+--- /dev/null
++++ b/tests/data/async_as_identifier.py
+@@ -0,0 +1,49 @@
++def async():
++    pass
++
++
++def await():
++    pass
++
++
++await = lambda: None
++async = lambda: None
++async()
++await()
++
++
++def sync_fn():
++    await = lambda: None
++    async = lambda: None
++    async()
++    await()
++
++
++async def async_fn():
++    await async_fn()
++
++
++# output
++def async():
++    pass
++
++
++def await():
++    pass
++
++
++await = lambda: None
++async = lambda: None
++async()
++await()
++
++
++def sync_fn():
++    await = lambda: None
++    async = lambda: None
++    async()
++    await()
++
++
++async def async_fn():
++    await async_fn()
 diff --git a/tests/data/python37.py b/tests/data/python37.py
 index 9781ff6..4401b7b 100644
 --- a/tests/data/python37.py
@@ -256,8 +360,8 @@ index 9781ff6..4401b7b 100644
 +
 +
  # output
- 
- 
+
+
 @@ -39,3 +47,11 @@ async def func():
                  self.async_inc, arange(8), batch_size=3
              )
@@ -270,3 +374,43 @@ index 9781ff6..4401b7b 100644
 +
 +def make_arange(n):
 +    return (i * 2 for i in range(n) if await wrap(i))
+diff --git a/tests/test_black.py b/tests/test_black.py
+index 59343ef..0ea4ac5 100644
+--- a/tests/test_black.py
++++ b/tests/test_black.py
+@@ -502,8 +502,24 @@ class BlackTestCase(unittest.TestCase):
+         self.assertFormatEqual(expected, actual)
+         black.assert_stable(source, actual, mode)
+
++    @patch("black.dump_to_file", dump_to_stderr)
++    def test_async_as_identifier(self) -> None:
++        source_path = (THIS_DIR / "data" / "async_as_identifier.py").resolve()
++        source, expected = read_data("async_as_identifier")
++        actual = fs(source)
++        self.assertFormatEqual(expected, actual)
++        major, minor = sys.version_info[:2]
++        if major < 3 or (major <= 3 and minor < 7):
++            black.assert_equivalent(source, actual)
++        black.assert_stable(source, actual, black.FileMode())
++        # ensure black can parse this when the target is 3.6
++        self.invokeBlack([str(source_path), "--target-version", "py36"])
++        # but not on 3.7, because async/await is no longer an identifier
++        self.invokeBlack([str(source_path), "--target-version", "py37"], exit_code=123)
++
+     @patch("black.dump_to_file", dump_to_stderr)
+     def test_python37(self) -> None:
++        source_path = (THIS_DIR / "data" / "python37.py").resolve()
+         source, expected = read_data("python37")
+         actual = fs(source)
+         self.assertFormatEqual(expected, actual)
+@@ -511,6 +527,10 @@ class BlackTestCase(unittest.TestCase):
+         if major > 3 or (major == 3 and minor >= 7):
+             black.assert_equivalent(source, actual)
+         black.assert_stable(source, actual, black.FileMode())
++        # ensure black can parse this when the target is 3.7
++        self.invokeBlack([str(source_path), "--target-version", "py37"])
++        # but not on 3.6, because we use async as a reserved keyword
++        self.invokeBlack([str(source_path), "--target-version", "py36"], exit_code=123)
+
+     @patch("black.dump_to_file", dump_to_stderr)
+     def test_fmtonoff(self) -> None:

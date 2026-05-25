@@ -50,7 +50,7 @@ class Luigi(Project):
             loc=loc,
             included_files=[PROJECT_NAME],
             source_base=Path(PROJECT_NAME),
-            test_base=Path("tests"),
+            test_base=Path("test"),
             setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
             relevant_test_files=relevant_test_files,
             skip_tests=skip_tests,

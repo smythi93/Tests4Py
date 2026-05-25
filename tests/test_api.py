@@ -15,11 +15,7 @@ class CommandTests(BaseTest):
         super().setUpClass()
         t4p.setup()
 
-    def test_faulty_lines_3(self):
-        faulty_lines = t4p.get_faulty_lines(t4p.get_projects("pysnooper", 3)[0])
-        expected_lines = [
-            Location(file=os.path.join("pysnooper", "pysnooper.py"), line=26)
-        ]
+    def _assert_faulty_lines(self, faulty_lines, expected_lines):
         for line in expected_lines:
             self.assertIn(
                 line,
@@ -32,6 +28,29 @@ class CommandTests(BaseTest):
                 expected_lines,
                 f"Faulty line {line} not in expected lines {expected_lines}.",
             )
+
+    def test_faulty_lines_5(self):
+        faulty_lines = t4p.get_faulty_lines(t4p.get_projects("markup", 2)[0])
+        expected_lines = [
+            Location(file=os.path.join("src", "markup", "__init__.py"), line=2)
+        ]
+        self._assert_faulty_lines(faulty_lines, expected_lines)
+
+    def test_faulty_lines_4(self):
+        faulty_lines = t4p.get_faulty_lines(t4p.get_projects("expression", 1)[0])
+        expected_lines = [
+            Location(
+                file=os.path.join("src", "expression", "expr", "arithmetic.py"), line=33
+            )
+        ]
+        self._assert_faulty_lines(faulty_lines, expected_lines)
+
+    def test_faulty_lines_3(self):
+        faulty_lines = t4p.get_faulty_lines(t4p.get_projects("pysnooper", 3)[0])
+        expected_lines = [
+            Location(file=os.path.join("pysnooper", "pysnooper.py"), line=26)
+        ]
+        self._assert_faulty_lines(faulty_lines, expected_lines)
 
     def test_faulty_lines_2(self):
         faulty_lines = t4p.get_faulty_lines(t4p.get_projects("pysnooper", 2)[0])
@@ -53,18 +72,7 @@ class CommandTests(BaseTest):
             Location(file=os.path.join("pysnooper", "tracer.py"), line=310),
             Location(file=os.path.join("pysnooper", "tracer.py"), line=383),
         ]
-        for line in expected_lines:
-            self.assertIn(
-                line,
-                faulty_lines,
-                f"Expected line {line} not in faulty lines {faulty_lines}.",
-            )
-        for line in faulty_lines:
-            self.assertIn(
-                line,
-                expected_lines,
-                f"Faulty line {line} not in expected lines {expected_lines}.",
-            )
+        self._assert_faulty_lines(faulty_lines, expected_lines)
 
     def test_faulty_lines_1(self):
         faulty_lines = t4p.get_faulty_lines(t4p.get_projects("pysnooper", 1)[0])
@@ -74,18 +82,7 @@ class CommandTests(BaseTest):
             Location(file=os.path.join("pysnooper", "tracer.py"), line=87),
             Location(file=os.path.join("pysnooper", "tracer.py"), line=133),
         ]
-        for line in expected_lines:
-            self.assertIn(
-                line,
-                faulty_lines,
-                f"Expected line {line} not in faulty lines {faulty_lines}.",
-            )
-        for line in faulty_lines:
-            self.assertIn(
-                line,
-                expected_lines,
-                f"Faulty line {line} not in expected lines {expected_lines}.",
-            )
+        self._assert_faulty_lines(faulty_lines, expected_lines)
 
     def test_get_system_tests(self):
         project: Project = t4p.middle_1

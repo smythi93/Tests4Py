@@ -27,6 +27,7 @@ class Ansible(Project):
         loc: int = 0,
         relevant_test_files: Optional[List[Path]] = None,
         skip_tests: Optional[List[str]] = None,
+        included_packages: Optional[str] = None,
     ):
         super().__init__(
             bug_id=bug_id,
@@ -50,7 +51,14 @@ class Ansible(Project):
             setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
             source_base=[Path("lib", "ansible")],
             test_base=Path("test", "units"),
-            included_files=[os.path.join("lib", PROJECT_NAME)],
+            included_files=(
+                [
+                    os.path.join("lib", PROJECT_NAME, package)
+                    for package in included_packages
+                ]
+                if included_packages
+                else [os.path.join("lib", PROJECT_NAME)]
+            ),
             relevant_test_files=relevant_test_files,
             skip_tests=skip_tests,
         )
@@ -73,6 +81,7 @@ def register():
                 "test_collection.py::test_verify_collections_no_version",
             ),
         ],
+        included_packages=["galaxy"],
         loc=55990,
     )
     Ansible(
@@ -84,6 +93,7 @@ def register():
             os.path.join("test", "units", "utils", "test_version.py::test_alpha"),
             os.path.join("test", "units", "utils", "test_version.py::test_numeric"),
         ],
+        included_packages=["utils"],
         loc=55936,
     )
     Ansible(
@@ -101,6 +111,7 @@ def register():
                 "test_distribution_version.py::test_distribution_version[stdin29-Kali 2020.2]",
             ),
         ],
+        included_packages=["module_utils"],
         loc=55902,
     )
     Ansible(
@@ -117,6 +128,7 @@ def register():
             ),
         ],
         relevant_test_files=[Path("test", "units", "playbook")],
+        included_packages=["playbook"],
         loc=55805,
     )
     Ansible(
@@ -152,6 +164,7 @@ def register():
                 "validation",
             )
         ],
+        included_packages=["module_utils"],
         loc=55640,
     )
     Ansible(
@@ -182,6 +195,7 @@ def register():
         skip_tests=[
             "test_build_requirement_from_path_no_version",
         ],
+        included_packages=["galaxy"],
         # test_status_fixed=TestStatus.FAILING,
         loc=718675,
     )
@@ -202,6 +216,7 @@ def register():
                 "test_eos_vlans.py::TestEosVlansModule::test_eos_vlan_replaced",
             ),
         ],
+        included_packages=["module_utils"],
         test_status_buggy=TestStatus.PASSING,
         loc=718540,
     )
@@ -220,6 +235,7 @@ def register():
             ),
         ],
         relevant_test_files=[Path("test", "units", "plugins", "shell")],
+        included_packages=["plugins"],
         loc=718558,
     )
     Ansible(
@@ -255,6 +271,7 @@ def register():
                 "[test_registeration_username_password_one_pool_id]",
             ),
         ],
+        included_packages=["modules"],
         loc=718035,
     )
     Ansible(
@@ -278,6 +295,7 @@ def register():
                 "test_pamd.py::PamdServiceTestCase::test_remove_last_rule",
             ),
         ],
+        included_packages=["modules"],
         loc=717990,
     )
     Ansible(
@@ -306,6 +324,7 @@ def register():
             ),
         ],
         relevant_test_files=[Path("test", "units", "modules", "network", "ios")],
+        included_packages=["modules"],
         loc=714515,
     )
     Ansible(
@@ -344,6 +363,7 @@ def register():
             ),
         ],
         relevant_test_files=[Path("test", "units", "plugins", "lookup")],
+        included_packages=["plugins"],
         loc=714514,
     )
     Ansible(
@@ -359,6 +379,7 @@ def register():
                 "test_galaxy.py::test_collection_install_with_url",
             ),
         ],
+        included_packages=["cli", "galaxy"],
         loc=711087,
     )
     Ansible(
@@ -374,6 +395,7 @@ def register():
                 "test_api.py::test_get_role_versions_pagination[responses1]",
             ),
         ],
+        included_packages=["galaxy"],
         loc=705660,
     )
     Ansible(
@@ -393,6 +415,7 @@ def register():
                 "test_eos_eapi.py::TestEosEapiModule::test_eos_eapi_vrf",
             ),
         ],
+        included_packages=["modules"],
         loc=701141,
     )
     Ansible(
@@ -428,6 +451,7 @@ def register():
                 "hardware",
             )
         ],
+        included_packages=["module_utils"],
         loc=623199,
     )
     Ansible(
@@ -444,6 +468,7 @@ def register():
                 "test_facts.py::TestFactsLinuxHardwareGetMountFacts::test_get_mount_facts",
             ),
         ],
+        included_packages=["module_utils"],
         loc=622794,
     )
     Ansible(
@@ -461,6 +486,7 @@ def register():
                 "test_distribution_version.py::test_distribution_version[stdin29-Kali 2020.2]",
             ),
         ],
+        included_packages=["module_utils"],
         loc=55902,
     )
 

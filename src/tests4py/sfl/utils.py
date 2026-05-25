@@ -149,6 +149,7 @@ class OracleInputRunner(Runner):
         files: Optional[List[os.PathLike] | os.PathLike] = None,
         base: Optional[os.PathLike] = None,
         environ: Environment = None,
+        k: str = None,
     ) -> List[str]:
         if not files:
             return []

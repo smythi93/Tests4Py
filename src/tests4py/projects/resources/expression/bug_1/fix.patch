@@ -8,3 +8,5 @@ index d903dcb..60200c9 100644
          l, r = self.left.evaluate(), self.right.evaluate()
 +        assert r != 0
          return l / r
+
+

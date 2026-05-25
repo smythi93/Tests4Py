@@ -1,3 +1,35 @@
+diff --git a/tests/shells/test_bash.py b/tests/shells/test_bash.py
+index 56591a5..1a00e9b 100644
+--- a/tests/shells/test_bash.py
++++ b/tests/shells/test_bash.py
+@@ -1,5 +1,6 @@
+ # -*- coding: utf-8 -*-
+
++import os
+ import pytest
+ from thefuck.shells import Bash
+
+@@ -11,14 +12,12 @@ class TestBash(object):
+         return Bash()
+
+     @pytest.fixture(autouse=True)
+-    def Popen(self, mocker):
+-        mock = mocker.patch('thefuck.shells.bash.Popen')
+-        mock.return_value.stdout.read.return_value = (
+-            b'alias fuck=\'eval $(thefuck $(fc -ln -1))\'\n'
+-            b'alias l=\'ls -CF\'\n'
+-            b'alias la=\'ls -A\'\n'
+-            b'alias ll=\'ls -alF\'')
+-        return mock
++    def shell_aliases(self):
++        os.environ['TF_SHELL_ALIASES'] = (
++            'alias fuck=\'eval $(thefuck $(fc -ln -1))\'\n'
++            'alias l=\'ls -CF\'\n'
++            'alias la=\'ls -A\'\n'
++            'alias ll=\'ls -alF\'')
+
+     @pytest.mark.parametrize('before, after', [
+         ('pwd', 'pwd'),
 diff --git a/thefuck/shells/bash.py b/thefuck/shells/bash.py
 index 9834937..d6e9b2c 100644
 --- a/thefuck/shells/bash.py
@@ -9,13 +41,15 @@ index 9834937..d6e9b2c 100644
 -from ..utils import DEVNULL, memoize, cache
 +from ..utils import memoize
  from .generic import Generic
- 
- 
+
+
 @@ -9,7 +8,7 @@ class Bash(Generic):
      def app_alias(self, fuck):
-         alias = "TF_ALIAS={0}"" alias {0}='PYTHONIOENCODING=utf-8" \
+         alias = "TF_ALIAS={0}" \
+                 " alias {0}='PYTHONIOENCODING=utf-8" \
 -                " TF_CMD=$(thefuck $(fc -ln -1)) && " \
-+                " TF_CMD=$(TF_SHELL_ALIASES=$(alias) thefuck $(fc -ln -1)) && "" eval $TF_CMD".format(fuck)
++                " TF_CMD=$(TF_SHELL_ALIASES=$(alias) thefuck $(fc -ln -1)) && " \
+                 " eval $TF_CMD".format(fuck)
  
          if settings.alter_history:
 @@ -24,13 +23,10 @@ class Bash(Generic):
