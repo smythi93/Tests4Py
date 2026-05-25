@@ -26,7 +26,7 @@ jobs:
         eval "$(pyenv init --path)"
         eval "$(pyenv init -)"
         pyenv install 3.10
-        pyenv global 3.11 3.10
+        pyenv global 3.10
         python3.10 --version
     - name: Install dependencies
       run: |
@@ -37,8 +37,8 @@ jobs:
         pip install -e .[test]
     - name: Test with pytest
       run: |
-        python3 -m pytest --html=report.html --self-contained-html --cov-report xml:coverage.xml --cov-report term --cov-config=.coveragerc --cov=tests4py tests/
-        python3 -m coverage lcov
+        python3.11 -m pytest --html=report.html --self-contained-html --cov-report xml:coverage.xml --cov-report term --cov-config=.coveragerc --cov=tests4py tests/
+        python3.11 -m coverage lcov
     - uses: actions/upload-artifact@v4
       with:
         name: Test Report
