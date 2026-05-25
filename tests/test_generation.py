@@ -1,6 +1,7 @@
 import os
 import random
 import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -43,7 +44,9 @@ class TestPythonGeneration(unittest.TestCase):
             with tempfile.NamedTemporaryFile("w+", suffix=".py", delete=False) as fp:
                 fp.write(p)
             process = subprocess.run(
-                ["python3.10", fp.name], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+                [sys.executable, fp.name],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
             )
             os.remove(fp.name)
             self.assertEqual(0, process.returncode)
