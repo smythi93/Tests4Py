@@ -99,7 +99,7 @@ def install_version(project: Project):
         return v
 
 
-def install_pyenv() -> str:
+def install_pyenv() -> None:
     if sys.platform.startswith("win"):
         shutil.rmtree(PYENV_TMP, ignore_errors=True)
         subprocess.check_call(
