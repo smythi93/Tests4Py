@@ -21,6 +21,13 @@ jobs:
         python-version: "3.11"
     - name: setup pyenv
       uses: "gabrielfalcao/pyenv-action@v13"
+    - name: Install Python 3.10 with pyenv
+      run: |
+        eval "$(pyenv init --path)"
+        eval "$(pyenv init -)"
+        pyenv install 3.10.14
+        pyenv global 3.11 3.10.14
+        python3.10 --version
     - name: Install dependencies
       run: |
         sudo apt-get update && sudo apt-get install -y python3-dev
