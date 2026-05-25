@@ -60,7 +60,7 @@ class PySnooper(Project):
             api=api,
             grammar=grammar,
             loc=loc,
-            setup=[[PYTHON, "-m", "pip", "install", "."]],
+            setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
             included_files=[PROJECT_NAME],
             test_base=Path("tests"),
             source_base=Path(PROJECT_NAME),

@@ -2,7 +2,7 @@ atomicwrites==1.4.0
 attrs==19.3.0
 colorama==0.4.3
 cycler==0.10.0
-Cython==0.29.19
+Cython==0.29.16
 hypothesis==5.15.1
 kiwisolver==1.2.0
 matplotlib==3.2.1
@@ -12,7 +12,7 @@ packaging==20.4
 pluggy==0.13.1
 py==1.8.1
 pyparsing==2.4.7
-pytest==5.4.2
+pytest==5.4.3
 python-dateutil==2.8.1
 pytz==2020.1
 scipy==1.4.1

@@ -84,7 +84,7 @@ def create_config(
     return sflkit.Config.create(
         path=str(src.absolute()),
         language="python",
-        events=events or ",".join([event.name for event in EventType]),
+        events=events or ",".join([event.name for event in EventType.events()]),
         metrics=metrics or "",
         predicates=predicates or "",
         passing=str(

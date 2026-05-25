@@ -1,5 +1,7 @@
+import argparse
 import os
 import subprocess
+import sys
 
 import tests4py.api as t4p
 from tests4py.projects import Project
@@ -44,10 +46,18 @@ def loc(project: Project):
     return project
 
 
-def main():
+def parse_args(*args):
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", dest="project", default=None)
+    parser.add_argument("-i", dest="bug_id", default=None, type=int)
+    return parser.parse_args(args or sys.argv[1:])
+
+
+def main(*args):
+    args = parse_args(*args)
     projects = list()
     t4p.logging.error()
-    for project in t4p.get_projects():
+    for project in t4p.get_projects(args.project, args.bug_id):
         project.buggy = True
         try:
             project = loc(project)

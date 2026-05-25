@@ -57,6 +57,8 @@ class Markup(Project):
             grammar=grammar,
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
+            source_base=Path("src"),
+            test_base=Path("tests"),
             included_files=[os.path.join("src", PROJECT_NAME)],
             relevant_test_files=relevant_test_files,
         )

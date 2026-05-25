@@ -321,6 +321,12 @@ def build(
             LOGGER.info(f"{project} already compiled")
             report.successful = True
             return report
+
+        if project.project_name == "pandas":
+            process = subprocess.run(["gcc-10", "--version"], stdout=subprocess.PIPE)
+            if process.returncode != 0:
+                raise ValueError("GCC 10 is required to build pandas")
+
         environ = env_on(project)
         if force or not config.cache or not check_cache_exists_env(project):
             create_venv(work_dir, environ)
@@ -359,6 +365,9 @@ def build(
             sflkit_env(environ)
 
         LOGGER.info("Run setup")
+        if project.setup_env:
+            environ.update(project.setup_env)
+
         for command in project.setup:
             subprocess.check_call(
                 command,

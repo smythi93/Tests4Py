@@ -387,6 +387,7 @@ def register():
             os.path.join("test", "test_YoutubeDL.py::TestYoutubeDL::test_match_filter")
         ],
         relevant_test_files=[os.path.join("test", "test_YoutubeDL.py::TestYoutubeDL")],
+        loc=87341,
     )
     YoutubeDL(
         bug_id=25,

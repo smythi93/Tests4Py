@@ -2,7 +2,7 @@ import enum
 import os
 from configparser import ConfigParser
 from pathlib import Path
-from typing import List, Optional, Sequence
+from typing import List, Optional, Sequence, Dict
 
 from tests4py.grammars.fuzzer import Grammar
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
@@ -52,6 +52,7 @@ class Project:
         api: Optional[API] = None,
         grammar: Optional[Grammar] = None,
         setup: Optional[Sequence[List[str | os.PathLike] | str]] = None,
+        setup_env: Optional[Dict[str, str]] = None,
         test_base: Optional[os.PathLike] = None,
         loc: int = 0,
         included_files: Optional[List[str]] = None,
@@ -99,6 +100,7 @@ class Project:
         self.api = api
         self.grammar = grammar
         self.setup = setup or list()
+        self.setup_env = setup_env or dict()
         self.included_files = included_files or list()
         self.excluded_files = excluded_files or list()
         self.loc = loc
