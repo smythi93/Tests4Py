@@ -25,8 +25,8 @@ jobs:
       run: |
         eval "$(pyenv init --path)"
         eval "$(pyenv init -)"
-        pyenv install 3.10.14
-        pyenv global 3.11 3.10.14
+        pyenv install 3.10
+        pyenv global 3.11 3.10
         python3.10 --version
     - name: Install dependencies
       run: |
