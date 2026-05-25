@@ -323,9 +323,16 @@ def build(
             return report
 
         if project.project_name == "pandas":
-            process = subprocess.run(["gcc-10", "--version"], stdout=subprocess.PIPE)
-            if process.returncode != 0:
+            if shutil.which("gcc-10") is None:
                 raise ValueError("GCC 10 is required to build pandas")
+            try:
+                subprocess.run(
+                    ["gcc-10", "--version"],
+                    stdout=subprocess.PIPE,
+                    check=True,
+                )
+            except (subprocess.CalledProcessError, FileNotFoundError) as exc:
+                raise ValueError("GCC 10 is required to build pandas") from exc
 
         environ = env_on(project)
         if force or not config.cache or not check_cache_exists_env(project):
