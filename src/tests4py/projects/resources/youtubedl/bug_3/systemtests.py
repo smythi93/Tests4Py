@@ -2,66 +2,64 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 
 class TestsFailing(FailingSystemtests):
-
     def test_diversity_1(self):
-        return '&a&quot;'
+        return 'fail laxyprct amp'
 
     def test_diversity_2(self):
-        return '&a&eacute;'
+        return 'fail au lt'
 
     def test_diversity_3(self):
-        return '&anna&&eacute;ric'
+        return 'fail qqdecam amp'
 
     def test_diversity_4(self):
-        return '&anna&#47;&eacute;ric'
+        return 'fail rx quot'
 
     def test_diversity_5(self):
-        return '&&#47;'
+        return 'fail rnbvbh lt'
 
     def test_diversity_6(self):
-        return '&&#x2F;'
+        return 'fail gyln quot'
 
     def test_diversity_7(self):
-        return '&&period;'
+        return 'fail bisreb gt'
 
     def test_diversity_8(self):
-        return '&&apos;'
+        return 'fail bfa lt'
 
     def test_diversity_9(self):
-        return '&&apos;&period;'
+        return 'fail cnrlkrbh lt'
 
     def test_diversity_10(self):
-        return '&period;&&apos;'
+        return 'fail evbkjivm gt'
 
 
 class TestsPassing(PassingSystemtests):
-
     def test_diversity_1(self):
-        return "%20;"
+        return 'pass vwluvhde'
 
     def test_diversity_2(self):
-        return "&#x2F;"
+        return 'pass tycvj'
 
     def test_diversity_3(self):
-        return "&#47;"
+        return 'pass rqisvexh'
 
     def test_diversity_4(self):
-        return "&eacute;"
+        return 'pass wzi'
 
     def test_diversity_5(self):
-        return "&#2013266066;"
+        return 'pass lbkbhanc'
 
     def test_diversity_6(self):
-        return '&period;&apos;'
+        return 'pass zhlpwry'
 
     def test_diversity_7(self):
-        return '&eacute;ric'
+        return 'pass ks'
 
     def test_diversity_8(self):
-        return '&period;'
+        return 'pass nvjwn'
 
     def test_diversity_9(self):
-        return '&apos;'
+        return 'pass kyfbjdx'
 
     def test_diversity_10(self):
-        return '%10;'
+        return 'pass mdbedo'

@@ -3,64 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return "{}, 'KbcDhz', {}"
+        return "({}, 'OvnzmorJdeQiTAI', {})"
 
     def test_diversity_2(self):
-        return "{}, 'jsqeUckFu', {}"
+        return "({}, 'JXWnCkBU', {})"
 
     def test_diversity_3(self):
-        return "{}, 'FZnxRHQC', {}"
+        return "({}, 'UjazvqVmKTLVZoS', {})"
 
     def test_diversity_4(self):
-        return "{}, 'eZwHxvecWhC', {}"
+        return "({}, 'vMTkjJ', {})"
 
     def test_diversity_5(self):
-        return "{}, 'AxWZINXtgnsru', {}"
+        return "({}, 'BzVDGJuMZvhD', {})"
 
     def test_diversity_6(self):
-        return "{}, 'ExzJetWOPos', {}"
+        return "({}, 'ZPHMXAE', {})"
 
     def test_diversity_7(self):
-        return "{}, 'RVRfJUXRILz', {}"
+        return "({}, 'zxueOqsy', {})"
 
     def test_diversity_8(self):
-        return "{}, 'cjohYkuuOa', {}"
+        return "({}, 'inTbypj', {})"
 
     def test_diversity_9(self):
-        return "{}, 'PTiNQoxI', {}"
+        return "({}, 'EAipohAynHYzv', {})"
 
     def test_diversity_10(self):
-        return "{}, 'OWuNxyPmTvTFq', {}"
+        return "({}, 'PfJnytz', {})"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return "{'key': {'etag': '0', 'value': 'nCtBoKQWYj'}}, 'nCtBoKQWYj', {}"
+        return "({'key': {'etag': '0', 'value': 'VquzIcZoOKd'}}, 'VquzIcZoOKd', {})"
 
     def test_diversity_2(self):
-        return "{'key': {'etag': '0', 'value': 'itXdpskxQoY'}}, 'itXdpskxQoY', {}"
+        return "({'key': {'etag': '0', 'value': 'HydMqeApgKAAHY'}}, 'HydMqeApgKAAHY', {})"
 
     def test_diversity_3(self):
-        return "{'key': {'etag': '0', 'value': 'TfMCGOyKfzx'}}, 'TfMCGOyKfzx', {}"
+        return "({'key': {'etag': '0', 'value': 'hDmuYowlPly'}}, 'hDmuYowlPly', {})"
 
     def test_diversity_4(self):
-        return "{'key': {'etag': '0', 'value': 'ttxzhmdAzASJpK'}}, 'ttxzhmdAzASJpK', {}"
+        return "({'key': {'etag': '0', 'value': 'pisrVWaFQRs'}}, 'pisrVWaFQRs', {})"
 
     def test_diversity_5(self):
-        return "{'key': {'etag': '0', 'value': 'kdrivqzC'}}, 'kdrivqzC', {}"
+        return "({'key': {'etag': '0', 'value': 'HTTxTk'}}, 'HTTxTk', {})"
 
     def test_diversity_6(self):
-        return "{'key': {'etag': '0', 'value': 'HKcTVBBjMbge'}}, 'HKcTVBBjMbge', {}"
+        return "({'key': {'etag': '0', 'value': 'vfkfufKx'}}, 'vfkfufKx', {})"
 
     def test_diversity_7(self):
-        return "{'key': {'etag': '0', 'value': 'OayXJgEm'}}, 'OayXJgEm', {}"
+        return "({'key': {'etag': '0', 'value': 'ApUEudUrLSbpaU'}}, 'ApUEudUrLSbpaU', {})"
 
     def test_diversity_8(self):
-        return "{'key': {'etag': '0', 'value': 'HcmaAjfIY'}}, 'HcmaAjfIY', {}"
+        return "({'key': {'etag': '0', 'value': 'Yngnoq'}}, 'Yngnoq', {})"
 
     def test_diversity_9(self):
-        return "{'key': {'etag': '0', 'value': 'xwjLfZ'}}, 'xwjLfZ', {}"
+        return "({'key': {'etag': '0', 'value': 'hyUbAtxfMfPqwT'}}, 'hyUbAtxfMfPqwT', {})"
 
     def test_diversity_10(self):
-        return "{'key': {'etag': '0', 'value': 'gnLdIdaOUEEed'}}, 'gnLdIdaOUEEed', {}"
-
+        return "({'key': {'etag': '0', 'value': 'XxGQyv'}}, 'XxGQyv', {})"

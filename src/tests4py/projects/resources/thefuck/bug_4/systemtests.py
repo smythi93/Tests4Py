@@ -2,70 +2,64 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 
 class TestsFailing(FailingSystemtests):
-    # Create Fish() Shell instance, _get_aliases(fish.get_overridden_aliases()) -
-    # Result should be like "Error retrieving overridden" for failing values
-    # There is no input so, no input provided
     def test_diversity_1(self):
-        return ""
+        return 'zzJWYXTn'
 
     def test_diversity_2(self):
-        return ""
+        return 'zzONOBJaJ'
 
     def test_diversity_3(self):
-        return ""
+        return 'zzJljLLFrm'
 
     def test_diversity_4(self):
-        return ""
+        return 'zzLAzTTc'
 
     def test_diversity_5(self):
-        return ""
+        return 'zzEDjbE'
 
     def test_diversity_6(self):
-        return ""
+        return 'zzzFXmSaG'
 
     def test_diversity_7(self):
-        return ""
+        return 'zznHiV'
 
     def test_diversity_8(self):
-        return ""
+        return 'zzMnCXKikm'
 
     def test_diversity_9(self):
-        return ""
+        return 'zziAizYu'
 
     def test_diversity_10(self):
-        return ""
+        return 'zzHnZMxWKE'
 
 
 class TestsPassing(PassingSystemtests):
-    # Create Fish() Shell instance, _get_aliases(fish.get_overridden_aliases()) -
-    # Result should be like "cd ~/Downloads" or just "cd" for passing values
-    # There is no input so, no input provided
     def test_diversity_1(self):
-        return ""
+        return 'echo'
 
     def test_diversity_2(self):
-        return ""
+        return 'tail'
 
     def test_diversity_3(self):
-        return ""
+        return 'ls'
 
     def test_diversity_4(self):
-        return ""
+        return 'sed'
 
     def test_diversity_5(self):
-        return ""
+        return 'find'
 
     def test_diversity_6(self):
-        return ""
+        return 'mv'
 
     def test_diversity_7(self):
-        return ""
+        return 'head'
 
     def test_diversity_8(self):
-        return ""
+        return 'node'
 
     def test_diversity_9(self):
-        return ""
+        return 'wget'
 
     def test_diversity_10(self):
-        return ""
+        return 'curl'

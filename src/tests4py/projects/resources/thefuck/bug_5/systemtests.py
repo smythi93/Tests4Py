@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return 'git pushpull --set-upstream <remote> <a>, fatal: The current branch [a] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [a]'
+        return "(False, 'git push --set-upstream <remote> <XAlFDlbfbP> SELECT * FROM users', 'fatal: The current branch [XAlFDlbfbP] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [XAlFDlbfbP]')"
 
     def test_diversity_2(self):
-        return 'git pushpull --set-upstream <remote> <b>, fatal: The current branch [b] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [b]'
+        return "(True, 'git pushpull --set-upstream <remote> <wYmgEjddM>', 'fatal: The current branch [wYmgEjddM] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [wYmgEjddM]')"
 
     def test_diversity_3(self):
-        return 'git pushpull --set-upstream <remote> <c>, fatal: The current branch [c] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [c]'
+        return "(True, 'git pushpull --set-upstream <remote> <BPAxswNSpNXaIL>', 'fatal: The current branch [BPAxswNSpNXaIL] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [BPAxswNSpNXaIL]')"
 
     def test_diversity_4(self):
-        return 'git pushpull --set-upstream <remote> <d>, fatal: The current branch [d] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [d]'
+        return "(True, 'git pushpull --set-upstream <remote> <PAZhjMSRVEt>', 'fatal: The current branch [PAZhjMSRVEt] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [PAZhjMSRVEt]')"
 
     def test_diversity_5(self):
-        return 'git pushpull --set-upstream <remote> <e>, fatal: The current branch [e] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [e]'
+        return "(True, 'git pushpull --set-upstream <remote> <aqxUFs>', 'fatal: The current branch [aqxUFs] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [aqxUFs]')"
 
     def test_diversity_6(self):
-        return 'git push --set-upstream <remote> <f> SELECT * FROM users, fatal: The current branch [f] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [f]'
+        return "(False, 'git push --set-upstream <remote> <XKZWvorquFw> SELECT * FROM users', 'fatal: The current branch [XKZWvorquFw] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [XKZWvorquFw]')"
 
     def test_diversity_7(self):
-        return 'git push --set-upstream <remote> <g> SELECT * FROM users, fatal: The current branch [g] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [g]'
+        return "(False, 'git push --set-upstream <remote> <BQEYAmNJYgjcvFv> SELECT * FROM users', 'fatal: The current branch [BQEYAmNJYgjcvFv] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [BQEYAmNJYgjcvFv]')"
 
     def test_diversity_8(self):
-        return 'git push --set-upstream <remote> <h> SELECT * FROM users, fatal: The current branch [h] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [h]'
+        return "(True, 'git pushpull --set-upstream <remote> <kCFFOfZSUjMf>', 'fatal: The current branch [kCFFOfZSUjMf] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [kCFFOfZSUjMf]')"
 
     def test_diversity_9(self):
-        return 'git push --set-upstream <remote> <i> SELECT * FROM users, fatal: The current branch [i] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [i]'
+        return "(True, 'git pushpull --set-upstream <remote> <hWnhXpMuvTg>', 'fatal: The current branch [hWnhXpMuvTg] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [hWnhXpMuvTg]')"
 
     def test_diversity_10(self):
-        return 'git push --set-upstream <remote> <j> SELECT * FROM users, fatal: The current branch [j] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [j]'
+        return "(False, 'git push --set-upstream <remote> <UIwsUMugi> SELECT * FROM users', 'fatal: The current branch [UIwsUMugi] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [UIwsUMugi]')"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return 'git push --set-upstream <remote> <k>, fatal: The current branch [k] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [k]'
+        return "(False, 'git pull --set-upstream <remote> <rTwNDpcEEFO>', 'fatal: The current branch [rTwNDpcEEFO] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [rTwNDpcEEFO]')"
 
     def test_diversity_2(self):
-        return 'git push --set-upstream <remote> <l>, fatal: The current branch [l] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [l]'
+        return "(True, 'git push --set-upstream <remote> <RDWdru>', 'fatal: The current branch [RDWdru] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [RDWdru]')"
 
     def test_diversity_3(self):
-        return 'git push --set-upstream <remote> <m>, fatal: The current branch [m] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [m]'
+        return "(True, 'git push --set-upstream <remote> <vShuqrZTTpSEpQ>', 'fatal: The current branch [vShuqrZTTpSEpQ] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [vShuqrZTTpSEpQ]')"
 
     def test_diversity_4(self):
-        return 'git push --set-upstream <remote> <n>, fatal: The current branch [n] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [n]'
+        return "(True, 'git push --set-upstream <remote> <ewmqfwmunqOkbE>', 'fatal: The current branch [ewmqfwmunqOkbE] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [ewmqfwmunqOkbE]')"
 
     def test_diversity_5(self):
-        return 'git push --set-upstream <remote> <o>, fatal: The current branch [o] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [o]'
+        return "(True, 'git push --set-upstream <remote> <dabNff>', 'fatal: The current branch [dabNff] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [dabNff]')"
 
     def test_diversity_6(self):
-        return 'git pull --set-upstream <remote> <p>, fatal: The current branch [p] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [p]'
+        return "(True, 'git push --set-upstream <remote> <ksAeYgVsYLP>', 'fatal: The current branch [ksAeYgVsYLP] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [ksAeYgVsYLP]')"
 
     def test_diversity_7(self):
-        return 'git pull --set-upstream <remote> <q>, fatal: The current branch [q] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [q]'
+        return "(True, 'git push --set-upstream <remote> <tYlYs>', 'fatal: The current branch [tYlYs] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [tYlYs]')"
 
     def test_diversity_8(self):
-        return 'git pull --set-upstream <remote> <r>, fatal: The current branch [r] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [r]'
+        return "(False, 'git pull --set-upstream <remote> <fTItRIteEMh>', 'fatal: The current branch [fTItRIteEMh] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [fTItRIteEMh]')"
 
     def test_diversity_9(self):
-        return 'git pull --set-upstream <remote> <s>, fatal: The current branch [s] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [s]'
+        return "(False, 'git pull --set-upstream <remote> <wBlVW>', 'fatal: The current branch [wBlVW] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [wBlVW]')"
 
     def test_diversity_10(self):
-        return 'git pull --set-upstream <remote> <t>, fatal: The current branch [t] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [t]'
+        return "(True, 'git push --set-upstream <remote> <RtOkQJ>', 'fatal: The current branch [RtOkQJ] has no upstream branch.To push the current branch and set the remote as upstream, use git push --set-upstream origin [RtOkQJ]')"

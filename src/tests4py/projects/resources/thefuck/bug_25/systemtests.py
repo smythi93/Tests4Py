@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return './bin/hdfs dfs -mkdir eFtyv/KuLK/zkLprk' '' ''
+        return "('hdfs dfs -mkdir -p yAVGw/xXwKVA/cuhNU', 'hdfs dfs -mkdir yAVGw/xXwKVA/cuhNU')"
 
     def test_diversity_2(self):
-        return 'hdfs dfs -mkdir Rvi/xLaZb/yNxw' '' ''
+        return "('./bin/hdfs dfs -mkdir -p ShY/Akky/iYGKnB', './bin/hdfs dfs -mkdir ShY/Akky/iYGKnB')"
 
     def test_diversity_3(self):
-        return 'hdfs dfs -mkdir COlUxL/ItbF/JnH' '' ''
+        return "('hdfs dfs -mkdir -p NlmlG/ieD/KPvj', 'hdfs dfs -mkdir NlmlG/ieD/KPvj')"
 
     def test_diversity_4(self):
-        return './bin/hdfs dfs -mkdir unuV/BdPr/egAW' '' ''
+        return "('hdfs dfs -mkdir -p wXq/lBETN/RYUFUd', 'hdfs dfs -mkdir wXq/lBETN/RYUFUd')"
 
     def test_diversity_5(self):
-        return './bin/hdfs dfs -mkdir GvC/mbud/iXz' '' ''
+        return "('hdfs dfs -mkdir -p kWY/HkI/LcZs', 'hdfs dfs -mkdir kWY/HkI/LcZs')"
 
     def test_diversity_6(self):
-        return 'hdfs dfs -mkdir rHm/eqy/akYxZ' '' ''
+        return "('./bin/hdfs dfs -mkdir -p MAJj/BrACK/wXy', './bin/hdfs dfs -mkdir MAJj/BrACK/wXy')"
 
     def test_diversity_7(self):
-        return './bin/hdfs dfs -mkdir Wmue/vnlu/KZgB' '' ''
+        return "('hdfs dfs -mkdir -p PCduT/QaU/oJPz', 'hdfs dfs -mkdir PCduT/QaU/oJPz')"
 
     def test_diversity_8(self):
-        return './bin/hdfs dfs -mkdir bJHW/AswYOW/fmO' '' ''
+        return "('hdfs dfs -mkdir -p UTM/yyg/dOkK', 'hdfs dfs -mkdir UTM/yyg/dOkK')"
 
     def test_diversity_9(self):
-        return 'hdfs dfs -mkdir nwN/DdH/TBpP' '' ''
+        return "('./bin/hdfs dfs -mkdir -p Lpx/XbNL/txt', './bin/hdfs dfs -mkdir Lpx/XbNL/txt')"
 
     def test_diversity_10(self):
-        return 'hdfs dfs -mkdir pMITbN/PFrtq/tzGi' '' ''
+        return "('./bin/hdfs dfs -mkdir -p sSRTAA/mCoMFK/rnI', './bin/hdfs dfs -mkdir sSRTAA/mCoMFK/rnI')"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return 'mkdir cFz/AzoQ/zpUaHL' '' ''
+        return "('mkdir -p TeMr/ugCO/nLB', 'mkdir TeMr/ugCO/nLB')"
 
     def test_diversity_2(self):
-        return 'mkdir XcgN/cJZqzI/BEJYkR' '' ''
+        return "('mkdir -p RvJOhK/Ixkw/BKZG', 'mkdir RvJOhK/Ixkw/BKZG')"
 
     def test_diversity_3(self):
-        return 'mkdir OLg/Ebq/SMQP' '' ''
+        return "('mkdir -p EUXbZ/lrDzGw/htuk', 'mkdir EUXbZ/lrDzGw/htuk')"
 
     def test_diversity_4(self):
-        return 'mkdir dska/Eace/pfTfoA' '' ''
+        return "('mkdir -p pMqv/PXIm/tyvoS', 'mkdir pMqv/PXIm/tyvoS')"
 
     def test_diversity_5(self):
-        return 'mkdir wbn/ebn/ERmid' '' ''
+        return "('mkdir -p NFxN/xcJ/mLhBH', 'mkdir NFxN/xcJ/mLhBH')"
 
     def test_diversity_6(self):
-        return 'mkdir GwQ/YpPD/euEpR' '' ''
+        return "('mkdir -p hKacHJ/LRTDQ/Lusqdj', 'mkdir hKacHJ/LRTDQ/Lusqdj')"
 
     def test_diversity_7(self):
-        return 'mkdir WRa/KBzhg/ZbO' '' ''
+        return "('mkdir -p VgcZMI/jOGF/ypUmN', 'mkdir VgcZMI/jOGF/ypUmN')"
 
     def test_diversity_8(self):
-        return 'mkdir viZFDp/qjV/tYkv' '' ''
+        return "('mkdir -p AHSFrB/cOaY/hfHD', 'mkdir AHSFrB/cOaY/hfHD')"
 
     def test_diversity_9(self):
-        return 'mkdir cKj/bRa/AKQoh' '' ''
+        return "('mkdir -p azUab/zOfk/Vcu', 'mkdir azUab/zOfk/Vcu')"
 
     def test_diversity_10(self):
-        return 'mkdir ZwW/lEgrZA/uAD' '' ''
+        return "('mkdir -p LkiVuN/YYmqrN/XDTNON', 'mkdir LkiVuN/YYmqrN/XDTNON')"

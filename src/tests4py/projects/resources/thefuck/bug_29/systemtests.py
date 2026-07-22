@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return 'mnfjsdfds, weqdas'
+        return "{'ExNzBXLRCB, TIbZGoGpa'}"
 
     def test_diversity_2(self):
-        return 'NRALZctkaukjHs, FbYTY'
+        return "{'ySYEali, DSnRjygm'}"
 
     def test_diversity_3(self):
-        return 'fdsfwe, gegerf'
+        return "{'KxZxKIzslSTT, JFeAnSdXGa'}"
 
     def test_diversity_4(self):
-        return 'dsfwefew, wewefgD'
+        return "{'OIedCNLUKRolo, NpHMakuyBZQy'}"
 
     def test_diversity_5(self):
-        return 'lrlJHKR, dalal'
+        return "{'xawGrTVYzYr, PCfezXRtQG'}"
 
     def test_diversity_6(self):
-        return 'groKHHS, hgf'
+        return "{'GGTapuqwgLkVaX, phIRNwSVdVhFL'}"
 
     def test_diversity_7(self):
-        return 'ADhjghjEGF, FbYTY'
+        return "{'AzxaTbjnvnKyS, rQRuTY'}"
 
     def test_diversity_8(self):
-        return 'eretewds, YTJT'
+        return "{'jzYsgRJnYuGZ, AeUXKRgOMlsPE'}"
 
     def test_diversity_9(self):
-        return 'fghfghf, FEWFEW'
+        return "{'mILbmvVGXtDfY, zlcVYP'}"
 
     def test_diversity_10(self):
-        return 'GWEEUUad, FbYTY'
+        return "{'WoUJQAs, OpRJHNvL'}"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return 'nrgrtgt: EWRWsdas'
+        return "{'DIQmJkCRI': 'wQXabKnewYUrD'}"
 
     def test_diversity_2(self):
-        return 'asdrwDSD: grerefe'
+        return "{'lDjUAikGRZ': 'iPITYDLMvYS'}"
 
     def test_diversity_3(self):
-        return 'rtwerewc: FbYTY'
+        return "{'GICqATLXhcwNP': 'cDBsVvVNWcfjnM'}"
 
     def test_diversity_4(self):
-        return 'wqsada: qweqweqw'
+        return "{'uJqbMVolacrP': 'VOrXqgoazsOTYAK'}"
 
     def test_diversity_5(self):
-        return 'erwfdf: WDSAS'
+        return "{'BkJRXsgcxYErPf': 'zUwaVkEHnOZpeO'}"
 
     def test_diversity_6(self):
-        return 'sdfwew: GFRWS'
+        return "{'FerjwzCOfvy': 'RuFVpyQkp'}"
 
     def test_diversity_7(self):
-        return 'fewewsdSFSE: FDSFSF'
+        return "{'hPEjItgHMM': 'cCqdZCYaCrStgeh'}"
 
     def test_diversity_8(self):
-        return 'WERSADSFW: ewrwerw'
+        return "{'xsJadlTIcVNFRZ': 'yzXNpf'}"
 
     def test_diversity_9(self):
-        return 'NRALZctkaukjHs: GQWE'
+        return "{'uCGrP': 'DIvGcRkLhctewdZ'}"
 
     def test_diversity_10(self):
-        return 'kewbfjkw: FbYTY'
+        return "{'FBwhiUyEi': 'IWdBLypsoz'}"

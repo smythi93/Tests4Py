@@ -38,13 +38,13 @@ class TestsFailing(unittest.TestCase):
 
 class TestsPassing(unittest.TestCase):
     def test_diversity_1(self):
-        self.assertAlmostEqual(1.18055, main(f"tan({8901})"), 5)
+        self.assertAlmostEqual(1.18056, main(f"tan({8901})"), 5)
 
     def test_diversity_2(self):
         self.assertAlmostEqual(-1.0, main(f"cos({pi})"), 5)
 
     def test_diversity_3(self):
-        self.assertAlmostEqual(-1.22464, main(f"tan({pi})"), 5)
+        self.assertAlmostEqual(0.0, main(f"tan({pi})"), 5)
 
     def test_diversity_4(self):
         self.assertAlmostEqual(16, main(f"sqrt(256)"), 5)
@@ -62,7 +62,7 @@ class TestsPassing(unittest.TestCase):
         self.assertAlmostEqual(25, main("sqrt(625)"), 5)
 
     def test_diversity_9(self):
-        self.assertAlmostEqual(0.15425, main(f"cos({180})"), 5)
+        self.assertAlmostEqual(-0.59846, main(f"cos({180})"), 5)
 
     def test_diversity_10(self):
         self.assertAlmostEqual(6, main(f"sqrt(36)"), 5)

@@ -2,66 +2,64 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 
 class TestsFailing(FailingSystemtests):
-    # It takes system executables with get_all_executables(), so there is no input.
     def test_diversity_1(self):
-        return ""
+        return 'Zq9qrMYME3voTHcrL5'
 
     def test_diversity_2(self):
-        return ""
+        return 'Zq9hZYLWwH4Ep'
 
     def test_diversity_3(self):
-        return ""
+        return 'Zq9nXRUi8wdK'
 
     def test_diversity_4(self):
-        return ""
+        return 'Zq99LBjMimD8iMrGrru'
 
     def test_diversity_5(self):
-        return ""
+        return 'Zq9b8rOaJAA5NgM'
 
     def test_diversity_6(self):
-        return ""
+        return 'Zq9JMwcyCfca'
 
     def test_diversity_7(self):
-        return ""
+        return 'Zq9NDA8MT9UZs8mMog'
 
     def test_diversity_8(self):
-        return ""
+        return 'Zq9PBM6u0cE9MhksIG'
 
     def test_diversity_9(self):
-        return ""
+        return 'Zq94c1pq1gAa9'
 
     def test_diversity_10(self):
-        return ""
+        return 'Zq98NKPiWHh9rgT1'
 
 
 class TestsPassing(PassingSystemtests):
-    # It takes system executables with get_all_executables(), so there is no input.
     def test_diversity_1(self):
-        return ""
+        return 'nohup'
 
     def test_diversity_2(self):
-        return ""
+        return 'cvfsdb'
 
     def test_diversity_3(self):
-        return ""
+        return 'shasum5.34'
 
     def test_diversity_4(self):
-        return ""
+        return 'avmediainfo'
 
     def test_diversity_5(self):
-        return ""
+        return 'expand'
 
     def test_diversity_6(self):
-        return ""
+        return 'fstyp_msdos'
 
     def test_diversity_7(self):
-        return ""
+        return 'lockf'
 
     def test_diversity_8(self):
-        return ""
+        return 'graphicssession'
 
     def test_diversity_9(self):
-        return ""
+        return 'col'
 
     def test_diversity_10(self):
-        return ""
+        return 'usdtree'

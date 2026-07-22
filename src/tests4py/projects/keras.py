@@ -1,8 +1,15 @@
+import ast
 import os
+import random
+import string
+import subprocess
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Any
 
 from tests4py.constants import PYTHON
+from tests4py.grammars import python
+from tests4py.grammars.default import clean_up, INTEGER, NUMBER
+from tests4py.grammars.fuzzer import Grammar, is_valid_grammar, srange
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
@@ -23,6 +30,7 @@ class Keras(Project):
         unittests: Optional[UnittestGenerator] = None,
         systemtests: Optional[SystemtestGenerator] = None,
         api: Optional[API] = None,
+        grammar: Optional[Grammar] = None,
         loc: int = 0,
         relevant_test_files: Optional[List[Path]] = None,
         skip_tests: Optional[List[str]] = None,
@@ -44,7 +52,7 @@ class Keras(Project):
             unittests=unittests,
             systemtests=systemtests,
             api=api,
-            grammar=None,
+            grammar=grammar,
             loc=loc,
             included_files=[PROJECT_NAME],
             source_base=Path(PROJECT_NAME),
@@ -657,6 +665,10 @@ def register():
                 "text_test.py::test_text_to_word_sequence_unicode_multichar_split",
             ),
         ],
+        unittests=Keras33UnittestGenerator(),
+        systemtests=Keras33SystemtestGenerator(),
+        api=Keras33API(),
+        grammar=grammar_33,
         loc=23085,
     )
     Keras(
@@ -814,6 +826,10 @@ def register():
                 "tests", "keras", "utils", "np_utils_test.py::test_to_categorical"
             )
         ],
+        unittests=Keras43UnittestGenerator(),
+        systemtests=Keras43SystemtestGenerator(),
+        api=Keras43API(),
+        grammar=grammar_43,
         loc=20859,
     )
     Keras(
@@ -855,8 +871,289 @@ def register():
 
 
 class KerasAPI(API):
-    def __init__(self, default_timeout: int = 5):
+    def __init__(self, default_timeout: int = 30):
         super().__init__(default_timeout=default_timeout)
 
     def oracle(self, args) -> Tuple[TestResult, str]:
         return TestResult.UNDEFINED, ""
+
+
+# ======================================================================
+# NOTE on importing keras on this platform:
+# The pinned TensorFlow 1.15 wheel is x86_64 compiled with AVX and aborts
+# on import under Rosetta (no AVX).  Every helper therefore loads the
+# *pure-numpy* target module directly from its source file (bypassing
+# ``keras/__init__`` and the TF backend) with importlib.  This works for
+# modules that only depend on numpy / six / stdlib.
+# ======================================================================
+
+
+# ======================================================================
+# bug_43: keras.utils.np_utils.to_categorical did not squeeze a trailing
+# singleton dimension.  For an input of shape ``(n, 1)`` the buggy version
+# returned shape ``(n, 1, num_classes)`` instead of ``(n, num_classes)``.
+#
+# System-test format:  ``<mode> <num_classes> <v1> <v2> ...`` where
+#   ``<mode>`` is ``col`` (y reshaped to ``(n, 1)`` — the trigger) or
+#   ``flat`` (y kept 1-D).  The harness prints ``tuple(out.shape)``; the
+#   oracle compares against the correct (fixed) shape ``(n, num_classes)``.
+# ======================================================================
+
+
+class Keras43API(KerasAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            num_classes = int(process.args[3])
+            vals = [int(x) for x in process.args[4:]]
+        except (IndexError, ValueError):
+            return TestResult.UNDEFINED, "Malformed test input"
+        if not vals:
+            return TestResult.UNDEFINED, "Malformed test input"
+        expected = (len(vals), num_classes)
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == str(expected):
+            return TestResult.PASSING, f"Expected {expected}"
+        return TestResult.FAILING, f"Expected {expected}, but was {out!r}"
+
+
+class Keras43TestGenerator:
+    @staticmethod
+    def generate_case() -> Tuple[int, List[int]]:
+        num_classes = random.randint(2, 12)
+        n = random.randint(2, 8)
+        vals = [random.randint(0, num_classes - 1) for _ in range(n)]
+        return num_classes, vals
+
+
+class Keras43SystemtestGenerator(SystemtestGenerator, Keras43TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        num_classes, vals = self.generate_case()
+        return (
+            f"col {num_classes} " + " ".join(map(str, vals)),
+            TestResult.FAILING,
+        )
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        num_classes, vals = self.generate_case()
+        return (
+            f"flat {num_classes} " + " ".join(map(str, vals)),
+            TestResult.PASSING,
+        )
+
+
+_KERAS43_UTILS = '''
+def _t4p_to_categorical_shape(mode, num_classes, vals):
+    import os
+    import importlib.util
+    import numpy as np
+    path = os.path.join(os.getcwd(), 'keras', 'utils', 'np_utils.py')
+    spec = importlib.util.spec_from_file_location('t4p_np_utils', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    if mode == 'col':
+        y = np.array(vals).reshape(-1, 1)
+    else:
+        y = np.array(vals)
+    return tuple(module.to_categorical(y, num_classes).shape)
+'''
+
+
+class Keras43UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Keras43TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return ast.parse(_KERAS43_UTILS).body
+
+    @staticmethod
+    def _assert(mode: str, num_classes: int, vals: List[int]) -> List[ast.stmt]:
+        expected = (len(vals), num_classes)
+        return [
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id="self"), attr="assertEqual"
+                    ),
+                    args=[
+                        ast.Tuple(elts=[ast.Constant(value=v) for v in expected]),
+                        ast.Call(
+                            func=ast.Name(id="_t4p_to_categorical_shape"),
+                            args=[
+                                ast.Constant(value=mode),
+                                ast.Constant(value=num_classes),
+                                ast.List(
+                                    elts=[ast.Constant(value=v) for v in vals]
+                                ),
+                            ],
+                            keywords=[],
+                        ),
+                    ],
+                    keywords=[],
+                )
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        num_classes, vals = self.generate_case()
+        test = self.get_empty_test()
+        test.body = self._assert("col", num_classes, vals)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        num_classes, vals = self.generate_case()
+        test = self.get_empty_test()
+        test.body = self._assert("flat", num_classes, vals)
+        return test, TestResult.PASSING
+
+
+grammar_43: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<mode> <number><values>"],
+            "<mode>": ["col", "flat"],
+            "<values>": [" <number>", " <number><values>"],
+        },
+        **NUMBER,
+    )
+)
+
+assert is_valid_grammar(grammar_43)
+
+
+# ======================================================================
+# bug_33: keras.preprocessing.text.text_to_word_sequence built its
+# translation map with ``maketrans(filters, split * len(filters))``, which
+# requires the two arguments to have equal length.  A MULTI-CHARACTER
+# ``split`` therefore raised ``ValueError`` ("arguments must have equal
+# length").  The fix builds the map from a ``{char: split}`` dict.
+#
+# System-test format:  ``<split> <word1> <word2> ...`` where ``<split>`` is
+#   a digit string (digits survive ``lower()`` and are not filter chars).
+#   The harness builds ``text = split.join(words)``, calls
+#   text_to_word_sequence(text, split=split) and prints the result list.
+#   A multi-digit split triggers the fault; a single-digit split does not.
+#   The oracle expects the list of input words.
+# ======================================================================
+
+
+class Keras33API(KerasAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        words = list(process.args[3:])
+        if not words:
+            return TestResult.UNDEFINED, "Malformed test input"
+        expected = str(words)
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == expected:
+            return TestResult.PASSING, f"Expected {expected}"
+        return TestResult.FAILING, f"Expected {expected}, but was {out!r}"
+
+
+class Keras33TestGenerator:
+    @staticmethod
+    def generate_word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(2, 7)))
+
+    def generate_words(self) -> List[str]:
+        return [self.generate_word() for _ in range(random.randint(2, 5))]
+
+    @staticmethod
+    def generate_multichar_split() -> str:
+        return "".join(random.choices(string.digits, k=random.randint(2, 3)))
+
+    @staticmethod
+    def generate_single_split() -> str:
+        return random.choice(string.digits)
+
+
+class Keras33SystemtestGenerator(SystemtestGenerator, Keras33TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return (
+            f"{self.generate_multichar_split()} " + " ".join(self.generate_words()),
+            TestResult.FAILING,
+        )
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return (
+            f"{self.generate_single_split()} " + " ".join(self.generate_words()),
+            TestResult.PASSING,
+        )
+
+
+_KERAS33_UTILS = '''
+def _t4p_text_to_word_sequence(split, words):
+    import os
+    import importlib.util
+    path = os.path.join(os.getcwd(), 'keras', 'preprocessing', 'text.py')
+    spec = importlib.util.spec_from_file_location('t4p_text', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    text = split.join(words)
+    return module.text_to_word_sequence(text, split=split)
+'''
+
+
+class Keras33UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Keras33TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return ast.parse(_KERAS33_UTILS).body
+
+    @staticmethod
+    def _assert(split: str, words: List[str]) -> List[ast.stmt]:
+        return [
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id="self"), attr="assertEqual"
+                    ),
+                    args=[
+                        ast.List(elts=[ast.Constant(value=w) for w in words]),
+                        ast.Call(
+                            func=ast.Name(id="_t4p_text_to_word_sequence"),
+                            args=[
+                                ast.Constant(value=split),
+                                ast.List(
+                                    elts=[ast.Constant(value=w) for w in words]
+                                ),
+                            ],
+                            keywords=[],
+                        ),
+                    ],
+                    keywords=[],
+                )
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        split = self.generate_multichar_split()
+        words = self.generate_words()
+        test = self.get_empty_test()
+        test.body = self._assert(split, words)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        split = self.generate_single_split()
+        words = self.generate_words()
+        test = self.get_empty_test()
+        test.body = self._assert(split, words)
+        return test, TestResult.PASSING
+
+
+grammar_33: Grammar = clean_up(
+    {
+        "<start>": ["<split><words>"],
+        "<split>": ["<digit>", "<digit><split>"],
+        "<digit>": srange(string.digits),
+        "<words>": [" <word>", " <word><words>"],
+        "<word>": ["<letter><letters>"],
+        "<letters>": ["", "<letter><letters>"],
+        "<letter>": srange(string.ascii_lowercase),
+    }
+)
+
+assert is_valid_grammar(grammar_33)

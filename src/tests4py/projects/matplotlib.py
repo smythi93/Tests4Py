@@ -1,12 +1,38 @@
+import ast
+import bisect
 import os
+import random
+import string
+import subprocess
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
+from tests4py.grammars import python
+from tests4py.grammars.default import clean_up, INTEGER, FLOAT, NUMBER
+from tests4py.grammars.fuzzer import Grammar, is_valid_grammar, srange
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
 
 PROJECT_NAME = "matplotlib"
+
+# On an Apple-Silicon host the pyenv CPython 3.8.4 runs as x86_64 (Rosetta), but
+# clang defaults to the native arm64 target which the ancient numpy 1.15 headers
+# bundled with these matplotlib versions cannot classify ("Unknown CPU").  Force
+# the C/C++ extensions to build for x86_64 so they match the interpreter.  The
+# ft2font patch works around a hard C++ type error (char* vs unsigned char*) that
+# modern system FreeType headers trigger; the replace is a no-op when absent.
+_FT2FONT_PATCH = (
+    "import io\n"
+    "p = 'src/ft2font.cpp'\n"
+    "try:\n"
+    "    s = io.open(p, encoding='utf8').read()\n"
+    "except OSError:\n"
+    "    raise SystemExit(0)\n"
+    "s = s.replace('tags = outline.tags + first;', "
+    "'tags = (char *)(outline.tags + first);')\n"
+    "io.open(p, 'w', encoding='utf8').write(s)\n"
+)
 
 
 class Matplotlib(Project):
@@ -22,6 +48,7 @@ class Matplotlib(Project):
         unittests: Optional[UnittestGenerator] = None,
         systemtests: Optional[SystemtestGenerator] = None,
         api: Optional[API] = None,
+        grammar: Optional[Grammar] = None,
         loc: int = 0,
         relevant_test_files: Optional[List[Path]] = None,
         skip_tests: Optional[List[str]] = None,
@@ -44,13 +71,15 @@ class Matplotlib(Project):
             unittests=unittests,
             systemtests=systemtests,
             api=api,
-            grammar=None,
+            grammar=grammar,
             loc=loc,
             test_base=Path("lib", PROJECT_NAME, "tests"),
             source_base=Path("lib", PROJECT_NAME),
             setup=[
+                ["python", "-c", _FT2FONT_PATCH],
                 ["python", "-m", "pip", "install", "-e", "."],
             ],
+            setup_env={"ARCHFLAGS": "-arch x86_64"},
             included_files=[os.path.join("lib", PROJECT_NAME)],
             excluded_files=[os.path.join("lib", PROJECT_NAME, "tests")],
             relevant_test_files=relevant_test_files,
@@ -106,6 +135,10 @@ def register():
                 "lib", "matplotlib", "tests", "test_marker.py::test_marker_fillstyle"
             )
         ],
+        unittests=Matplotlib3UnittestGenerator(),
+        systemtests=Matplotlib3SystemtestGenerator(),
+        api=Matplotlib3API(),
+        grammar=grammar_3,
         loc=63506,
     )
     Matplotlib(
@@ -1072,13 +1105,273 @@ def register():
                 "lib", "matplotlib", "tests", "test_colors.py::test_makeMappingArray"
             )
         ],
+        unittests=Matplotlib30UnittestGenerator(),
+        systemtests=Matplotlib30SystemtestGenerator(),
+        api=Matplotlib30API(),
+        grammar=grammar_30,
         loc=66111,
     )
 
 
 class MatplotlibAPI(API):
-    def __init__(self, default_timeout: int = 5):
+    def __init__(self, default_timeout: int = 10):
         super().__init__(default_timeout=default_timeout)
 
     def oracle(self, args) -> Tuple[TestResult, str]:
         return TestResult.UNDEFINED, ""
+
+
+# ======================================================================
+# bug_30: ``matplotlib.colors.makeMappingArray`` produced a 2-element
+# lookup table for ``N == 1`` (concatenating ``[y1[0]]`` and ``[y0[-1]]``)
+# instead of the documented single ``y0[-1]`` value.  The fix special-cases
+# ``N == 1`` to return ``np.array(y0[-1])``.
+#
+# System-test format:  ``<N> <gamma> <x,y0,y1> <x,y0,y1> ...``
+#   The harness calls ``makeMappingArray(N, data, gamma)`` and prints the
+#   rounded lookup table.  ``N == 1`` triggers the fault; ``N >= 2`` does
+#   not.  The oracle recomputes the correct (fixed) table in pure Python.
+# ======================================================================
+
+
+def _correct_make_mapping_array(
+    n: int, data: List[Tuple[float, float, float]], gamma: float
+) -> List[float]:
+    xs = [d[0] for d in data]
+    y0 = [d[1] for d in data]
+    y1 = [d[2] for d in data]
+    if n == 1:
+        return [min(max(y0[-1], 0.0), 1.0)]
+    x = [xi * (n - 1) for xi in xs]
+    xind = [(n - 1) * ((i / (n - 1)) ** gamma) for i in range(n)]
+    inner = xind[1:-1]
+    ind = [bisect.bisect_left(x, v) for v in inner]
+    lut = [y1[0]]
+    for k, i in enumerate(ind):
+        distance = (inner[k] - x[i - 1]) / (x[i] - x[i - 1])
+        lut.append(distance * (y0[i] - y1[i - 1]) + y1[i - 1])
+    lut.append(y0[-1])
+    return [min(max(v, 0.0), 1.0) for v in lut]
+
+
+def _parse_mapping_data(
+    tokens: List[str],
+) -> Tuple[int, float, List[Tuple[float, float, float]]]:
+    n = int(tokens[0])
+    gamma = float(tokens[1])
+    data = []
+    for tok in tokens[2:]:
+        a, b, c = tok.split(",")
+        data.append((float(a), float(b), float(c)))
+    return n, gamma, data
+
+
+def _round_list(values: List[float], ndigits: int = 6) -> str:
+    return str([round(float(v), ndigits) for v in values])
+
+
+class Matplotlib30API(MatplotlibAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            n, gamma, data = _parse_mapping_data(list(process.args[2:]))
+        except (IndexError, ValueError):
+            return TestResult.UNDEFINED, "Malformed test input"
+        expected = _round_list(_correct_make_mapping_array(n, data, gamma))
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == expected:
+            return TestResult.PASSING, f"Expected {expected}"
+        return TestResult.FAILING, f"Expected {expected}, but was {out!r}"
+
+
+class Matplotlib30TestGenerator:
+    @staticmethod
+    def generate_data() -> List[Tuple[float, float, float]]:
+        nseg = random.randint(2, 4)
+        interior = sorted(
+            round(random.uniform(0.15, 0.85), 3) for _ in range(nseg - 2)
+        )
+        xs = [0.0] + interior + [1.0]
+        return [
+            (xi, round(random.uniform(0, 1), 3), round(random.uniform(0, 1), 3))
+            for xi in xs
+        ]
+
+    @staticmethod
+    def format_data(data: List[Tuple[float, float, float]]) -> str:
+        return " ".join(f"{a},{b},{c}" for a, b, c in data)
+
+    def make_failing(self) -> str:
+        return f"1 1.0 {self.format_data(self.generate_data())}"
+
+    def make_passing(self) -> str:
+        n = random.randint(2, 8)
+        return f"{n} 1.0 {self.format_data(self.generate_data())}"
+
+
+class Matplotlib30SystemtestGenerator(
+    SystemtestGenerator, Matplotlib30TestGenerator
+):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return self.make_failing(), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return self.make_passing(), TestResult.PASSING
+
+
+class Matplotlib30UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Matplotlib30TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return ast.parse(
+            "import matplotlib\n"
+            "matplotlib.use('Agg')\n"
+            "import numpy as np\n"
+            "import matplotlib.colors as mcolors\n"
+        ).body
+
+    @staticmethod
+    def _assert(
+        n: int, data: List[Tuple[float, float, float]], gamma: float
+    ) -> List[ast.stmt]:
+        # Inline the call so the assertion works as a self-contained test-method
+        # body (the framework places all statements inside the TestCase class, so
+        # a class-body helper could not be referenced by bare name).
+        expected = [round(v, 6) for v in _correct_make_mapping_array(n, data, gamma)]
+        src = (
+            f"self.assertEqual({expected!r}, "
+            "[round(float(v), 6) for v in np.atleast_1d(np.asarray("
+            f"mcolors.makeMappingArray({n}, {list(data)!r}, {gamma})))])"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        data = self.generate_data()
+        test = self.get_empty_test()
+        test.body = self._assert(1, data, 1.0)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        data = self.generate_data()
+        n = random.randint(2, 8)
+        test = self.get_empty_test()
+        test.body = self._assert(n, data, 1.0)
+        return test, TestResult.PASSING
+
+
+grammar_30: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<n> <gamma> <segments>"],
+            "<n>": ["<number>"],
+            "<gamma>": ["1.0"],
+            "<segments>": ["<segment>", "<segment> <segments>"],
+            "<segment>": ["<float>,<float>,<float>"],
+        },
+        **FLOAT,
+    )
+)
+
+assert is_valid_grammar(grammar_30)
+
+
+# ======================================================================
+# bug_3: ``matplotlib.markers.MarkerStyle`` initialised ``_filled`` to
+# ``True`` unconditionally, so a *filled* marker created with
+# ``fillstyle='none'`` still reported ``is_filled() == True``.  The fix
+# initialises ``_filled = self._fillstyle != 'none'`` before the marker
+# function runs, so an explicitly unfilled marker reports ``False``.
+#
+# System-test format:  ``<marker> <fillstyle>``
+#   The harness builds ``MarkerStyle(marker, fillstyle)`` and prints
+#   ``is_filled()``.  For a *filled* marker the correct (fixed) answer is
+#   ``fillstyle != 'none'``; ``fillstyle='none'`` triggers the fault
+#   (buggy prints ``True``, fixed prints ``False``).
+# ======================================================================
+
+_FILLED_MARKERS = ["o", "v", "^", "8", "s", "p", "*", "h", "H", "D", "d"]
+
+
+def _correct_is_filled(fillstyle: str) -> bool:
+    # Only ever evaluated for *filled* markers, whose fixed ``is_filled``
+    # value is simply ``fillstyle != 'none'``.
+    return fillstyle != "none"
+
+
+class Matplotlib3API(MatplotlibAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            fillstyle = process.args[3]
+        except (IndexError, ValueError):
+            return TestResult.UNDEFINED, "Malformed test input"
+        expected = str(_correct_is_filled(fillstyle))
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == expected:
+            return TestResult.PASSING, f"Expected {expected}"
+        return TestResult.FAILING, f"Expected {expected}, but was {out!r}"
+
+
+class Matplotlib3TestGenerator:
+    def make_failing(self) -> str:
+        return f"{random.choice(_FILLED_MARKERS)} none"
+
+    def make_passing(self) -> str:
+        return f"{random.choice(_FILLED_MARKERS)} full"
+
+
+class Matplotlib3SystemtestGenerator(
+    SystemtestGenerator, Matplotlib3TestGenerator
+):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return self.make_failing(), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return self.make_passing(), TestResult.PASSING
+
+
+class Matplotlib3UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Matplotlib3TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return ast.parse(
+            "import matplotlib\n"
+            "matplotlib.use('Agg')\n"
+            "from matplotlib.markers import MarkerStyle\n"
+        ).body
+
+    @staticmethod
+    def _assert(marker: str, fillstyle: str) -> List[ast.stmt]:
+        # Inline the call (the framework places every statement inside the
+        # TestCase class, so a class-body helper cannot be referenced by name).
+        expected = _correct_is_filled(fillstyle)
+        src = (
+            f"self.assertEqual({expected!r}, "
+            f"bool(MarkerStyle({marker!r}, {fillstyle!r}).is_filled()))"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._assert(random.choice(_FILLED_MARKERS), "none")
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._assert(random.choice(_FILLED_MARKERS), "full")
+        return test, TestResult.PASSING
+
+
+grammar_3: Grammar = clean_up(
+    {
+        "<start>": ["<marker> <fillstyle>"],
+        "<marker>": ["o", "v", "^", "8", "s", "p", "*", "h", "H", "D", "d"],
+        "<fillstyle>": ["full", "none", "left", "right", "top", "bottom"],
+    }
+)
+
+assert is_valid_grammar(grammar_3)

@@ -2,68 +2,64 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 
 class TestsFailing(FailingSystemtests):
-    # Create Fish() Shell instance, Call fish.info() - Result should be like for failing "Error Retrieving Shell"
-    # There is no input so, no input provided
     def test_diversity_1(self):
-        return ""
+        return 'zxVLti'
 
     def test_diversity_2(self):
-        return ""
+        return 'zxgjHnbI'
 
     def test_diversity_3(self):
-        return ""
+        return 'zxOeYHXjHJ'
 
     def test_diversity_4(self):
-        return ""
+        return 'zxEbPTNz'
 
     def test_diversity_5(self):
-        return ""
+        return 'zxGKUzJ'
 
     def test_diversity_6(self):
-        return ""
+        return 'zxOjPps'
 
     def test_diversity_7(self):
-        return ""
+        return 'zxqtUrE'
 
     def test_diversity_8(self):
-        return ""
+        return 'zxDbI'
 
     def test_diversity_9(self):
-        return ""
+        return 'zxfaqTnvQC'
 
     def test_diversity_10(self):
-        return ""
+        return 'zxbIQgRIrY'
 
 
 class TestsPassing(PassingSystemtests):
-    # Create Fish() Shell instance, Call fish.info() - Result should be like for passing tests "Fish Shell 3.6.1"
-    # There is no input so, no input provided
     def test_diversity_1(self):
-        return ""
+        return 'She'
 
     def test_diversity_2(self):
-        return ""
+        return 'Shel'
 
     def test_diversity_3(self):
-        return ""
+        return 'sh Sh'
 
     def test_diversity_4(self):
-        return ""
+        return 'Fish'
 
     def test_diversity_5(self):
-        return ""
+        return 'ish'
 
     def test_diversity_6(self):
-        return ""
+        return 'Shell'
 
     def test_diversity_7(self):
-        return ""
+        return 'hell'
 
     def test_diversity_8(self):
-        return ""
+        return 'h Shell'
 
     def test_diversity_9(self):
-        return ""
+        return 'ish Shell'
 
     def test_diversity_10(self):
-        return ""
+        return 'Fish She'

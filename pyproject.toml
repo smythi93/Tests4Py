@@ -52,3 +52,8 @@ test = [
 [tool.black]
 line-length = 88
 target-version = ['py310']
+
+[tool.pytest.ini_options]
+markers = [
+    "subjects: comprehensive per-subject acceptance tests (checkout + build + oracle + generation + diversity + grammar). Slow; excluded from the GitHub workflow via `-m 'not subjects'`. Run locally with `pytest -m subjects`.",
+]

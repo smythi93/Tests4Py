@@ -1,8 +1,15 @@
+import ast
 import os.path
+import random
+import string
+import subprocess
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Any
 
 from tests4py.constants import PYTHON
+from tests4py.grammars import python
+from tests4py.grammars.default import clean_up, NUMBER
+from tests4py.grammars.fuzzer import Grammar, is_valid_grammar, srange
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
@@ -23,6 +30,7 @@ class Luigi(Project):
         unittests: Optional[UnittestGenerator] = None,
         systemtests: Optional[SystemtestGenerator] = None,
         api: Optional[API] = None,
+        grammar: Optional[Grammar] = None,
         loc: int = 0,
         relevant_test_files: Optional[List[Path]] = None,
         skip_tests: Optional[List[str]] = None,
@@ -46,7 +54,7 @@ class Luigi(Project):
             unittests=unittests,
             systemtests=systemtests,
             api=api,
-            grammar=None,
+            grammar=grammar,
             loc=loc,
             included_files=[PROJECT_NAME],
             source_base=Path(PROJECT_NAME),
@@ -94,6 +102,10 @@ def register():
                 "test", "parameter_test.py::TestSerializeTupleParameter::testSerialize"
             )
         ],
+        unittests=Luigi3UnittestGenerator(),
+        systemtests=Luigi3SystemtestGenerator(),
+        api=Luigi3API(),
+        grammar=grammar_3,
         loc=15078,
     )
     Luigi(
@@ -123,6 +135,10 @@ def register():
                 "test", "util_test.py::BasicsTest::test_requires_has_effect_MRO"
             ),
         ],
+        unittests=Luigi5UnittestGenerator(),
+        systemtests=Luigi5SystemtestGenerator(),
+        api=Luigi5API(),
+        grammar=grammar_5,
         loc=13474,
     )
     Luigi(
@@ -138,6 +154,10 @@ def register():
                 "test", "parameter_test.py::TestParametersHashability::test_tuple_dict"
             ),
         ],
+        unittests=Luigi6UnittestGenerator(),
+        systemtests=Luigi6SystemtestGenerator(),
+        api=Luigi6API(),
+        grammar=grammar_6,
         loc=13248,
     )
     Luigi(
@@ -240,6 +260,10 @@ def register():
         skip_tests=[
             "test_rename_dont_move_on_fs",
         ],
+        unittests=Luigi13UnittestGenerator(),
+        systemtests=Luigi13SystemtestGenerator(),
+        api=Luigi13API(),
+        grammar=grammar_13,
         loc=11581,
     )
     Luigi(
@@ -440,6 +464,10 @@ def register():
                 "parameter_test.py::TestParamWithDefaultFromConfig::testCommandLineNoDefault",
             ),
         ],
+        unittests=Luigi27UnittestGenerator(),
+        systemtests=Luigi27SystemtestGenerator(),
+        api=Luigi27API(),
+        grammar=grammar_27,
         loc=8530,
     )
     Luigi(
@@ -469,6 +497,10 @@ def register():
         test_cases=[
             os.path.join("test", "task_test.py::TaskTest::test_external_tasks_loadable")
         ],
+        unittests=Luigi29UnittestGenerator(),
+        systemtests=Luigi29SystemtestGenerator(),
+        api=Luigi29API(),
+        grammar=grammar_29,
         loc=8358,
     )
     Luigi(
@@ -508,6 +540,10 @@ def register():
         test_cases=[
             os.path.join("test", "instance_test.py::InstanceTest::test_unhashable_type")
         ],
+        unittests=Luigi32UnittestGenerator(),
+        systemtests=Luigi32SystemtestGenerator(),
+        api=Luigi32API(),
+        grammar=grammar_32,
         loc=8289,
     )
     Luigi(
@@ -537,13 +573,841 @@ def register():
                 "parameter_test.py::TestRemoveGlobalParameters::test_mixed_params_inheritence",
             ),
         ],
+        unittests=Luigi33UnittestGenerator(),
+        systemtests=Luigi33SystemtestGenerator(),
+        api=Luigi33API(),
+        grammar=grammar_33,
         loc=7821,
     )
 
 
 class LuigiAPI(API):
-    def __init__(self, default_timeout: int = 5):
+    def __init__(self, default_timeout: int = 10):
         super().__init__(default_timeout=default_timeout)
 
     def oracle(self, args) -> Tuple[TestResult, str]:
         return TestResult.UNDEFINED, ""
+
+
+# ======================================================================
+# bug_3: ``TupleParameter.parse`` only caught ``ValueError`` and returned
+# the bare ``literal_eval(x)``.  For a *flat* tuple, ``serialize`` yields a
+# plain JSON list (e.g. ``"[1, 2, 3]"``); ``json.loads`` succeeds but the
+# subsequent ``tuple(tuple(x) for x in ...)`` raises ``TypeError`` because
+# the ints are not iterable — and the buggy ``except ValueError`` lets that
+# ``TypeError`` escape.  The fix catches ``(ValueError, TypeError)`` and
+# returns ``tuple(literal_eval(x))``.
+#
+# System-test format:  ``<mode> <int> <int> ...`` where ``<mode>`` is
+#   ``flat`` (the trigger: a flat tuple that round-trips only on the fixed
+#   build) or ``nested`` (pairs -> a tuple of tuples, which round-trips on
+#   both builds).  The harness prints ``repr(parse(serialize(t)))``; the
+#   oracle rebuilds the original tuple and compares.
+# ======================================================================
+
+
+def _tuple_from_args(mode: str, nums: List[int]) -> tuple:
+    if mode == "flat":
+        return tuple(nums)
+    return tuple((nums[i], nums[i + 1]) for i in range(0, len(nums) - 1, 2))
+
+
+class Luigi3API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            mode = process.args[2]
+            nums = [int(a) for a in process.args[3:]]
+        except (IndexError, ValueError):
+            return TestResult.UNDEFINED, "Malformed test input"
+        expected = _tuple_from_args(mode, nums)
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == repr(expected):
+            return TestResult.PASSING, f"Expected {expected!r}"
+        return TestResult.FAILING, f"Expected {expected!r}, but was {out!r}"
+
+
+class Luigi3TestGenerator:
+    @staticmethod
+    def generate_int() -> int:
+        return random.randint(0, 999)
+
+    def generate_flat(self) -> List[int]:
+        return [self.generate_int() for _ in range(random.randint(1, 6))]
+
+    def generate_pairs(self) -> List[int]:
+        return [self.generate_int() for _ in range(2 * random.randint(1, 4))]
+
+
+class Luigi3SystemtestGenerator(SystemtestGenerator, Luigi3TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        nums = self.generate_flat()
+        return "flat " + " ".join(map(str, nums)), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        nums = self.generate_pairs()
+        return "nested " + " ".join(map(str, nums)), TestResult.PASSING
+
+
+class Luigi3UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi3TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.ImportFrom(
+                module="luigi",
+                names=[ast.alias(name="TupleParameter")],
+                level=0,
+            )
+        ]
+
+    @staticmethod
+    def _assert(the_tuple: tuple) -> List[ast.stmt]:
+        return ast.parse(
+            "tp = TupleParameter()\n"
+            f"self.assertEqual(tp.parse(tp.serialize({the_tuple!r})), {the_tuple!r})"
+        ).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        the_tuple = tuple(self.generate_flat())
+        test = self.get_empty_test()
+        test.body = self._assert(the_tuple)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        nums = self.generate_pairs()
+        the_tuple = tuple((nums[i], nums[i + 1]) for i in range(0, len(nums) - 1, 2))
+        test = self.get_empty_test()
+        test.body = self._assert(the_tuple)
+        return test, TestResult.PASSING
+
+
+grammar_3: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<mode> <numbers>"],
+            "<mode>": ["flat", "nested"],
+            "<numbers>": ["<number>", "<number> <numbers>"],
+        },
+        **NUMBER,
+    )
+)
+
+assert is_valid_grammar(grammar_3)
+
+
+# ======================================================================
+# bug_32: ``Register.__call__`` in ``task_register.py`` caught the
+# ``TypeError`` raised when a task's parameter values are unhashable and
+# tried to ``logger.debug(...)`` — but the module never defined ``logger``,
+# so a ``NameError`` escaped and instantiating a task with an unhashable
+# parameter value (e.g. a ``dict``) crashed.  The fix adds
+# ``logger = logging.getLogger('luigi-interface')``.
+#
+# System-test format:  ``<kind> <word> <word>`` where ``<kind>`` is
+#   ``dict`` (the trigger: an unhashable value -> NameError on the buggy
+#   build, but fine on the fixed build) or ``str``/``tuple``/``list``/
+#   ``set`` (all normalize to hashable values, so they succeed on both).
+#   The harness instantiates the task and prints ``HARNESS_OK``; the
+#   oracle -- knowing the CORRECT behaviour is that instantiation always
+#   succeeds -- returns PASSING iff ``HARNESS_OK`` was printed.
+# ======================================================================
+
+
+class Luigi32API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and "HARNESS_OK" in out:
+            return TestResult.PASSING, out
+        return TestResult.FAILING, out or process.stderr.decode("utf8").strip()
+
+
+class Luigi32TestGenerator:
+    @staticmethod
+    def generate_word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(3, 8)))
+
+    def generate_words(self) -> Tuple[str, str]:
+        return self.generate_word(), self.generate_word()
+
+
+class Luigi32SystemtestGenerator(SystemtestGenerator, Luigi32TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        w1, w2 = self.generate_words()
+        return f"dict {w1} {w2}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        w1, w2 = self.generate_words()
+        kind = random.choice(("str", "tuple", "list", "set"))
+        return f"{kind} {w1} {w2}", TestResult.PASSING
+
+
+class Luigi32UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi32TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [ast.Import(names=[ast.alias(name="luigi")])]
+
+    @staticmethod
+    def _value_literal(kind: str, w1: str, w2: str) -> str:
+        if kind == "dict":
+            return f"{{{w1!r}: {w2!r}}}"
+        if kind == "tuple":
+            return f"({w1!r}, {w2!r})"
+        if kind == "list":
+            return f"[{w1!r}, {w2!r}]"
+        if kind == "set":
+            return f"{{{w1!r}, {w2!r}}}"
+        return f"{w1!r}"
+
+    def _body(self, kind: str, w1: str, w2: str) -> List[ast.stmt]:
+        cls_name = f"Task_{kind}_{w1}_{w2}"
+        return ast.parse(
+            f"class {cls_name}(luigi.Task):\n"
+            f"    x = luigi.Parameter()\n"
+            f"t = {cls_name}(x={self._value_literal(kind, w1, w2)})\n"
+            f"self.assertIsNotNone(t)\n"
+        ).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        w1, w2 = self.generate_words()
+        test = self.get_empty_test()
+        test.body = self._body("dict", w1, w2)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        w1, w2 = self.generate_words()
+        kind = random.choice(("str", "tuple", "list", "set"))
+        test = self.get_empty_test()
+        test.body = self._body(kind, w1, w2)
+        return test, TestResult.PASSING
+
+
+grammar_32: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<kind> <word> <word>"],
+            "<kind>": ["dict", "str", "tuple", "list", "set"],
+            "<word>": ["<letter><letters>"],
+            "<letters>": ["", "<letter><letters>"],
+            "<letter>": srange(string.ascii_lowercase),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_32)
+
+
+# ======================================================================
+# bug_6: ``_recursively_freeze`` handled ``list`` but not ``tuple``, and
+# ``List``/``TupleParameter.serialize`` used a plain ``json.dumps`` that
+# could not serialize the ``_FrozenOrderedDict`` produced by freezing a
+# nested dict.  Consequences: a ``ListParameter`` whose value is a list of
+# dicts failed to *serialize* during task instantiation, and a
+# ``TupleParameter`` whose value is a tuple of dicts produced an
+# *unhashable* normalized value.  The fix adds tuple handling to
+# ``_recursively_freeze`` and a ``_DictParamEncoder`` for serialization.
+#
+# System-test format:  ``<ptype> <shape> <word> <word>`` where ``<ptype>``
+#   is ``list`` or ``tuple`` and ``<shape>`` is ``dicts`` (the trigger: a
+#   list/tuple of dicts) or ``flat``/``nested`` (no dicts, fine on both).
+#   The harness instantiates a task with that parameter value and hashes
+#   ``.args``; the oracle -- knowing the CORRECT behaviour is that this
+#   always succeeds -- returns PASSING iff ``HARNESS_OK`` was printed.
+# ======================================================================
+
+
+class Luigi6API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and "HARNESS_OK" in out:
+            return TestResult.PASSING, out
+        return TestResult.FAILING, out or process.stderr.decode("utf8").strip()
+
+
+class Luigi6TestGenerator:
+    @staticmethod
+    def generate_word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(3, 8)))
+
+    def generate_words(self) -> Tuple[str, str]:
+        return self.generate_word(), self.generate_word()
+
+
+class Luigi6SystemtestGenerator(SystemtestGenerator, Luigi6TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        w1, w2 = self.generate_words()
+        ptype = random.choice(("list", "tuple"))
+        return f"{ptype} dicts {w1} {w2}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        w1, w2 = self.generate_words()
+        ptype = random.choice(("list", "tuple"))
+        shape = random.choice(("flat", "nested"))
+        return f"{ptype} {shape} {w1} {w2}", TestResult.PASSING
+
+
+class Luigi6UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi6TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [ast.Import(names=[ast.alias(name="luigi")])]
+
+    @staticmethod
+    def _value_literal(ptype: str, shape: str, w1: str, w2: str) -> str:
+        if shape == "dicts":
+            body = f"{{{w1!r}: {w2!r}}}, {{{w2!r}: {w1!r}}}"
+        elif shape == "nested":
+            body = f"[{w1!r}, {w2!r}], [{w2!r}, {w1!r}]"
+        else:
+            body = f"{w1!r}, {w2!r}"
+        if ptype == "tuple":
+            if shape == "nested":
+                body = f"({w1!r}, {w2!r}), ({w2!r}, {w1!r})"
+            return f"({body})"
+        return f"[{body}]"
+
+    def _body(self, ptype: str, shape: str, w1: str, w2: str) -> List[ast.stmt]:
+        cls_name = f"Task_{ptype}_{shape}_{w1}_{w2}"
+        param = "ListParameter" if ptype == "list" else "TupleParameter"
+        return ast.parse(
+            f"class {cls_name}(luigi.Task):\n"
+            f"    args = luigi.{param}()\n"
+            f"inst = {cls_name}(args={self._value_literal(ptype, shape, w1, w2)})\n"
+            f"self.assertIsInstance(hash(inst.args), int)\n"
+        ).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        w1, w2 = self.generate_words()
+        ptype = random.choice(("list", "tuple"))
+        test = self.get_empty_test()
+        test.body = self._body(ptype, "dicts", w1, w2)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        w1, w2 = self.generate_words()
+        ptype = random.choice(("list", "tuple"))
+        shape = random.choice(("flat", "nested"))
+        test = self.get_empty_test()
+        test.body = self._body(ptype, shape, w1, w2)
+        return test, TestResult.PASSING
+
+
+grammar_6: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<ptype> <shape> <word> <word>"],
+            "<ptype>": ["list", "tuple"],
+            "<shape>": ["dicts", "flat", "nested"],
+            "<word>": ["<letter><letters>"],
+            "<letters>": ["", "<letter><letters>"],
+            "<letter>": srange(string.ascii_lowercase),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_6)
+
+
+# ======================================================================
+# bug_33: ``Task.get_param_values`` chose the positional-parameter slots by
+# filtering on ``p.significant`` instead of ``not p.is_global``.  As a
+# result a task with an *insignificant* (but non-global) parameter could
+# not receive that parameter positionally -- instantiating it with a
+# positional argument for the insignificant parameter raised
+# ``UnknownParameterException`` ("takes at most N parameters").  The fix
+# filters on ``not p.is_global`` so every local parameter is positional.
+#
+# System-test format:  ``<mode> <word> <word>`` where ``<mode>`` is
+#   ``pos`` (the trigger: both values passed positionally, one of them for
+#   the insignificant parameter) or ``kw``/``allkw`` (the insignificant
+#   parameter passed by keyword, fine on both builds).  The harness
+#   instantiates the task and prints ``HARNESS_OK``; the oracle -- knowing
+#   the CORRECT behaviour is that instantiation always succeeds -- returns
+#   PASSING iff ``HARNESS_OK`` was printed.
+# ======================================================================
+
+
+class Luigi33API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and "HARNESS_OK" in out:
+            return TestResult.PASSING, out
+        return TestResult.FAILING, out or process.stderr.decode("utf8").strip()
+
+
+class Luigi33TestGenerator:
+    @staticmethod
+    def generate_word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(3, 8)))
+
+    def generate_words(self) -> Tuple[str, str]:
+        return self.generate_word(), self.generate_word()
+
+
+class Luigi33SystemtestGenerator(SystemtestGenerator, Luigi33TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        w1, w2 = self.generate_words()
+        return f"pos {w1} {w2}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        w1, w2 = self.generate_words()
+        mode = random.choice(("kw", "allkw"))
+        return f"{mode} {w1} {w2}", TestResult.PASSING
+
+
+class Luigi33UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi33TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [ast.Import(names=[ast.alias(name="luigi")])]
+
+    def _body(self, mode: str, w1: str, w2: str) -> List[ast.stmt]:
+        cls_name = f"Task_{mode}_{w1}_{w2}"
+        if mode == "pos":
+            call = f"{cls_name}({w1!r}, {w2!r})"
+        elif mode == "kw":
+            call = f"{cls_name}({w1!r}, y={w2!r})"
+        else:
+            call = f"{cls_name}(x={w1!r}, y={w2!r})"
+        return ast.parse(
+            f"class {cls_name}(luigi.Task):\n"
+            f"    x = luigi.Parameter()\n"
+            f"    y = luigi.Parameter(significant=False)\n"
+            f"t = {call}\n"
+            f"self.assertIsNotNone(t)\n"
+        ).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        w1, w2 = self.generate_words()
+        test = self.get_empty_test()
+        test.body = self._body("pos", w1, w2)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        w1, w2 = self.generate_words()
+        mode = random.choice(("kw", "allkw"))
+        test = self.get_empty_test()
+        test.body = self._body(mode, w1, w2)
+        return test, TestResult.PASSING
+
+
+grammar_33: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<mode> <word> <word>"],
+            "<mode>": ["pos", "kw", "allkw"],
+            "<word>": ["<letter><letters>"],
+            "<letters>": ["", "<letter><letters>"],
+            "<letter>": srange(string.ascii_lowercase),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_33)
+
+
+# ======================================================================
+# bug_29: ``Register.__get_reg`` skipped every class whose ``run`` was
+# still ``NotImplemented`` (``if cls.run == NotImplemented: continue``),
+# which excludes *external* tasks from the name registry -- so an
+# ``ExternalTask`` could not be looked up / loaded by name
+# (``get_task_cls`` raised ``TaskClassException``).  The fix drops the
+# skip so external tasks are registered too.
+#
+# System-test format:  ``<kind> <name>`` where ``<kind>`` is ``ext`` (the
+#   trigger: an ExternalTask, unloadable on the buggy build) or ``normal``
+#   (a regular task with a ``run`` method, loadable on both).  The harness
+#   defines a uniquely-named task of that kind, looks it up by name and
+#   prints ``HARNESS_OK``; the oracle -- knowing the CORRECT behaviour is
+#   that the lookup always succeeds -- returns PASSING iff ``HARNESS_OK``.
+# ======================================================================
+
+
+class Luigi29API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and "HARNESS_OK" in out:
+            return TestResult.PASSING, out
+        return TestResult.FAILING, out or process.stderr.decode("utf8").strip()
+
+
+class Luigi29TestGenerator:
+    @staticmethod
+    def generate_name() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(4, 9)))
+
+
+class Luigi29SystemtestGenerator(SystemtestGenerator, Luigi29TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return f"ext {self.generate_name()}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return f"normal {self.generate_name()}", TestResult.PASSING
+
+
+class Luigi29UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi29TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.Import(names=[ast.alias(name="luigi")]),
+            ast.ImportFrom(
+                module="luigi.task_register",
+                names=[ast.alias(name="Register")],
+                level=0,
+            ),
+        ]
+
+    def _body(self, kind: str, name: str) -> List[ast.stmt]:
+        var = f"Task_{kind}_{name}"
+        if kind == "ext":
+            create = f"{var} = type({name!r}, (luigi.ExternalTask,), {{}})"
+        else:
+            create = (
+                f"{var} = type({name!r}, (luigi.Task,), "
+                f"{{'run': lambda self: None}})"
+            )
+        return ast.parse(
+            f"{create}\n"
+            f"found = Register.get_task_cls({name!r})\n"
+            f"self.assertIs(found, {var})\n"
+        ).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("ext", self.generate_name())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("normal", self.generate_name())
+        return test, TestResult.PASSING
+
+
+grammar_29: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<kind> <name>"],
+            "<kind>": ["ext", "normal"],
+            "<name>": ["<letter><letters>"],
+            "<letters>": ["", "<letter><letters>"],
+            "<letter>": srange(string.ascii_lowercase),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_29)
+
+
+# ======================================================================
+# bug_5: the ``inherits``/``requires`` decorators in ``util.py`` returned a
+# *new* subclass ``Wrapped(task_that_inherits)`` (decorated with
+# ``_task_wraps`` so it copied the original ``__name__``/``__module__``).
+# Consequently the decorated class had an extra MRO level whose string
+# representation was identical to the original class, i.e.
+# ``str(Child.__mro__[0]) == str(Child.__mro__[1])``.  The fix mutates the
+# class in place and returns it unchanged, so the first two MRO entries are
+# genuinely distinct (Child vs its real parent).
+#
+# System-test format:  ``<mode> <word>`` where ``<mode>`` is ``requires``
+#   or ``inherits`` (the trigger: the decorator, which on the buggy build
+#   makes the first two MRO entries string-equal) or ``plain`` (no
+#   decorator, so the entries always differ).  The harness prints
+#   ``repr(str(mro[0]) != str(mro[1]))``; the oracle -- knowing the CORRECT
+#   behaviour is that those two entries differ -- returns PASSING iff the
+#   printed value is ``True``.
+# ======================================================================
+
+
+class Luigi5API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == "True":
+            return TestResult.PASSING, out
+        return TestResult.FAILING, out or process.stderr.decode("utf8").strip()
+
+
+class Luigi5TestGenerator:
+    @staticmethod
+    def generate_word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(3, 8)))
+
+
+class Luigi5SystemtestGenerator(SystemtestGenerator, Luigi5TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        mode = random.choice(("requires", "inherits"))
+        return f"{mode} {self.generate_word()}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return f"plain {self.generate_word()}", TestResult.PASSING
+
+
+class Luigi5UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi5TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.Import(names=[ast.alias(name="luigi")]),
+            ast.ImportFrom(
+                module="luigi.util",
+                names=[ast.alias(name="requires"), ast.alias(name="inherits")],
+                level=0,
+            ),
+        ]
+
+    def _body(self, mode: str, w: str) -> List[ast.stmt]:
+        lines = [
+            f"Required = type('Req_{w}', (luigi.Task,), {{}})",
+            f"Parent = type('Par_{w}', (luigi.Task,), {{}})",
+            f"Child = type('Child_{w}', (Parent,), {{}})",
+        ]
+        if mode == "requires":
+            lines.append("Child = requires(Required)(Child)")
+        elif mode == "inherits":
+            lines.append("Child = inherits(Required)(Child)")
+        lines.append(
+            "self.assertNotEqual(str(Child.__mro__[0]), str(Child.__mro__[1]))"
+        )
+        return ast.parse("\n".join(lines)).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        mode = random.choice(("requires", "inherits"))
+        test = self.get_empty_test()
+        test.body = self._body(mode, self.generate_word())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("plain", self.generate_word())
+        return test, TestResult.PASSING
+
+
+grammar_5: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<mode> <word>"],
+            "<mode>": ["requires", "inherits", "plain"],
+            "<word>": ["<letter><letters>"],
+            "<letters>": ["", "<letter><letters>"],
+            "<letter>": srange(string.ascii_lowercase),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_5)
+
+
+# ======================================================================
+# bug_13: ``LocalFileSystem.move`` created the destination directory with
+# ``self.fs.mkdir(d)`` -- but ``LocalFileSystem`` has no ``fs`` attribute,
+# so moving a file into a not-yet-existing directory raised
+# ``AttributeError``.  The fix calls ``self.mkdir(d)``.
+#
+# System-test format:  ``<mode> <word>`` where ``<mode>`` is ``newdir``
+#   (the trigger: destination in a non-existent sub-directory, which forces
+#   the ``mkdir`` path) or ``samedir`` (destination in the existing base
+#   directory, so the ``mkdir`` path is skipped).  The harness performs the
+#   move and prints ``HARNESS_OK`` if the destination exists afterwards;
+#   the oracle -- knowing the CORRECT behaviour is that the move always
+#   succeeds -- returns PASSING iff ``HARNESS_OK`` was printed.
+# ======================================================================
+
+
+class Luigi13API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and "HARNESS_OK" in out:
+            return TestResult.PASSING, out
+        return TestResult.FAILING, out or process.stderr.decode("utf8").strip()
+
+
+class Luigi13TestGenerator:
+    @staticmethod
+    def generate_word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(4, 9)))
+
+
+class Luigi13SystemtestGenerator(SystemtestGenerator, Luigi13TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return f"newdir {self.generate_word()}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return f"samedir {self.generate_word()}", TestResult.PASSING
+
+
+class Luigi13UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi13TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.Import(names=[ast.alias(name="os")]),
+            ast.Import(names=[ast.alias(name="tempfile")]),
+            ast.ImportFrom(
+                module="luigi.file",
+                names=[ast.alias(name="LocalFileSystem")],
+                level=0,
+            ),
+        ]
+
+    def _body(self, mode: str, w: str) -> List[ast.stmt]:
+        if mode == "newdir":
+            dest = f"os.path.join(base, 'newdir_{w}', 'dest.txt')"
+        else:
+            dest = "os.path.join(base, 'dest.txt')"
+        return ast.parse(
+            f"base = tempfile.mkdtemp(prefix='t4p_{w}_')\n"
+            f"src = os.path.join(base, 'src.txt')\n"
+            f"open(src, 'w').close()\n"
+            f"dest = {dest}\n"
+            f"LocalFileSystem().move(src, dest)\n"
+            f"self.assertTrue(os.path.exists(dest))\n"
+        ).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("newdir", self.generate_word())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("samedir", self.generate_word())
+        return test, TestResult.PASSING
+
+
+grammar_13: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<mode> <word>"],
+            "<mode>": ["newdir", "samedir"],
+            "<word>": ["<letter><letters>"],
+            "<letters>": ["", "<letter><letters>"],
+            "<letter>": srange(string.ascii_lowercase),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_13)
+
+
+# ======================================================================
+# bug_27: ``Parameter.parse_from_input`` resolved an empty command-line
+# value through the *global* ``self.value`` (config_path/default) and had
+# no ``task_name`` argument, so a value configured under the task's own
+# section (``[TaskName] param = ...``) was ignored when building tasks from
+# the command line.  The fix adds a ``task_name`` argument and resolves via
+# ``has_task_value``/``task_value`` (task-scoped config).
+#
+# System-test format:  ``<mode> <section> <name> <value>`` where ``<mode>``
+#   is ``cfg`` (the trigger: an empty input resolved via the task-scoped
+#   config, which the buggy ``parse_from_input`` cannot even accept a
+#   ``task_name`` for) or ``explicit`` (a non-empty input value, parsed
+#   directly on both builds).  In both cases the CORRECT result equals
+#   ``<value>``; the harness prints the resolved value and the oracle
+#   returns PASSING iff it equals ``<value>``.
+# ======================================================================
+
+
+class Luigi27API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            expected = process.args[5]
+        except IndexError:
+            return TestResult.UNDEFINED, "Malformed test input"
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == expected:
+            return TestResult.PASSING, f"Expected {expected!r}"
+        return TestResult.FAILING, f"Expected {expected!r}, but was {out!r}"
+
+
+class Luigi27TestGenerator:
+    @staticmethod
+    def generate_word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(3, 8)))
+
+    def generate_triple(self) -> Tuple[str, str, str]:
+        return self.generate_word(), self.generate_word(), self.generate_word()
+
+
+class Luigi27SystemtestGenerator(SystemtestGenerator, Luigi27TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        s, n, v = self.generate_triple()
+        return f"cfg {s} {n} {v}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        s, n, v = self.generate_triple()
+        return f"explicit {s} {n} {v}", TestResult.PASSING
+
+
+class Luigi27UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi27TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.Import(names=[ast.alias(name="luigi")]),
+            ast.Import(names=[ast.alias(name="luigi.configuration")]),
+        ]
+
+    def _body(self, mode: str, s: str, n: str, v: str) -> List[ast.stmt]:
+        if mode == "cfg":
+            call = f"p.parse_from_input({n!r}, '', task_name={s!r})"
+        else:
+            call = f"p.parse_from_input({n!r}, {v!r})"
+        return ast.parse(
+            f"conf = luigi.configuration.get_config()\n"
+            f"if not conf.has_section({s!r}):\n"
+            f"    conf.add_section({s!r})\n"
+            f"conf.set({s!r}, {n!r}, {v!r})\n"
+            f"p = luigi.Parameter(default='defval')\n"
+            f"self.assertEqual({call}, {v!r})\n"
+        ).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        s, n, v = self.generate_triple()
+        test = self.get_empty_test()
+        test.body = self._body("cfg", s, n, v)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        s, n, v = self.generate_triple()
+        test = self.get_empty_test()
+        test.body = self._body("explicit", s, n, v)
+        return test, TestResult.PASSING
+
+
+grammar_27: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<mode> <word> <word> <word>"],
+            "<mode>": ["cfg", "explicit"],
+            "<word>": ["<letter><letters>"],
+            "<letters>": ["", "<letter><letters>"],
+            "<letter>": srange(string.ascii_lowercase),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_27)

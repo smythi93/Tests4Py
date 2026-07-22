@@ -41,6 +41,7 @@ class CookieCutter(Project):
         api: Optional[API] = None,
         loc: int = 0,
         relevant_test_files: Optional[List[Path]] = None,
+        grammar_override: Optional[Grammar] = None,
     ):
         super().__init__(
             bug_id=bug_id,
@@ -61,7 +62,7 @@ class CookieCutter(Project):
             unittests=unittests,
             systemtests=systemtests,
             api=api,
-            grammar=grammar,
+            grammar=grammar_override if grammar_override is not None else grammar,
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
             source_base=Path(PROJECT_NAME),
@@ -104,6 +105,10 @@ def register():
         ],
         relevant_test_files=[Path("tests", "test_generate_context.py")],
         test_status_buggy=TestStatus.PASSING,
+        api=CookieCutter1API(),
+        systemtests=CookieCutter1SystemtestGenerator(),
+        unittests=CookieCutter1UnittestGenerator(),
+        grammar_override=grammar_1,
         loc=1136,
     )
     CookieCutter(
@@ -193,6 +198,12 @@ class CookieCutterAPI(API, GrammarVisitor, abc.ABC):
         self.pre_hook_crash = False
         self.post_hook_crash = False
         self.repo_path = self.REPO_PATH
+
+    def get_test_arguments_from_string(self, s: str) -> List[str]:
+        # The system test is a raw configuration (JSON-like) that must be parsed
+        # by the project grammar as-is. The default shlex-based splitting would
+        # strip its quotes, so pass the whole content through untouched.
+        return [s]
 
     def visit_hooks(self, node: ComplexDerivationTree):
         self.pre_hooks = []
@@ -420,6 +431,172 @@ class CookieCutter4API(CookieCutterAPI):
             if self.post_hook_crash:
                 return TestResult.FAILING
         return TestResult.PASSING
+
+
+CC1_NON_ASCII = ["é", "ê", "ï", "ô", "ü", "ñ", "ç", "ø", "å", "ß", "ä", "ö"]
+
+
+class CookieCutter1API(API):
+    """Oracle for cookiecutter bug 1.
+
+    The fault: ``generate_context`` opens the JSON context file without
+    ``encoding='utf-8'`` (buggy) versus with it (fixed). On a UTF-8 host both
+    behave identically, so the fault is only observable when the process
+    default encoding is ASCII. We therefore call ``generate_context`` directly
+    (bypassing click, which refuses to run under an ASCII locale) in a
+    subprocess forced to ``LC_ALL=C``. A config containing non-ASCII bytes then
+    raises a ``ContextDecodingException`` on the buggy build (FAILING) while an
+    ASCII-only config succeeds (PASSING); the fixed build succeeds for both.
+    """
+
+    def __init__(self, default_timeout: int = 5):
+        API.__init__(self, default_timeout=default_timeout)
+        self.config = None
+
+    def get_test_arguments_from_string(self, s: str) -> List[str]:
+        return [s]
+
+    def prepare_args(self, args: List[str], work_dir: Path):
+        self.config = "\n".join(args)
+        return [self.config]
+
+    # noinspection PyBroadException
+    def execute(
+        self,
+        args: Sequence[str],
+        environ: Environment,
+        work_dir: Optional[Path] = None,
+        pipe: bool = True,
+    ) -> Any:
+        try:
+            work_dir = Path.cwd() if work_dir is None else work_dir
+            json_path = work_dir / "tests4py_cc1_context.json"
+            with open(json_path, "w", encoding="utf-8") as fp:
+                fp.write(args[0])
+            environ = dict(environ)
+            environ["LC_ALL"] = "C"
+            environ["LANG"] = "C"
+            environ["LC_CTYPE"] = "C"
+            environ.pop("PYTHONUTF8", None)
+            environ.pop("PYTHONIOENCODING", None)
+            code = (
+                "from cookiecutter.generate import generate_context; "
+                "generate_context(context_file=%r)" % str(json_path)
+            )
+            return subprocess.run(
+                [PYTHON, "-c", code],
+                stdout=subprocess.PIPE if pipe else None,
+                stderr=subprocess.PIPE if pipe else None,
+                timeout=self.default_timeout,
+                env=environ,
+                cwd=work_dir,
+            )
+        except subprocess.TimeoutExpired:
+            return None
+        except Exception:
+            return None
+
+    def oracle(self, args) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "timeout or exception triggered"
+        process = args
+        if process.returncode == 0:
+            return TestResult.PASSING, ""
+        stderr = b""
+        if process.stderr is not None:
+            stderr = process.stderr
+        text = stderr.decode("utf-8", errors="replace")
+        if (
+            "ContextDecodingException" in text
+            or "codec can't decode" in text
+            or "UnicodeDecodeError" in text
+        ):
+            return TestResult.FAILING, "non-ascii context could not be decoded"
+        return TestResult.UNDEFINED, text[:200]
+
+
+class CookieCutter1SystemtestGenerator(SystemtestGenerator):
+    @staticmethod
+    def _word(min_len: int = 3, max_len: int = 10) -> str:
+        return "".join(
+            random.choices(
+                string.ascii_letters + string.digits,
+                k=random.randint(min_len, max_len),
+            )
+        )
+
+    def _config(self, full_name: str) -> str:
+        return (
+            f'{{"full_name":"{full_name}",'
+            f'"repo_name":"{self._word()}",'
+            f'"project_name":"{self._word()}"}}'
+        )
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        full_name = f"{self._word()} {self._word()}"
+        return self._config(full_name), TestResult.PASSING
+
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        chars = list(self._word())
+        for _ in range(random.randint(1, 3)):
+            chars.insert(
+                random.randint(0, len(chars)), random.choice(CC1_NON_ASCII)
+            )
+        full_name = "".join(chars)
+        return self._config(full_name), TestResult.FAILING
+
+
+class CookieCutter1UnittestGenerator(UnittestGenerator):
+    def __init__(self, failing_probability: float = 0.5):
+        super().__init__(failing_probability=failing_probability)
+
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.Import(names=[ast.alias(name="os")]),
+            ast.Import(names=[ast.alias(name="sys")]),
+            ast.Import(names=[ast.alias(name="subprocess")]),
+            ast.Import(names=[ast.alias(name="tempfile")]),
+        ]
+
+    def get_utils(self) -> List[ast.stmt]:
+        return ast.parse(
+            "def _run_generate_context(self, content):\n"
+            "    path = os.path.join(tempfile.mkdtemp(), 'cc1_context.json')\n"
+            "    with open(path, 'w', encoding='utf-8') as fp:\n"
+            "        fp.write(content)\n"
+            "    env = dict(os.environ)\n"
+            "    env['LC_ALL'] = 'C'\n"
+            "    env['LANG'] = 'C'\n"
+            "    env['LC_CTYPE'] = 'C'\n"
+            "    env.pop('PYTHONUTF8', None)\n"
+            "    env.pop('PYTHONIOENCODING', None)\n"
+            "    code = ('from cookiecutter.generate import generate_context; "
+            "generate_context(context_file=%r)' % path)\n"
+            "    return subprocess.run([sys.executable, '-c', code], "
+            "stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)\n"
+        ).body
+
+    @staticmethod
+    def _word() -> str:
+        return "".join(
+            random.choices(string.ascii_letters + string.digits, k=random.randint(3, 10))
+        )
+
+    def _make_test(self, content: str) -> ast.FunctionDef:
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"self.assertEqual(0, self._run_generate_context({content!r}).returncode)"
+        ).body
+        return test
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        content = f'{{"full_name":"{self._word()} {self._word()}"}}'
+        return self._make_test(content), TestResult.PASSING
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        na = "".join(random.sample(CC1_NON_ASCII, k=random.randint(1, 3)))
+        content = f'{{"full_name":"{self._word()}{na}{self._word()}"}}'
+        return self._make_test(content), TestResult.FAILING
 
 
 class CookieCutterSystemtestGenerator(SystemtestGenerator, ABC):
@@ -1010,7 +1187,9 @@ def tearDown(self) -> None:
             for i in range(len(relevant_hooks)):
                 relevant_hooks[i] = random.randint(1, 1000)
             if irrelevant_hooks and random.getrandbits(1):
-                for i in range(random.randint(1, self.max_errors)):
+                for i in range(
+                    random.randint(1, min(len(irrelevant_hooks), self.max_errors))
+                ):
                     irrelevant_hooks[i] = random.randint(1, 1000)
         return relevant_hooks, irrelevant_hooks
 
@@ -1105,3 +1284,22 @@ grammar: Grammar = {
 }
 
 assert is_valid_grammar(grammar)
+
+
+# Dedicated grammar for bug 1: a minimal cookiecutter.json object whose
+# ``full_name`` value may contain non-ASCII characters (the trigger for the
+# encoding fault), while ``repo_name``/``project_name`` stay ASCII.
+grammar_1: Grammar = {
+    "<start>": ["<config>"],
+    "<config>": [
+        '{"full_name":"<value>","repo_name":"<astr>","project_name":"<astr>"}'
+    ],
+    "<value>": ["<vchars>"],
+    "<vchars>": ["", "<vchar><vchars>"],
+    "<vchar>": srange(string.ascii_letters + string.digits + " _") + CC1_NON_ASCII,
+    "<astr>": ["<achar><achars>"],
+    "<achars>": ["", "<achar><achars>"],
+    "<achar>": srange(string.ascii_letters + string.digits + "_"),
+}
+
+assert is_valid_grammar(grammar_1)

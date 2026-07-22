@@ -1,7 +1,15 @@
+import ast
+import base64
 import os.path
+import random
+import string
+import subprocess
+from collections import OrderedDict
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
+from tests4py.grammars.default import clean_up
+from tests4py.grammars.fuzzer import Grammar, is_valid_grammar, srange
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
@@ -22,6 +30,7 @@ class Scrapy(Project):
         unittests: Optional[UnittestGenerator] = None,
         systemtests: Optional[SystemtestGenerator] = None,
         api: Optional[API] = None,
+        grammar: Optional[Grammar] = None,
         loc: int = 0,
         relevant_test_files: Optional[List[Path]] = None,
         skip_tests: Optional[List[str]] = None,
@@ -45,7 +54,7 @@ class Scrapy(Project):
             unittests=unittests,
             systemtests=systemtests,
             api=api,
-            grammar=None,
+            grammar=grammar,
             loc=loc,
             source_base=Path(PROJECT_NAME),
             test_base=Path("tests"),
@@ -109,6 +118,10 @@ def register():
                 "test_utils_datatypes.py::LocalCacheTest::test_cache_without_limit",
             )
         ],
+        api=Scrapy2API(),
+        unittests=Scrapy2UnittestGenerator(),
+        systemtests=Scrapy2SystemtestGenerator(),
+        grammar=grammar_local_cache,
         loc=11308,
     )
     Scrapy(
@@ -150,6 +163,10 @@ def register():
             os.path.join("tests", "test_http_response.py::BaseResponseTest")
         ],
         skip_tests=["test_follow_whitespace_link", "test_follow_whitespace_url"],
+        api=Scrapy5API(),
+        unittests=Scrapy5UnittestGenerator(),
+        systemtests=Scrapy5SystemtestGenerator(),
+        grammar=grammar_follow,
         loc=11279,
     )
     Scrapy(
@@ -179,6 +196,10 @@ def register():
         relevant_test_files=[
             os.path.join("tests", "test_http_request.py::FormRequestTest")
         ],
+        api=Scrapy7API(),
+        unittests=Scrapy7UnittestGenerator(),
+        systemtests=Scrapy7SystemtestGenerator(),
+        grammar=grammar_form_action,
         loc=10630,
     )
     Scrapy(
@@ -315,6 +336,10 @@ def register():
         relevant_test_files=[
             os.path.join("tests", "test_utils_url.py::CanonicalizeUrlTest")
         ],
+        api=Scrapy15API(),
+        unittests=Scrapy15UnittestGenerator(),
+        systemtests=Scrapy15SystemtestGenerator(),
+        grammar=grammar_b64,
         loc=12209,
     )
     Scrapy(
@@ -368,6 +393,10 @@ def register():
                 "test_utils_response.py::ResponseUtilsTest::test_response_status_message",
             )
         ],
+        api=Scrapy17API(),
+        unittests=Scrapy17UnittestGenerator(),
+        systemtests=Scrapy17SystemtestGenerator(),
+        grammar=grammar_status,
         loc=12107,
     )
     Scrapy(
@@ -381,6 +410,10 @@ def register():
                 "test_responsetypes.py::ResponseTypesTest::test_from_content_disposition",
             )
         ],
+        api=Scrapy18API(),
+        unittests=Scrapy18UnittestGenerator(),
+        systemtests=Scrapy18SystemtestGenerator(),
+        grammar=grammar_b64,
         loc=11899,
     )
     Scrapy(
@@ -403,6 +436,10 @@ def register():
                 "test_http_cookies.py::WrappedRequestTest::test_get_origin_req_host",
             ),
         ],
+        api=Scrapy19API(),
+        unittests=Scrapy19UnittestGenerator(),
+        systemtests=Scrapy19SystemtestGenerator(),
+        grammar=grammar_wrapped_request,
         loc=11868,
     )
     Scrapy(
@@ -565,6 +602,10 @@ def register():
                 "test_utils_request.py::UtilsRequestTest::test_request_httprepr_for_non_http_request",
             )
         ],
+        api=Scrapy29API(),
+        unittests=Scrapy29UnittestGenerator(),
+        systemtests=Scrapy29SystemtestGenerator(),
+        grammar=grammar_b64,
         loc=11711,
     )
     Scrapy(
@@ -745,13 +786,1059 @@ def register():
                 "test_exporters.py::PythonItemExporterTest::test_other_python_types_item",
             )
         ],
+        api=Scrapy40API(),
+        unittests=Scrapy40UnittestGenerator(),
+        systemtests=Scrapy40SystemtestGenerator(),
+        grammar=grammar_b64,
         loc=11837,
     )
 
 
 class ScrapyAPI(API):
-    def __init__(self, default_timeout: int = 5):
+    def __init__(self, default_timeout: int = 10):
         super().__init__(default_timeout=default_timeout)
 
     def oracle(self, args) -> Tuple[TestResult, str]:
         return TestResult.UNDEFINED, ""
+
+
+# ======================================================================
+# Shared helpers
+# ======================================================================
+def _rand_word(a: int = 3, b: int = 8) -> str:
+    return "".join(random.choices(string.ascii_lowercase, k=random.randint(a, b)))
+
+
+def _b64(s) -> str:
+    if isinstance(s, str):
+        s = s.encode("utf-8")
+    return base64.urlsafe_b64encode(s).decode("ascii")
+
+
+def _b64d(s: str) -> bytes:
+    return base64.urlsafe_b64decode(s.encode("ascii"))
+
+
+# Grammar for a single urlsafe-base64 token payload.
+grammar_b64: Grammar = clean_up(
+    {
+        "<start>": ["<char><chars>"],
+        "<chars>": ["", "<char><chars>"],
+        "<char>": srange(string.ascii_letters + string.digits + "-_="),
+    }
+)
+
+assert is_valid_grammar(grammar_b64)
+
+
+# ======================================================================
+# bug_2: ``LocalCache.__setitem__`` executed ``while len(self) >= self.limit``
+# unconditionally, so a cache created without a limit (``self.limit is None``)
+# raised ``TypeError: '>=' not supported between instances of 'int' and
+# 'NoneType'`` on the first insertion.  The fix guards the eviction loop with
+# ``if self.limit is not None``.
+#
+# System-test format: ``<limit> <n>`` where ``<limit>`` is ``none`` or a
+# positive integer and ``<n>`` is the number of ``str(i) -> i`` items inserted.
+# The harness prints ``repr((len(cache), list(cache.items())))``; the oracle
+# recomputes the correct (fixed) OrderedDict-eviction result.  A failing test
+# uses ``none`` (buggy: TypeError; fixed: all items kept); a passing test uses
+# an integer limit (identical on both builds).
+# ======================================================================
+
+
+def _local_cache_expected(limit: Optional[int], n: int) -> Tuple[int, list]:
+    d: "OrderedDict[str, int]" = OrderedDict()
+    for i in range(n):
+        if limit is not None:
+            while len(d) >= limit:
+                d.popitem(last=False)
+        d[str(i)] = i
+    return len(d), list(d.items())
+
+
+class Scrapy2API(ScrapyAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            limit_arg = process.args[2]
+            n = int(process.args[3])
+        except (IndexError, ValueError):
+            return TestResult.UNDEFINED, "Malformed test input"
+        limit = None if limit_arg == "none" else int(limit_arg)
+        expected = repr(_local_cache_expected(limit, n))
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == expected:
+            return TestResult.PASSING, f"Expected {expected}"
+        return TestResult.FAILING, f"Expected {expected}, but was {out!r}"
+
+
+class Scrapy2TestGenerator:
+    @staticmethod
+    def _failing_params() -> int:
+        # no limit -> triggers the fault on the buggy build
+        return random.randint(5, 400)
+
+    @staticmethod
+    def _passing_params() -> Tuple[int, int]:
+        limit = random.randint(2, 60)
+        n = random.randint(1, 400)
+        return limit, n
+
+
+class Scrapy2SystemtestGenerator(SystemtestGenerator, Scrapy2TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        n = self._failing_params()
+        return f"none {n}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        limit, n = self._passing_params()
+        return f"{limit} {n}", TestResult.PASSING
+
+
+class Scrapy2UnittestGenerator(UnittestGenerator, Scrapy2TestGenerator):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.ImportFrom(
+                module="scrapy.utils.datatypes",
+                names=[ast.alias(name="LocalCache")],
+                level=0,
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        n = self._failing_params()
+        length, items = _local_cache_expected(None, n)
+        last_key, last_val = items[-1]
+        src = (
+            "cache = LocalCache()\n"
+            f"for i in range({n}):\n"
+            "    cache[str(i)] = i\n"
+            f"self.assertEqual({length}, len(cache))\n"
+            f"self.assertEqual({last_val!r}, cache[{last_key!r}])\n"
+        )
+        test = self.get_empty_test()
+        test.body = ast.parse(src).body
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        limit, n = self._passing_params()
+        length, items = _local_cache_expected(limit, n)
+        last_key, last_val = items[-1]
+        src = (
+            f"cache = LocalCache(limit={limit})\n"
+            f"for i in range({n}):\n"
+            "    cache[str(i)] = i\n"
+            f"self.assertEqual({length}, len(cache))\n"
+            f"self.assertEqual({last_val!r}, cache[{last_key!r}])\n"
+        )
+        test = self.get_empty_test()
+        test.body = ast.parse(src).body
+        return test, TestResult.PASSING
+
+
+grammar_local_cache: Grammar = clean_up(
+    {
+        "<start>": ["<limit> <n>"],
+        "<limit>": ["none", "<int>"],
+        "<n>": ["<int>"],
+        "<int>": ["<nonzero><digits>"],
+        "<digits>": ["", "<digit><digits>"],
+        "<nonzero>": srange("123456789"),
+        "<digit>": srange(string.digits),
+    }
+)
+
+assert is_valid_grammar(grammar_local_cache)
+
+
+# ======================================================================
+# bug_17: ``response_status_message`` looked up the reason phrase with
+# ``http.RESPONSES.get(int(status))`` WITHOUT a default, so an unknown status
+# code (not in twisted's ``RESPONSES``) yielded ``None`` and
+# ``to_native_str(None)`` raised ``TypeError``.  The fix supplies the
+# ``"Unknown Status"`` default, so an unknown code returns
+# ``"<code> Unknown Status"``.
+#
+# System-test format: a single integer ``<status>``.  The harness prints
+# ``response_status_message(status)``; the oracle recomputes the correct
+# string.  A failing test uses an unknown code (buggy: TypeError; fixed:
+# ``"<code> Unknown Status"``); a passing test uses a known code (identical on
+# both builds).
+# ======================================================================
+
+# Exact reason phrases (twisted.web.http.RESPONSES) for known codes used as
+# passing inputs.
+_STATUS_REASONS = {
+    200: "OK",
+    201: "Created",
+    202: "Accepted",
+    203: "Non-Authoritative Information",
+    204: "No Content",
+    206: "Partial Content",
+    300: "Multiple Choices",
+    301: "Moved Permanently",
+    302: "Found",
+    303: "See Other",
+    304: "Not Modified",
+    307: "Temporary Redirect",
+    400: "Bad Request",
+    401: "Unauthorized",
+    403: "Forbidden",
+    404: "Not Found",
+    405: "Method Not Allowed",
+    406: "Not Acceptable",
+    408: "Request Time-out",
+    409: "Conflict",
+    410: "Gone",
+    500: "Internal Server Error",
+    501: "Not Implemented",
+    502: "Bad Gateway",
+    503: "Service Unavailable",
+    504: "Gateway Time-out",
+    505: "HTTP Version not supported",
+}
+
+# Every code twisted knows about; failing (unknown) codes must avoid these.
+_KNOWN_TWISTED_CODES = {
+    100, 101, 200, 201, 202, 203, 204, 205, 206, 207, 300, 301, 302, 303, 304,
+    305, 307, 308, 400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411,
+    412, 413, 414, 415, 416, 417, 500, 501, 502, 503, 504, 505, 507, 510,
+}
+
+
+def _status_message_expected(code: int) -> str:
+    if code in _STATUS_REASONS:
+        return f"{code} {_STATUS_REASONS[code]}"
+    return f"{code} Unknown Status"
+
+
+class Scrapy17API(ScrapyAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            code = int(process.args[2])
+        except (IndexError, ValueError):
+            return TestResult.UNDEFINED, "Malformed test input"
+        expected = _status_message_expected(code)
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == expected:
+            return TestResult.PASSING, f"Expected {expected!r}"
+        return TestResult.FAILING, f"Expected {expected!r}, but was {out!r}"
+
+
+class Scrapy17TestGenerator:
+    _KNOWN_CODES = sorted(_STATUS_REASONS)
+
+    @staticmethod
+    def _unknown_code() -> int:
+        while True:
+            code = random.randint(210, 599)
+            if code not in _KNOWN_TWISTED_CODES:
+                return code
+
+    def _known_code(self) -> int:
+        return random.choice(self._KNOWN_CODES)
+
+
+class Scrapy17SystemtestGenerator(SystemtestGenerator, Scrapy17TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return f"{self._unknown_code()}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return f"{self._known_code()}", TestResult.PASSING
+
+
+class Scrapy17UnittestGenerator(UnittestGenerator, Scrapy17TestGenerator):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.ImportFrom(
+                module="scrapy.utils.response",
+                names=[ast.alias(name="response_status_message")],
+                level=0,
+            )
+        ]
+
+    @staticmethod
+    def _assert(codes: List[int]) -> List[ast.stmt]:
+        src = "".join(
+            f"self.assertEqual({_status_message_expected(c)!r}, "
+            f"response_status_message({c}))\n"
+            for c in codes
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        codes = random.sample(
+            [c for c in range(210, 600) if c not in _KNOWN_TWISTED_CODES], 3
+        )
+        test = self.get_empty_test()
+        test.body = self._assert(codes)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        codes = random.sample(self._KNOWN_CODES, 3)
+        test = self.get_empty_test()
+        test.body = self._assert(codes)
+        return test, TestResult.PASSING
+
+
+grammar_status: Grammar = clean_up(
+    {
+        "<start>": ["<nonzero><digit><digit>"],
+        "<nonzero>": srange("123456789"),
+        "<digit>": srange(string.digits),
+    }
+)
+
+assert is_valid_grammar(grammar_status)
+
+
+# ======================================================================
+# bug_29: ``request_httprepr`` built the ``Host:`` line with
+# ``to_bytes(parsed.hostname)``.  For a request whose URL has no authority
+# (e.g. ``file:///tmp/foo.txt``) ``parsed.hostname`` is ``None`` and
+# ``to_bytes(None)`` raised ``TypeError``.  The fix uses
+# ``to_bytes(parsed.hostname or b'')`` so a host-less request yields an empty
+# ``Host:`` value instead of crashing.
+#
+# System-test format: a single urlsafe-base64 token of the request URL.  The
+# harness prints ``OK:<b64 httprepr>`` (or ``ERR:<type>``); the oracle
+# recomputes the correct raw HTTP representation.  A failing test uses a
+# host-less URL (buggy: TypeError; fixed: valid repr with empty Host); a
+# passing test uses a URL with a host (identical on both builds).
+# ======================================================================
+
+
+def _request_httprepr_expected(url: str) -> bytes:
+    from urllib.parse import urlparse, urlunparse
+
+    parsed = urlparse(url)
+    path = urlunparse(("", "", parsed.path or "/", parsed.params, parsed.query, ""))
+    host = parsed.hostname or ""
+    return (
+        b"GET " + path.encode("utf-8") + b" HTTP/1.1\r\n"
+        b"Host: " + host.encode("utf-8") + b"\r\n\r\n"
+    )
+
+
+class Scrapy29API(ScrapyAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            url = _b64d(process.args[2]).decode("utf-8")
+        except Exception:
+            return TestResult.UNDEFINED, "Malformed test input"
+        expected = _request_httprepr_expected(url)
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out.startswith("OK:"):
+            try:
+                got = _b64d(out[3:])
+            except Exception:
+                return TestResult.FAILING, f"Malformed output: {out!r}"
+            if got == expected:
+                return TestResult.PASSING, f"Expected {expected!r}"
+            return TestResult.FAILING, f"Expected {expected!r}, but was {got!r}"
+        return TestResult.FAILING, f"request_httprepr failed: {out!r}"
+
+
+class Scrapy29TestGenerator:
+    _SCHEMES = ["http", "https", "ftp"]
+
+    def _host_url(self) -> str:
+        scheme = random.choice(self._SCHEMES)
+        host = f"{_rand_word(3, 8)}.{random.choice(['com', 'org', 'net', 'io'])}"
+        path = "/" + "/".join(_rand_word(2, 6) for _ in range(random.randint(1, 3)))
+        if random.random() < 0.5:
+            path += f"?{_rand_word(1, 4)}={random.randint(1, 999)}"
+        return f"{scheme}://{host}{path}"
+
+    def _hostless_url(self) -> str:
+        path = "/" + "/".join(_rand_word(2, 6) for _ in range(random.randint(1, 3)))
+        if random.random() < 0.4:
+            path += f".{random.choice(['txt', 'dat', 'log', 'json'])}"
+        return f"file://{path}"
+
+
+class Scrapy29SystemtestGenerator(SystemtestGenerator, Scrapy29TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return _b64(self._hostless_url()), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return _b64(self._host_url()), TestResult.PASSING
+
+
+class Scrapy29UnittestGenerator(UnittestGenerator, Scrapy29TestGenerator):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.ImportFrom(
+                module="scrapy.http", names=[ast.alias(name="Request")], level=0
+            ),
+            ast.ImportFrom(
+                module="scrapy.utils.request",
+                names=[ast.alias(name="request_httprepr")],
+                level=0,
+            ),
+        ]
+
+    @staticmethod
+    def _assert(url: str) -> List[ast.stmt]:
+        expected = _request_httprepr_expected(url)
+        src = (
+            f"self.assertEqual({expected!r}, "
+            f"request_httprepr(Request({url!r})))\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._assert(self._hostless_url())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._assert(self._host_url())
+        return test, TestResult.PASSING
+
+
+# ======================================================================
+# bug_40: ``PythonItemExporter._serialize_value`` unconditionally passed every
+# scalar value through ``to_bytes``/``to_unicode``, turning non-string values
+# (``int``, ``float``, ``bool``, ...) into their string representations (e.g.
+# ``22 -> '22'``, ``False -> 'False'``).  The fix only encodes values that are
+# already ``str``/``bytes`` and otherwise returns the value unchanged, so
+# native Python types survive export.
+#
+# System-test format: a single urlsafe-base64 token of a Python ``dict``
+# literal (values restricted to ``int``/``float``/``bool``/``str``).  The
+# harness prints ``OK:<b64 repr(exported)>``; the oracle recomputes the correct
+# (fixed) result -- which equals the input item, because fixed export preserves
+# non-strings and returns strings unchanged.  A failing test contains at least
+# one non-string value (buggy: stringified -> mismatch); a passing test uses
+# only string values (identical on both builds).
+# ======================================================================
+
+
+def _python_exporter_expected(item: dict) -> dict:
+    # Fixed PythonItemExporter preserves int/float/bool and returns str
+    # unchanged, so the correct exported dict equals the input item.
+    return dict(item)
+
+
+class Scrapy40API(ScrapyAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            spec = _b64d(process.args[2]).decode("utf-8")
+            item = ast.literal_eval(spec)
+            assert isinstance(item, dict)
+        except Exception:
+            return TestResult.UNDEFINED, "Malformed test input"
+        expected = _python_exporter_expected(item)
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out.startswith("OK:"):
+            try:
+                got = ast.literal_eval(_b64d(out[3:]).decode("utf-8"))
+            except Exception:
+                return TestResult.FAILING, f"Malformed output: {out!r}"
+            if got == expected:
+                return TestResult.PASSING, f"Expected {expected!r}"
+            return TestResult.FAILING, f"Expected {expected!r}, but was {got!r}"
+        return TestResult.FAILING, f"export_item failed: {out!r}"
+
+
+class Scrapy40TestGenerator:
+    @staticmethod
+    def _scalar() -> Any:
+        kind = random.choice(["int", "float", "bool"])
+        if kind == "int":
+            return random.randint(-999, 999)
+        if kind == "float":
+            return round(random.uniform(-99, 99), 3)
+        return random.choice([True, False])
+
+    def _failing_item(self) -> dict:
+        n = random.randint(2, 4)
+        keys = random.sample(
+            ["boolean", "number", "count", "ratio", "flag", "amount", "level"], n
+        )
+        item = {k: self._scalar() for k in keys}
+        # guarantee at least one non-string value (all scalars already are)
+        return item
+
+    def _passing_item(self) -> dict:
+        n = random.randint(2, 4)
+        keys = random.sample(
+            ["name", "title", "label", "kind", "code", "tag", "slug"], n
+        )
+        return {k: _rand_word(3, 8) for k in keys}
+
+
+class Scrapy40SystemtestGenerator(SystemtestGenerator, Scrapy40TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return _b64(repr(self._failing_item())), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return _b64(repr(self._passing_item())), TestResult.PASSING
+
+
+class Scrapy40UnittestGenerator(UnittestGenerator, Scrapy40TestGenerator):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.ImportFrom(
+                module="scrapy.exporters",
+                names=[ast.alias(name="PythonItemExporter")],
+                level=0,
+            )
+        ]
+
+    @staticmethod
+    def _assert(item: dict) -> List[ast.stmt]:
+        expected = _python_exporter_expected(item)
+        src = (
+            f"ie = PythonItemExporter(binary=False)\n"
+            f"exported = ie.export_item({item!r})\n"
+            f"self.assertEqual({expected!r}, exported)\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._assert(self._failing_item())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._assert(self._passing_item())
+        return test, TestResult.PASSING
+
+
+# ======================================================================
+# bug_18: ``ResponseTypes.from_content_disposition`` decoded the raw
+# ``Content-Disposition`` bytes with ``to_native_str(content_disposition)``
+# (UTF-8).  A header carrying a non-UTF-8 filename (e.g. latin-1 bytes) raised
+# ``UnicodeDecodeError`` -- which is not the ``IndexError`` the method catches,
+# so it propagated.  The fix decodes with ``encoding='latin-1',
+# errors='replace'`` so any byte string is handled and the correct Response
+# subclass is returned.
+#
+# System-test format: a single urlsafe-base64 token of the raw
+# ``Content-Disposition`` bytes.  The harness prints ``OK:<ResponseClass>`` or
+# ``ERR:<exc>``; the oracle recomputes the correct class from the filename
+# extension (the fixed behaviour).  A failing test carries a non-UTF-8 filename
+# (buggy: UnicodeDecodeError; fixed: correct class); a passing test carries an
+# ASCII filename (identical on both builds).
+# ======================================================================
+
+# Filename extensions whose scrapy Response class is deterministic.
+_CD_EXT_CLASS = {".html": "HtmlResponse", ".xml": "XmlResponse", ".txt": "TextResponse"}
+
+
+def _content_disposition_expected(cd_bytes: bytes) -> str:
+    # Mirror the fixed ``from_content_disposition``: latin-1/replace decode,
+    # split out the filename, map its extension to the Response class.
+    s = cd_bytes.decode("latin-1", "replace")
+    try:
+        filename = s.split(";")[1].split("=")[1].strip("\"'")
+    except IndexError:
+        return "Response"
+    ext = os.path.splitext(filename)[1].lower()
+    return _CD_EXT_CLASS.get(ext, "Response")
+
+
+class Scrapy18API(ScrapyAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            cd_bytes = _b64d(process.args[2])
+        except Exception:
+            return TestResult.UNDEFINED, "Malformed test input"
+        expected = _content_disposition_expected(cd_bytes)
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == f"OK:{expected}":
+            return TestResult.PASSING, f"Expected {expected!r}"
+        return TestResult.FAILING, f"Expected OK:{expected}, but was {out!r}"
+
+
+class Scrapy18TestGenerator:
+    _EXTS = [".html", ".xml", ".txt", ""]
+    _NONASCII = "éñüößàµ£"
+
+    def _failing_cd(self) -> bytes:
+        ext = random.choice(self._EXTS)
+        stem = _rand_word(3, 7) + random.choice(self._NONASCII) + _rand_word(0, 3)
+        return ("attachment; filename=" + stem + ext).encode("latin-1")
+
+    def _passing_cd(self) -> bytes:
+        ext = random.choice(self._EXTS)
+        stem = _rand_word(3, 8)
+        quote = random.choice(["", '"'])
+        return (f"attachment; filename={quote}{stem}{ext}{quote}").encode("ascii")
+
+
+class Scrapy18SystemtestGenerator(SystemtestGenerator, Scrapy18TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return _b64(self._failing_cd()), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return _b64(self._passing_cd()), TestResult.PASSING
+
+
+class Scrapy18UnittestGenerator(UnittestGenerator, Scrapy18TestGenerator):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.ImportFrom(
+                module="scrapy.responsetypes",
+                names=[ast.alias(name="responsetypes")],
+                level=0,
+            ),
+            ast.Import(names=[ast.alias(name="scrapy.http")]),
+        ]
+
+    @staticmethod
+    def _assert(cd_bytes: bytes) -> List[ast.stmt]:
+        expected = _content_disposition_expected(cd_bytes)
+        src = (
+            f"self.assertIs(scrapy.http.{expected}, "
+            f"responsetypes.from_content_disposition({cd_bytes!r}))\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._assert(self._failing_cd())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._assert(self._passing_cd())
+        return test, TestResult.PASSING
+
+
+# ======================================================================
+# bug_15: ``_safe_ParseResult`` (used by ``canonicalize_url``) built the netloc
+# with ``parts.netloc.encode('idna')``.  IDNA encoding raises ``UnicodeError``
+# for a missing DNS label (e.g. ``http://.example.com``) or a label longer than
+# 63 characters.  ``canonicalize_url`` only caught ``UnicodeEncodeError`` (not
+# the plain ``UnicodeError`` idna raises), so such URLs crashed.  The fix wraps
+# the idna encoding in ``try/except UnicodeError`` and keeps the raw netloc.
+#
+# System-test format: a single urlsafe-base64 token of a URL restricted to a
+# lowercase-ASCII host and a non-empty lowercase-ASCII path (no query/fragment),
+# so canonicalization is the identity.  The harness prints ``OK:<canonical>`` or
+# ``ERR:<exc>``; the oracle expects ``OK:<url>``.  A failing test uses a URL
+# with a missing/too-long DNS label (buggy: UnicodeError; fixed: url unchanged);
+# a passing test uses a normal host (identical on both builds).
+# ======================================================================
+
+
+class Scrapy15API(ScrapyAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            url = _b64d(process.args[2]).decode("utf-8")
+        except Exception:
+            return TestResult.UNDEFINED, "Malformed test input"
+        # These URLs are already canonical, so the correct output is the URL.
+        expected = f"OK:{url}"
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == expected:
+            return TestResult.PASSING, f"Expected {expected!r}"
+        return TestResult.FAILING, f"Expected {expected!r}, but was {out!r}"
+
+
+class Scrapy15TestGenerator:
+    def _path(self) -> str:
+        return "/" + "/".join(_rand_word(2, 6) for _ in range(random.randint(1, 3)))
+
+    def _passing_url(self) -> str:
+        host = f"{_rand_word(3, 8)}.{random.choice(['com', 'org', 'net', 'io'])}"
+        return f"http://{host}{self._path()}"
+
+    def _failing_url(self) -> str:
+        if random.random() < 0.5:
+            # missing leading DNS label
+            host = f".{_rand_word(3, 8)}.com"
+        else:
+            # single DNS label longer than 63 characters (idna limit)
+            label = "".join(
+                random.choices(string.ascii_lowercase, k=random.randint(64, 90))
+            )
+            host = f"www.{label}.com"
+        return f"http://{host}{self._path()}"
+
+
+class Scrapy15SystemtestGenerator(SystemtestGenerator, Scrapy15TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return _b64(self._failing_url()), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return _b64(self._passing_url()), TestResult.PASSING
+
+
+class Scrapy15UnittestGenerator(UnittestGenerator, Scrapy15TestGenerator):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.ImportFrom(
+                module="scrapy.utils.url",
+                names=[ast.alias(name="canonicalize_url")],
+                level=0,
+            )
+        ]
+
+    @staticmethod
+    def _assert(url: str) -> List[ast.stmt]:
+        src = f"self.assertEqual({url!r}, canonicalize_url({url!r}))\n"
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._assert(self._failing_url())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._assert(self._passing_url())
+        return test, TestResult.PASSING
+
+
+# ======================================================================
+# bug_19: ``WrappedRequest`` (adapter used by the cookie middleware) exposed the
+# request via ``get_full_url()``/``get_host()``/``get_type()``/
+# ``get_origin_req_host()`` methods only.  Python 3's ``http.cookiejar`` expects
+# the *attributes* ``full_url``/``host``/``type``/``origin_req_host``, which the
+# buggy version did not provide (accessing them raised ``AttributeError``).  The
+# fix adds those four properties.
+#
+# System-test format: ``<attr> <b64url>`` where ``<attr>`` is one of the four
+# new properties (failing) or the four always-present ``get_*`` methods
+# (passing).  The harness reads the attribute (calling it if it is a method) and
+# prints ``OK:<value>`` or ``ERR:<exc>``; the oracle recomputes the correct
+# value from the URL.  A failing test reads a property (buggy: AttributeError;
+# fixed: correct value); a passing test calls a method (identical on both).
+# ======================================================================
+
+_WRAPPED_PROPS = ["full_url", "host", "type", "origin_req_host"]
+_WRAPPED_METHODS = ["get_full_url", "get_host", "get_type", "get_origin_req_host"]
+
+
+def _wrapped_request_expected(attr: str, url: str) -> str:
+    from urllib.parse import urlparse
+
+    parsed = urlparse(url)
+    if attr in ("full_url", "get_full_url"):
+        return url
+    if attr in ("host", "get_host"):
+        return parsed.netloc
+    if attr in ("type", "get_type"):
+        return parsed.scheme
+    return parsed.hostname or ""
+
+
+class Scrapy19API(ScrapyAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            attr = process.args[2]
+            url = _b64d(process.args[3]).decode("utf-8")
+        except Exception:
+            return TestResult.UNDEFINED, "Malformed test input"
+        expected = f"OK:{_wrapped_request_expected(attr, url)}"
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == expected:
+            return TestResult.PASSING, f"Expected {expected!r}"
+        return TestResult.FAILING, f"Expected {expected!r}, but was {out!r}"
+
+
+class Scrapy19TestGenerator:
+    def _url(self) -> str:
+        host = f"{_rand_word(3, 8)}.{random.choice(['com', 'org', 'net', 'io'])}"
+        path = "/" + "/".join(_rand_word(2, 6) for _ in range(random.randint(1, 3)))
+        return f"http://{host}{path}"
+
+
+class Scrapy19SystemtestGenerator(SystemtestGenerator, Scrapy19TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        attr = random.choice(_WRAPPED_PROPS)
+        return f"{attr} {_b64(self._url())}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        attr = random.choice(_WRAPPED_METHODS)
+        return f"{attr} {_b64(self._url())}", TestResult.PASSING
+
+
+class Scrapy19UnittestGenerator(UnittestGenerator, Scrapy19TestGenerator):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.ImportFrom(
+                module="scrapy.http", names=[ast.alias(name="Request")], level=0
+            ),
+            ast.ImportFrom(
+                module="scrapy.http.cookies",
+                names=[ast.alias(name="WrappedRequest")],
+                level=0,
+            ),
+        ]
+
+    @staticmethod
+    def _assert(attr: str, url: str) -> List[ast.stmt]:
+        expected = _wrapped_request_expected(attr, url)
+        if attr in _WRAPPED_METHODS:
+            access = f"WrappedRequest(Request({url!r})).{attr}()"
+        else:
+            access = f"WrappedRequest(Request({url!r})).{attr}"
+        src = f"self.assertEqual({expected!r}, {access})\n"
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._assert(random.choice(_WRAPPED_PROPS), self._url())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._assert(random.choice(_WRAPPED_METHODS), self._url())
+        return test, TestResult.PASSING
+
+
+grammar_wrapped_request: Grammar = clean_up(
+    {
+        "<start>": ["<attr> <b64>"],
+        "<attr>": _WRAPPED_PROPS + _WRAPPED_METHODS,
+        "<b64>": ["<char><b64>", "<char>"],
+        "<char>": srange(string.ascii_letters + string.digits + "-_="),
+    }
+)
+
+assert is_valid_grammar(grammar_wrapped_request)
+
+
+# ======================================================================
+# bug_7: ``FormRequest.from_response`` resolved a form's target with
+# ``_get_form_url``, which did ``urljoin(form.base_url, form.action)`` without
+# trimming the ``action`` value.  An ``action`` with leading/trailing HTML5
+# whitespace (e.g. ``" path "``) therefore leaked the spaces into the request
+# URL.  The fix applies ``strip_html5_whitespace(action)`` before joining.
+#
+# System-test format: ``<b64 base-url> <b64 action>``.  The harness builds an
+# ``HtmlResponse`` with a ``<form>`` carrying that action, runs
+# ``FormRequest.from_response`` and prints ``OK:<req.url>``; the oracle
+# recomputes ``urljoin(base, strip_html5_whitespace(action))``.  A failing test
+# uses an action padded with spaces (buggy: spaces leak into the URL; fixed:
+# stripped); a passing test uses a clean action (identical on both builds).
+# ======================================================================
+
+_HTML5_WS = " \t\n\r\x0c"
+
+
+def _form_url_expected(base_url: str, action: str) -> str:
+    from urllib.parse import urljoin
+
+    return urljoin(base_url, action.strip(_HTML5_WS))
+
+
+class Scrapy7API(ScrapyAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            base_url = _b64d(process.args[2]).decode("utf-8")
+            action = _b64d(process.args[3]).decode("utf-8")
+        except Exception:
+            return TestResult.UNDEFINED, "Malformed test input"
+        expected = f"OK:{_form_url_expected(base_url, action)}"
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == expected:
+            return TestResult.PASSING, f"Expected {expected!r}"
+        return TestResult.FAILING, f"Expected {expected!r}, but was {out!r}"
+
+
+class Scrapy7TestGenerator:
+    def _base_url(self) -> str:
+        host = f"{_rand_word(3, 8)}.{random.choice(['com', 'org', 'net', 'io'])}"
+        return f"http://{host}"
+
+    def _core(self) -> str:
+        return "/".join(_rand_word(2, 6) for _ in range(random.randint(1, 3)))
+
+    def _padded(self, core: str) -> str:
+        lead = " " * random.randint(1, 2)
+        trail = " " * random.randint(1, 2)
+        return f"{lead}{core}{trail}"
+
+
+class Scrapy7SystemtestGenerator(SystemtestGenerator, Scrapy7TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        base = self._base_url()
+        action = self._padded(self._core())
+        return f"{_b64(base)} {_b64(action)}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        base = self._base_url()
+        action = self._core()
+        return f"{_b64(base)} {_b64(action)}", TestResult.PASSING
+
+
+class Scrapy7UnittestGenerator(UnittestGenerator, Scrapy7TestGenerator):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.ImportFrom(
+                module="scrapy.http",
+                names=[ast.alias(name="HtmlResponse"), ast.alias(name="FormRequest")],
+                level=0,
+            )
+        ]
+
+    @staticmethod
+    def _assert(base_url: str, action: str) -> List[ast.stmt]:
+        expected = _form_url_expected(base_url, action)
+        body = f'<html><body><form action="{action}"></form></body></html>'
+        src = (
+            f"response = HtmlResponse(url={base_url!r}, "
+            f"body={body!r}.encode('utf-8'), encoding='utf-8')\n"
+            f"request = FormRequest.from_response(response)\n"
+            f"self.assertEqual({expected!r}, request.url)\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._assert(self._base_url(), self._padded(self._core()))
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._assert(self._base_url(), self._core())
+        return test, TestResult.PASSING
+
+
+grammar_form_action: Grammar = clean_up(
+    {
+        "<start>": ["<b64> <b64>"],
+        "<b64>": ["<char><b64>", "<char>"],
+        "<char>": srange(string.ascii_letters + string.digits + "-_="),
+    }
+)
+
+assert is_valid_grammar(grammar_form_action)
+
+
+# ======================================================================
+# bug_5: ``Response.follow`` passed ``url`` straight to ``self.urljoin(url)``.
+# For ``url=None`` ``urljoin`` silently returns the base URL, so
+# ``response.follow(None)`` produced a request pointing at the response's own
+# URL instead of failing.  The fix raises ``ValueError("url can't be None")``
+# when ``url is None``.
+#
+# System-test format: ``<mode> <b64 base> <b64 target>`` where ``<mode>`` is
+# ``none`` (target ignored, ``follow(None)``) or ``url`` (follow an absolute
+# target).  The harness prints ``OK:<req.url>`` or ``ERR:<exc>``; the oracle
+# expects ``ERR:ValueError`` for ``none`` and ``OK:<joined>`` for ``url``.  A
+# failing test uses ``none`` (buggy: returns a request; fixed: ValueError); a
+# passing test uses ``url`` (identical on both builds).
+# ======================================================================
+
+
+class Scrapy5API(ScrapyAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            mode = process.args[2]
+            base = _b64d(process.args[3]).decode("utf-8")
+            if mode == "none":
+                expected = "ERR:ValueError"
+            else:
+                from urllib.parse import urljoin
+
+                target = _b64d(process.args[4]).decode("utf-8")
+                expected = "OK:" + urljoin(base, target)
+        except Exception:
+            return TestResult.UNDEFINED, "Malformed test input"
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == expected:
+            return TestResult.PASSING, f"Expected {expected!r}"
+        return TestResult.FAILING, f"Expected {expected!r}, but was {out!r}"
+
+
+class Scrapy5TestGenerator:
+    def _base(self) -> str:
+        host = f"{_rand_word(3, 8)}.{random.choice(['com', 'org', 'net', 'io'])}"
+        return f"http://{host}"
+
+    def _target(self) -> str:
+        host = f"{_rand_word(3, 8)}.{random.choice(['com', 'org', 'net', 'io'])}"
+        path = "/" + "/".join(_rand_word(2, 6) for _ in range(random.randint(1, 3)))
+        return f"http://{host}{path}"
+
+
+class Scrapy5SystemtestGenerator(SystemtestGenerator, Scrapy5TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return f"none {_b64(self._base())} {_b64('x')}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return (
+            f"url {_b64(self._base())} {_b64(self._target())}",
+            TestResult.PASSING,
+        )
+
+
+class Scrapy5UnittestGenerator(UnittestGenerator, Scrapy5TestGenerator):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.ImportFrom(
+                module="scrapy.http", names=[ast.alias(name="Response")], level=0
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        base = self._base()
+        src = (
+            f"response = Response(url={base!r})\n"
+            f"self.assertRaises(ValueError, response.follow, None)\n"
+        )
+        test = self.get_empty_test()
+        test.body = ast.parse(src).body
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        from urllib.parse import urljoin
+
+        base = self._base()
+        target = self._target()
+        expected = urljoin(base, target)
+        src = (
+            f"response = Response(url={base!r})\n"
+            f"self.assertEqual({expected!r}, response.follow({target!r}).url)\n"
+        )
+        test = self.get_empty_test()
+        test.body = ast.parse(src).body
+        return test, TestResult.PASSING
+
+
+grammar_follow: Grammar = clean_up(
+    {
+        "<start>": ["<mode> <b64> <b64>"],
+        "<mode>": ["none", "url"],
+        "<b64>": ["<char><b64>", "<char>"],
+        "<char>": srange(string.ascii_letters + string.digits + "-_="),
+    }
+)
+
+assert is_valid_grammar(grammar_follow)

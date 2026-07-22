@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return 'sudo ci -q' ' PERMISSION DENIED ' ''
+        return "(False, 'sudo sq -j', ' REQUESTED OPERATION REQUIRES SUPERUSER PRIVILEGE ', '')"
 
     def test_diversity_2(self):
-        return 'sudo ee -c' ' NPM ERR! ERROR: EACCES, UNLINK ' ''
+        return '(False, \'sudo ea -z\', " YOU DON\'T HAVE ACCESS TO THE HISTORY DB. ", \'\')'
 
     def test_diversity_3(self):
-        return 'sudo vo -h' ' PERMISSION DENIED ' ''
+        return "(False, 'sudo qg -e', ' REQUESTED OPERATION REQUIRES SUPERUSER PRIVILEGE ', '')"
 
     def test_diversity_4(self):
-        return 'sudo xx -c' '' " ERROR: [ERRNO 13] PERMISSION DENIED: '/USR/LOCAL/LIB/PYTHON2.7/DIST-PACKAGES/IPADDR.PY' "
+        return "(False, 'sudo vj -f', ' MUST BE ROOT ', '')"
 
     def test_diversity_5(self):
-        return 'sudo na -x' ' PERMISSION DENIED ' ''
+        return "(False, 'sudo ti -o', ' REQUESTED OPERATION REQUIRES SUPERUSER PRIVILEGE ', '')"
 
     def test_diversity_6(self):
-        return 'sudo rh -j' ' NPM ERR! ERROR: EACCES, UNLINK ' ''
+        return "(False, 'sudo wn -g', ' PERMISSION DENIED ', '')"
 
     def test_diversity_7(self):
-        return 'sudo eu -v' ' NEED TO BE ROOT ' ''
+        return "(False, 'sudo tc -r', ' PERMISSION DENIED ', '')"
 
     def test_diversity_8(self):
-        return 'sudo dq -l' ' MUST BE ROOT ' ''
+        return "(False, 'sudo vh -q', ' NEED ROOT ', '')"
 
     def test_diversity_9(self):
-        return 'sudo mq -q' ' PERMISSION DENIED ' ''
+        return '(False, \'sudo nk -j\', " YOU DON\'T HAVE ACCESS TO THE HISTORY DB. ", \'\')'
 
     def test_diversity_10(self):
-        return 'sudo rv -z' ' REQUESTED OPERATION REQUIRES SUPERUSER PRIVILEGE ' ''
+        return "(False, 'sudo pv -f', ' NEED TO BE ROOT ', '')"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return 'sudo wn -k' 'need to be root' ''
+        return "(True, 'sudo tl -u', 'must be root', '')"
 
     def test_diversity_2(self):
-        return 'sudo bk -m' '' "error: [Errno 13] Permission denied: '/usr/local/lib/python2.7/dist-packages/ipaddr.py'"
+        return "(True, 'sudo wg -i', 'need root', '')"
 
     def test_diversity_3(self):
-        return 'sudo rv -z' 'requested operation requires superuser privilege' ''
+        return "(True, 'sudo gl -f', 'need root', '')"
 
     def test_diversity_4(self):
-        return 'sudo wy -k' 'permission denied' ''
+        return "(True, 'sudo ui -u', 'Permission denied', '')"
 
     def test_diversity_5(self):
-        return 'sudo ic -h' 'requested operation requires superuser privilege' ''
+        return '(True, \'sudo ec -e\', \'\', "error: [Errno 13] Permission denied: \'/usr/local/lib/python2.7/dist-packages/ipaddr.py\'")'
 
     def test_diversity_6(self):
-        return 'sudo ec -f' 'permission denied' ''
+        return '(True, \'sudo fn -x\', \'\', "error: [Errno 13] Permission denied: \'/usr/local/lib/python2.7/dist-packages/ipaddr.py\'")'
 
     def test_diversity_7(self):
-        return 'sudo sy -x' 'must be root' ''
+        return "(True, 'sudo rw -t', 'requested operation requires superuser privilege', '')"
 
     def test_diversity_8(self):
-        return 'sudo cy -c' 'Permission denied' ''
+        return "(True, 'sudo bi -t', 'npm ERR! Error: EACCES, unlink', '')"
 
     def test_diversity_9(self):
-        return 'sudo cc -a' "You don't have access to the history DB." ''
+        return "(True, 'sudo dp -w', 'npm ERR! Error: EACCES, unlink', '')"
 
     def test_diversity_10(self):
-        return 'sudo le -p' 'permission denied' ''
+        return "(True, 'sudo kd -h', 'need to be root', '')"

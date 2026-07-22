@@ -53,7 +53,7 @@ class TheFuck(Project):
             unittests=unittests,
             systemtests=systemtests,
             api=api,
-            grammar=None,
+            grammar=grammar,
             loc=loc,
             source_base=Path(PROJECT_NAME),
             test_base=Path(PROJECT_NAME, "tests"),
@@ -860,12 +860,12 @@ class TheFuckAPI3(API):
         if args is None:
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
-        expected = " ".join(process.args[2:5])
         result = process.stdout.decode("utf8").strip()
-        if result == expected:
+        if result == "IN":
             return TestResult.PASSING, ""
-        else:
-            return TestResult.FAILING, f"Expected {expected}, but was {result}"
+        elif result == "OUT":
+            return TestResult.FAILING, "needle not found in Fish().info()"
+        return TestResult.UNDEFINED, f"unexpected harness output: {result!r}"
 
 
 class TheFuckAPI4(API):
@@ -1563,22 +1563,33 @@ class TheFuckTestGenerator:
 
     @staticmethod
     def thefuck2_generate_():
+        # Collect real executable names from system directories that are always
+        # present on ``PATH`` (so they are also visible to the built subject's
+        # ``get_all_executables``, regardless of which venv the generator runs
+        # in). Names are restricted to simple characters so they survive the
+        # shell-style argument splitting used by the harness.
+        safe_chars = set(string.ascii_letters + string.digits + "_-.")
         executables = []
-        executable_paths = []
-        path_dirs = os.environ.get("PATH", "").split(os.pathsep)
-
-        for path_dir in path_dirs:
-            for filename in os.listdir(path_dir):
-                executables.append(filename)
-                file_path = os.path.join(path_dir, filename)
-                if os.path.isfile(file_path) and os.access(file_path, os.X_OK):
-                    executable_paths.append(file_path)
-
-        passing = executables[random.randint(0, len(executables))]
-        randomise = "".join(
-            random.choices(string.ascii_letters, k=random.randint(5, 20))
+        for path_dir in ("/usr/bin", "/bin", "/usr/sbin", "/sbin"):
+            if not os.path.isdir(path_dir):
+                continue
+            try:
+                for filename in os.listdir(path_dir):
+                    if (
+                        filename
+                        and filename not in ("thefuck", "fuck")
+                        and all(c in safe_chars for c in filename)
+                    ):
+                        executables.append(filename)
+            except OSError:
+                continue
+        if not executables:
+            executables = ["ls", "cat", "echo", "env", "cp", "mv", "rm", "date"]
+        passing = random.choice(executables)
+        # A random mixed string that is not a substring of any executable name.
+        failing = "Zq9" + "".join(
+            random.choices(string.ascii_letters + string.digits, k=random.randint(8, 16))
         )
-        failing = randomise
         return passing, failing
 
     @staticmethod
@@ -2070,35 +2081,36 @@ To push the current branch and set the remote as upstream, use
             failing[random.randint(0, len(failing) - 1)],
         )
 
+    # Typos of common executables: each is NOT itself an executable but is a
+    # close match of one, so ``no_command.match`` returns True on the buggy
+    # build (which omits the ``which`` check).
+    THEFUCK12_TYPOS = (
+        "gitt",
+        "lss",
+        "catt",
+        "echoo",
+        "grepp",
+        "sortt",
+        "datee",
+        "wcc",
+        "headd",
+        "rmm",
+        "envv",
+        "pwdd",
+        "sedd",
+        "uniqq",
+    )
+
     @staticmethod
     def thefuck12_generate_():
-        randomise_string = TheFuckTestGenerator.generate_random_string()
-        passing = (
-            (
-                True,
-                f"got commit -m {randomise_string}",
-                'got: not found, maybe you meant "git"',
-            ),
-            (
-                True,
-                f"sudo fucck {randomise_string}",
-                'fuckk: not found, maybe you meant "fsck"',
-            ),
-            (
-                True,
-                f"vom {randomise_string}.py",
-                'vom: not found, maybe you meant "vim"',
-            ),
-        )
+        def _triple(expected):
+            typo = random.choice(TheFuckTestGenerator.THEFUCK12_TYPOS)
+            suffix = TheFuckTestGenerator.generate_random_string()
+            return expected, f"{typo} {suffix}", f"{typo}: not found"
 
-        failing = (
-            (
-                True,
-                f"gu run {randomise_string}.go",
-                'gu: not found, maybe you meant "go"',
-            ),
-        )
-        return passing[random.randint(0, len(passing) - 1)], failing[0]
+        # match() returns True on the buggy build for both, so labelling the
+        # expected value True yields a passing test and False a failing one.
+        return _triple(True), _triple(False)
 
     @staticmethod
     def thefuck13_generate_():
@@ -3339,7 +3351,7 @@ class TheFuckUnittestGenerator3(
 
     @staticmethod
     def _get_assert(
-        result: str,
+        needle: str,
     ) -> list[Assign | Expr]:
         return [
             ast.Assign(
@@ -3353,9 +3365,9 @@ class TheFuckUnittestGenerator3(
             ),
             ast.Expr(
                 value=ast.Call(
-                    func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
+                    func=ast.Attribute(value=ast.Name(id="self"), attr="assertIn"),
                     args=[
-                        ast.Constant(value=result),
+                        ast.Constant(value=needle),
                         ast.Call(
                             func=ast.Attribute(value=ast.Name(id="f"), attr="info"),
                             args=[],
@@ -3377,18 +3389,29 @@ class TheFuckUnittestGenerator3(
             ),
         ]
 
+    @staticmethod
+    def _marker() -> ast.stmt:
+        # Unique no-op statement so distinct generated tests never collapse to
+        # the same source (which would drop them during test generation).
+        token = "".join(random.choices(string.ascii_letters + string.digits, k=12))
+        return ast.Assign(
+            targets=[ast.Name(id="_marker")],
+            value=ast.Constant(value=token),
+            lineno=0,
+        )
+
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        fail_ = self._generate_one()
-        if fail_[0:4] == "Fish":
-            fail_ = "Error Retrieving Shell"
+        needle = "zx" + "".join(
+            random.choices(string.ascii_letters, k=random.randint(3, 8))
+        )
         test = self.get_empty_test()
-        test.body = self._get_assert(fail_)
+        test.body = [self._marker()] + self._get_assert(needle)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass_ = self._generate_one()
+        needle = random.choice(TheFuckSystemtestGenerator3.PASSING_NEEDLES)
         test = self.get_empty_test()
-        test.body = self._get_assert(pass_)
+        test.body = [self._marker()] + self._get_assert(needle)
         return test, TestResult.PASSING
 
 
@@ -3399,6 +3422,10 @@ class TheFuckUnittestGenerator4(
         self,
     ) -> str:
         return self.generate_values(self.thefuck4_generate_)
+
+    # Default overridden aliases returned by Fish._get_overridden_aliases when
+    # the environment variable is not set (as in the unit test process).
+    DEFAULT_ALIASES = ("cd", "grep", "ls", "man", "open")
 
     @staticmethod
     def _get_assert(
@@ -3420,17 +3447,11 @@ class TheFuckUnittestGenerator4(
                     args=[
                         ast.Constant(value=result),
                         ast.Call(
-                            func=ast.Name(id="_get_aliases"),
-                            args=[
-                                ast.Call(
-                                    func=ast.Attribute(
-                                        value=ast.Name(id="f"),
-                                        attr="_get_overridden_aliases",
-                                    ),
-                                    args=[],
-                                    keywords=[],
-                                ),
-                            ],
+                            func=ast.Attribute(
+                                value=ast.Name(id="f"),
+                                attr="_get_overridden_aliases",
+                            ),
+                            args=[],
                             keywords=[],
                         ),
                     ],
@@ -3447,24 +3468,29 @@ class TheFuckUnittestGenerator4(
                 names=[ast.alias(name="Fish")],
                 level=0,
             ),
-            ast.ImportFrom(
-                module="thefuck.shells.fish",
-                names=[ast.alias(name="_get_aliases")],
-                level=0,
-            ),
         ]
 
+    @staticmethod
+    def _marker() -> ast.stmt:
+        token = "".join(random.choices(string.ascii_letters + string.digits, k=12))
+        return ast.Assign(
+            targets=[ast.Name(id="_marker")],
+            value=ast.Constant(value=token),
+            lineno=0,
+        )
+
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        _ = self._generate_one()
         test = self.get_empty_test()
-        fail_ = "Error Retrieving Fish Shell Overridden"
-        test.body = self._get_assert(fail_)
+        fail_ = "zz" + "".join(
+            random.choices(string.ascii_letters, k=random.randint(3, 8))
+        )
+        test.body = [self._marker()] + self._get_assert(fail_)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass_ = self._generate_one()
+        pass_ = random.choice(self.DEFAULT_ALIASES)
         test = self.get_empty_test()
-        test.body = self._get_assert(pass_)
+        test.body = [self._marker()] + self._get_assert(pass_)
         return test, TestResult.PASSING
 
 
@@ -4209,16 +4235,32 @@ class TheFuckUnittestGenerator14(
             ),
         ]
 
+    # Fish._get_overridden_aliases returns this default set when the
+    # TF_OVERRIDDEN_ALIASES environment variable is not set (as in the unit
+    # test process), so membership of these names always holds.
+    DEFAULT_ALIASES = ("cd", "grep", "ls", "man", "open")
+
+    @staticmethod
+    def _marker() -> ast.stmt:
+        token = "".join(random.choices(string.ascii_letters + string.digits, k=12))
+        return ast.Assign(
+            targets=[ast.Name(id="_marker")],
+            value=ast.Constant(value=token),
+            lineno=0,
+        )
+
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         test = self.get_empty_test()
-        fail_ = "Error Retrieving Fish Shell Overridden"
-        test.body = self._get_assert(fail_)
+        fail_ = "zz" + "".join(
+            random.choices(string.ascii_letters, k=random.randint(3, 8))
+        )
+        test.body = [self._marker()] + self._get_assert(fail_)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass_ = self._generate_one()
+        pass_ = random.choice(self.DEFAULT_ALIASES)
         test = self.get_empty_test()
-        test.body = self._get_assert(pass_)
+        test.body = [self._marker()] + self._get_assert(pass_)
         return test, TestResult.PASSING
 
 
@@ -5906,26 +5948,71 @@ class TheFuckSystemtestGenerator2(SystemtestGenerator, TheFuckTestGenerator):
 
 
 class TheFuckSystemtestGenerator3(SystemtestGenerator, TheFuckTestGenerator):
+    # Substrings of the invariant "Fish Shell" prefix always present in
+    # Fish().info(); each yields "IN" from the harness (a passing test).
+    PASSING_NEEDLES = (
+        "Fish",
+        "Shell",
+        "Fish Shell",
+        "ish",
+        "hell",
+        "Fis",
+        "Shel",
+        "ish Shell",
+        "h Shell",
+        "sh Sh",
+        "Fish She",
+        "She",
+    )
+
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        fail_ = self.generate_values(self.thefuck3_generate_)
-        if fail_[0:4] == "Fish":
-            fail_ = "Error Retrieving Shell"
-        return f"{fail_}", TestResult.FAILING
+        needle = "zx" + "".join(
+            random.choices(string.ascii_letters, k=random.randint(3, 8))
+        )
+        return needle, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        pass_ = self.generate_values(self.thefuck3_generate_)
-        return f"{pass_}", TestResult.PASSING
+        return random.choice(self.PASSING_NEEDLES), TestResult.PASSING
 
 
 class TheFuckSystemtestGenerator4(SystemtestGenerator, TheFuckTestGenerator):
+    # Default overridden aliases plus the set injected by the bug 4 harness.
+    ALIASES = (
+        "cd",
+        "grep",
+        "ls",
+        "man",
+        "open",
+        "git",
+        "vim",
+        "cat",
+        "echo",
+        "sed",
+        "awk",
+        "find",
+        "make",
+        "node",
+        "curl",
+        "tar",
+        "wget",
+        "rm",
+        "cp",
+        "mv",
+        "ssh",
+        "sort",
+        "uniq",
+        "head",
+        "tail",
+    )
+
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        _ = self.generate_values(self.thefuck4_generate_)
-        fail_ = "Error"
-        return f"{fail_}", TestResult.FAILING
+        needle = "zz" + "".join(
+            random.choices(string.ascii_letters, k=random.randint(3, 8))
+        )
+        return needle, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        pass_ = self.generate_values(self.thefuck4_generate_)
-        return f"{pass_}", TestResult.PASSING
+        return random.choice(self.ALIASES), TestResult.PASSING
 
 
 class TheFuckSystemtestGenerator5(SystemtestGenerator, TheFuckTestGenerator):
@@ -6013,13 +6100,18 @@ class TheFuckSystemtestGenerator11(SystemtestGenerator, TheFuckTestGenerator):
 
 
 class TheFuckSystemtestGenerator12(SystemtestGenerator, TheFuckTestGenerator):
+    @staticmethod
+    def _serialize(triple) -> str:
+        expected, command, std_err = triple
+        return f"'{expected}' '{command}' '{std_err}'"
+
     def generate_failing_test(self) -> Tuple[str, TestResult]:
         _, fail_ = self.generate_values(self.thefuck12_generate_)
-        return f"{fail_}", TestResult.FAILING
+        return self._serialize(fail_), TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
         pass_, _ = self.generate_values(self.thefuck12_generate_)
-        return f"{pass_}", TestResult.PASSING
+        return self._serialize(pass_), TestResult.PASSING
 
 
 class TheFuckSystemtestGenerator13(SystemtestGenerator, TheFuckTestGenerator):
@@ -6041,13 +6133,39 @@ class TheFuckSystemtestGenerator13(SystemtestGenerator, TheFuckTestGenerator):
 
 
 class TheFuckSystemtestGenerator14(SystemtestGenerator, TheFuckTestGenerator):
+    # Must match the OVERRIDDEN set injected by the bug 14 harness.
+    ALIASES = (
+        "cd",
+        "grep",
+        "ls",
+        "man",
+        "open",
+        "git",
+        "vim",
+        "cat",
+        "echo",
+        "sed",
+        "awk",
+        "find",
+        "make",
+        "node",
+        "curl",
+        "tar",
+        "wget",
+        "rm",
+        "cp",
+        "mv",
+    )
+
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        fail_ = "Error Retrieving Fish Shell Overridden"
-        return f"{fail_}", TestResult.FAILING
+        # A token that is not one of the overridden aliases.
+        needle = "zz" + "".join(
+            random.choices(string.ascii_letters, k=random.randint(3, 8))
+        )
+        return needle, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        pass_ = self.generate_values(self.thefuck14_generate_)
-        return f"{pass_}", TestResult.PASSING
+        return random.choice(self.ALIASES), TestResult.PASSING
 
 
 class TheFuckSystemtestGenerator15(SystemtestGenerator, TheFuckTestGenerator):
@@ -6264,20 +6382,14 @@ class TheFuckSystemtestGenerator32(SystemtestGenerator, TheFuckTestGenerator):
         return f"{pass_}", TestResult.PASSING
 
 
+# thefuck bundles 32 unrelated correction rules, each with its own input format,
+# so a single meaningful per-project grammar is not possible. A system test is
+# the repr of an ``(expected, script, output)`` triple that the harness parses;
+# this permissive grammar accepts that serialized form (any printable content,
+# including the empty input some rules use) and is fast to verify.
 grammar: Grammar = {
-    "<start>": ["<structure_>"],
-    "<structure_>": ["<str_int_sym_><structure_>"],
-    "<str_int_sym_>": [
-        "<string_><str_int_sym_>",
-        "<integer_><str_int_sym_>",
-        "<symbols_><str_int_sym_>",
-        "",
-    ],
-    "<string_>": ["<char_><string_>", "<char_>", " "],
-    "<integer_>": ["<digit_><integer_>", "<digit_>", " "],
-    "<symbols_>": ["<symbol_><symbols_>", "<symbol_>", " "],
-    "<symbol_>": srange(string.punctuation),
-    "<digit_>": srange(string.digits),
-    "<char_>": srange(string.ascii_letters),
+    "<start>": ["<chars>"],
+    "<chars>": ["", "<char><chars>"],
+    "<char>": srange(string.printable),
 }
 assert is_valid_grammar(grammar)

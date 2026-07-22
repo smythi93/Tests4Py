@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return 'unzip abGYJ.zip, NfMFixvKoZhvND.zip' '' ''
+        return "('ZDOYYnCblXwOWT, VylGvQinjHLup', 'unzip ZDOYYnCblXwOWT.zip, VylGvQinjHLup.zip')"
 
     def test_diversity_2(self):
-        return 'unzip KUlVMKuah\\ WwAvJuXzJw.zip' '' ''
+        return "('pdhIAOeAc, lVCBeENgsX', 'unzip pdhIAOeAc.zip, lVCBeENgsX.zip')"
 
     def test_diversity_3(self):
-        return 'unzip KweNZAOyhvB.zip, bYogNneZlkGDYKU.zip' '' ''
+        return '("unzip \'VBLUgbibgAvQs vSqght.zip\' -d \'VBLUgbibgAvQs vSqght\'", "unzip \'VBLUgbibgAvQs vSqght.zip\'")'
 
     def test_diversity_4(self):
-        return 'unzip iXcVfQyzPqIlQP\\ noePSJtge.zip' '' ''
+        return "('gDdlcbrdykJt, FDjPIZD', 'unzip gDdlcbrdykJt.zip, FDjPIZD.zip')"
 
     def test_diversity_5(self):
-        return "unzip 'wrIzCEo kTbdO.zip'" '' ''
+        return "('CVSqSAFUrvoh, HqAoH', 'unzip CVSqSAFUrvoh.zip, HqAoH.zip')"
 
     def test_diversity_6(self):
-        return "unzip 'sgFyxBNW SvsZqnTA.zip'" '' ''
+        return '("unzip NjUUuAaNnIlHRJ\\\\ ZxZGQKvVcutIhLE.zip -d \'NjUUuAaNnIlHRJ ZxZGQKvVcutIhLE\'", \'unzip NjUUuAaNnIlHRJ\\\\ ZxZGQKvVcutIhLE.zip\')'
 
     def test_diversity_7(self):
-        return 'unzip jYYbrDwaWptJ.zip, uyopElXi.zip' '' ''
+        return '("unzip lyLTbYVYrAO\\\\ JmVsHRHHpH.zip -d \'lyLTbYVYrAO JmVsHRHHpH\'", \'unzip lyLTbYVYrAO\\\\ JmVsHRHHpH.zip\')'
 
     def test_diversity_8(self):
-        return 'unzip xaMGlDBopY\\ dZmlixXEjixM.zip' '' ''
+        return "('emqxEQMupLD, NxGnG', 'unzip emqxEQMupLD.zip, NxGnG.zip')"
 
     def test_diversity_9(self):
-        return 'unzip oKrja.zip, AvIHK.zip' '' ''
+        return '("unzip OHJdwqYJ\\\\ DhTlaiQoaSCdSQ.zip -d \'OHJdwqYJ DhTlaiQoaSCdSQ\'", \'unzip OHJdwqYJ\\\\ DhTlaiQoaSCdSQ.zip\')'
 
     def test_diversity_10(self):
-        return 'unzip lgeWWVqTUfOdIc.zip, lxkQWl.zip' '' ''
+        return "('uPgLLicuiK, uRVvSwVlViadvX', 'unzip uPgLLicuiK.zip, uRVvSwVlViadvX.zip')"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return 'unzip JoFFeu' '' ''
+        return "('unzip fmHGiaXIdNDFIbw.zip -d fmHGiaXIdNDFIbw', 'unzip fmHGiaXIdNDFIbw.zip')"
 
     def test_diversity_2(self):
-        return 'unzip ojBLQgBOHksoHA' '' ''
+        return "('unzip VuWtwqMCAauE -d VuWtwqMCAauE', 'unzip VuWtwqMCAauE')"
 
     def test_diversity_3(self):
-        return 'unzip HZzjhBEi' '' ''
+        return "('unzip EEEGdeqwtI.zip -d EEEGdeqwtI', 'unzip EEEGdeqwtI.zip')"
 
     def test_diversity_4(self):
-        return 'unzip vuJRTjLAeYK' '' ''
+        return "('YpndHf.zip', 'unzip YpndHf')"
 
     def test_diversity_5(self):
-        return 'unzip cCtXqphc.zip' '' ''
+        return "('uuofWiEJShtQk.zip', 'unzip uuofWiEJShtQk.zip')"
 
     def test_diversity_6(self):
-        return 'unzip GdFeLDvcOP.zip' '' ''
+        return "('unzip iulZcbW.zip -d iulZcbW', 'unzip iulZcbW.zip')"
 
     def test_diversity_7(self):
-        return 'unzip sXxFlJICq.zip' '' ''
+        return "('GJVCKYUiaMZfSD.zip', 'unzip GJVCKYUiaMZfSD.zip')"
 
     def test_diversity_8(self):
-        return 'unzip XqAMufH.zip' '' ''
+        return "('UCBZmDNKuQnQSBs.zip', 'unzip UCBZmDNKuQnQSBs.zip')"
 
     def test_diversity_9(self):
-        return 'unzip keJpgSsSe' '' ''
+        return "('unzip mQDPaNrzNqdLH -d mQDPaNrzNqdLH', 'unzip mQDPaNrzNqdLH')"
 
     def test_diversity_10(self):
-        return 'unzip TcpSnB' '' ''
+        return "('unzip zLzlnTuiGKTbng.zip -d zLzlnTuiGKTbng', 'unzip zLzlnTuiGKTbng.zip')"

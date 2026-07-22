@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return "aldnjdneqdh"
+        return "('thecNBRd', 'cNBRd')"
 
     def test_diversity_2(self):
-        return "rJPIepmzRlzfQ"
+        return "('theoEUuTL', 'oEUuTL')"
 
     def test_diversity_3(self):
-        return "asdkqKJSA"
+        return "('theoKCWCSM', 'oKCWCSM')"
 
     def test_diversity_4(self):
-        return "SADkhadhk"
+        return "('theCYenRgi', 'CYenRgi')"
 
     def test_diversity_5(self):
-        return "JhgoKYT"
+        return "('thezMmlPVA', 'zMmlPVA')"
 
     def test_diversity_6(self):
-        return "ASDjhhugu"
+        return "('thexaYiwYW', 'xaYiwYW')"
 
     def test_diversity_7(self):
-        return "mFSIDJu"
+        return "('thegYnHDFXMHw', 'gYnHDFXMHw')"
 
     def test_diversity_8(self):
-        return "ksjjduhj"
+        return "('theIgpHnYQiWZtS', 'IgpHnYQiWZtS')"
 
     def test_diversity_9(self):
-        return "foDSUYDSHIQ"
+        return "('thefxqjUczDyBGA', 'fxqjUczDyBGA')"
 
     def test_diversity_10(self):
-        return "DEJKuuduywuy"
+        return "('thezbhYs', 'zbhYs')"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return "DADWEWTs"
+        return "('alias wPrpmcV', 'wPrpmcV')"
 
     def test_diversity_2(self):
-        return "ljhsdhsdD"
+        return "('TF_ALIAS=VroEvYZficz', 'VroEvYZficz')"
 
     def test_diversity_3(self):
-        return "jkdewdh"
+        return "('alias XzmvRuxtNuw', 'XzmvRuxtNuw')"
 
     def test_diversity_4(self):
-        return "FHFUQW"
+        return "('alias stHjhwFd', 'stHjhwFd')"
 
     def test_diversity_5(self):
-        return "hiuguuyuuUUGU"
+        return "('TF_ALIAS=uuWALKCwLtjsDf', 'uuWALKCwLtjsDf')"
 
     def test_diversity_6(self):
-        return "jdfwefu"
+        return "('TF_ALIAS=gmrBTtT', 'gmrBTtT')"
 
     def test_diversity_7(self):
-        return "KWRJGJR"
+        return "('alias vpQHVciGt', 'vpQHVciGt')"
 
     def test_diversity_8(self):
-        return ""
+        return "('alias LyPJDEyluCyoH', 'LyPJDEyluCyoH')"
 
     def test_diversity_9(self):
-        return "SDHFDU"
+        return "('TF_ALIAS=lfuZXmQO', 'lfuZXmQO')"
 
     def test_diversity_10(self):
-        return "OGtuUtg"
+        return "('TF_ALIAS=PFtNdUzV', 'PFtNdUzV')"

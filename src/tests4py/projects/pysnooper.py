@@ -2,12 +2,13 @@ import ast
 import os
 import random
 import string
+import subprocess
 from _ast import Call
 from abc import abstractmethod
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Any, Sequence
 
-from tests4py.constants import PYTHON
+from tests4py.constants import PYTHON, Environment
 from tests4py.grammars import python
 from tests4py.grammars.default import (
     CLI_GRAMMAR,
@@ -39,6 +40,7 @@ class PySnooper(Project):
         api: Optional[API] = None,
         loc: int = 0,
         relevant_test_files: Optional[List[Path]] = None,
+        grammar_override: Optional[Grammar] = None,
     ):
         super().__init__(
             bug_id=bug_id,
@@ -58,7 +60,7 @@ class PySnooper(Project):
             unittests=unittests,
             systemtests=systemtests,
             api=api,
-            grammar=grammar,
+            grammar=grammar_override if grammar_override is not None else grammar,
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
             included_files=[PROJECT_NAME],
@@ -80,6 +82,10 @@ def register():
         test_cases=[os.path.join("tests", "test_chinese.py::test_chinese")],
         loc=448,
         test_status_buggy=TestStatus.PASSING,
+        api=PySnooper1API(),
+        systemtests=PySnooper1SystemtestGenerator(),
+        unittests=PySnooper1UnittestGenerator(),
+        grammar_override=grammar_1,
     )
     PySnooper(
         bug_id=2,
@@ -382,6 +388,167 @@ class PySnooper3SystemtestGenerator(PySnooperSystemtestGenerator):
         return self._generate_parameters(
             [], ["output", "depth", "variables", "prefix"], output_prob=2
         )
+
+
+PS1_NON_ASCII = list("失败测试值中文你好世界字符编码变量输出数据文本代号")
+
+# Source of the traced subprocess. It snoops a function whose local variable is
+# assigned the (utf-8) value read from a file, writing the trace to a log file.
+# On the buggy build ``FileWriter.write`` opens the log with the process default
+# encoding; under an ASCII locale a non-ASCII value raises UnicodeEncodeError,
+# whereas the fixed build forces ``encoding='utf-8'``.
+PS1_SNOOP_CODE = (
+    "import os, tempfile, pysnooper\n"
+    "value = open(os.environ['TESTS4PY_PS1_VALUE'], encoding='utf-8').read()\n"
+    "log = os.path.join(tempfile.mkdtemp(), 'snoop.log')\n"
+    "@pysnooper.snoop(log)\n"
+    "def foo():\n"
+    "    x = value\n"
+    "    return x\n"
+    "foo()\n"
+    "open(log, encoding='utf-8').read()\n"
+)
+
+
+class PySnooper1API(API):
+    """Oracle for pysnooper bug 1 (non-ASCII trace output encoding)."""
+
+    def __init__(self, default_timeout: int = 5):
+        API.__init__(self, default_timeout=default_timeout)
+        self.value = None
+
+    def get_test_arguments_from_string(self, s: str) -> List[str]:
+        return [s]
+
+    def prepare_args(self, args: List[str], work_dir: Path):
+        self.value = "\n".join(args)
+        return [self.value]
+
+    # noinspection PyBroadException
+    def execute(
+        self,
+        args: Sequence[str],
+        environ: Environment,
+        work_dir: Optional[Path] = None,
+        pipe: bool = True,
+    ) -> Any:
+        try:
+            work_dir = Path.cwd() if work_dir is None else work_dir
+            value_path = work_dir / "tests4py_ps1_value.txt"
+            with open(value_path, "w", encoding="utf-8") as fp:
+                fp.write(args[0])
+            environ = dict(environ)
+            environ["TESTS4PY_PS1_VALUE"] = str(value_path)
+            environ["LC_ALL"] = "C"
+            environ["LANG"] = "C"
+            environ["LC_CTYPE"] = "C"
+            environ["PYTHONCOERCECLOCALE"] = "0"
+            environ["PYTHONUTF8"] = "0"
+            environ.pop("PYTHONIOENCODING", None)
+            return subprocess.run(
+                [PYTHON, "-c", PS1_SNOOP_CODE],
+                stdout=subprocess.PIPE if pipe else None,
+                stderr=subprocess.PIPE if pipe else None,
+                timeout=self.default_timeout,
+                env=environ,
+                cwd=work_dir,
+            )
+        except subprocess.TimeoutExpired:
+            return None
+        except Exception:
+            return None
+
+    def oracle(self, args) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "timeout or exception triggered"
+        process = args
+        if process.returncode == 0:
+            return TestResult.PASSING, ""
+        text = b""
+        if process.stderr is not None:
+            text = process.stderr
+        text = text.decode("utf-8", errors="replace")
+        if "UnicodeEncodeError" in text or "UnicodeDecodeError" in text:
+            return TestResult.FAILING, "non-ascii trace could not be written"
+        return TestResult.UNDEFINED, text[:200]
+
+
+class PySnooper1SystemtestGenerator(SystemtestGenerator):
+    @staticmethod
+    def _word(min_len: int = 3, max_len: int = 10) -> str:
+        return "".join(
+            random.choices(
+                string.ascii_letters + string.digits,
+                k=random.randint(min_len, max_len),
+            )
+        )
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return f"{self._word()} {self._word()}", TestResult.PASSING
+
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        chars = list(self._word())
+        for _ in range(random.randint(1, 3)):
+            chars.insert(random.randint(0, len(chars)), random.choice(PS1_NON_ASCII))
+        return "".join(chars), TestResult.FAILING
+
+
+class PySnooper1UnittestGenerator(UnittestGenerator):
+    def __init__(self, failing_probability: float = 0.5):
+        super().__init__(failing_probability=failing_probability)
+
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.Import(names=[ast.alias(name="os")]),
+            ast.Import(names=[ast.alias(name="sys")]),
+            ast.Import(names=[ast.alias(name="subprocess")]),
+            ast.Import(names=[ast.alias(name="tempfile")]),
+        ]
+
+    def get_utils(self) -> List[ast.stmt]:
+        return ast.parse(
+            "def _run_snoop(self, value):\n"
+            "    d = tempfile.mkdtemp()\n"
+            "    value_path = os.path.join(d, 'value.txt')\n"
+            "    with open(value_path, 'w', encoding='utf-8') as fp:\n"
+            "        fp.write(value)\n"
+            "    env = dict(os.environ)\n"
+            "    env['TESTS4PY_PS1_VALUE'] = value_path\n"
+            "    env['LC_ALL'] = 'C'\n"
+            "    env['LANG'] = 'C'\n"
+            "    env['LC_CTYPE'] = 'C'\n"
+            "    env['PYTHONCOERCECLOCALE'] = '0'\n"
+            "    env['PYTHONUTF8'] = '0'\n"
+            "    env.pop('PYTHONIOENCODING', None)\n"
+            "    code = " + repr(PS1_SNOOP_CODE) + "\n"
+            "    return subprocess.run([sys.executable, '-c', code], "
+            "stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env).returncode\n"
+        ).body
+
+    def _make_test(self, value: str) -> ast.FunctionDef:
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"self.assertEqual(0, self._run_snoop({value!r}))"
+        ).body
+        return test
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        value = f"{PySnooper1SystemtestGenerator._word()} plain"
+        return self._make_test(value), TestResult.PASSING
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        na = "".join(random.sample(PS1_NON_ASCII, k=random.randint(1, 3)))
+        value = f"{PySnooper1SystemtestGenerator._word()}{na}"
+        return self._make_test(value), TestResult.FAILING
+
+
+grammar_1: Grammar = {
+    "<start>": ["<chars>"],
+    "<chars>": ["", "<char><chars>"],
+    "<char>": srange(string.ascii_letters + string.digits + " _") + PS1_NON_ASCII,
+}
+
+assert is_valid_grammar(grammar_1)
 
 
 grammar: Grammar = clean_up(
