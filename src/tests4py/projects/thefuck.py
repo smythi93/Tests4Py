@@ -1228,8 +1228,6 @@ class TheFuckAPI22(API):
         expected = process.args[2]
         result = process.stdout.decode("utf8")
         result = result.strip()
-        expected = expected[1:]
-        expected = expected[:-1]
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -1266,8 +1264,6 @@ class TheFuckAPI24(API):
         expected = process.args[2]
         result = process.stdout.decode("utf8")
         result = result.strip()
-        expected = expected[1:]
-        expected = expected[:-1]
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -1358,14 +1354,9 @@ class TheFuckAPI29(API):
         if args is None:
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
-        expected = " ".join(process.args[2:])
+        expected = process.args[2]
         result = process.stdout.decode("utf8")
         result = result.strip()
-        expected = expected.replace("{", "")
-        expected = expected.replace("}", "")
-        if ":" in expected:
-            split1, split2 = expected.split(":")
-            expected = str({split1: split2})
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -5047,64 +5038,31 @@ class TheFuckUnittestGenerator22(
             ),
         ]
 
-    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        _, fail_ = self._generate_one()
-        (
-            expected,
-            script1,
-            side_effect1,
-            priority1,
-            script2,
-            side_effect2,
-            priority2,
-            script3,
-            side_effect3,
-            priority3,
-        ) = fail_
-        test = self.get_empty_test()
-        test.body = self._get_assert(
-            expected,
-            script1,
-            side_effect1,
-            priority1,
-            script2,
-            side_effect2,
-            priority2,
-            script3,
-            side_effect3,
-            priority3,
-            {"key": "val"},
+    @staticmethod
+    def _body(mode, script):
+        if mode == "empty":
+            gen = "iter([])"
+        else:
+            gen = f"iter([CorrectedCommand({script!r}, '', 1)])"
+        code = (
+            "try:\n"
+            f"    SortedCorrectedCommandsSequence({gen}, "
+            f"Settings({{{script!r}: 'v'}}))._realise()\n"
+            "    _out = 'OK'\n"
+            "except Exception:\n"
+            "    _out = 'RAISED'\n"
+            "self.assertEqual('OK', _out)"
         )
+        return ast.parse(code).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("empty", self.generate_random_string())
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass_, _ = self._generate_one()
-        (
-            expected,
-            script1,
-            side_effect1,
-            priority1,
-            script2,
-            side_effect2,
-            priority2,
-            script3,
-            side_effect3,
-            priority3,
-        ) = pass_
         test = self.get_empty_test()
-        test.body = self._get_assert(
-            expected,
-            script1,
-            side_effect1,
-            priority1,
-            script2,
-            side_effect2,
-            priority2,
-            script3,
-            side_effect3,
-            priority3,
-            {"key": "val"},
-        )
+        test.body = self._body("full", self.generate_random_string())
         return test, TestResult.PASSING
 
 
@@ -5239,28 +5197,32 @@ class TheFuckUnittestGenerator24(
         return [
             ast.ImportFrom(
                 module="thefuck.types",
-                names=[ast.alias(name="RulesNamesList")],
-                level=0,
-            ),
-            ast.ImportFrom(
-                module="thefuck.types",
-                names=[ast.alias(name="Rule")],
+                names=[ast.alias(name="CorrectedCommand")],
                 level=0,
             ),
         ]
 
+    @staticmethod
+    def _body(script, side_effect, p1, p2):
+        code = (
+            f"self.assertEqual(True, "
+            f"CorrectedCommand({script!r}, {side_effect!r}, {p1}) == "
+            f"CorrectedCommand({script!r}, {side_effect!r}, {p2}))"
+        )
+        return ast.parse(code).body
+
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        _, fail_ = self._generate_one()
-        rule, rules = fail_
+        s = self.generate_random_string()
+        se = self.generate_random_string()
         test = self.get_empty_test()
-        test.body = self._get_assert(rule, "", "", "", "", "", "", rules)
+        test.body = self._body(s, se, 1, 2)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass_, _ = self._generate_one()
-        rule, rules = pass_
+        s = self.generate_random_string()
+        se = self.generate_random_string()
         test = self.get_empty_test()
-        test.body = self._get_assert(rule, "", "", "", "", "", "", rules)
+        test.body = self._body(s, se, 5, 5)
         return test, TestResult.PASSING
 
 
@@ -5679,16 +5641,27 @@ class TheFuckUnittestGenerator29(
             ),
         ]
 
+    @staticmethod
+    def _body(old, key, new):
+        code = (
+            f"self.assertEqual({old!r}, "
+            f"Settings({{{key!r}: {old!r}}}).update(**{{{key!r}: {new!r}}})[{key!r}])"
+        )
+        return ast.parse(code).body
+
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        _, fail_ = self._generate_one()
+        key = self.generate_random_string().lower()
+        old = self.generate_random_string().lower()
+        new = self.generate_random_string().lower() + "x"
         test = self.get_empty_test()
-        test.body = self._get_assert(fail_, fail_)
+        test.body = self._body(old, key, new)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass_, _ = self._generate_one()
+        key = self.generate_random_string().lower()
+        old = self.generate_random_string().lower()
         test = self.get_empty_test()
-        test.body = self._get_assert(pass_, pass_)
+        test.body = self._body(old, key, old)
         return test, TestResult.PASSING
 
 
@@ -5938,13 +5911,16 @@ class TheFuckSystemtestGenerator1(SystemtestGenerator, TheFuckTestGenerator):
 
 
 class TheFuckSystemtestGenerator2(SystemtestGenerator, TheFuckTestGenerator):
+    # The harness expects "<name> <mode>": in "semi" mode PATH uses ';' so the
+    # buggy ':'-split finds nothing (fails), the fixed os.pathsep-split finds the
+    # executable (passes); in "plain" mode both behave the same.
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        _, fail_ = self.generate_values(self.thefuck2_generate_)
-        return f"{fail_}", TestResult.FAILING
+        real_exe, _ = self.generate_values(self.thefuck2_generate_)
+        return f"{real_exe} semi", TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        pass_, _ = self.generate_values(self.thefuck2_generate_)
-        return f"{pass_}", TestResult.PASSING
+        real_exe, _ = self.generate_values(self.thefuck2_generate_)
+        return f"{real_exe} plain", TestResult.PASSING
 
 
 class TheFuckSystemtestGenerator3(SystemtestGenerator, TheFuckTestGenerator):
@@ -6271,13 +6247,16 @@ class TheFuckSystemtestGenerator21(SystemtestGenerator, TheFuckTestGenerator):
 
 
 class TheFuckSystemtestGenerator22(SystemtestGenerator, TheFuckTestGenerator):
+    # Format: 'OK' 'mode' 'script' 'priority'. "empty" mode realises an empty
+    # SortedCorrectedCommandsSequence (buggy IndexError, fixed guarded); "full"
+    # mode realises a single-command sequence (OK on both builds).
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        _, fail_ = self.generate_values(self.thefuck22_generate_)
-        return f"{fail_}", TestResult.FAILING
+        s = self.generate_random_string()
+        return f"'OK' 'empty' '{s}' '1'", TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        pass_, _ = self.generate_values(self.thefuck22_generate_)
-        return f"{pass_}", TestResult.PASSING
+        s = self.generate_random_string()
+        return f"'OK' 'full' '{s}' '1'", TestResult.PASSING
 
 
 class TheFuckSystemtestGenerator23(SystemtestGenerator, TheFuckTestGenerator):
@@ -6291,13 +6270,18 @@ class TheFuckSystemtestGenerator23(SystemtestGenerator, TheFuckTestGenerator):
 
 
 class TheFuckSystemtestGenerator24(SystemtestGenerator, TheFuckTestGenerator):
+    # Format: 'expected' 'script' 'side_effect' 'p1' 'p2'. The harness compares
+    # CorrectedCommand(script, se, p1) == CorrectedCommand(script, se, p2): buggy
+    # (namedtuple) is False when p1 != p2, fixed ignores priority so it is True.
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        _, fail_ = self.generate_values(self.thefuck24_generate_)
-        return f"{fail_}", TestResult.FAILING
+        s = self.generate_random_string()
+        se = self.generate_random_string()
+        return f"'True' '{s}' '{se}' '1' '2'", TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        pass_, _ = self.generate_values(self.thefuck24_generate_)
-        return f"{pass_}", TestResult.PASSING
+        s = self.generate_random_string()
+        se = self.generate_random_string()
+        return f"'True' '{s}' '{se}' '5' '5'", TestResult.PASSING
 
 
 class TheFuckSystemtestGenerator25(SystemtestGenerator, TheFuckTestGenerator):
@@ -6341,24 +6325,34 @@ class TheFuckSystemtestGenerator28(SystemtestGenerator, TheFuckTestGenerator):
 
 
 class TheFuckSystemtestGenerator29(SystemtestGenerator, TheFuckTestGenerator):
+    # System test format: 'expected' 'key' 'oldval' 'newval'. The harness builds
+    # Settings({key: oldval}) and calls update(key=newval): buggy -> newval,
+    # fixed -> oldval. Failing tests use oldval != newval, passing use equal.
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        _, fail_ = self.generate_values(self.thefuck29_generate_)
-        return f"{fail_}", TestResult.FAILING
+        key = self.generate_random_string().lower()
+        old = self.generate_random_string().lower()
+        new = self.generate_random_string().lower() + "x"
+        return f"'{old}' '{key}' '{old}' '{new}'", TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        pass_, _ = self.generate_values(self.thefuck29_generate_)
-        return f"{pass_}", TestResult.PASSING
+        key = self.generate_random_string().lower()
+        old = self.generate_random_string().lower()
+        return f"'{old}' '{key}' '{old}' '{old}'", TestResult.PASSING
 
 
 class TheFuckSystemtestGenerator30(SystemtestGenerator, TheFuckTestGenerator):
+    # The harness sets EDITOR and calls fix_file.match: the buggy match reports a
+    # fixable file whenever the stderr matches a pattern, the fixed match also
+    # requires the file to exist. Failing inputs reference a non-existent file
+    # (buggy prints a fix, fixed prints False); passing inputs match no pattern.
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        fail_script, fail_error, _ = self.generate_values(self.thefuck30_generate_)
-        fail_ = fail_script, fail_error, True
+        error = f"{self.generate_random_string()}zz.py:3:"
+        fail_ = ("fix", error, "False")
         return f"{fail_}", TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        pass_script, pass_error, _ = self.generate_values(self.thefuck30_generate_)
-        pass_ = pass_script, pass_error, False
+        error = f"just some text {self.generate_random_string()} with no file pattern"
+        pass_ = ("fix", error, "False")
         return f"{pass_}", TestResult.PASSING
 
 

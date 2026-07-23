@@ -1,112 +1,72 @@
 import unittest
+from thefuck.rules.fix_file import match
 from thefuck.types import Command
 from thefuck.types import Settings
-from thefuck.rules.fix_file import match
+import os
+os.environ['EDITOR'] = 'vim'
 
 
 class TestsFailing(unittest.TestCase):
 
     def test_diversity_1(self):
-        self.assertEqual(True, match(Command('fyfSndHQmE a.rb', '',
-                                             "\n             can't load package:\n             a.go:1:1: expected 'package', found '+'\n             "),
-                                     Settings()))
+        self.assertEqual('False', ('False' if not match(Command('fix', '', 'okkbzcvpzz.py:3:'), Settings()) else 'Result is not correct'))
 
     def test_diversity_2(self):
-        self.assertEqual(True, match(Command('LZOrjBsiof a.c', '',
-                                             "\n             fish: Unknown command 'foo'\n             /tmp/fix-error/a.sh (line 2): foo\n                                           ^\n             "),
-                                     Settings()))
+        self.assertEqual('False', ('False' if not match(Command('fix', '', 'kwdnjzyezz.py:3:'), Settings()) else 'Result is not correct'))
 
     def test_diversity_3(self):
-        self.assertEqual(True, match(Command('ImIGecvveKv a.sh', '',
-                                             "\n             can't load package:\n             a.go:1:1: expected 'package', found '+'\n             "),
-                                     Settings()))
+        self.assertEqual('False', ('False' if not match(Command('fix', '', 'zhdjwtlrzz.py:3:'), Settings()) else 'Result is not correct'))
 
     def test_diversity_4(self):
-        self.assertEqual(True, match(
-            Command('XbESAxScK a.sh', '', "\n             lua: a.lua:2: unexpected symbol near '+'\n             "),
-            Settings()))
+        self.assertEqual('False', ('False' if not match(Command('fix', '', 'klkwtcozzz.py:3:'), Settings()) else 'Result is not correct'))
 
     def test_diversity_5(self):
-        self.assertEqual(True, match(Command('HCXoAYXDCM a.py', '',
-                                             "\n             a.c: In function 'main':\n             a.c:3:1: error: expected expression before '}' token\n              }\n               ^\n             "),
-                                     Settings()))
+        self.assertEqual('False', ('False' if not match(Command('fix', '', 'zivzgxthzz.py:3:'), Settings()) else 'Result is not correct'))
 
     def test_diversity_6(self):
-        self.assertEqual(True, match(Command('./a', '',
-                                             "\n             bidule\n             make: bidule: Command not found\n             Makefile:2: recipe for target 'target' failed\n             make: *** [target] Error 127\n             "),
-                                     Settings()))
+        self.assertEqual('False', ('False' if not match(Command('fix', '', 'rzgwikgwzz.py:3:'), Settings()) else 'Result is not correct'))
 
     def test_diversity_7(self):
-        self.assertEqual(True, match(Command('KtzKZ a.rs', '',
-                                             '\n             fatal: bad config file line 1 in /home/martin/.config/git/config\n             '),
-                                     Settings()))
+        self.assertEqual('False', ('False' if not match(Command('fix', '', 'arqirznjzz.py:3:'), Settings()) else 'Result is not correct'))
 
     def test_diversity_8(self):
-        self.assertEqual(True, match(Command('tlPRZL', '',
-                                             "\n             a.c: In function 'main':\n             a.c:3:1: error: expected expression before '}' token\n              }\n               ^\n             "),
-                                     Settings()))
+        self.assertEqual('False', ('False' if not match(Command('fix', '', 'vkyvzggazz.py:3:'), Settings()) else 'Result is not correct'))
 
     def test_diversity_9(self):
-        self.assertEqual(True, match(Command('aNxUXTsq fuck.js asdf qwer', '',
-                                             '\n             a.sh: line 2: foo: command not found\n             '),
-                                     Settings()))
+        self.assertEqual('False', ('False' if not match(Command('fix', '', 'pyyomxguzz.py:3:'), Settings()) else 'Result is not correct'))
 
     def test_diversity_10(self):
-        self.assertEqual(True, match(Command('./a', '',
-                                             "\n             a.c: In function 'main':\n             a.c:3:1: error: expected expression before '}' token\n              }\n               ^\n             "),
-                                     Settings()))
+        self.assertEqual('False', ('False' if not match(Command('fix', '', 'rqhixjukzz.py:3:'), Settings()) else 'Result is not correct'))
 
 
 class TestsPassing(unittest.TestCase):
 
     def test_diversity_1(self):
-        self.assertEqual(False, match(
-            Command('VBcEWEvMsy', '', '\n             a.sh:2: command not found: foo\n             '), Settings()))
+        self.assertEqual('False', ('False' if not match(Command('fix', '', 'just some text shkrvpi with no file pattern'), Settings()) else 'Result is not correct'))
 
     def test_diversity_2(self):
-        self.assertEqual(False, match(
-            Command('bUcmHiOxZjij a.sh', '',
-                    '\n             llc: a.ll:1:1: error: expected top-level entity\n             +\n             ^\n             '),
-            Settings()))
+        self.assertEqual('False', ('False' if not match(Command('fix', '', 'just some text nhewkwwt with no file pattern'), Settings()) else 'Result is not correct'))
 
     def test_diversity_3(self):
-        self.assertEqual(False, match(Command('QKkovPpvyib st', '',
-                                              '\n             llc: a.ll:1:1: error: expected top-level entity\n             +\n             ^\n             '),
-                                      Settings()))
+        self.assertEqual('False', ('False' if not match(Command('fix', '', 'just some text hylqj with no file pattern'), Settings()) else 'Result is not correct'))
 
     def test_diversity_4(self):
-        self.assertEqual(False, match(Command('wyueZbPsyPYCjbd a.c', '',
-                                              '\n             llc: a.ll:1:1: error: expected top-level entity\n             +\n             ^\n             '),
-                                      Settings()))
+        self.assertEqual('False', ('False' if not match(Command('fix', '', 'just some text vewcq with no file pattern'), Settings()) else 'Result is not correct'))
 
     def test_diversity_5(self):
-        self.assertEqual(False, match(Command('qRGIbHKKw a.pl', '',
-                                              '\n             fatal: bad config file line 1 in /home/martin/.config/git/config\n             '),
-                                      Settings()))
+        self.assertEqual('False', ('False' if not match(Command('fix', '', 'just some text yexqwymq with no file pattern'), Settings()) else 'Result is not correct'))
 
     def test_diversity_6(self):
-        self.assertEqual(False, match(Command('kdChaPmsq a.c', '',
-                                              '\n             awk: ./a:2: BEGIN { print "Hello, world!" + }\n             awk: ./a:2:                                 ^ syntax error\n             '),
-                                      Settings()))
+        self.assertEqual('False', ('False' if not match(Command('fix', '', 'just some text zmgjfah with no file pattern'), Settings()) else 'Result is not correct'))
 
     def test_diversity_7(self):
-        self.assertEqual(False, match(
-            Command('hxIkaFfWx a.sh', '',
-                    "\n             fish: Unknown command 'foo'\n             /tmp/fix-error/a.sh (line 2): foo\n                                           ^\n             "),
-            Settings()))
+        self.assertEqual('False', ('False' if not match(Command('fix', '', 'just some text doiqzlfast with no file pattern'), Settings()) else 'Result is not correct'))
 
     def test_diversity_8(self):
-        self.assertEqual(False, match(
-            Command('kdChaPmsq a.c', '',
-                    '\n             awk: ./a:2: BEGIN { print "Hello, world!" + }\n             awk: ./a:2:                                 ^ syntax error\n             '),
-            Settings()))
+        self.assertEqual('False', ('False' if not match(Command('fix', '', 'just some text hjgzjchxxv with no file pattern'), Settings()) else 'Result is not correct'))
 
     def test_diversity_9(self):
-        self.assertEqual(False, match(
-            Command('qVrkvYSBFYlK a.py', '', '\n             a.sh: line 2: foo: command not found\n             '),
-            Settings()))
+        self.assertEqual('False', ('False' if not match(Command('fix', '', 'just some text guwwagss with no file pattern'), Settings()) else 'Result is not correct'))
 
     def test_diversity_10(self):
-        self.assertEqual(False, match(
-            Command('fUJbAAYY a.ll', '', '\n             a.rb:3: syntax error, unexpected keyword_end\n             '),
-            Settings()))
+        self.assertEqual('False', ('False' if not match(Command('fix', '', 'just some text vcogxkbiu with no file pattern'), Settings()) else 'Result is not correct'))

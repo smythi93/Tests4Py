@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return "(True, 'ls -lah /QXrjcUnoOmPPuqv')"
+        return "('False', 'als ubogcrkgs')"
 
     def test_diversity_2(self):
-        return "(True, 'ls -lah /aTdseJywIMA')"
+        return "('False', 'mls dnjzyez')"
 
     def test_diversity_3(self):
-        return "(True, 'ls -lah /cCcmovRv')"
+        return "('False', 'pls ujzzyzu')"
 
     def test_diversity_4(self):
-        return "(True, 'pacman -s JbumHVHV')"
+        return "('False', 'bls lkwtcozzi')"
 
     def test_diversity_5(self):
-        return "(True, 'ls -lah /roNgdpljCe')"
+        return "('False', 'xls zgxthrzgwi')"
 
     def test_diversity_6(self):
-        return "(True, 'pacman -s NMrAUHXvtFGs')"
+        return "('False', 'pls hmbxmqhj')"
 
     def test_diversity_7(self):
-        return "(True, 'pacman -s mbzkyCaT')"
+        return "('False', 'zls gihzekpvb')"
 
     def test_diversity_8(self):
-        return "(True, 'pacman -s IrGevJw')"
+        return "('False', 'xls dmohflhdh')"
 
     def test_diversity_9(self):
-        return "(True, 'ls -lah /cqQBEEPEdxUAsWU')"
+        return "('False', 'kls hixjuk')"
 
     def test_diversity_10(self):
-        return "(True, 'ls -lah /zQDRkHBzdAUth')"
+        return "('False', 'zls yyyes')"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return "(True, 'ls JikWszBqxy.py')"
+        return "('True', 'ls wymqjmv')"
 
     def test_diversity_2(self):
-        return "(True, 'ls oXavAoCqAnGEkx.py')"
+        return "('True', 'ls jfahvdoiq')"
 
     def test_diversity_3(self):
-        return "(True, 'ls CeAaVC.py')"
+        return "('True', 'ls iheiuhjg')"
 
     def test_diversity_4(self):
-        return "(True, 'ls eXzljjjbcGOMWc.py')"
+        return "('True', 'ls jchxxvmt')"
 
     def test_diversity_5(self):
-        return "(True, 'ls UFiYpHkpzpzc.py')"
+        return "('True', 'ls agsspmwbtp')"
 
     def test_diversity_6(self):
-        return "(True, 'ls MnXLNZokOinW.py')"
+        return "('True', 'ls biuowvw')"
 
     def test_diversity_7(self):
-        return "(True, 'ls /RiuqqOLsKXEkw')"
+        return "('True', 'ls etubqcsexf')"
 
     def test_diversity_8(self):
-        return "(True, 'ls /hTjYWURVxABhu')"
+        return "('True', 'ls zynnitmggx')"
 
     def test_diversity_9(self):
-        return "(True, 'ls /FIFCLVmHnDPbzD')"
+        return "('True', 'ls xeptudhdh')"
 
     def test_diversity_10(self):
-        return "(True, 'ls /brREiSsNu')"
+        return "('True', 'ls yftbvuydd')"

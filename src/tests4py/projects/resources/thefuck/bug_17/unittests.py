@@ -5,84 +5,64 @@ from thefuck.shells.bash import Bash
 class TestsFailing(unittest.TestCase):
 
     def test_diversity_1(self):
-        bash = Bash()
-        self.assertIn('theXPUCZodRGDXvpok', bash.app_alias('XPUCZodRGDXvpok'))
+        self.assertEqual('TF_SHELL_ALIASES=$(alias) thefuck', ('TF_SHELL_ALIASES=$(alias) thefuck' if 'TF_SHELL_ALIASES=$(alias) thefuck' in Bash().app_alias('fuck') else 'MISS'))
 
     def test_diversity_2(self):
-        bash = Bash()
-        self.assertIn('theRLUbxcRVNF', bash.app_alias('RLUbxcRVNF'))
+        self.assertEqual('$(TF_SHELL_ALIASES=$(alias) thefuck', ('$(TF_SHELL_ALIASES=$(alias) thefuck' if '$(TF_SHELL_ALIASES=$(alias) thefuck' in Bash().app_alias('fuck') else 'MISS'))
 
     def test_diversity_3(self):
-        bash = Bash()
-        self.assertIn('theWJdwKLvDu', bash.app_alias('WJdwKLvDu'))
+        self.assertEqual('TF_CMD=$(TF_SHELL_ALIASES=', ('TF_CMD=$(TF_SHELL_ALIASES=' if 'TF_CMD=$(TF_SHELL_ALIASES=' in Bash().app_alias('fuck') else 'MISS'))
 
     def test_diversity_4(self):
-        bash = Bash()
-        self.assertIn('theqOeOMBOfEkpFyRc', bash.app_alias('qOeOMBOfEkpFyRc'))
+        self.assertEqual('=$(TF_SHELL_ALIASES=$(alias) thefuck $', ('=$(TF_SHELL_ALIASES=$(alias) thefuck $' if '=$(TF_SHELL_ALIASES=$(alias) thefuck $' in Bash().app_alias('fuck') else 'MISS'))
 
     def test_diversity_5(self):
-        bash = Bash()
-        self.assertIn('thetUubxfyg', bash.app_alias('tUubxfyg'))
+        self.assertEqual('TF_SHELL_ALIASES=$(alias) thefuck $(', ('TF_SHELL_ALIASES=$(alias) thefuck $(' if 'TF_SHELL_ALIASES=$(alias) thefuck $(' in Bash().app_alias('fuck') else 'MISS'))
 
     def test_diversity_6(self):
-        bash = Bash()
-        self.assertIn('themCtYmqSiIpwMiHK', bash.app_alias('mCtYmqSiIpwMiHK'))
+        self.assertEqual('$(TF_SHELL_ALIASES=$(alias) thefuck $(fc', ('$(TF_SHELL_ALIASES=$(alias) thefuck $(fc' if '$(TF_SHELL_ALIASES=$(alias) thefuck $(fc' in Bash().app_alias('fuck') else 'MISS'))
 
     def test_diversity_7(self):
-        bash = Bash()
-        self.assertIn('theHEcGxWaJ', bash.app_alias('HEcGxWaJ'))
+        self.assertEqual('TF_CMD=$(TF_SHELL_ALIASES=$(alias)', ('TF_CMD=$(TF_SHELL_ALIASES=$(alias)' if 'TF_CMD=$(TF_SHELL_ALIASES=$(alias)' in Bash().app_alias('fuck') else 'MISS'))
 
     def test_diversity_8(self):
-        bash = Bash()
-        self.assertIn('theiOKbl', bash.app_alias('iOKbl'))
+        self.assertEqual('TF_SHELL_ALIASES=$(alias) thefuck $(fc -ln', ('TF_SHELL_ALIASES=$(alias) thefuck $(fc -ln' if 'TF_SHELL_ALIASES=$(alias) thefuck $(fc -ln' in Bash().app_alias('fuck') else 'MISS'))
 
     def test_diversity_9(self):
-        bash = Bash()
-        self.assertIn('theSrWXsEHmXMpYblG', bash.app_alias('SrWXsEHmXMpYblG'))
+        self.assertEqual('$(alias) thefuck $(fc -ln -1))', ('$(alias) thefuck $(fc -ln -1))' if '$(alias) thefuck $(fc -ln -1))' in Bash().app_alias('fuck') else 'MISS'))
 
     def test_diversity_10(self):
-        bash = Bash()
-        self.assertIn('theWFaaEAkoadnJamb', bash.app_alias('WFaaEAkoadnJamb'))
+        self.assertEqual('TF_SHELL_ALIASES=$(alias) thefuck $(fc -ln -1', ('TF_SHELL_ALIASES=$(alias) thefuck $(fc -ln -1' if 'TF_SHELL_ALIASES=$(alias) thefuck $(fc -ln -1' in Bash().app_alias('fuck') else 'MISS'))
 
 
 class TestsPassing(unittest.TestCase):
 
     def test_diversity_1(self):
-        bash = Bash()
-        self.assertIn('TF_ALIAS=kFyrnj', bash.app_alias('kFyrnj'))
+        self.assertEqual('PYTHONIOENCODING=utf-8', ('PYTHONIOENCODING=utf-8' if 'PYTHONIOENCODING=utf-8' in Bash().app_alias('fuck') else 'MISS'))
 
     def test_diversity_2(self):
-        bash = Bash()
-        self.assertIn('alias qdaDDugWGi', bash.app_alias('qdaDDugWGi'))
+        self.assertEqual('eval $TF_CMD', ('eval $TF_CMD' if 'eval $TF_CMD' in Bash().app_alias('fuck') else 'MISS'))
 
     def test_diversity_3(self):
-        bash = Bash()
-        self.assertIn('alias uthODVr', bash.app_alias('uthODVr'))
+        self.assertEqual('TF_ALIAS=fuck', ('TF_ALIAS=fuck' if 'TF_ALIAS=fuck' in Bash().app_alias('fuck') else 'MISS'))
 
     def test_diversity_4(self):
-        bash = Bash()
-        self.assertIn('TF_ALIAS=DAnFXKkf', bash.app_alias('DAnFXKkf'))
+        self.assertEqual('$(fc -ln -1)', ('$(fc -ln -1)' if '$(fc -ln -1)' in Bash().app_alias('fuck') else 'MISS'))
 
     def test_diversity_5(self):
-        bash = Bash()
-        self.assertIn('TF_ALIAS=bnzsIqaJK', bash.app_alias('bnzsIqaJK'))
+        self.assertEqual('history -s $TF_CMD', ('history -s $TF_CMD' if 'history -s $TF_CMD' in Bash().app_alias('fuck') else 'MISS'))
 
     def test_diversity_6(self):
-        bash = Bash()
-        self.assertIn('TF_ALIAS=YBeptA', bash.app_alias('YBeptA'))
+        self.assertEqual('alias fuck=', ('alias fuck=' if 'alias fuck=' in Bash().app_alias('fuck') else 'MISS'))
 
     def test_diversity_7(self):
-        bash = Bash()
-        self.assertIn('alias ZWXZoAJbbGKI', bash.app_alias('ZWXZoAJbbGKI'))
+        self.assertEqual('TF_CMD=$(', ('TF_CMD=$(' if 'TF_CMD=$(' in Bash().app_alias('fuck') else 'MISS'))
 
     def test_diversity_8(self):
-        bash = Bash()
-        self.assertIn('alias ZBnWysrr', bash.app_alias('ZBnWysrr'))
+        self.assertEqual('thefuck $(fc -ln -1)', ('thefuck $(fc -ln -1)' if 'thefuck $(fc -ln -1)' in Bash().app_alias('fuck') else 'MISS'))
 
     def test_diversity_9(self):
-        bash = Bash()
-        self.assertIn('TF_ALIAS=CGLuHxJlUF', bash.app_alias('CGLuHxJlUF'))
+        self.assertEqual('&& history -s $TF_CMD', ('&& history -s $TF_CMD' if '&& history -s $TF_CMD' in Bash().app_alias('fuck') else 'MISS'))
 
     def test_diversity_10(self):
-        bash = Bash()
-        self.assertIn('TF_ALIAS=emhliynnTpGlDXU', bash.app_alias('emhliynnTpGlDXU'))
+        self.assertEqual('=utf-8 TF_CMD=', ('=utf-8 TF_CMD=' if '=utf-8 TF_CMD=' in Bash().app_alias('fuck') else 'MISS'))

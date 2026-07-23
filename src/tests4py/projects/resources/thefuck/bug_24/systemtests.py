@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return "('DORmvI', ['uOPYN', 'bRuAIT'])"
+        return "'True' 'ubogcrkgs' 'dnjzyez' '1' '2'"
 
     def test_diversity_2(self):
-        return "('ixHvJIlu', ['laAnencR', 'ARQkIs'])"
+        return "'True' 'ujzzyzu' 'lkwtcozzi' '1' '2'"
 
     def test_diversity_3(self):
-        return "('eFARD', ['uMFFnrE', 'KwJpmGQ'])"
+        return "'True' 'zgxthrzgwi' 'hmbxmqhj' '1' '2'"
 
     def test_diversity_4(self):
-        return "('qHQrNruS', ['xyrlHPy', 'KFOOaZT'])"
+        return "'True' 'gihzekpvb' 'dmohflhdh' '1' '2'"
 
     def test_diversity_5(self):
-        return "('fcbMLHtS', ['iwdja', 'qBbZu'])"
+        return "'True' 'hixjuk' 'yyyes' '1' '2'"
 
     def test_diversity_6(self):
-        return "('MqmpAEF', ['zeETBjpk', 'aGMdNR'])"
+        return "'True' 'uibcunrh' 'ptetlrrkss' '1' '2'"
 
     def test_diversity_7(self):
-        return "('AqrcT', ['psNRf', 'oFLdUp'])"
+        return "'True' 'qdezhtmb' 'emypbpqo' '1' '2'"
 
     def test_diversity_8(self):
-        return "('sqSkDsp', ['tVfzvKV', 'zAzO'])"
+        return "'True' 'ezndfzdyjz' 'areoybqhg' '1' '2'"
 
     def test_diversity_9(self):
-        return "('aUSF', ['bdZTA', 'LYxSo'])"
+        return "'True' 'phvkdihx' 'lqggv' '1' '2'"
 
     def test_diversity_10(self):
-        return "('GSEX', ['GtgtZXT', 'ttUdgyws'])"
+        return "'True' 'alwrajnnhe' 'kwwtclb' '1' '2'"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return "('mINPcO', ['mINPcO', 'myQEYrS'])"
+        return "'True' 'slmajhtw' 'dlrncxm' '5' '5'"
 
     def test_diversity_2(self):
-        return "('VvUoHVIS', ['VvUoHVIS', 'QNjmcjRs'])"
+        return "'True' 'xfhhoiey' 'jivuswn' '5' '5'"
 
     def test_diversity_3(self):
-        return "('YAekbbLb', ['YAekbbLb', 'EXKP'])"
+        return "'True' 'zsojvtihha' 'ezxreimio' '5' '5'"
 
     def test_diversity_4(self):
-        return "('Mlfo', ['Mlfo', 'KEZty'])"
+        return "'True' 'yqtyk' 'dvpypqjym' '5' '5'"
 
     def test_diversity_5(self):
-        return "('AwKhdA', ['AwKhdA', 'DaSzZDQF'])"
+        return "'True' 'mijnzmpx' 'xrlwtd' '5' '5'"
 
     def test_diversity_6(self):
-        return "('CabF', ['CabF', 'ehASt'])"
+        return "'True' 'sldnoocajm' 'mgwcmckrf' '5' '5'"
 
     def test_diversity_7(self):
-        return "('BNNL', ['BNNL', 'EbfaXpKT'])"
+        return "'True' 'rclybuqcnn' 'pjvwflu' '5' '5'"
 
     def test_diversity_8(self):
-        return "('QgQL', ['QgQL', 'oMNgNuzK'])"
+        return "'True' 'cjmjaviat' 'dcshskfhn' '5' '5'"
 
     def test_diversity_9(self):
-        return "('dOtv', ['dOtv', 'XPgWLhOS'])"
+        return "'True' 'bmbgl' 'xjbfx' '5' '5'"
 
     def test_diversity_10(self):
-        return "('yWCkse', ['yWCkse', 'pRZJQY'])"
+        return "'True' 'nxfpgz' 'ulmegcw' '5' '5'"

@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return '(\'git add -- HSMKaZwkGYDNPn && git submodule update HSMKaZwkGYDNPn\', \'GIT SUBMODULE UPDATE HSMKaZwkGYDNPn\', "error: pathspec \'HSMKaZwkGYDNPn\' did not match any file(s) known to git. Did you forget to \'git add\'?")'
+        return "('True', 'git commit ubogcrkgs', 'error: pathspec ubogcrkgs did not match any file(s) known to git.')"
 
     def test_diversity_2(self):
-        return '(\'git add -- WoMbLBIOg && git submodule update WoMbLBIOg\', \'GIT SUBMODULE UPDATE WoMbLBIOg\', "error: pathspec \'WoMbLBIOg\' did not match any file(s) known to git. Did you forget to \'git add\'?")'
+        return "('True', 'git commit dnjzyez', 'error: pathspec dnjzyez did not match any file(s) known to git.')"
 
     def test_diversity_3(self):
-        return "(True, 'git submodule update ofVFcPiD', '')"
+        return "('True', 'git commit ujzzyzu', 'error: pathspec ujzzyzu did not match any file(s) known to git.')"
 
     def test_diversity_4(self):
-        return "(True, 'git submodule update diUqwTMMVu', '')"
+        return "('True', 'git commit lkwtcozzi', 'error: pathspec lkwtcozzi did not match any file(s) known to git.')"
 
     def test_diversity_5(self):
-        return '(\'git add -- vBdmWfIUMoVsjl && git submodule update vBdmWfIUMoVsjl\', \'GIT SUBMODULE UPDATE vBdmWfIUMoVsjl\', "error: pathspec \'vBdmWfIUMoVsjl\' did not match any file(s) known to git. Did you forget to \'git add\'?")'
+        return "('True', 'git commit zgxthrzgwi', 'error: pathspec zgxthrzgwi did not match any file(s) known to git.')"
 
     def test_diversity_6(self):
-        return '(\'git add -- tzhEdJDAfZGMVYN && git submodule update tzhEdJDAfZGMVYN\', \'GIT SUBMODULE UPDATE tzhEdJDAfZGMVYN\', "error: pathspec \'tzhEdJDAfZGMVYN\' did not match any file(s) known to git. Did you forget to \'git add\'?")'
+        return "('True', 'git commit hmbxmqhj', 'error: pathspec hmbxmqhj did not match any file(s) known to git.')"
 
     def test_diversity_7(self):
-        return "(True, 'git submodule update HEXzcsy', '')"
+        return "('True', 'git commit gihzekpvb', 'error: pathspec gihzekpvb did not match any file(s) known to git.')"
 
     def test_diversity_8(self):
-        return "(True, 'git commit MtaNUFAO', '')"
+        return "('True', 'git commit dmohflhdh', 'error: pathspec dmohflhdh did not match any file(s) known to git.')"
 
     def test_diversity_9(self):
-        return '(\'git add -- XSjuaABxhq && git submodule update XSjuaABxhq\', \'GIT SUBMODULE UPDATE XSjuaABxhq\', "error: pathspec \'XSjuaABxhq\' did not match any file(s) known to git. Did you forget to \'git add\'?")'
+        return "('True', 'git commit hixjuk', 'error: pathspec hixjuk did not match any file(s) known to git.')"
 
     def test_diversity_10(self):
-        return "(True, 'git commit jPlZIm', '')"
+        return "('True', 'git commit yyyes', 'error: pathspec yyyes did not match any file(s) known to git.')"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return '(\'git add -- AbTNMRpePlsP && git submodule update AbTNMRpePlsP\', \'git submodule update AbTNMRpePlsP\', "error: pathspec \'AbTNMRpePlsP\' did not match any file(s) known to git. Did you forget to \'git add\'?")'
+        return '(\'True\', \'git commit qjbzpwr\', "error: pathspec qjbzpwr did not match any file(s) known to git. Did you forget to \'git add\'?")'
 
     def test_diversity_2(self):
-        return '(True, \'git submodule update ySdTulFQbr\', "error: pathspec \'ySdTulFQbr\' did not match any file(s) known to git. Did you forget to \'git add\'?")'
+        return '(\'True\', \'git commit mbddhpzysz\', "error: pathspec mbddhpzysz did not match any file(s) known to git. Did you forget to \'git add\'?")'
 
     def test_diversity_3(self):
-        return '(True, \'git submodule update wUdpuXbqyOT\', "error: pathspec \'wUdpuXbqyOT\' did not match any file(s) known to git. Did you forget to \'git add\'?")'
+        return '(\'True\', \'git commit vpxgdrqm\', "error: pathspec vpxgdrqm did not match any file(s) known to git. Did you forget to \'git add\'?")'
 
     def test_diversity_4(self):
-        return '(\'git add -- CerUwJlZQXZ && git commit CerUwJlZQXZ\', \'git commit CerUwJlZQXZ\', "error: pathspec \'CerUwJlZQXZ\' did not match any file(s) known to git. Did you forget to \'git add\'?")'
+        return '(\'True\', \'git commit iqzlfast\', "error: pathspec iqzlfast did not match any file(s) known to git. Did you forget to \'git add\'?")'
 
     def test_diversity_5(self):
-        return '(True, \'git commit QjkbwHNSoXIzkC\', "error: pathspec \'QjkbwHNSoXIzkC\' did not match any file(s) known to git. Did you forget to \'git add\'?")'
+        return '(\'True\', \'git commit hjgzjchxxv\', "error: pathspec hjgzjchxxv did not match any file(s) known to git. Did you forget to \'git add\'?")'
 
     def test_diversity_6(self):
-        return '(\'git add -- xdnnLiFQpjmX && git submodule update xdnnLiFQpjmX\', \'git submodule update xdnnLiFQpjmX\', "error: pathspec \'xdnnLiFQpjmX\' did not match any file(s) known to git. Did you forget to \'git add\'?")'
+        return '(\'True\', \'git commit guwwagss\', "error: pathspec guwwagss did not match any file(s) known to git. Did you forget to \'git add\'?")'
 
     def test_diversity_7(self):
-        return '(True, \'git submodule update MztqOvBgwTTWvf\', "error: pathspec \'MztqOvBgwTTWvf\' did not match any file(s) known to git. Did you forget to \'git add\'?")'
+        return '(\'True\', \'git commit vcogxkbiu\', "error: pathspec vcogxkbiu did not match any file(s) known to git. Did you forget to \'git add\'?")'
 
     def test_diversity_8(self):
-        return '(\'git add -- gOGuMWQHxaUbr && git submodule update gOGuMWQHxaUbr\', \'git submodule update gOGuMWQHxaUbr\', "error: pathspec \'gOGuMWQHxaUbr\' did not match any file(s) known to git. Did you forget to \'git add\'?")'
+        return '(\'True\', \'git commit brtbetubq\', "error: pathspec brtbetubq did not match any file(s) known to git. Did you forget to \'git add\'?")'
 
     def test_diversity_9(self):
-        return '(\'git add -- AjkvkSdbAZ && git commit AjkvkSdbAZ\', \'git commit AjkvkSdbAZ\', "error: pathspec \'AjkvkSdbAZ\' did not match any file(s) known to git. Did you forget to \'git add\'?")'
+        return '(\'True\', \'git commit ydxrn\', "error: pathspec ydxrn did not match any file(s) known to git. Did you forget to \'git add\'?")'
 
     def test_diversity_10(self):
-        return '(\'git add -- UkRXVRfFJOdPcl && git commit UkRXVRfFJOdPcl\', \'git commit UkRXVRfFJOdPcl\', "error: pathspec \'UkRXVRfFJOdPcl\' did not match any file(s) known to git. Did you forget to \'git add\'?")'
+        return '(\'True\', \'git commit zynnitmggx\', "error: pathspec zynnitmggx did not match any file(s) known to git. Did you forget to \'git add\'?")'

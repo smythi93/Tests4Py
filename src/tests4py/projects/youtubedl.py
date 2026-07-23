@@ -128,6 +128,10 @@ def register():
                 "test_InfoExtractor.py::TestInfoExtractor",
             )
         ],
+        api=YTDL2API(),
+        unittests=YTDL2UnittestGenerator(),
+        systemtests=YTDL2SystemtestGenerator(),
+        grammar=grammar_base64,
         loc=102715,
     )
     YoutubeDL(
@@ -221,6 +225,10 @@ def register():
         relevant_test_files=[
             os.path.join("test", "test_YoutubeDL.py::TestFormatSelection")
         ],
+        api=YTDL8API(),
+        unittests=YTDL8UnittestGenerator(),
+        systemtests=YTDL8SystemtestGenerator(),
+        grammar=grammar_base64,
         loc=55356,
     )
     YoutubeDL(
@@ -237,6 +245,10 @@ def register():
         relevant_test_files=[
             os.path.join("test", "test_YoutubeDL.py::TestFormatSelection")
         ],
+        api=YTDL9API(),
+        unittests=YTDL9UnittestGenerator(),
+        systemtests=YTDL9SystemtestGenerator(),
+        grammar=grammar_base64,
         loc=55351,
     )
     YoutubeDL(
@@ -281,6 +293,10 @@ def register():
         relevant_test_files=[
             os.path.join("test", "test_YoutubeDL.py::TestFormatSelection")
         ],
+        api=YTDL12API(),
+        unittests=YTDL12UnittestGenerator(),
+        systemtests=YTDL12SystemtestGenerator(),
+        grammar=grammar_base64,
         loc=111758,
     )
     YoutubeDL(
@@ -316,6 +332,10 @@ def register():
             "test_youtube_course",
             "test_youtube_mix",
         ],
+        api=YTDL14API(),
+        unittests=YTDL14UnittestGenerator(),
+        systemtests=YTDL14SystemtestGenerator(),
+        grammar=grammar_base64,
         loc=115095,
     )
     YoutubeDL(
@@ -374,6 +394,10 @@ def register():
             )
         ],
         relevant_test_files=[os.path.join("test", "test_YoutubeDL.py::TestYoutubeDL")],
+        api=YTDL18API(),
+        unittests=YTDL18UnittestGenerator(),
+        systemtests=YTDL18SystemtestGenerator(),
+        grammar=grammar_base64,
         loc=98722,
     )
     YoutubeDL(
@@ -387,6 +411,10 @@ def register():
             )
         ],
         relevant_test_files=[os.path.join("test", "test_YoutubeDL.py::TestYoutubeDL")],
+        api=YTDL19API(),
+        unittests=YTDL19UnittestGenerator(),
+        systemtests=YTDL19SystemtestGenerator(),
+        grammar=grammar_base64,
         loc=98372,
     )
     YoutubeDL(
@@ -552,6 +580,10 @@ def register():
         relevant_test_files=[
             os.path.join("test", "test_YoutubeDL.py::TestFormatSelection")
         ],
+        api=YTDL30API(),
+        unittests=YTDL30UnittestGenerator(),
+        systemtests=YTDL30SystemtestGenerator(),
+        grammar=grammar_base64,
         loc=55355,
     )
     YoutubeDL(
@@ -639,6 +671,10 @@ def register():
         relevant_test_files=[
             os.path.join("test", "test_all_urls.py::TestAllURLsMatching")
         ],
+        api=YTDL36API(),
+        unittests=YTDL36UnittestGenerator(),
+        systemtests=YTDL36SystemtestGenerator(),
+        grammar=grammar_base64,
         loc=29789,
     )
     YoutubeDL(
@@ -4312,4 +4348,1099 @@ class YTDL16UnittestGenerator(
         cues, mode = self.passing_case()
         test = self.get_empty_test()
         test.body = self._body(cues, mode)
+        return test, TestResult.PASSING
+
+
+# ======================================================================
+# bug_36: ``FacebookIE._VALID_URL`` used ``(?:[^#?]*\#!/)?`` for the optional
+# fragment-shebang prefix, so a URL with a ``?query`` segment *before* the
+# ``#!/`` (e.g. ``.../name?fref=ts#!/photo.php?v=123``) did not match and
+# ``FacebookIE.suitable`` returned ``False``.  The fix uses ``(?:[^#]*?\#!/)?``
+# which allows the ``?`` before ``#!/``.
+#
+# System-test format:  a urlsafe-base64 JSON ``{url, expected}``.  A Facebook
+#   URL with a query before ``#!/`` triggers the fault.  The harness prints
+#   ``repr(FacebookIE.suitable(url))``; the oracle (YTDL20API) compares to
+#   ``repr(expected)`` (the fixed result, ``True``).
+# ======================================================================
+
+_FB_PATHS = ["photo.php", "video/video.php", "video/embed"]
+_FB_VPARAMS = ["v", "video_id"]
+
+
+class YTDL36API(YTDL20API):
+    pass
+
+
+class YTDL36TestGenerator:
+    @staticmethod
+    def _word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(4, 9)))
+
+    def failing_case(self) -> Tuple[str, bool]:
+        name = self._word()
+        query = f"{self._word()}={self._word()}"
+        path = random.choice(_FB_PATHS)
+        vp = random.choice(_FB_VPARAMS)
+        vid = random.randint(1, 10 ** 15)
+        url = f"https://www.facebook.com/{name}?{query}#!/{path}?{vp}={vid}"
+        return url, True
+
+    def passing_case(self) -> Tuple[str, bool]:
+        path = random.choice(_FB_PATHS)
+        vp = random.choice(_FB_VPARAMS)
+        vid = random.randint(1, 10 ** 15)
+        if random.random() < 0.5:
+            url = f"https://www.facebook.com/{path}?{vp}={vid}"
+        else:
+            url = f"https://www.facebook.com/{self._word()}#!/{path}?{vp}={vid}"
+        return url, True
+
+
+class YTDL36SystemtestGenerator(SystemtestGenerator, YTDL36TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        url, exp = self.failing_case()
+        return _b64json({"url": url, "expected": exp}), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        url, exp = self.passing_case()
+        return _b64json({"url": url, "expected": exp}), TestResult.PASSING
+
+
+class YTDL36UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, YTDL36TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return []
+
+    @staticmethod
+    def _body(url: str, exp: bool) -> List[ast.stmt]:
+        src = (
+            "from youtube_dl.extractor.facebook import FacebookIE\n"
+            f"self.assertEqual({exp!r}, FacebookIE.suitable({url!r}))\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        url, exp = self.failing_case()
+        test = self.get_empty_test()
+        test.body = self._body(url, exp)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        url, exp = self.passing_case()
+        test = self.get_empty_test()
+        test.body = self._body(url, exp)
+        return test, TestResult.PASSING
+
+
+# ======================================================================
+# bug_12: In ``build_format_selector``, a *negated* string operator built its
+# comparator as ``op = lambda attr, value: not str_op`` (negating the function
+# object, always ``False``) instead of ``not str_op(attr, value)``.  So any
+# negated string filter (``!=``, ``!^=``, ``!$=``, ``!*=``) matched nothing and
+# ``process_ie_result`` raised ``ExtractorError: requested format not available``.
+#
+# System-test format:  a urlsafe-base64 JSON ``{format, formats, expected}``.
+#   A ``[format_id!=<id>]`` filter over two formats triggers the fault (the
+#   buggy build raises).  The harness prints ``repr(<selected format_id>)``;
+#   the oracle (YTDL20API) compares to ``repr(expected)`` (the fixed choice).
+# ======================================================================
+
+_FMT_TEST_URL = "http://localhost/sample.mp4"
+_FMT_EXTS = ["mp4", "webm", "flv"]
+
+
+class YTDL12API(YTDL20API):
+    pass
+
+
+class YTDL12TestGenerator:
+    @staticmethod
+    def _word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(3, 6)))
+
+    def _fid(self) -> str:
+        return f"{self._word()}-{self._word()}"
+
+    def _two(self) -> Tuple[str, str]:
+        a = self._fid()
+        b = self._fid()
+        while b == a:
+            b = self._fid()
+        return a, b
+
+    def _formats(self, a: str, b: str) -> list:
+        return [
+            {"format_id": a, "ext": random.choice(_FMT_EXTS), "url": _FMT_TEST_URL},
+            {"format_id": b, "ext": random.choice(_FMT_EXTS), "url": _FMT_TEST_URL},
+        ]
+
+    def failing_case(self) -> Tuple[str, list, str]:
+        a, b = self._two()
+        formats = self._formats(a, b)
+        if random.random() < 0.5:
+            return f"[format_id!={a}]", formats, b
+        return f"[format_id!={b}]", formats, a
+
+    def passing_case(self) -> Tuple[str, list, str]:
+        a, b = self._two()
+        formats = self._formats(a, b)
+        if random.random() < 0.5:
+            return f"[format_id={a}]", formats, a
+        return f"[format_id={b}]", formats, b
+
+
+class YTDL12SystemtestGenerator(SystemtestGenerator, YTDL12TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        fmt, formats, exp = self.failing_case()
+        return (
+            _b64json({"format": fmt, "formats": formats, "expected": exp}),
+            TestResult.FAILING,
+        )
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        fmt, formats, exp = self.passing_case()
+        return (
+            _b64json({"format": fmt, "formats": formats, "expected": exp}),
+            TestResult.PASSING,
+        )
+
+
+class YTDL12UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, YTDL12TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return []
+
+    @staticmethod
+    def _body(fmt: str, formats: list, exp: str) -> List[ast.stmt]:
+        info = {
+            "formats": formats,
+            "id": "testid",
+            "title": "t",
+            "extractor": "testex",
+            "extractor_key": "TestEx",
+        }
+        src = (
+            "from test.helper import FakeYDL\n"
+            "class _YDL(FakeYDL):\n"
+            "    def __init__(self, *a, **k):\n"
+            "        super(_YDL, self).__init__(*a, **k)\n"
+            "        self.downloaded_info_dicts = []\n"
+            "    def process_info(self, info_dict):\n"
+            "        self.downloaded_info_dicts.append(info_dict)\n"
+            "    def to_screen(self, msg):\n"
+            "        pass\n"
+            f"_ydl = _YDL({{'format': {fmt!r}}})\n"
+            f"_ydl.process_ie_result(dict({info!r}))\n"
+            f"self.assertEqual({exp!r}, _ydl.downloaded_info_dicts[0]['format_id'])\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        fmt, formats, exp = self.failing_case()
+        test = self.get_empty_test()
+        test.body = self._body(fmt, formats, exp)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        fmt, formats, exp = self.passing_case()
+        test = self.get_empty_test()
+        test.body = self._body(fmt, formats, exp)
+        return test, TestResult.PASSING
+
+
+# ======================================================================
+# bug_30: the per-format ``selector_function`` did not materialise/guard an
+# empty ``formats`` iterable, so a ``best``/``worst`` selection combined with
+# a filter that matched no format raised ``IndexError: list index out of
+# range`` instead of yielding nothing.  The fix does ``formats =
+# list(formats); if not formats: return``.
+#
+# System-test format:  a urlsafe-base64 JSON ``{format, formats, expected}``.
+#   A ``best[<impossible filter>]`` triggers the fault (the buggy build raises
+#   IndexError).  The harness catches only ``ExtractorError`` and prints
+#   ``repr([<downloaded format_id>...])``; the oracle (YTDL20API) compares to
+#   ``repr(expected)`` (the fixed result, an empty list for the failing case).
+# ======================================================================
+
+
+class YTDL30API(YTDL20API):
+    pass
+
+
+class YTDL30TestGenerator:
+    @staticmethod
+    def _word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(3, 6)))
+
+    def _formats(self) -> list:
+        n = random.randint(3, 5)
+        ids, widths = [], []
+        while len(ids) < n:
+            w = self._word()
+            if w not in ids:
+                ids.append(w)
+        while len(widths) < n:
+            x = random.randint(100, 2000)
+            if x not in widths:
+                widths.append(x)
+        return [
+            {"format_id": i, "width": w, "url": "http://_/", "ext": "unknown"}
+            for i, w in zip(ids, widths)
+        ]
+
+    def failing_case(self) -> Tuple[str, list, list]:
+        fmts = self._formats()
+        maxw = max(f["width"] for f in fmts)
+        sel = random.choice(("best", "worst"))
+        return f"{sel}[width>{maxw + 1000}]", fmts, []
+
+    def passing_case(self) -> Tuple[str, list, list]:
+        fmts = self._formats()
+        if random.random() < 0.5:
+            minw = min(f["width"] for f in fmts)
+            return (
+                f"all[width>={minw}]",
+                fmts,
+                [f["format_id"] for f in fmts],
+            )
+        chosen = random.choice(fmts)
+        return f"best[width={chosen['width']}]", fmts, [chosen["format_id"]]
+
+
+class YTDL30SystemtestGenerator(SystemtestGenerator, YTDL30TestGenerator):
+    @staticmethod
+    def _compact(formats: list) -> list:
+        return [[f["format_id"], f["width"]] for f in formats]
+
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        fmt, formats, exp = self.failing_case()
+        return (
+            _b64json({"format": fmt, "fmts": self._compact(formats), "expected": exp}),
+            TestResult.FAILING,
+        )
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        fmt, formats, exp = self.passing_case()
+        return (
+            _b64json({"format": fmt, "fmts": self._compact(formats), "expected": exp}),
+            TestResult.PASSING,
+        )
+
+
+class YTDL30UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, YTDL30TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return []
+
+    @staticmethod
+    def _body(fmt: str, formats: list, exp: list) -> List[ast.stmt]:
+        info = {
+            "formats": formats,
+            "id": "testid",
+            "title": "t",
+            "extractor": "testex",
+            "extractor_key": "TestEx",
+        }
+        src = (
+            "from test.helper import FakeYDL\n"
+            "from youtube_dl.utils import ExtractorError\n"
+            "class _YDL(FakeYDL):\n"
+            "    def __init__(self, *a, **k):\n"
+            "        super(_YDL, self).__init__(*a, **k)\n"
+            "        self.downloaded_info_dicts = []\n"
+            "    def process_info(self, info_dict):\n"
+            "        self.downloaded_info_dicts.append(info_dict)\n"
+            "    def to_screen(self, msg):\n"
+            "        pass\n"
+            f"_ydl = _YDL({{'format': {fmt!r}}})\n"
+            "try:\n"
+            f"    _ydl.process_ie_result(dict({info!r}))\n"
+            "except ExtractorError:\n"
+            "    pass\n"
+            f"self.assertEqual({exp!r}, [d['format_id'] for d in _ydl.downloaded_info_dicts])\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        fmt, formats, exp = self.failing_case()
+        test = self.get_empty_test()
+        test.body = self._body(fmt, formats, exp)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        fmt, formats, exp = self.passing_case()
+        test = self.get_empty_test()
+        test.body = self._body(fmt, formats, exp)
+        return test, TestResult.PASSING
+
+
+# ======================================================================
+# bug_8: in ``_parse_format_selection`` the PICKFIRST (``/``) branch did
+# ``current_selector = None; selectors.append(FormatSelector(PICKFIRST, ...))``
+# instead of ``current_selector = FormatSelector(PICKFIRST, ...)``.  So when a
+# ``/`` expression was followed by ``,`` (e.g. ``best/worst,worst``) a ``None``
+# selector was appended and later dereferenced -> ``AttributeError: 'NoneType'
+# object has no attribute 'type'``.
+#
+# System-test format:  a urlsafe-base64 JSON ``{format, fmts, expected}`` where
+#   ``fmts`` is a list of ``[format_id, tbr]`` progressive mp4 formats.  A
+#   ``<sel>/<sel>,<sel>`` format string triggers the fault.  The harness prints
+#   ``repr([<downloaded format_id>...])``; the oracle (YTDL20API) compares to
+#   ``repr(expected)`` (the fixed download list).
+# ======================================================================
+
+
+class YTDL8API(YTDL20API):
+    pass
+
+
+class YTDL8TestGenerator:
+    @staticmethod
+    def _word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(3, 6)))
+
+    def _fmts(self) -> Tuple[list, str, str]:
+        n = random.randint(2, 4)
+        ids, tbrs = [], []
+        while len(ids) < n:
+            w = self._word()
+            if w not in ids:
+                ids.append(w)
+        while len(tbrs) < n:
+            t = random.randint(50, 3000)
+            if t not in tbrs:
+                tbrs.append(t)
+        fmts = list(zip(ids, tbrs))
+        # Formats are not _sort_formats'd, so 'best' == last, 'worst' == first.
+        hi = ids[-1]
+        lo = ids[0]
+        return fmts, hi, lo
+
+    def failing_case(self) -> Tuple[str, list, list]:
+        fmts, hi, lo = self._fmts()
+        mid = random.choice(("best", "worst"))
+        if random.random() < 0.5:
+            fmt = f"best/{mid},worst"
+            exp = [hi, lo]
+        else:
+            fmt = f"worst/{mid},best"
+            exp = [lo, hi]
+        return fmt, fmts, exp
+
+    def passing_case(self) -> Tuple[str, list, list]:
+        fmts, hi, lo = self._fmts()
+        r = random.random()
+        if r < 0.34:
+            return "best/worst", fmts, [hi]
+        if r < 0.67:
+            return "best,worst", fmts, [hi, lo]
+        return "worst,best", fmts, [lo, hi]
+
+
+class YTDL8SystemtestGenerator(SystemtestGenerator, YTDL8TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        fmt, fmts, exp = self.failing_case()
+        return (
+            _b64json({"format": fmt, "fmts": fmts, "expected": exp}),
+            TestResult.FAILING,
+        )
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        fmt, fmts, exp = self.passing_case()
+        return (
+            _b64json({"format": fmt, "fmts": fmts, "expected": exp}),
+            TestResult.PASSING,
+        )
+
+
+class YTDL8UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, YTDL8TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return []
+
+    @staticmethod
+    def _body(fmt: str, fmts: list, exp: list) -> List[ast.stmt]:
+        formats = [
+            {
+                "format_id": i,
+                "ext": "mp4",
+                "url": "http://_/",
+                "vcodec": "h264",
+                "acodec": "aac",
+                "tbr": t,
+            }
+            for i, t in fmts
+        ]
+        info = {
+            "formats": formats,
+            "id": "testid",
+            "title": "t",
+            "extractor": "testex",
+            "extractor_key": "TestEx",
+        }
+        src = (
+            "from test.helper import FakeYDL\n"
+            "class _YDL(FakeYDL):\n"
+            "    def __init__(self, *a, **k):\n"
+            "        super(_YDL, self).__init__(*a, **k)\n"
+            "        self.downloaded_info_dicts = []\n"
+            "    def process_info(self, info_dict):\n"
+            "        self.downloaded_info_dicts.append(info_dict)\n"
+            "    def to_screen(self, msg):\n"
+            "        pass\n"
+            f"_ydl = _YDL({{'format': {fmt!r}}})\n"
+            f"_ydl.process_ie_result(dict({info!r}))\n"
+            f"self.assertEqual({exp!r}, [d['format_id'] for d in _ydl.downloaded_info_dicts])\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        fmt, fmts, exp = self.failing_case()
+        test = self.get_empty_test()
+        test.body = self._body(fmt, fmts, exp)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        fmt, fmts, exp = self.passing_case()
+        test = self.get_empty_test()
+        test.body = self._body(fmt, fmts, exp)
+        return test, TestResult.PASSING
+
+
+# ======================================================================
+# bug_9: the older ``_parse_format_selection(tokens, endwith=[])`` parser
+# consumed the ``/`` fallback into the *audio* side of a ``+`` merge, so
+# ``bestvideo[<impossible>]+bestaudio/best`` was parsed as
+# ``MERGE(video, PICKFIRST(audio, best))`` instead of
+# ``PICKFIRST(MERGE(video, audio), best)``.  With an impossible video side the
+# merge failed and, lacking the outer fallback, raised ``ExtractorError:
+# requested format not available``.  The fix reworks the parser with explicit
+# ``inside_merge``/``inside_choice``/``inside_group`` boundaries.
+#
+# System-test format:  a urlsafe-base64 JSON ``{format, ids, expected}`` where
+#   ``ids`` is ``[video_only, audio_only, progressive]``.  A
+#   ``bestvideo[<absent-field>>=<big>]+bestaudio/<fallback>`` triggers the
+#   fault (the buggy build raises).  The harness prints ``repr([<downloaded
+#   format_id>...])``; the oracle (YTDL20API) compares to ``repr(expected)``.
+# ======================================================================
+
+
+class YTDL9API(YTDL20API):
+    pass
+
+
+class YTDL9TestGenerator:
+    _FIELDS = ["height", "width", "filesize", "fps", "abr"]
+
+    @staticmethod
+    def _word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(3, 6)))
+
+    def _ids(self) -> Tuple[str, str, str]:
+        s = set()
+        while len(s) < 3:
+            s.add(self._word())
+        return tuple(s)
+
+    def failing_case(self) -> Tuple[str, list, list]:
+        vv, aa, pp = self._ids()
+        field = random.choice(self._FIELDS)
+        big = random.randint(100000, 999999999)
+        audiosel = random.choice(("bestaudio", "worstaudio"))
+        fallback = random.choice(("best", "worst"))
+        fmt = f"bestvideo[{field}>={big}]+{audiosel}/{fallback}"
+        return fmt, [vv, aa, pp], [pp]
+
+    def passing_case(self) -> Tuple[str, list, list]:
+        vv, aa, pp = self._ids()
+        r = random.random()
+        if r < 0.25:
+            return "best", [vv, aa, pp], [pp]
+        if r < 0.5:
+            return "worst", [vv, aa, pp], [pp]
+        if r < 0.75:
+            return "bestvideo+bestaudio", [vv, aa, pp], [f"{vv}+{aa}"]
+        return "bestvideo", [vv, aa, pp], [vv]
+
+
+class YTDL9SystemtestGenerator(SystemtestGenerator, YTDL9TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        fmt, ids, exp = self.failing_case()
+        return (
+            _b64json({"format": fmt, "ids": ids, "expected": exp}),
+            TestResult.FAILING,
+        )
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        fmt, ids, exp = self.passing_case()
+        return (
+            _b64json({"format": fmt, "ids": ids, "expected": exp}),
+            TestResult.PASSING,
+        )
+
+
+class YTDL9UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, YTDL9TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return []
+
+    @staticmethod
+    def _body(fmt: str, ids: list, exp: list) -> List[ast.stmt]:
+        vv, aa, pp = ids
+        formats = [
+            {"format_id": vv, "ext": "mp4", "url": "http://_/",
+             "vcodec": "h264", "acodec": "none", "tbr": 100},
+            {"format_id": aa, "ext": "m4a", "url": "http://_/",
+             "vcodec": "none", "acodec": "aac", "tbr": 50},
+            {"format_id": pp, "ext": "mp4", "url": "http://_/",
+             "vcodec": "h264", "acodec": "aac", "tbr": 150},
+        ]
+        info = {
+            "formats": formats,
+            "id": "testid",
+            "title": "t",
+            "extractor": "testex",
+            "extractor_key": "TestEx",
+        }
+        src = (
+            "from test.helper import FakeYDL\n"
+            "class _YDL(FakeYDL):\n"
+            "    def __init__(self, *a, **k):\n"
+            "        super(_YDL, self).__init__(*a, **k)\n"
+            "        self.downloaded_info_dicts = []\n"
+            "    def process_info(self, info_dict):\n"
+            "        self.downloaded_info_dicts.append(info_dict)\n"
+            "    def to_screen(self, msg):\n"
+            "        pass\n"
+            f"_ydl = _YDL({{'format': {fmt!r}}})\n"
+            f"_ydl.process_ie_result(dict({info!r}))\n"
+            f"self.assertEqual({exp!r}, [d['format_id'] for d in _ydl.downloaded_info_dicts])\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        fmt, ids, exp = self.failing_case()
+        test = self.get_empty_test()
+        test.body = self._body(fmt, ids, exp)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        fmt, ids, exp = self.passing_case()
+        test = self.get_empty_test()
+        test.body = self._body(fmt, ids, exp)
+        return test, TestResult.PASSING
+
+
+# ======================================================================
+# bug_19: ``prepare_filename`` applied ``expand_path`` *after* the ``outtmpl %
+# template_dict`` substitution, so a meta field value containing an env-var
+# reference (e.g. a title of ``foo $HOME bar``) was wrongly expanded.  The fix
+# expands the template BEFORE substitution (protecting ``%%``/``$$`` with a
+# random separator), so field values are left literal.
+#
+# System-test format:  a urlsafe-base64 JSON ``{outtmpl, info, expected}``.
+#   The harness pre-sets an env var ``T4PVAR=XPANDED`` and a field value
+#   contains ``$T4PVAR`` followed by a boundary, so the buggy build expands it
+#   to ``XPANDED`` while the fixed build keeps ``$T4PVAR`` literal.  The harness
+#   prints ``repr(prepare_filename(info))``; the oracle (YTDL20API) compares to
+#   ``repr(expected)`` (the fixed, literal filename).
+# ======================================================================
+
+
+class YTDL19API(YTDL20API):
+    pass
+
+
+class YTDL19TestGenerator:
+    _EXTS = ["mp4", "webm", "mkv", "m4a"]
+
+    @staticmethod
+    def _word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(3, 7)))
+
+    def failing_case(self) -> Tuple[str, dict, str]:
+        w1, w2 = self._word(), self._word()
+        ext = random.choice(self._EXTS)
+        vid = str(random.randint(1, 999999))
+        title = f"{w1} $T4PVAR {w2}"
+        info = {"id": vid, "ext": ext, "title": title}
+        # fixed keeps $T4PVAR literal
+        expected = f"{title}.{ext}"
+        return "%(title)s.%(ext)s", info, expected
+
+    def passing_case(self) -> Tuple[str, dict, str]:
+        w1, w2 = self._word(), self._word()
+        ext = random.choice(self._EXTS)
+        vid = str(random.randint(1, 999999))
+        title = f"{w1} {w2}"  # no env-var reference: identical on both builds
+        info = {"id": vid, "ext": ext, "title": title}
+        if random.random() < 0.5:
+            return "%(title)s.%(ext)s", info, f"{title}.{ext}"
+        return "%(title)s-%(id)s.%(ext)s", info, f"{title}-{vid}.{ext}"
+
+
+class YTDL19SystemtestGenerator(SystemtestGenerator, YTDL19TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        outtmpl, info, exp = self.failing_case()
+        return (
+            _b64json({"outtmpl": outtmpl, "info": info, "expected": exp}),
+            TestResult.FAILING,
+        )
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        outtmpl, info, exp = self.passing_case()
+        return (
+            _b64json({"outtmpl": outtmpl, "info": info, "expected": exp}),
+            TestResult.PASSING,
+        )
+
+
+class YTDL19UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, YTDL19TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return []
+
+    @staticmethod
+    def _body(outtmpl: str, info: dict, exp: str) -> List[ast.stmt]:
+        src = (
+            "import os\n"
+            "os.environ['T4PVAR'] = 'XPANDED'\n"
+            "from youtube_dl import YoutubeDL\n"
+            f"_fn = YoutubeDL({{'outtmpl': {outtmpl!r}}}).prepare_filename({info!r})\n"
+            f"self.assertEqual({exp!r}, _fn)\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        outtmpl, info, exp = self.failing_case()
+        test = self.get_empty_test()
+        test.body = self._body(outtmpl, info, exp)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        outtmpl, info, exp = self.passing_case()
+        test = self.get_empty_test()
+        test.body = self._body(outtmpl, info, exp)
+        return test, TestResult.PASSING
+
+
+# ======================================================================
+# bug_2: ``InfoExtractor._parse_mpd_formats`` de-duplicated DASH formats by
+# ``format_id`` (``existing_format.update(f)``), but a DASH manifest may
+# legitimately contain several Representations sharing the same ``id`` (in
+# different AdaptationSets).  The buggy build merged them into one format,
+# dropping the rest.  The fix always appends each Representation.
+#
+# System-test format:  a urlsafe-base64 JSON ``{reps, expected}`` where
+#   ``reps`` is a list of ``[mime_code, rep_id, bandwidth]`` (``a``/``v``).  A
+#   duplicate ``rep_id`` triggers the fault.  The harness builds the MPD,
+#   parses it and prints ``repr(sorted(format_ids))``; the oracle (YTDL20API)
+#   compares to ``repr(expected)`` (the fixed, non-collapsed id multiset).
+# ======================================================================
+
+_MPD_MIME = {"a": "audio/mp4", "v": "video/mp4"}
+
+
+def _mpd_build(reps: list) -> str:
+    sets = ""
+    for code, rid, bw in reps:
+        sets += (
+            '<AdaptationSet mimeType="%s" codecs="mp4a.40.2">'
+            '<SegmentTemplate timescale="1000000" '
+            'initialization="i_$RepresentationID$.m4d" '
+            'media="s_$RepresentationID$_$Number$.m4d" '
+            'duration="2000000" startNumber="0"></SegmentTemplate>'
+            '<Representation id="%s" bandwidth="%d"></Representation>'
+            "</AdaptationSet>"
+        ) % (_MPD_MIME[code], rid, bw)
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<MPD xmlns="urn:mpeg:dash:schema:mpd:2011" type="static" '
+        'mediaPresentationDuration="PT10S">'
+        "<Period>" + sets + "</Period></MPD>"
+    )
+
+
+class YTDL2API(YTDL20API):
+    pass
+
+
+class YTDL2TestGenerator:
+    @staticmethod
+    def _id() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(3, 6)))
+
+    def _distinct_ids(self, n: int) -> list:
+        s = []
+        while len(s) < n:
+            w = self._id()
+            if w not in s:
+                s.append(w)
+        return s
+
+    def failing_case(self) -> Tuple[list, list]:
+        ids = self._distinct_ids(random.randint(2, 3))
+        dup = random.choice(ids)
+        reps = [["v", i, random.randint(50000, 6000000)] for i in ids]
+        reps.insert(
+            random.randint(0, len(reps)),
+            ["a", dup, random.randint(50000, 200000)],
+        )
+        expected = sorted([r[1] for r in reps])
+        return reps, expected
+
+    def passing_case(self) -> Tuple[list, list]:
+        ids = self._distinct_ids(random.randint(2, 4))
+        reps = [
+            [random.choice(("a", "v")), i, random.randint(50000, 6000000)]
+            for i in ids
+        ]
+        expected = sorted(ids)
+        return reps, expected
+
+
+class YTDL2SystemtestGenerator(SystemtestGenerator, YTDL2TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        reps, exp = self.failing_case()
+        return _b64json({"reps": reps, "expected": exp}), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        reps, exp = self.passing_case()
+        return _b64json({"reps": reps, "expected": exp}), TestResult.PASSING
+
+
+class YTDL2UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, YTDL2TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return []
+
+    @staticmethod
+    def _body(reps: list, exp: list) -> List[ast.stmt]:
+        xml = _mpd_build(reps)
+        src = (
+            "from test.helper import FakeYDL\n"
+            "from youtube_dl.extractor.common import InfoExtractor\n"
+            "from youtube_dl.compat import compat_etree_fromstring\n"
+            "class _IE(InfoExtractor):\n"
+            "    _VALID_URL = 'https?://.*'\n"
+            "_ie = _IE(FakeYDL())\n"
+            f"_formats = _ie._parse_mpd_formats(compat_etree_fromstring({xml!r}.encode('utf-8')), mpd_url='http://unknown/manifest.mpd')\n"
+            f"self.assertEqual({exp!r}, sorted(f['format_id'] for f in _formats))\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        reps, exp = self.failing_case()
+        test = self.get_empty_test()
+        test.body = self._body(reps, exp)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        reps, exp = self.passing_case()
+        test = self.get_empty_test()
+        test.body = self._body(reps, exp)
+        return test, TestResult.PASSING
+
+
+# ======================================================================
+# bug_18: when resolving a ``url_transparent`` result, ``YoutubeDL`` deleted
+# only ``('_type', 'url', 'ie_key')`` from the transparent result's
+# ``force_properties`` before overlaying them onto the final result, so the
+# transparent entry's ``id``/``extractor``/``extractor_key`` wrongly
+# overrode the real extractor's values.  The fix also deletes ``id``,
+# ``extractor`` and ``extractor_key``.
+#
+# System-test format:  a urlsafe-base64 JSON ``{t_id, t_title, final_id, field,
+#   expected}``.  A ``url_transparent`` chain is built in-memory (no network);
+#   for ``field == 'id'`` the buggy build reports the transparent ``t_id``
+#   instead of the real ``final_id``.  The harness prints
+#   ``repr(downloaded[field])``; the oracle (YTDL20API) compares to
+#   ``repr(expected)`` (the fixed value).
+# ======================================================================
+
+
+class YTDL18API(YTDL20API):
+    pass
+
+
+class YTDL18TestGenerator:
+    @staticmethod
+    def _word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(4, 8)))
+
+    def failing_case(self) -> Tuple[str, str, str, str, str]:
+        t_id = "t_" + self._word()
+        final_id = "f_" + self._word()
+        t_title = self._word() + " " + self._word()
+        # buggy reports t_id, fixed reports final_id
+        return t_id, t_title, final_id, "id", final_id
+
+    def passing_case(self) -> Tuple[str, str, str, str, str]:
+        t_id = "t_" + self._word()
+        final_id = "f_" + self._word()
+        t_title = self._word() + " " + self._word()
+        # title propagates from the transparent entry on both builds
+        return t_id, t_title, final_id, "title", t_title
+
+
+class YTDL18SystemtestGenerator(SystemtestGenerator, YTDL18TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        t_id, t_title, final_id, field, exp = self.failing_case()
+        return (
+            _b64json(
+                {
+                    "t_id": t_id,
+                    "t_title": t_title,
+                    "final_id": final_id,
+                    "field": field,
+                    "expected": exp,
+                }
+            ),
+            TestResult.FAILING,
+        )
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        t_id, t_title, final_id, field, exp = self.passing_case()
+        return (
+            _b64json(
+                {
+                    "t_id": t_id,
+                    "t_title": t_title,
+                    "final_id": final_id,
+                    "field": field,
+                    "expected": exp,
+                }
+            ),
+            TestResult.PASSING,
+        )
+
+
+class YTDL18UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, YTDL18TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return []
+
+    @staticmethod
+    def _body(t_id, t_title, final_id, field, exp) -> List[ast.stmt]:
+        src = (
+            "from test.helper import FakeYDL\n"
+            "from youtube_dl.extractor.common import InfoExtractor\n"
+            "class _YDL(FakeYDL):\n"
+            "    def __init__(self, *a, **k):\n"
+            "        super(_YDL, self).__init__(*a, **k)\n"
+            "        self.downloaded_info_dicts = []\n"
+            "    def process_info(self, info_dict):\n"
+            "        self.downloaded_info_dicts.append(info_dict)\n"
+            "    def to_screen(self, msg):\n"
+            "        pass\n"
+            "_ydl = _YDL()\n"
+            "class Foo1IE(InfoExtractor):\n"
+            "    _VALID_URL = 'foo1:'\n"
+            "    def _real_extract(self, url):\n"
+            f"        return {{'_type': 'url_transparent', 'url': 'foo2:', 'ie_key': 'Foo2', 'title': {t_title!r}, 'id': {t_id!r}}}\n"
+            "class Foo2IE(InfoExtractor):\n"
+            "    _VALID_URL = 'foo2:'\n"
+            "    def _real_extract(self, url):\n"
+            "        return {'_type': 'url', 'url': 'foo3:', 'ie_key': 'Foo3'}\n"
+            "class Foo3IE(InfoExtractor):\n"
+            "    _VALID_URL = 'foo3:'\n"
+            "    def _real_extract(self, url):\n"
+            f"        return {{'formats': [{{'url': 'http://localhost/sample.mp4'}}], 'id': {final_id!r}, 'title': 'foo3 title', 'extractor': 'testex', 'extractor_key': 'TestEx'}}\n"
+            "_ydl.add_info_extractor(Foo1IE(_ydl))\n"
+            "_ydl.add_info_extractor(Foo2IE(_ydl))\n"
+            "_ydl.add_info_extractor(Foo3IE(_ydl))\n"
+            "_ydl.extract_info('foo1:')\n"
+            f"self.assertEqual({exp!r}, _ydl.downloaded_info_dicts[0][{field!r}])\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        t_id, t_title, final_id, field, exp = self.failing_case()
+        test = self.get_empty_test()
+        test.body = self._body(t_id, t_title, final_id, field, exp)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        t_id, t_title, final_id, field, exp = self.passing_case()
+        test = self.get_empty_test()
+        test.body = self._body(t_id, t_title, final_id, field, exp)
+        return test, TestResult.PASSING
+
+
+# ======================================================================
+# bug_14: ``YoutubeIE._extract_chapters(description, duration)`` (a
+# staticmethod) was renamed to ``_extract_chapters_from_description`` (and a
+# new instance method ``_extract_chapters`` with a different signature added)
+# so YouTube chapters could also be sourced from the watch-next JSON.  On the
+# buggy build ``_extract_chapters_from_description`` does not exist, so the
+# description-based chapter extraction the test exercises raises
+# ``AttributeError``.
+#
+# System-test format:  a urlsafe-base64 JSON ``{chapters, dur, method}`` where
+#   ``chapters`` is a list of ``[start_seconds, title]``.  ``method == 'new'``
+#   (failing) calls ``_extract_chapters_from_description`` -> AttributeError on
+#   the buggy build; ``method == 'old'`` (passing) calls the extant
+#   ``_extract_chapters``.  The harness rebuilds the description, runs the
+#   chosen method and prints ``repr(result)``; the oracle recomputes the
+#   correct chapters and compares.
+# ======================================================================
+
+
+def _ytc_pdur(t: str) -> float:
+    parts = [float(p) for p in t.split(":")]
+    if len(parts) == 2:
+        return parts[0] * 60 + parts[1]
+    return parts[0] * 3600 + parts[1] * 60 + parts[2]
+
+
+def _ytc_fmt(s: int) -> str:
+    if s >= 3600:
+        return "%d:%02d:%02d" % (s // 3600, (s % 3600) // 60, s % 60)
+    return "%d:%02d" % (s // 60, s % 60)
+
+
+def _ytc_build(chapters: list) -> str:
+    lines = []
+    for sec, title in chapters:
+        lines.append(
+            '<a href="#" onclick="yt.www.watch.player.seekTo(%d);return false;">'
+            "%s</a> - %s" % (sec, _ytc_fmt(sec), title)
+        )
+    return "<br />".join(lines)
+
+
+def _ytc_extract(description: str, duration):
+    if not description:
+        return None
+    chapter_lines = re.findall(
+        r'(?:^|<br\s*/>)([^<]*<a[^>]+onclick=["\']yt\.www\.watch\.player\.seekTo'
+        r'[^>]+>(\d{1,2}:\d{1,2}(?::\d{1,2})?)</a>[^>]*)(?=$|<br\s*/>)',
+        description,
+    )
+    if not chapter_lines:
+        return None
+    chapters = []
+    for next_num, (chapter_line, time_point) in enumerate(chapter_lines, start=1):
+        start_time = _ytc_pdur(time_point)
+        if start_time is None:
+            continue
+        if start_time > duration:
+            break
+        end_time = (
+            duration
+            if next_num == len(chapter_lines)
+            else _ytc_pdur(chapter_lines[next_num][1])
+        )
+        if end_time is None:
+            continue
+        if end_time > duration:
+            end_time = duration
+        if start_time > end_time:
+            break
+        chapter_title = re.sub(r"<a[^>]+>[^<]+</a>", "", chapter_line).strip(" \t-")
+        chapter_title = re.sub(r"\s+", " ", chapter_title)
+        chapters.append(
+            {"start_time": start_time, "end_time": end_time, "title": chapter_title}
+        )
+    return chapters
+
+
+class YTDL14API(YTDLAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            d = json.loads(base64.urlsafe_b64decode(process.args[2]).decode("utf-8"))
+            desc = _ytc_build([tuple(c) for c in d["chapters"]])
+            expected = repr(_ytc_extract(desc, d["dur"]))
+        except (IndexError, ValueError, KeyError):
+            return TestResult.UNDEFINED, "Malformed test input"
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == expected:
+            return TestResult.PASSING, f"Expected {expected}"
+        return TestResult.FAILING, f"Expected {expected}, but was {out!r}"
+
+
+class YTDL14TestGenerator:
+    @staticmethod
+    def _word() -> str:
+        return "".join(random.choices(string.ascii_letters, k=random.randint(3, 8)))
+
+    def _title(self) -> str:
+        return " ".join(self._word() for _ in range(random.randint(1, 3)))
+
+    def _chapters(self) -> Tuple[list, int]:
+        n = random.randint(1, 3)
+        secs = sorted(random.sample(range(0, 3000), n))
+        chapters = [[s, self._title()] for s in secs]
+        dur = secs[-1] + random.randint(1, 500)
+        return chapters, dur
+
+    def failing_case(self) -> Tuple[list, int, str]:
+        chapters, dur = self._chapters()
+        return chapters, dur, "new"
+
+    def passing_case(self) -> Tuple[list, int, str]:
+        chapters, dur = self._chapters()
+        return chapters, dur, "old"
+
+
+class YTDL14SystemtestGenerator(SystemtestGenerator, YTDL14TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        chapters, dur, method = self.failing_case()
+        return (
+            _b64json({"chapters": chapters, "dur": dur, "method": method}),
+            TestResult.FAILING,
+        )
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        chapters, dur, method = self.passing_case()
+        return (
+            _b64json({"chapters": chapters, "dur": dur, "method": method}),
+            TestResult.PASSING,
+        )
+
+
+class YTDL14UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, YTDL14TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return []
+
+    @staticmethod
+    def _body(chapters: list, dur: int, method: str) -> List[ast.stmt]:
+        desc = _ytc_build([tuple(c) for c in chapters])
+        expected = _ytc_extract(desc, dur)
+        call = (
+            "_extract_chapters_from_description"
+            if method == "new"
+            else "_extract_chapters"
+        )
+        src = (
+            "from youtube_dl.extractor import YoutubeIE\n"
+            f"_res = YoutubeIE.{call}({desc!r}, {dur!r})\n"
+            f"self.assertEqual({expected!r}, _res)\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        chapters, dur, method = self.failing_case()
+        test = self.get_empty_test()
+        test.body = self._body(chapters, dur, method)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        chapters, dur, method = self.passing_case()
+        test = self.get_empty_test()
+        test.body = self._body(chapters, dur, method)
         return test, TestResult.PASSING

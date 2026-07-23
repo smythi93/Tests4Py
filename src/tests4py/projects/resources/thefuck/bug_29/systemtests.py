@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return "{'ExNzBXLRCB, TIbZGoGpa'}"
+        return "'dnjzyez' 'ubogcrkgs' 'dnjzyez' 'ujzzyzux'"
 
     def test_diversity_2(self):
-        return "{'ySYEali, DSnRjygm'}"
+        return "'zgxthrzgwi' 'lkwtcozzi' 'zgxthrzgwi' 'hmbxmqhjx'"
 
     def test_diversity_3(self):
-        return "{'KxZxKIzslSTT, JFeAnSdXGa'}"
+        return "'dmohflhdh' 'gihzekpvb' 'dmohflhdh' 'hixjukx'"
 
     def test_diversity_4(self):
-        return "{'OIedCNLUKRolo, NpHMakuyBZQy'}"
+        return "'uibcunrh' 'yyyes' 'uibcunrh' 'ptetlrrkssx'"
 
     def test_diversity_5(self):
-        return "{'xawGrTVYzYr, PCfezXRtQG'}"
+        return "'emypbpqo' 'qdezhtmb' 'emypbpqo' 'ezndfzdyjzx'"
 
     def test_diversity_6(self):
-        return "{'GGTapuqwgLkVaX, phIRNwSVdVhFL'}"
+        return "'phvkdihx' 'areoybqhg' 'phvkdihx' 'lqggvx'"
 
     def test_diversity_7(self):
-        return "{'AzxaTbjnvnKyS, rQRuTY'}"
+        return "'kwwtclb' 'alwrajnnhe' 'kwwtclb' 'qjbzpwrx'"
 
     def test_diversity_8(self):
-        return "{'jzYsgRJnYuGZ, AeUXKRgOMlsPE'}"
+        return "'vpxgdrqm' 'mbddhpzysz' 'vpxgdrqm' 'iqzlfastx'"
 
     def test_diversity_9(self):
-        return "{'mILbmvVGXtDfY, zlcVYP'}"
+        return "'guwwagss' 'hjgzjchxxv' 'guwwagss' 'vcogxkbiux'"
 
     def test_diversity_10(self):
-        return "{'WoUJQAs, OpRJHNvL'}"
+        return "'ydxrn' 'brtbetubq' 'ydxrn' 'zynnitmggxx'"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return "{'DIQmJkCRI': 'wQXabKnewYUrD'}"
+        return "'zvwbpdxk' 'tuvqttelsb' 'zvwbpdxk' 'zvwbpdxk'"
 
     def test_diversity_2(self):
-        return "{'lDjUAikGRZ': 'iPITYDLMvYS'}"
+        return "'txbxl' 'nnohs' 'txbxl' 'txbxl'"
 
     def test_diversity_3(self):
-        return "{'GICqATLXhcwNP': 'cDBsVvVNWcfjnM'}"
+        return "'rxprfrswd' 'zngnwjkmk' 'rxprfrswd' 'rxprfrswd'"
 
     def test_diversity_4(self):
-        return "{'uJqbMVolacrP': 'VOrXqgoazsOTYAK'}"
+        return "'kirqg' 'jitgvfeu' 'kirqg' 'kirqg'"
 
     def test_diversity_5(self):
-        return "{'BkJRXsgcxYErPf': 'zUwaVkEHnOZpeO'}"
+        return "'ilshvwckq' 'ssxtwexf' 'ilshvwckq' 'ilshvwckq'"
 
     def test_diversity_6(self):
-        return "{'FerjwzCOfvy': 'RuFVpyQkp'}"
+        return "'qpgkedcsse' 'pokfebf' 'qpgkedcsse' 'qpgkedcsse'"
 
     def test_diversity_7(self):
-        return "{'hPEjItgHMM': 'cCqdZCYaCrStgeh'}"
+        return "'cuhssxzsi' 'xgfjv' 'cuhssxzsi' 'cuhssxzsi'"
 
     def test_diversity_8(self):
-        return "{'xsJadlTIcVNFRZ': 'yzXNpf'}"
+        return "'wwwesuhb' 'yidfixc' 'wwwesuhb' 'wwwesuhb'"
 
     def test_diversity_9(self):
-        return "{'uCGrP': 'DIvGcRkLhctewdZ'}"
+        return "'kndcxrsvml' 'cxazil' 'kndcxrsvml' 'kndcxrsvml'"
 
     def test_diversity_10(self):
-        return "{'FBwhiUyEi': 'IWdBLypsoz'}"
+        return "'hbzoyb' 'lsfti' 'hbzoyb' 'hbzoyb'"

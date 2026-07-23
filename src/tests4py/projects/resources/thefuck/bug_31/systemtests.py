@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return "('Integer value cannot be used', 6584)"
+        return "('git diff --staged ubogcrkgs', 'git diff ubogcrkgs')"
 
     def test_diversity_2(self):
-        return "('Integer value cannot be used', 3173)"
+        return "('git diff --staged dnjzyez', 'git diff dnjzyez')"
 
     def test_diversity_3(self):
-        return "('Integer value cannot be used', 5725)"
+        return "('git diff --staged ujzzyzu', 'git diff ujzzyzu')"
 
     def test_diversity_4(self):
-        return "('Integer value cannot be used', 6713)"
+        return "('git diff --staged lkwtcozzi', 'git diff lkwtcozzi')"
 
     def test_diversity_5(self):
-        return "('Integer value cannot be used', 7688)"
+        return "('git diff --staged zgxthrzgwi', 'git diff zgxthrzgwi')"
 
     def test_diversity_6(self):
-        return "('Integer value cannot be used', 831)"
+        return "('git diff --staged hmbxmqhj', 'git diff hmbxmqhj')"
 
     def test_diversity_7(self):
-        return "('Integer value cannot be used', 7087)"
+        return "('git diff --staged gihzekpvb', 'git diff gihzekpvb')"
 
     def test_diversity_8(self):
-        return "('Integer value cannot be used', 8525)"
+        return "('git diff --staged dmohflhdh', 'git diff dmohflhdh')"
 
     def test_diversity_9(self):
-        return "('Integer value cannot be used', 2400)"
+        return "('git diff --staged hixjuk', 'git diff hixjuk')"
 
     def test_diversity_10(self):
-        return "('Integer value cannot be used', 2300)"
+        return "('git diff --staged yyyes', 'git diff yyyes')"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return "('git diff WwtFAy --staged', 'git diff WwtFAy')"
+        return "('git qjbzpwr diff --staged', 'git qjbzpwr diff')"
 
     def test_diversity_2(self):
-        return "('git diff UGEGam --staged', 'git diff UGEGam')"
+        return "('git mbddhpzysz diff --staged', 'git mbddhpzysz diff')"
 
     def test_diversity_3(self):
-        return "('git diff FTTXdZIOfbJZNad --staged', 'git diff FTTXdZIOfbJZNad')"
+        return "('git vpxgdrqm diff --staged', 'git vpxgdrqm diff')"
 
     def test_diversity_4(self):
-        return "('git diff IPcufiDZHDoiNu --staged', 'git diff IPcufiDZHDoiNu')"
+        return "('git iqzlfast diff --staged', 'git iqzlfast diff')"
 
     def test_diversity_5(self):
-        return "('git diff ZEphHJ --staged', 'git diff ZEphHJ')"
+        return "('git hjgzjchxxv diff --staged', 'git hjgzjchxxv diff')"
 
     def test_diversity_6(self):
-        return "('git diff bZvRAKerTyGG --staged', 'git diff bZvRAKerTyGG')"
+        return "('git guwwagss diff --staged', 'git guwwagss diff')"
 
     def test_diversity_7(self):
-        return "('git diff lAWHfo --staged', 'git diff lAWHfo')"
+        return "('git vcogxkbiu diff --staged', 'git vcogxkbiu diff')"
 
     def test_diversity_8(self):
-        return "('git diff uFTMTKH --staged', 'git diff uFTMTKH')"
+        return "('git brtbetubq diff --staged', 'git brtbetubq diff')"
 
     def test_diversity_9(self):
-        return "('git diff ImLqggZvUxo --staged', 'git diff ImLqggZvUxo')"
+        return "('git ydxrn diff --staged', 'git ydxrn diff')"
 
     def test_diversity_10(self):
-        return "('git diff nTxqcrTYX --staged', 'git diff nTxqcrTYX')"
+        return "('git zynnitmggx diff --staged', 'git zynnitmggx diff')"

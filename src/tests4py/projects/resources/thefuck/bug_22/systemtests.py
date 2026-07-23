@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return "(None, 'git commit ryUMqvcEJqFskFr', None, None, 'git checkout YyqiL', None, None, 'git branch yNydde', None, None)"
+        return "'OK' 'empty' 'ubogcrkgs' '1'"
 
     def test_diversity_2(self):
-        return "(None, 'git commit aBHHM', None, None, 'git checkout HrcNoPuZYjJrJFk', None, None, 'git branch HhdnLaykApAwInZ', None, None)"
+        return "'OK' 'empty' 'dnjzyez' '1'"
 
     def test_diversity_3(self):
-        return "(None, 'git commit UZRDlq', None, None, 'git checkout xbEtvDXrNRem', None, None, 'git branch zrtGIHYrkZP', None, None)"
+        return "'OK' 'empty' 'ujzzyzu' '1'"
 
     def test_diversity_4(self):
-        return "(None, 'git commit qHbecApZsOp', None, '', 'git checkout YPJQud', None, '', 'git branch igrvepRDEsZvLQ', None, '')"
+        return "'OK' 'empty' 'lkwtcozzi' '1'"
 
     def test_diversity_5(self):
-        return "(None, 'git commit siNjQInwVFPZvL', None, '', 'git checkout DUCLeykKG', None, '', 'git branch JrsFs', None, '')"
+        return "'OK' 'empty' 'zgxthrzgwi' '1'"
 
     def test_diversity_6(self):
-        return "(None, 'git commit TCLeTVSenW', None, None, 'git checkout radfuhWibc', None, None, 'git branch lbbmJwdJ', None, None)"
+        return "'OK' 'empty' 'hmbxmqhj' '1'"
 
     def test_diversity_7(self):
-        return "(None, 'git commit FwYMSIUYCarH', None, '', 'git checkout cCzDmGiPJf', None, '', 'git branch NbeJEnsnvufV', None, '')"
+        return "'OK' 'empty' 'gihzekpvb' '1'"
 
     def test_diversity_8(self):
-        return "(None, 'git commit lCqNq', None, '', 'git checkout RrxQUvEylPAsdGf', None, '', 'git branch zcjNyCXI', None, '')"
+        return "'OK' 'empty' 'dmohflhdh' '1'"
 
     def test_diversity_9(self):
-        return "(None, 'git commit gNfMiHn', None, None, 'git checkout XjJEjnfFhODf', None, None, 'git branch KFYnYTvTZKwg', None, None)"
+        return "'OK' 'empty' 'hixjuk' '1'"
 
     def test_diversity_10(self):
-        return "(None, 'git commit VNYKEuG', None, None, 'git checkout psgSrCMA', None, None, 'git branch CqURlkhR', None, None)"
+        return "'OK' 'empty' 'yyyes' '1'"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return "(None, 'git commit vzJqinjmGRJ', None, 72, 'git checkout jivnqM', None, 278, 'git branch edrqbv', None, 411)"
+        return "'OK' 'full' 'qjbzpwr' '1'"
 
     def test_diversity_2(self):
-        return "(None, 'git commit hayfEAurBQ', None, 488, 'git checkout YpCfAG', None, 236, 'git branch zJKIdxezgX', None, 227)"
+        return "'OK' 'full' 'mbddhpzysz' '1'"
 
     def test_diversity_3(self):
-        return "(None, 'git commit ycJFjpaoX', None, 424, 'git checkout lkXDRGEuicUW', None, 489, 'git branch iMfHGoYzadaz', None, 652)"
+        return "'OK' 'full' 'vpxgdrqm' '1'"
 
     def test_diversity_4(self):
-        return "(None, 'git commit lgFjvBZGFVcqJ', None, 541, 'git checkout ncGuhz', None, 721, 'git branch XrFZAiuxuz', None, 825)"
+        return "'OK' 'full' 'iqzlfast' '1'"
 
     def test_diversity_5(self):
-        return "(None, 'git commit jaIUYABfaP', None, 919, 'git checkout AgqLEaUfSntWYJ', None, 322, 'git branch HXbGySrtFUsipn', None, 529)"
+        return "'OK' 'full' 'hjgzjchxxv' '1'"
 
     def test_diversity_6(self):
-        return "(None, 'git commit VnAuWvZenjiStSB', None, 650, 'git checkout aWkNJcToL', None, 860, 'git branch eAZkamcHVpE', None, 887)"
+        return "'OK' 'full' 'guwwagss' '1'"
 
     def test_diversity_7(self):
-        return "(None, 'git commit orqOxJzSX', None, 42, 'git checkout nJEWO', None, 404, 'git branch twoXlbeA', None, 509)"
+        return "'OK' 'full' 'vcogxkbiu' '1'"
 
     def test_diversity_8(self):
-        return "(None, 'git commit XjxlxiKFtq', None, 293, 'git checkout ikjWYKfuN', None, 684, 'git branch wIwibH', None, 648)"
+        return "'OK' 'full' 'brtbetubq' '1'"
 
     def test_diversity_9(self):
-        return "(None, 'git commit eZEjJyFqaHKeQx', None, 624, 'git checkout gPWdw', None, 90, 'git branch GdhsVEATvp', None, 985)"
+        return "'OK' 'full' 'ydxrn' '1'"
 
     def test_diversity_10(self):
-        return "(None, 'git commit rSYPBHrcvspMA', None, 854, 'git checkout sRHwUnVEpWsvRFv', None, 844, 'git branch FaUGPmxWyYSYn', None, 773)"
+        return "'OK' 'full' 'zynnitmggx' '1'"

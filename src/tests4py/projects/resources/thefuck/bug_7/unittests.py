@@ -1,89 +1,69 @@
 import unittest
-from thefuck.types import Command
 from thefuck.rules.php_s import match
+from thefuck.types import Command
 
 
 class TestsFailing(unittest.TestCase):
+
     def test_diversity_1(self):
-        self.assertEqual(
-            True, match(Command("PHP -s localhost:4902 -t /path/to/your/project", ""))
-        )
+        self.assertEqual(True, match(Command('php iad -s ubogcrkgs', '')))
 
     def test_diversity_2(self):
-        self.assertEqual(
-            True, match(Command("php -S localhost:1231 -c /path/to/php.ini", ""))
-        )
+        self.assertEqual(True, match(Command('php vew -s dnjzyez', '')))
 
     def test_diversity_3(self):
-        self.assertEqual(True, match(Command("PHP -s 127.1.0.1:4511", "")))
+        self.assertEqual(True, match(Command('php cqm -s ujzzyzu', '')))
 
     def test_diversity_4(self):
-        self.assertEqual(True, match(Command("php -S localhost:2610 router.php", "")))
+        self.assertEqual(True, match(Command('php bdd -s lkwtcozzi', '')))
 
     def test_diversity_5(self):
-        self.assertEqual(
-            True, match(Command("php -S localhost:433 -c /path/to/php.ini", ""))
-        )
+        self.assertEqual(True, match(Command('php hpz -s zgxthrzgwi', '')))
 
     def test_diversity_6(self):
-        self.assertEqual(True, match(Command("PHP -s 127.1.0.1:1745", "")))
+        self.assertEqual(True, match(Command('php ysz -s hmbxmqhj', '')))
 
     def test_diversity_7(self):
-        self.assertEqual(
-            True, match(Command("PHP -s localhost:42 -c /path/to/php.ini", ""))
-        )
+        self.assertEqual(True, match(Command('php mgj -s gihzekpvb', '')))
 
     def test_diversity_8(self):
-        self.assertEqual(
-            True, match(Command("php -S localhost:55 -c /path/to/php.ini", ""))
-        )
+        self.assertEqual(True, match(Command('php fah -s dmohflhdh', '')))
 
     def test_diversity_9(self):
-        self.assertEqual(True, match(Command("php -S localhost:1026 router.php", "")))
+        self.assertEqual(True, match(Command('php vdo -s hixjuk', '')))
 
     def test_diversity_10(self):
-        self.assertEqual(
-            True, match(Command("php -S localhost:1174 -c /path/to/php.ini", ""))
-        )
+        self.assertEqual(True, match(Command('php iqz -s yyyes', '')))
 
 
 class TestsPassing(unittest.TestCase):
+
     def test_diversity_1(self):
-        self.assertEqual(
-            True, match(Command("php -s localhost:4000 -t /path/to/your/project", ""))
-        )
+        self.assertEqual(True, match(Command('php -s biuowvw', '')))
 
     def test_diversity_2(self):
-        self.assertEqual(
-            True, match(Command("php -s localhost:4469 -t /path/to/your/project", ""))
-        )
+        self.assertEqual(True, match(Command('php -s etubqcsexf', '')))
 
     def test_diversity_3(self):
-        self.assertEqual(True, match(Command("php -s localhost:1002", "")))
+        self.assertEqual(True, match(Command('php -s zynnitmggx', '')))
 
     def test_diversity_4(self):
-        self.assertEqual(
-            True, match(Command("php -s localhost:3047 -c /path/to/php.ini", ""))
-        )
+        self.assertEqual(True, match(Command('php -s xeptudhdh', '')))
 
     def test_diversity_5(self):
-        self.assertEqual(True, match(Command("php -s 127.0.1.0:1544", "")))
+        self.assertEqual(True, match(Command('php -s yftbvuydd', '')))
 
     def test_diversity_6(self):
-        self.assertEqual(True, match(Command("php -s 127.0.1.0:4451", "")))
+        self.assertEqual(True, match(Command('php -s vrvzfbe', '')))
 
     def test_diversity_7(self):
-        self.assertEqual(True, match(Command("php -s localhost:1232 router.php", "")))
+        self.assertEqual(True, match(Command('php -s gpsfujk', '')))
 
     def test_diversity_8(self):
-        self.assertEqual(True, match(Command("php -s 127.0.1.0:685", "")))
+        self.assertEqual(True, match(Command('php -s gjundkdo', '')))
 
     def test_diversity_9(self):
-        self.assertEqual(
-            True, match(Command("php -s localhost:3465 -t /path/to/your/project", ""))
-        )
+        self.assertEqual(True, match(Command('php -s dkkbw', '')))
 
     def test_diversity_10(self):
-        self.assertEqual(
-            True, match(Command("php -s localhost:2131 -t /path/to/your/project", ""))
-        )
+        self.assertEqual(True, match(Command('php -s vzynonqnv', '')))

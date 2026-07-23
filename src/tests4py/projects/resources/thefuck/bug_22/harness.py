@@ -3,47 +3,22 @@ from thefuck.types import SortedCorrectedCommandsSequence
 from thefuck.types import CorrectedCommand
 from thefuck.types import Settings
 
-
+# The bug 22 fault is in SortedCorrectedCommandsSequence._realise: with an empty
+# command generator the cached list is empty, and the buggy code unconditionally
+# does `self._cached[0]` (IndexError). The fixed code guards with `if self._cached`.
+# "empty" mode triggers the fault; "full" mode (a non-empty generator) realises
+# fine on both builds.
 if __name__ == "__main__":
-    assert len(sys.argv) == 11
-
+    assert len(sys.argv) == 5
     expected = sys.argv[1]
-    expected = expected[:-1]
-    expected = expected[1:]
-
-    script1 = sys.argv[2]
-    script1 = script1[:-1]
-
-    side_effect1 = sys.argv[3]
-    side_effect1 = side_effect1[:-1]
-
-    priority1 = sys.argv[4]
-    priority1 = priority1[:-1]
-
-    script2 = sys.argv[5]
-    script2 = script2[:-1]
-
-    side_effect2 = sys.argv[6]
-    side_effect2 = side_effect2[:-1]
-
-    priority2 = sys.argv[7]
-    priority2 = priority2[:-1]
-
-    script3 = sys.argv[8]
-    script3 = script3[:-1]
-
-    side_effect3 = sys.argv[9]
-    side_effect3 = side_effect3[:-1]
-
-    priority3 = sys.argv[10]
-    priority3 = priority3[:-2]
-
-    sort_corr_cmd_seq = SortedCorrectedCommandsSequence(iter(
-        [CorrectedCommand(script1, side_effect1, priority1),
-         CorrectedCommand(script2, side_effect2, priority2),
-         CorrectedCommand(script3, side_effect3, priority3)]), Settings({'key': 'val'}))
-
-    if priority1 == "None" or priority1 == "":
-        print("Priority cannot be String or None")
+    mode = sys.argv[2]
+    script = sys.argv[3]
+    priority = sys.argv[4]
+    if mode == "empty":
+        seq = SortedCorrectedCommandsSequence(iter([]), Settings({}))
     else:
-        print(expected)
+        seq = SortedCorrectedCommandsSequence(
+            iter([CorrectedCommand(script, "", int(priority))]), Settings({})
+        )
+    seq._realise()
+    print("OK")

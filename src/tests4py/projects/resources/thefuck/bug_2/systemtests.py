@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return 'Zq9qrMYME3voTHcrL5'
+        return "git semi"
 
     def test_diversity_2(self):
-        return 'Zq9hZYLWwH4Ep'
+        return "ls semi"
 
     def test_diversity_3(self):
-        return 'Zq9nXRUi8wdK'
+        return "cat semi"
 
     def test_diversity_4(self):
-        return 'Zq99LBjMimD8iMrGrru'
+        return "echo semi"
 
     def test_diversity_5(self):
-        return 'Zq9b8rOaJAA5NgM'
+        return "cp semi"
 
     def test_diversity_6(self):
-        return 'Zq9JMwcyCfca'
+        return "mv semi"
 
     def test_diversity_7(self):
-        return 'Zq9NDA8MT9UZs8mMog'
+        return "rm semi"
 
     def test_diversity_8(self):
-        return 'Zq9PBM6u0cE9MhksIG'
+        return "date semi"
 
     def test_diversity_9(self):
-        return 'Zq94c1pq1gAa9'
+        return "grep semi"
 
     def test_diversity_10(self):
-        return 'Zq98NKPiWHh9rgT1'
+        return "sort semi"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return 'nohup'
+        return "head plain"
 
     def test_diversity_2(self):
-        return 'cvfsdb'
+        return "tail plain"
 
     def test_diversity_3(self):
-        return 'shasum5.34'
+        return "uniq plain"
 
     def test_diversity_4(self):
-        return 'avmediainfo'
+        return "wc plain"
 
     def test_diversity_5(self):
-        return 'expand'
+        return "pwd plain"
 
     def test_diversity_6(self):
-        return 'fstyp_msdos'
+        return "sed plain"
 
     def test_diversity_7(self):
-        return 'lockf'
+        return "awk plain"
 
     def test_diversity_8(self):
-        return 'graphicssession'
+        return "find plain"
 
     def test_diversity_9(self):
-        return 'col'
+        return "tar plain"
 
     def test_diversity_10(self):
-        return 'usdtree'
+        return "curl plain"

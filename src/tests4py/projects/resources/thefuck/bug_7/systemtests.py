@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return 'True PHP -s 127.0.0.0:2068'
+        return 'True php iad -s ubogcrkgs'
 
     def test_diversity_2(self):
-        return 'True PHP -s 127.1.0.1:458'
+        return 'True php vew -s dnjzyez'
 
     def test_diversity_3(self):
-        return 'True PHP -s localhost:2040'
+        return 'True php cqm -s ujzzyzu'
 
     def test_diversity_4(self):
-        return 'True php -S localhost:4965 router.php'
+        return 'True php bdd -s lkwtcozzi'
 
     def test_diversity_5(self):
-        return 'True PHP -s localhost:4996 -t /path/to/your/project'
+        return 'True php hpz -s zgxthrzgwi'
 
     def test_diversity_6(self):
-        return 'True PHP -s 127.0.0.0:405'
+        return 'True php ysz -s hmbxmqhj'
 
     def test_diversity_7(self):
-        return 'True php -S 127.0.1.0:2172'
+        return 'True php mgj -s gihzekpvb'
 
     def test_diversity_8(self):
-        return 'True php -S 127.0.1.0:3897'
+        return 'True php fah -s dmohflhdh'
 
     def test_diversity_9(self):
-        return 'True PHP -s localhost:4393'
+        return 'True php vdo -s hixjuk'
 
     def test_diversity_10(self):
-        return 'True PHP -s localhost:3390'
+        return 'True php iqz -s yyyes'
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return 'True php -s 127.1.1.1:1897'
+        return 'True php -s biuowvw'
 
     def test_diversity_2(self):
-        return 'True php -s localhost:1363 -c /path/to/php.ini'
+        return 'True php -s etubqcsexf'
 
     def test_diversity_3(self):
-        return 'True php -s 127.1.0.1:1957'
+        return 'True php -s zynnitmggx'
 
     def test_diversity_4(self):
-        return 'True php -s localhost:3225 -c /path/to/php.ini'
+        return 'True php -s xeptudhdh'
 
     def test_diversity_5(self):
-        return 'True php -s 127.1.1.1:1084'
+        return 'True php -s yftbvuydd'
 
     def test_diversity_6(self):
-        return 'True php -s 127.1.1.1:3731'
+        return 'True php -s vrvzfbe'
 
     def test_diversity_7(self):
-        return 'True php -s 127.0.1.0:2880'
+        return 'True php -s gpsfujk'
 
     def test_diversity_8(self):
-        return 'True php -s 127.1.1.1:2398'
+        return 'True php -s gjundkdo'
 
     def test_diversity_9(self):
-        return 'True php -s 127.0.1.0:2877'
+        return 'True php -s dkkbw'
 
     def test_diversity_10(self):
-        return 'True php -s 127.1.0.1:3013'
+        return 'True php -s vzynonqnv'

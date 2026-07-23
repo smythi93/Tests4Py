@@ -93,13 +93,24 @@ class ExpressionAPI(API):
         if args is None:
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
-        if process.returncode != 0 and b"ValueError" not in process.stderr:
+        if process.returncode != 0:
+            # The FIXED build guards division by zero with ``assert r != 0`` and
+            # therefore raises AssertionError (the correct, controlled error).
+            # The BUGGY build performs the division and raises ZeroDivisionError
+            # (the fault). A ValueError/AssertionError is the expected controlled
+            # error => PASSING; any other crash (e.g. the ZeroDivisionError that
+            # the fault produces) => FAILING. This makes the failing diversity
+            # tests fail on the buggy build and pass on the fixed build.
+            if (
+                b"AssertionError" in process.stderr
+                or b"ValueError" in process.stderr
+            ):
+                return (
+                    TestResult.PASSING,
+                    f"Process failed with controlled error and code "
+                    f"{process.returncode}",
+                )
             return TestResult.FAILING, f"Process failed with {process.returncode}"
-        elif process.returncode != 0:
-            return (
-                TestResult.PASSING,
-                f"Process failed with ValueError and code {process.returncode}",
-            )
         s = process.args[2]
         s = "".join(s).strip()
         result = process.stdout.decode("utf8")
@@ -227,23 +238,25 @@ class ExpressionUnittestGenerator(
 
     @staticmethod
     def _get_assert_with_error_(
-        expected: ZeroDivisionError | str,
         result: str,
     ) -> list[Call]:
+        # Emit: self.assertRaises((ValueError, AssertionError), evaluate, result)
+        # This asserts the CORRECT (fixed) behaviour: on the buggy build the
+        # division raises ZeroDivisionError (not caught -> test fails), on the
+        # fixed build it raises AssertionError (caught -> test passes).
         return [
             ast.Call(
                 func=ast.Attribute(value=ast.Name(id="self"), attr="assertRaises"),
                 args=[
-                    ast.Constant(value=expected),
-                    ast.Call(
-                        func=ast.Name(id="evaluate"),
-                        args=(
-                            [
-                                ast.Constant(value=result),
-                            ],
-                        ),
-                        keywords=[],
+                    ast.Tuple(
+                        elts=[
+                            ast.Name(id="ValueError"),
+                            ast.Name(id="AssertionError"),
+                        ],
+                        ctx=ast.Load(),
                     ),
+                    ast.Name(id="evaluate"),
+                    ast.Constant(value=result),
                 ],
                 keywords=[],
             ),
@@ -279,14 +292,12 @@ class ExpressionUnittestGenerator(
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         _, generated_value = self._generate_one()
-        print("fail :", generated_value)
         test = self.get_empty_test()
-        test.body = self._get_assert_with_error_("ZeroDivisionError", generated_value)
+        test.body = self._get_assert_with_error_(generated_value)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         generated_value, _ = self._generate_one()
-        print("pass :", generated_value)
         test = self.get_empty_test()
         test.body = self._get_assert(eval(generated_value), generated_value)
         return test, TestResult.PASSING

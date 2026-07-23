@@ -1,4 +1,5 @@
 import ast
+import math
 import os
 import random
 import string
@@ -180,6 +181,10 @@ def register():
                 "tests", "keras", "utils", "data_utils_test.py::test_data_utils"
             )
         ],
+        unittests=Keras5UnittestGenerator(),
+        systemtests=Keras5SystemtestGenerator(),
+        api=Keras5API(),
+        grammar=grammar_5,
         loc=22261,
     )
     Keras(
@@ -427,6 +432,10 @@ def register():
                 "convolutional_test.py::test_conv2d_transpose_dilation",
             )
         ],
+        unittests=Keras20UnittestGenerator(),
+        systemtests=Keras20SystemtestGenerator(),
+        api=Keras20API(),
+        grammar=grammar_20,
         loc=20699,
     )
     Keras(
@@ -501,6 +510,10 @@ def register():
                 "imagenet_utils_test.py::test_preprocess_input",
             )
         ],
+        unittests=Keras25UnittestGenerator(),
+        systemtests=Keras25SystemtestGenerator(),
+        api=Keras25API(),
+        grammar=grammar_25,
         loc=23708,
     )
     Keras(
@@ -573,6 +586,10 @@ def register():
                 "sequence_test.py::test_TimeseriesGenerator",
             ),
         ],
+        unittests=Keras28UnittestGenerator(),
+        systemtests=Keras28SystemtestGenerator(),
+        api=Keras28API(),
+        grammar=grammar_28,
         loc=23235,
     )
     Keras(
@@ -753,6 +770,10 @@ def register():
                 "tests", "keras", "utils", "generic_utils_test.py::test_progbar"
             )
         ],
+        unittests=Keras39UnittestGenerator(),
+        systemtests=Keras39SystemtestGenerator(),
+        api=Keras39API(),
+        grammar=grammar_39,
         loc=22117,
     )
     Keras(
@@ -1157,3 +1178,809 @@ grammar_33: Grammar = clean_up(
 )
 
 assert is_valid_grammar(grammar_33)
+
+
+# ======================================================================
+# bug_39: keras.utils.generic_utils.Progbar.update early-return guard read
+# ``current < self.target`` unconditionally.  With ``target=None`` (progress
+# bar of unknown length) this evaluates ``current < None``, which raises
+# ``TypeError`` on Python 3.  The fix guards it with
+# ``self.target is not None and current < self.target``.
+#
+# generic_utils.py only depends on numpy/six/stdlib, so the harness loads the
+# module source directly (bypassing keras/__init__ and the TF backend).  A
+# large ``interval`` makes the timing-gated early-return branch fire
+# deterministically on the first ``update`` call (independent of wall-clock
+# jitter on a loaded machine).
+#
+# System-test format:  ``<mode> <v1> <v2> ...`` where ``<mode>`` is ``none``
+#   (target=None -> the trigger) or a positive integer (used as target).  The
+#   ``<vi>`` are the ``current`` indices passed to ``update``.  The harness
+#   prints ``RESULT:OK`` iff every update succeeds; the oracle treats OK
+#   (fixed behaviour) as PASSING.
+# ======================================================================
+
+
+class Keras39API(KerasAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8")
+        marker = None
+        for line in out.splitlines():
+            if line.startswith("RESULT:"):
+                marker = line[len("RESULT:"):].strip()
+        if process.returncode == 0 and marker == "OK":
+            return TestResult.PASSING, "progbar update succeeded"
+        return TestResult.FAILING, f"expected OK, got {marker!r}"
+
+
+class Keras39TestGenerator:
+    @staticmethod
+    def generate_vals() -> List[int]:
+        return [random.randint(0, 20) for _ in range(random.randint(1, 4))]
+
+    @staticmethod
+    def generate_target() -> int:
+        return random.randint(2, 20)
+
+
+class Keras39SystemtestGenerator(SystemtestGenerator, Keras39TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return (
+            "none " + " ".join(map(str, self.generate_vals())),
+            TestResult.FAILING,
+        )
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return (
+            f"{self.generate_target()} " + " ".join(map(str, self.generate_vals())),
+            TestResult.PASSING,
+        )
+
+
+_KERAS39_UTILS = '''
+def _t4p_progbar_update(mode, vals):
+    import os
+    import io
+    import contextlib
+    import importlib.util
+    path = os.path.join(os.getcwd(), 'keras', 'utils', 'generic_utils.py')
+    spec = importlib.util.spec_from_file_location('t4p_generic_utils', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    target = None if mode == 'none' else int(mode)
+    p = module.Progbar(target, width=30, verbose=1, interval=1e12)
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        for v in vals:
+            p.update(v)
+    return 'OK'
+'''
+
+
+class Keras39UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Keras39TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return ast.parse(_KERAS39_UTILS).body
+
+    @staticmethod
+    def _assert(mode: str, vals: List[int]) -> List[ast.stmt]:
+        return [
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id="self"), attr="assertEqual"
+                    ),
+                    args=[
+                        ast.Constant(value="OK"),
+                        ast.Call(
+                            func=ast.Name(id="_t4p_progbar_update"),
+                            args=[
+                                ast.Constant(value=mode),
+                                ast.List(
+                                    elts=[ast.Constant(value=v) for v in vals]
+                                ),
+                            ],
+                            keywords=[],
+                        ),
+                    ],
+                    keywords=[],
+                )
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._assert("none", self.generate_vals())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._assert(str(self.generate_target()), self.generate_vals())
+        return test, TestResult.PASSING
+
+
+grammar_39: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<mode> <number><values>"],
+            "<mode>": ["none", "<number>"],
+            "<values>": ["", " <number><values>"],
+        },
+        **NUMBER,
+    )
+)
+
+assert is_valid_grammar(grammar_39)
+
+
+# ======================================================================
+# bug_28: keras.preprocessing.sequence.TimeseriesGenerator had an off-by-one
+# in ``__len__`` (and ``__getitem__``): it computed the number of batches as
+# ``ceil((end_index - start_index) / (batch_size * stride))`` where
+# ``end_index`` is the INCLUSIVE last usable index.  The correct count is
+# ``ceil((end_index - start_index + 1) / (batch_size * stride))`` -- the buggy
+# version misses the final sample whenever ``(end_index - start_index)`` is an
+# exact multiple of ``batch_size * stride``.
+#
+# sequence.py imports ``Sequence`` from ``keras.utils.data_utils`` (a relative
+# import) but uses it only as an abstract base class, so the harness injects a
+# tiny stub ``keras.utils.data_utils.Sequence`` into ``sys.modules`` and loads
+# the module source directly (bypassing keras/__init__ and the TF backend).
+#
+# System-test format:  ``<n> <length> <batch_size> <stride>`` describing a
+#   generator over ``n`` consecutive timesteps.  The harness prints ``len(g)``;
+#   the oracle recomputes the correct (fixed) batch count
+#   ``ceil((n - length) / (batch_size * stride))``.  ``batch_size*stride == 1``
+#   always triggers the off-by-one (failing); a larger, non-dividing span
+#   leaves ``len`` unchanged (passing).
+# ======================================================================
+
+
+class Keras28API(KerasAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            n = int(process.args[2])
+            length = int(process.args[3])
+            batch_size = int(process.args[4])
+            stride = int(process.args[5])
+        except (IndexError, ValueError):
+            return TestResult.UNDEFINED, "Malformed test input"
+        expected = int(math.ceil((n - length) / (batch_size * stride)))
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == str(expected):
+            return TestResult.PASSING, f"Expected {expected}"
+        return TestResult.FAILING, f"Expected {expected}, but was {out!r}"
+
+
+class Keras28TestGenerator:
+    @staticmethod
+    def generate_failing_case() -> Tuple[int, int, int, int]:
+        # batch_size * stride == 1 => the off-by-one always drops one batch.
+        length = random.randint(2, 6)
+        n = random.randint(length + 2, length + 12)
+        return n, length, 1, 1
+
+    @staticmethod
+    def generate_passing_case() -> Tuple[int, int, int, int]:
+        # batch_size * stride > 1 and the span not a multiple of it => the
+        # ceil() is unchanged by the +1, so buggy and fixed agree.
+        while True:
+            length = random.randint(2, 6)
+            batch_size = random.randint(2, 4)
+            stride = random.randint(1, 3)
+            m = batch_size * stride
+            if m == 1:
+                continue
+            n = random.randint(length + 2, length + 14)
+            d = n - 1 - length
+            if d >= 1 and d % m != 0:
+                return n, length, batch_size, stride
+
+
+class Keras28SystemtestGenerator(SystemtestGenerator, Keras28TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        n, length, batch_size, stride = self.generate_failing_case()
+        return f"{n} {length} {batch_size} {stride}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        n, length, batch_size, stride = self.generate_passing_case()
+        return f"{n} {length} {batch_size} {stride}", TestResult.PASSING
+
+
+_KERAS28_UTILS = '''
+def _t4p_timeseries_len(n, length, batch_size, stride):
+    import os
+    import sys
+    import types
+    import importlib.util
+    import numpy as np
+    keras = types.ModuleType('keras'); keras.__path__ = []
+    utils = types.ModuleType('keras.utils'); utils.__path__ = []
+    prep = types.ModuleType('keras.preprocessing'); prep.__path__ = []
+    data_utils = types.ModuleType('keras.utils.data_utils')
+    class Sequence(object):
+        def __iter__(self):
+            for i in range(len(self)):
+                yield self[i]
+    data_utils.Sequence = Sequence
+    sys.modules['keras'] = keras
+    sys.modules['keras.utils'] = utils
+    sys.modules['keras.preprocessing'] = prep
+    sys.modules['keras.utils.data_utils'] = data_utils
+    path = os.path.join(os.getcwd(), 'keras', 'preprocessing', 'sequence.py')
+    spec = importlib.util.spec_from_file_location('keras.preprocessing.sequence', path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules['keras.preprocessing.sequence'] = module
+    spec.loader.exec_module(module)
+    data = np.arange(n).reshape(-1, 1)
+    g = module.TimeseriesGenerator(data, data, length=length,
+                                   batch_size=batch_size, stride=stride)
+    return len(g)
+'''
+
+
+class Keras28UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Keras28TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return ast.parse(_KERAS28_UTILS).body
+
+    @staticmethod
+    def _assert(n: int, length: int, batch_size: int, stride: int) -> List[ast.stmt]:
+        expected = int(math.ceil((n - length) / (batch_size * stride)))
+        return [
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id="self"), attr="assertEqual"
+                    ),
+                    args=[
+                        ast.Constant(value=expected),
+                        ast.Call(
+                            func=ast.Name(id="_t4p_timeseries_len"),
+                            args=[
+                                ast.Constant(value=n),
+                                ast.Constant(value=length),
+                                ast.Constant(value=batch_size),
+                                ast.Constant(value=stride),
+                            ],
+                            keywords=[],
+                        ),
+                    ],
+                    keywords=[],
+                )
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._assert(*self.generate_failing_case())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._assert(*self.generate_passing_case())
+        return test, TestResult.PASSING
+
+
+grammar_28: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<number> <number> <number> <number>"],
+        },
+        **NUMBER,
+    )
+)
+
+assert is_valid_grammar(grammar_28)
+
+
+# ======================================================================
+# bug_25: keras.applications.imagenet_utils._preprocess_numpy_input applied the
+# scaling / mean-subtraction in place (``x /= 127.5``, ``x[..., 0] -= mean``,
+# ...) WITHOUT first casting to float.  For an INTEGER input array the in-place
+# float operations raise ``TypeError`` / ``UFuncTypeError`` (numpy refuses the
+# ``same_kind`` cast).  The fix casts up front: ``x = x.astype(K.floatx())``.
+#
+# imagenet_utils.py has relative imports (``from ..utils.data_utils import
+# get_file`` and ``from .. import backend as K``); the numpy code path only
+# touches ``K.image_data_format`` / ``K.floatx``, so the harness injects tiny
+# stubs into ``sys.modules`` and loads the module source directly (bypassing
+# keras/__init__ and the TF backend).
+#
+# System-test format:  ``<mode> <dtype> <h> <w>`` where ``<mode>`` is ``tf`` /
+#   ``caffe`` / ``torch``, ``<dtype>`` is ``int`` (the trigger) or ``float``,
+#   and ``<h> <w>`` size the ``(h, w, 3)`` pixel array.  The harness prints
+#   ``RESULT:OK`` iff ``preprocess_input`` succeeds; the oracle treats OK
+#   (fixed behaviour) as PASSING.
+# ======================================================================
+
+
+class Keras25API(KerasAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8")
+        marker = None
+        for line in out.splitlines():
+            if line.startswith("RESULT:"):
+                marker = line[len("RESULT:"):].strip()
+        if process.returncode == 0 and marker == "OK":
+            return TestResult.PASSING, "preprocess_input succeeded"
+        return TestResult.FAILING, f"expected OK, got {marker!r}"
+
+
+class Keras25TestGenerator:
+    MODES = ["tf", "caffe", "torch"]
+
+    def generate_dims(self) -> Tuple[int, int]:
+        return random.randint(2, 6), random.randint(2, 6)
+
+    def generate_failing_case(self) -> Tuple[str, str, int, int]:
+        h, w = self.generate_dims()
+        return random.choice(self.MODES), "int", h, w
+
+    def generate_passing_case(self) -> Tuple[str, str, int, int]:
+        h, w = self.generate_dims()
+        return random.choice(self.MODES), "float", h, w
+
+
+class Keras25SystemtestGenerator(SystemtestGenerator, Keras25TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        mode, dtype, h, w = self.generate_failing_case()
+        return f"{mode} {dtype} {h} {w}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        mode, dtype, h, w = self.generate_passing_case()
+        return f"{mode} {dtype} {h} {w}", TestResult.PASSING
+
+
+_KERAS25_UTILS = '''
+def _t4p_preprocess_input(mode, dtype, h, w):
+    import os
+    import sys
+    import types
+    import importlib.util
+    import numpy as np
+    keras = types.ModuleType('keras'); keras.__path__ = []
+    apps = types.ModuleType('keras.applications'); apps.__path__ = []
+    utils = types.ModuleType('keras.utils'); utils.__path__ = []
+    data_utils = types.ModuleType('keras.utils.data_utils')
+    data_utils.get_file = lambda *a, **k: None
+    backend = types.ModuleType('keras.backend')
+    backend.image_data_format = lambda: 'channels_last'
+    backend.floatx = lambda: 'float32'
+    for name, module in [('keras', keras), ('keras.applications', apps),
+                         ('keras.utils', utils),
+                         ('keras.utils.data_utils', data_utils),
+                         ('keras.backend', backend)]:
+        sys.modules[name] = module
+    path = os.path.join(os.getcwd(), 'keras', 'applications', 'imagenet_utils.py')
+    spec = importlib.util.spec_from_file_location(
+        'keras.applications.imagenet_utils', path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules['keras.applications.imagenet_utils'] = module
+    spec.loader.exec_module(module)
+    base = (np.arange(h * w * 3) % 256).reshape(h, w, 3)
+    arr = base.astype('int32') if dtype == 'int' else base.astype('float64')
+    module.preprocess_input(arr, 'channels_last', mode)
+    return 'OK'
+'''
+
+
+class Keras25UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Keras25TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return ast.parse(_KERAS25_UTILS).body
+
+    @staticmethod
+    def _assert(mode: str, dtype: str, h: int, w: int) -> List[ast.stmt]:
+        return [
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id="self"), attr="assertEqual"
+                    ),
+                    args=[
+                        ast.Constant(value="OK"),
+                        ast.Call(
+                            func=ast.Name(id="_t4p_preprocess_input"),
+                            args=[
+                                ast.Constant(value=mode),
+                                ast.Constant(value=dtype),
+                                ast.Constant(value=h),
+                                ast.Constant(value=w),
+                            ],
+                            keywords=[],
+                        ),
+                    ],
+                    keywords=[],
+                )
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._assert(*self.generate_failing_case())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._assert(*self.generate_passing_case())
+        return test, TestResult.PASSING
+
+
+grammar_25: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<mode> <dtype> <number> <number>"],
+            "<mode>": ["tf", "caffe", "torch"],
+            "<dtype>": ["int", "float"],
+        },
+        **NUMBER,
+    )
+)
+
+assert is_valid_grammar(grammar_25)
+
+
+# ======================================================================
+# bug_20: keras.utils.conv_utils.deconv_length (used by Conv2DTranspose to
+# infer the transposed-convolution output length) did not support dilation.
+# Its signature was ``deconv_length(dim_size, stride_size, kernel_size,
+# padding, output_padding)`` -- 5 parameters.  The fix adds a ``dilation=1``
+# parameter and inflates the effective kernel size
+# (``kernel + (kernel - 1) * (dilation - 1)``) so dilated transposed convs
+# compute the right shape.  On the buggy build, calling ``deconv_length`` with
+# a dilation argument raises ``TypeError`` (too many arguments).
+#
+# conv_utils.py's only keras dependency is ``from .. import backend as K``,
+# which ``deconv_length`` never touches, so the harness injects an empty
+# ``keras.backend`` stub into ``sys.modules`` and loads the module source
+# directly (bypassing keras/__init__ and the TF backend).
+#
+# System-test format:  ``<mode> <dim> <stride> <kernel> <padding> <outpad>
+#   <dilation>`` where ``<mode>`` is ``dil`` (pass the dilation arg -> the
+#   trigger) or ``nodil`` (5-arg call), ``<padding>`` is same/valid/full and
+#   ``<outpad>`` is ``none`` or an integer.  The harness prints the returned
+#   length; the oracle recomputes the correct (fixed) length.
+# ======================================================================
+
+
+def _fixed_deconv_length(dim_size, stride_size, kernel_size, padding,
+                         output_padding, dilation):
+    if dim_size is None:
+        return None
+    kernel_size = kernel_size + (kernel_size - 1) * (dilation - 1)
+    if output_padding is None:
+        if padding == "valid":
+            dim_size = dim_size * stride_size + max(kernel_size - stride_size, 0)
+        elif padding == "full":
+            dim_size = dim_size * stride_size - (stride_size + kernel_size - 2)
+        elif padding == "same":
+            dim_size = dim_size * stride_size
+    else:
+        if padding == "same":
+            pad = kernel_size // 2
+        elif padding == "valid":
+            pad = 0
+        elif padding == "full":
+            pad = kernel_size - 1
+        dim_size = (dim_size - 1) * stride_size + kernel_size - 2 * pad + output_padding
+    return dim_size
+
+
+class Keras20API(KerasAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            mode = process.args[2]
+            dim = int(process.args[3])
+            stride = int(process.args[4])
+            kernel = int(process.args[5])
+            padding = process.args[6]
+            op = process.args[7]
+            out_pad = None if op == "none" else int(op)
+            dilation = int(process.args[8]) if mode == "dil" else 1
+        except (IndexError, ValueError):
+            return TestResult.UNDEFINED, "Malformed test input"
+        expected = _fixed_deconv_length(dim, stride, kernel, padding, out_pad, dilation)
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == str(expected):
+            return TestResult.PASSING, f"Expected {expected}"
+        return TestResult.FAILING, f"Expected {expected}, but was {out!r}"
+
+
+class Keras20TestGenerator:
+    PADDINGS = ["same", "valid", "full"]
+
+    def generate_params(self) -> Tuple[int, int, int, str, str]:
+        dim = random.randint(2, 12)
+        stride = random.randint(1, 3)
+        kernel = random.randint(1, 5)
+        padding = random.choice(self.PADDINGS)
+        out_pad = "none" if random.random() < 0.5 else str(random.randint(0, stride - 1))
+        return dim, stride, kernel, padding, out_pad
+
+    def generate_failing_case(self) -> Tuple[str, int, int, int, str, str, int]:
+        dim, stride, kernel, padding, out_pad = self.generate_params()
+        return "dil", dim, stride, kernel, padding, out_pad, random.randint(2, 4)
+
+    def generate_passing_case(self) -> Tuple[str, int, int, int, str, str, int]:
+        dim, stride, kernel, padding, out_pad = self.generate_params()
+        return "nodil", dim, stride, kernel, padding, out_pad, 1
+
+
+class Keras20SystemtestGenerator(SystemtestGenerator, Keras20TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        mode, dim, stride, kernel, padding, out_pad, dilation = (
+            self.generate_failing_case()
+        )
+        return (
+            f"{mode} {dim} {stride} {kernel} {padding} {out_pad} {dilation}",
+            TestResult.FAILING,
+        )
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        mode, dim, stride, kernel, padding, out_pad, dilation = (
+            self.generate_passing_case()
+        )
+        return (
+            f"{mode} {dim} {stride} {kernel} {padding} {out_pad} {dilation}",
+            TestResult.PASSING,
+        )
+
+
+_KERAS20_UTILS = '''
+def _t4p_deconv_length(mode, dim, stride, kernel, padding, out_pad, dilation):
+    import os
+    import sys
+    import types
+    import importlib.util
+    keras = types.ModuleType('keras'); keras.__path__ = []
+    utils = types.ModuleType('keras.utils'); utils.__path__ = []
+    backend = types.ModuleType('keras.backend')
+    for name, module in [('keras', keras), ('keras.utils', utils),
+                         ('keras.backend', backend)]:
+        sys.modules[name] = module
+    path = os.path.join(os.getcwd(), 'keras', 'utils', 'conv_utils.py')
+    spec = importlib.util.spec_from_file_location('keras.utils.conv_utils', path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules['keras.utils.conv_utils'] = module
+    spec.loader.exec_module(module)
+    op = None if out_pad == 'none' else int(out_pad)
+    if mode == 'dil':
+        return module.deconv_length(dim, stride, kernel, padding, op, dilation)
+    return module.deconv_length(dim, stride, kernel, padding, op)
+'''
+
+
+class Keras20UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Keras20TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return ast.parse(_KERAS20_UTILS).body
+
+    @staticmethod
+    def _assert(
+        mode: str, dim: int, stride: int, kernel: int, padding: str,
+        out_pad: str, dilation: int,
+    ) -> List[ast.stmt]:
+        eff_dilation = dilation if mode == "dil" else 1
+        op = None if out_pad == "none" else int(out_pad)
+        expected = _fixed_deconv_length(dim, stride, kernel, padding, op, eff_dilation)
+        return [
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id="self"), attr="assertEqual"
+                    ),
+                    args=[
+                        ast.Constant(value=expected),
+                        ast.Call(
+                            func=ast.Name(id="_t4p_deconv_length"),
+                            args=[
+                                ast.Constant(value=mode),
+                                ast.Constant(value=dim),
+                                ast.Constant(value=stride),
+                                ast.Constant(value=kernel),
+                                ast.Constant(value=padding),
+                                ast.Constant(value=out_pad),
+                                ast.Constant(value=dilation),
+                            ],
+                            keywords=[],
+                        ),
+                    ],
+                    keywords=[],
+                )
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._assert(*self.generate_failing_case())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._assert(*self.generate_passing_case())
+        return test, TestResult.PASSING
+
+
+grammar_20: Grammar = clean_up(
+    dict(
+        {
+            "<start>": [
+                "<mode> <number> <number> <number> <padding> <outpad> <number>"
+            ],
+            "<mode>": ["dil", "nodil"],
+            "<padding>": ["same", "valid", "full"],
+            "<outpad>": ["none", "<number>"],
+        },
+        **NUMBER,
+    )
+)
+
+assert is_valid_grammar(grammar_20)
+
+
+# ======================================================================
+# bug_5: keras.utils.data_utils.get_file, when called with ``cache_dir=None``,
+# hard-coded the cache directory to ``~/.keras`` and ignored the ``KERAS_HOME``
+# environment variable.  The fix honours ``KERAS_HOME`` when it is set.  So a
+# file that has been pre-cached under ``$KERAS_HOME/datasets`` is FOUND (no
+# download) on the fixed build but MISSED on the buggy build (which looks under
+# ``~/.keras`` and then tries to download).
+#
+# data_utils.py's only keras dependency is ``from ..utils.generic_utils import
+# Progbar`` (used only for the download progress bar), so the harness injects a
+# tiny ``keras.utils.generic_utils.Progbar`` stub into ``sys.modules`` and
+# loads the module source directly (bypassing keras/__init__ and the TF
+# backend).  No real network is used: the pre-cached file makes ``get_file``
+# return without downloading, and the (unreachable) origin only matters on the
+# buggy path, which fails fast with connection-refused.
+#
+# System-test format:  ``<mode> <fname>`` where ``<mode>`` is ``none``
+#   (``cache_dir=None`` with ``KERAS_HOME`` set -> the trigger) or ``explicit``
+#   (an explicit ``cache_dir``, which both builds honour).  The harness
+#   pre-caches ``<fname>`` under ``$KERAS_HOME/datasets`` and prints
+#   ``RESULT:OK`` iff ``get_file`` returns without error.
+# ======================================================================
+
+
+class Keras5API(KerasAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8")
+        marker = None
+        for line in out.splitlines():
+            if line.startswith("RESULT:"):
+                marker = line[len("RESULT:"):].strip()
+        if process.returncode == 0 and marker == "OK":
+            return TestResult.PASSING, "get_file honoured the cache directory"
+        return TestResult.FAILING, f"expected OK, got {marker!r}"
+
+
+class Keras5TestGenerator:
+    @staticmethod
+    def generate_fname() -> str:
+        return "t4p_" + "".join(
+            random.choices(
+                string.ascii_lowercase + string.digits, k=random.randint(6, 12)
+            )
+        )
+
+
+class Keras5SystemtestGenerator(SystemtestGenerator, Keras5TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return f"none {self.generate_fname()}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return f"explicit {self.generate_fname()}", TestResult.PASSING
+
+
+_KERAS5_UTILS = '''
+def _t4p_get_file(mode, fname):
+    import os
+    import sys
+    import types
+    import hashlib
+    import tempfile
+    import importlib.util
+    keras = types.ModuleType('keras'); keras.__path__ = []
+    utils = types.ModuleType('keras.utils'); utils.__path__ = []
+    gu = types.ModuleType('keras.utils.generic_utils')
+    class Progbar(object):
+        def __init__(self, *a, **k):
+            pass
+        def update(self, *a, **k):
+            pass
+    gu.Progbar = Progbar
+    for name, module in [('keras', keras), ('keras.utils', utils),
+                         ('keras.utils.generic_utils', gu)]:
+        sys.modules[name] = module
+    path = os.path.join(os.getcwd(), 'keras', 'utils', 'data_utils.py')
+    spec = importlib.util.spec_from_file_location('keras.utils.data_utils', path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules['keras.utils.data_utils'] = module
+    spec.loader.exec_module(module)
+    tmp = tempfile.mkdtemp()
+    os.environ['KERAS_HOME'] = tmp
+    content = ('data-' + fname).encode()
+    file_hash = hashlib.sha256(content).hexdigest()
+    datadir = os.path.join(tmp, 'datasets')
+    os.makedirs(datadir, exist_ok=True)
+    with open(os.path.join(datadir, fname), 'wb') as fp:
+        fp.write(content)
+    origin = 'http://127.0.0.1:1/' + fname
+    if mode == 'none':
+        module.get_file(fname, origin=origin, cache_dir=None, file_hash=file_hash)
+    else:
+        module.get_file(fname, origin=origin, cache_dir=tmp, file_hash=file_hash)
+    return 'OK'
+'''
+
+
+class Keras5UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Keras5TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return ast.parse(_KERAS5_UTILS).body
+
+    @staticmethod
+    def _assert(mode: str, fname: str) -> List[ast.stmt]:
+        return [
+            ast.Expr(
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id="self"), attr="assertEqual"
+                    ),
+                    args=[
+                        ast.Constant(value="OK"),
+                        ast.Call(
+                            func=ast.Name(id="_t4p_get_file"),
+                            args=[
+                                ast.Constant(value=mode),
+                                ast.Constant(value=fname),
+                            ],
+                            keywords=[],
+                        ),
+                    ],
+                    keywords=[],
+                )
+            )
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._assert("none", self.generate_fname())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._assert("explicit", self.generate_fname())
+        return test, TestResult.PASSING
+
+
+grammar_5: Grammar = {
+    "<start>": ["<mode> <fname>"],
+    "<mode>": ["none", "explicit"],
+    "<fname>": ["<char><chars>"],
+    "<chars>": ["", "<char><chars>"],
+    "<char>": srange(string.ascii_lowercase + string.digits + "_"),
+}
+
+assert is_valid_grammar(grammar_5)

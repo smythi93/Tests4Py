@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return "('thecNBRd', 'cNBRd')"
+        return "('TF_SHELL_ALIASES=$(alias) thefuck', 'fuck')"
 
     def test_diversity_2(self):
-        return "('theoEUuTL', 'oEUuTL')"
+        return "('$(TF_SHELL_ALIASES=$(alias) thefuck', 'fuck')"
 
     def test_diversity_3(self):
-        return "('theoKCWCSM', 'oKCWCSM')"
+        return "('TF_CMD=$(TF_SHELL_ALIASES=', 'fuck')"
 
     def test_diversity_4(self):
-        return "('theCYenRgi', 'CYenRgi')"
+        return "('=$(TF_SHELL_ALIASES=$(alias) thefuck $', 'fuck')"
 
     def test_diversity_5(self):
-        return "('thezMmlPVA', 'zMmlPVA')"
+        return "('TF_SHELL_ALIASES=$(alias) thefuck $(', 'fuck')"
 
     def test_diversity_6(self):
-        return "('thexaYiwYW', 'xaYiwYW')"
+        return "('$(TF_SHELL_ALIASES=$(alias) thefuck $(fc', 'fuck')"
 
     def test_diversity_7(self):
-        return "('thegYnHDFXMHw', 'gYnHDFXMHw')"
+        return "('TF_CMD=$(TF_SHELL_ALIASES=$(alias)', 'fuck')"
 
     def test_diversity_8(self):
-        return "('theIgpHnYQiWZtS', 'IgpHnYQiWZtS')"
+        return "('TF_SHELL_ALIASES=$(alias) thefuck $(fc -ln', 'fuck')"
 
     def test_diversity_9(self):
-        return "('thefxqjUczDyBGA', 'fxqjUczDyBGA')"
+        return "('$(alias) thefuck $(fc -ln -1))', 'fuck')"
 
     def test_diversity_10(self):
-        return "('thezbhYs', 'zbhYs')"
+        return "('TF_SHELL_ALIASES=$(alias) thefuck $(fc -ln -1', 'fuck')"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return "('alias wPrpmcV', 'wPrpmcV')"
+        return "('PYTHONIOENCODING=utf-8', 'fuck')"
 
     def test_diversity_2(self):
-        return "('TF_ALIAS=VroEvYZficz', 'VroEvYZficz')"
+        return "('eval $TF_CMD', 'fuck')"
 
     def test_diversity_3(self):
-        return "('alias XzmvRuxtNuw', 'XzmvRuxtNuw')"
+        return "('TF_ALIAS=fuck', 'fuck')"
 
     def test_diversity_4(self):
-        return "('alias stHjhwFd', 'stHjhwFd')"
+        return "('$(fc -ln -1)', 'fuck')"
 
     def test_diversity_5(self):
-        return "('TF_ALIAS=uuWALKCwLtjsDf', 'uuWALKCwLtjsDf')"
+        return "('history -s $TF_CMD', 'fuck')"
 
     def test_diversity_6(self):
-        return "('TF_ALIAS=gmrBTtT', 'gmrBTtT')"
+        return "('alias fuck=', 'fuck')"
 
     def test_diversity_7(self):
-        return "('alias vpQHVciGt', 'vpQHVciGt')"
+        return "('TF_CMD=$(', 'fuck')"
 
     def test_diversity_8(self):
-        return "('alias LyPJDEyluCyoH', 'LyPJDEyluCyoH')"
+        return "('thefuck $(fc -ln -1)', 'fuck')"
 
     def test_diversity_9(self):
-        return "('TF_ALIAS=lfuZXmQO', 'lfuZXmQO')"
+        return "('&& history -s $TF_CMD', 'fuck')"
 
     def test_diversity_10(self):
-        return "('TF_ALIAS=PFtNdUzV', 'PFtNdUzV')"
+        return "('=utf-8 TF_CMD=', 'fuck')"

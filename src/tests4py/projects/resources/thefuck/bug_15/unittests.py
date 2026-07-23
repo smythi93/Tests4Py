@@ -1,91 +1,69 @@
 import unittest
-from thefuck.rules.git_add import match, get_new_command
-from tests.utils import Command
+from thefuck.rules.git_add import match
+from thefuck.types import Command
 
 
 class TestsFailing(unittest.TestCase):
+
     def test_diversity_1(self):
-        self.assertEqual('git add -- zAjCxGVngifvleN && git submodule update zAjCxGVngifvleN', get_new_command(
-            Command('GIT SUBMODULE UPDATE zAjCxGVngifvleN', '',
-                    "error: pathspec 'zAjCxGVngifvleN' did not match any file(s) known to git. Did you forget to 'git add'?")))
+        self.assertEqual(True, match(Command('git commit ubogcrkgs', '', 'error: pathspec ubogcrkgs did not match any file(s) known to git.')))
 
     def test_diversity_2(self):
-        self.assertEqual(True, match(Command('git submodule update hHAnhHgLKGvlZ', '', '')))
+        self.assertEqual(True, match(Command('git commit dnjzyez', '', 'error: pathspec dnjzyez did not match any file(s) known to git.')))
 
     def test_diversity_3(self):
-        self.assertEqual('git add -- MxPfwsXrzI && git submodule update MxPfwsXrzI', get_new_command(
-            Command('GIT SUBMODULE UPDATE MxPfwsXrzI', '',
-                    "error: pathspec 'MxPfwsXrzI' did not match any file(s) known to git. Did you forget to 'git add'?")))
+        self.assertEqual(True, match(Command('git commit ujzzyzu', '', 'error: pathspec ujzzyzu did not match any file(s) known to git.')))
 
     def test_diversity_4(self):
-        self.assertEqual(True, match(Command('git commit MvrDrCNhPBHuC', '', '')))
+        self.assertEqual(True, match(Command('git commit lkwtcozzi', '', 'error: pathspec lkwtcozzi did not match any file(s) known to git.')))
 
     def test_diversity_5(self):
-        self.assertEqual('git add -- IAjrih && git commit IAjrih', get_new_command(Command('GIT COMMIT IAjrih', '',
-                                                                                           "error: pathspec 'IAjrih' did not match any file(s) known to git. Did you forget to 'git add'?")))
+        self.assertEqual(True, match(Command('git commit zgxthrzgwi', '', 'error: pathspec zgxthrzgwi did not match any file(s) known to git.')))
 
     def test_diversity_6(self):
-        self.assertEqual('git add -- aaSFKv && git submodule update aaSFKv', get_new_command(
-            Command('GIT SUBMODULE UPDATE aaSFKv', '',
-                    "error: pathspec 'aaSFKv' did not match any file(s) known to git. Did you forget to 'git add'?")))
+        self.assertEqual(True, match(Command('git commit hmbxmqhj', '', 'error: pathspec hmbxmqhj did not match any file(s) known to git.')))
 
     def test_diversity_7(self):
-        self.assertEqual('git add -- LFXPjNV && git commit LFXPjNV', get_new_command(Command('GIT COMMIT LFXPjNV', '',
-                                                                                             "error: pathspec 'LFXPjNV' did not match any file(s) known to git. Did you forget to 'git add'?")))
+        self.assertEqual(True, match(Command('git commit gihzekpvb', '', 'error: pathspec gihzekpvb did not match any file(s) known to git.')))
 
     def test_diversity_8(self):
-        self.assertEqual(True, match(Command('git submodule update WlkCUZEtaY', '', '')))
+        self.assertEqual(True, match(Command('git commit dmohflhdh', '', 'error: pathspec dmohflhdh did not match any file(s) known to git.')))
 
     def test_diversity_9(self):
-        self.assertEqual(True, match(Command('git commit jfjasduej', '', '')))
+        self.assertEqual(True, match(Command('git commit hixjuk', '', 'error: pathspec hixjuk did not match any file(s) known to git.')))
 
     def test_diversity_10(self):
-        self.assertEqual('git add -- DfxaSUY && git commit DfxaSUY', get_new_command(Command('GIT COMMIT DfxaSUY', '',
-                                                                                             "error: pathspec 'DfxaSUY' did not match any file(s) known to git. Did you forget to 'git add'?")))
+        self.assertEqual(True, match(Command('git commit yyyes', '', 'error: pathspec yyyes did not match any file(s) known to git.')))
 
 
 class TestsPassing(unittest.TestCase):
 
     def test_diversity_1(self):
-        self.assertEqual(True, match(Command('git submodule update MmhXCRUzYjMes', '',
-                                             "error: pathspec 'MmhXCRUzYjMes' did not match any file(s) known to git. Did you forget to 'git add'?")))
+        self.assertEqual(True, match(Command('git commit qjbzpwr', '', "error: pathspec qjbzpwr did not match any file(s) known to git. Did you forget to 'git add'?")))
 
     def test_diversity_2(self):
-        self.assertEqual(True, match(Command('git commit xSxlBlHhuHZ', '',
-                                             "error: pathspec 'xSxlBlHhuHZ' did not match any file(s) known to git. Did you forget to 'git add'?")))
+        self.assertEqual(True, match(Command('git commit mbddhpzysz', '', "error: pathspec mbddhpzysz did not match any file(s) known to git. Did you forget to 'git add'?")))
 
     def test_diversity_3(self):
-        self.assertEqual('git add -- SoCvsHAx && git submodule update SoCvsHAx', get_new_command(
-            Command('git submodule update SoCvsHAx', '',
-                    "error: pathspec 'SoCvsHAx' did not match any file(s) known to git. Did you forget to 'git add'?")))
+        self.assertEqual(True, match(Command('git commit vpxgdrqm', '', "error: pathspec vpxgdrqm did not match any file(s) known to git. Did you forget to 'git add'?")))
 
     def test_diversity_4(self):
-        self.assertEqual('git add -- fVLkEjrFAaRIbmG && git commit fVLkEjrFAaRIbmG', get_new_command(
-            Command('git commit fVLkEjrFAaRIbmG', '',
-                    "error: pathspec 'fVLkEjrFAaRIbmG' did not match any file(s) known to git. Did you forget to 'git add'?")))
+        self.assertEqual(True, match(Command('git commit iqzlfast', '', "error: pathspec iqzlfast did not match any file(s) known to git. Did you forget to 'git add'?")))
 
     def test_diversity_5(self):
-        self.assertEqual(True, match(Command('git submodule update JRSQS', '',
-                                             "error: pathspec 'JRSQS' did not match any file(s) known to git. Did you forget to 'git add'?")))
+        self.assertEqual(True, match(Command('git commit hjgzjchxxv', '', "error: pathspec hjgzjchxxv did not match any file(s) known to git. Did you forget to 'git add'?")))
 
     def test_diversity_6(self):
-        self.assertEqual(True, match(Command('git commit bNxDAd', '',
-                                             "error: pathspec 'bNxDAd' did not match any file(s) known to git. Did you forget to 'git add'?")))
+        self.assertEqual(True, match(Command('git commit guwwagss', '', "error: pathspec guwwagss did not match any file(s) known to git. Did you forget to 'git add'?")))
 
     def test_diversity_7(self):
-        self.assertEqual('git add -- wfqpuEIwxnxMp && git submodule update wfqpuEIwxnxMp', get_new_command(
-            Command('git submodule update wfqpuEIwxnxMp', '',
-                    "error: pathspec 'wfqpuEIwxnxMp' did not match any file(s) known to git. Did you forget to 'git add'?")))
+        self.assertEqual(True, match(Command('git commit vcogxkbiu', '', "error: pathspec vcogxkbiu did not match any file(s) known to git. Did you forget to 'git add'?")))
 
     def test_diversity_8(self):
-        self.assertEqual(True, match(Command('git commit toFLkaI', '',
-                                             "error: pathspec 'toFLkaI' did not match any file(s) known to git. Did you forget to 'git add'?")))
+        self.assertEqual(True, match(Command('git commit brtbetubq', '', "error: pathspec brtbetubq did not match any file(s) known to git. Did you forget to 'git add'?")))
 
     def test_diversity_9(self):
-        self.assertEqual('git add -- oakKlxDRN && git submodule update oakKlxDRN', get_new_command(
-            Command('git submodule update oakKlxDRN', '',
-                    "error: pathspec 'oakKlxDRN' did not match any file(s) known to git. Did you forget to 'git add'?")))
+        self.assertEqual(True, match(Command('git commit ydxrn', '', "error: pathspec ydxrn did not match any file(s) known to git. Did you forget to 'git add'?")))
 
     def test_diversity_10(self):
-        self.assertEqual(True, match(Command('git commit FYYTFHiYpD', '',
-                                             "error: pathspec 'FYYTFHiYpD' did not match any file(s) known to git. Did you forget to 'git add'?")))
+        self.assertEqual(True, match(Command('git commit zynnitmggx', '', "error: pathspec zynnitmggx did not match any file(s) known to git. Did you forget to 'git add'?")))

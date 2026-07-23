@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return "'False' 'rmm GrYIK' 'rmm: not found'"
+        return "'False' 'git ubogcrkgs' 'git: not found'"
 
     def test_diversity_2(self):
-        return "'False' 'datee IPRacmSKdSANSIz' 'datee: not found'"
+        return "'False' 'ls dnjzyez' 'ls: not found'"
 
     def test_diversity_3(self):
-        return "'False' 'echoo crvtgrIxNqOBenJ' 'echoo: not found'"
+        return "'False' 'cat ujzzyzu' 'cat: not found'"
 
     def test_diversity_4(self):
-        return "'False' 'echoo oKqShsyyFBEXlR' 'echoo: not found'"
+        return "'False' 'echo lkwtcozzi' 'echo: not found'"
 
     def test_diversity_5(self):
-        return "'False' 'wcc vmHdbemz' 'wcc: not found'"
+        return "'False' 'cp zgxthrzgwi' 'cp: not found'"
 
     def test_diversity_6(self):
-        return "'False' 'gitt slxygPxK' 'gitt: not found'"
+        return "'False' 'mv hmbxmqhj' 'mv: not found'"
 
     def test_diversity_7(self):
-        return "'False' 'sedd DSdeCJPjFduKG' 'sedd: not found'"
+        return "'False' 'rm gihzekpvb' 'rm: not found'"
 
     def test_diversity_8(self):
-        return "'False' 'grepp ERvupbcqBuBbzTV' 'grepp: not found'"
+        return "'False' 'date dmohflhdh' 'date: not found'"
 
     def test_diversity_9(self):
-        return "'False' 'gitt VcwWRXAooTwpsQ' 'gitt: not found'"
+        return "'False' 'grep hixjuk' 'grep: not found'"
 
     def test_diversity_10(self):
-        return "'False' 'uniqq VrhfGLrF' 'uniqq: not found'"
+        return "'False' 'sort yyyes' 'sort: not found'"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return "'True' 'gitt TgAUfdBOzwPVy' 'gitt: not found'"
+        return "'True' 'gitt xeptudhdh' 'gitt: not found'"
 
     def test_diversity_2(self):
-        return "'True' 'lss BPTPR' 'lss: not found'"
+        return "'True' 'lss yftbvuydd' 'lss: not found'"
 
     def test_diversity_3(self):
-        return "'True' 'rmm hJZfe' 'rmm: not found'"
+        return "'True' 'catt vrvzfbe' 'catt: not found'"
 
     def test_diversity_4(self):
-        return "'True' 'gitt ySRlGsN' 'gitt: not found'"
+        return "'True' 'echoo gpsfujk' 'echoo: not found'"
 
     def test_diversity_5(self):
-        return "'True' 'headd BfYhIpMXTDfufL' 'headd: not found'"
+        return "'True' 'rmm gjundkdo' 'rmm: not found'"
 
     def test_diversity_6(self):
-        return "'True' 'echoo rFZSXkOlewl' 'echoo: not found'"
+        return "'True' 'datee dkkbw' 'datee: not found'"
 
     def test_diversity_7(self):
-        return "'True' 'sortt qgUKqKJRbeB' 'sortt: not found'"
+        return "'True' 'grepp vzynonqnv' 'grepp: not found'"
 
     def test_diversity_8(self):
-        return "'True' 'pwdd mibCWTpnJV' 'pwdd: not found'"
+        return "'True' 'sortt nbgosppu' 'sortt: not found'"
 
     def test_diversity_9(self):
-        return "'True' 'grepp CFsJCjvw' 'grepp: not found'"
+        return "'True' 'headd euhutgtge' 'headd: not found'"
 
     def test_diversity_10(self):
-        return "'True' 'lss WUNTfHDP' 'lss: not found'"
+        return "'True' 'taill mjsnwcsuc' 'taill: not found'"

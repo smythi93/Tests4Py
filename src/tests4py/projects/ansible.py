@@ -1,5 +1,6 @@
 import abc
 import ast
+import json
 import os.path
 import random
 import string
@@ -90,6 +91,10 @@ def register():
             ),
         ],
         included_packages=["galaxy"],
+        api=Ansible1API(),
+        unittests=Ansible1UnittestGenerator(),
+        systemtests=Ansible1SystemtestGenerator(),
+        grammar=grammar_1,
         loc=55990,
     )
     Ansible(
@@ -220,7 +225,10 @@ def register():
             "test_build_requirement_from_path_no_version",
         ],
         included_packages=["galaxy"],
-        # test_status_fixed=TestStatus.FAILING,
+        api=Ansible6API(),
+        unittests=Ansible6UnittestGenerator(),
+        systemtests=Ansible6SystemtestGenerator(),
+        grammar=grammar_6,
         loc=718675,
     )
     Ansible(
@@ -300,6 +308,10 @@ def register():
             ),
         ],
         included_packages=["modules"],
+        api=Ansible9API(),
+        unittests=Ansible9UnittestGenerator(),
+        systemtests=Ansible9SystemtestGenerator(),
+        grammar=grammar_9,
         loc=718035,
     )
     Ansible(
@@ -420,6 +432,10 @@ def register():
             ),
         ],
         included_packages=["cli", "galaxy"],
+        api=Ansible13API(),
+        unittests=Ansible13UnittestGenerator(),
+        systemtests=Ansible13SystemtestGenerator(),
+        grammar=grammar_13,
         loc=711087,
     )
     Ansible(
@@ -436,6 +452,10 @@ def register():
             ),
         ],
         included_packages=["galaxy"],
+        api=Ansible14API(),
+        unittests=Ansible14UnittestGenerator(),
+        systemtests=Ansible14SystemtestGenerator(),
+        grammar=grammar_14,
         loc=705660,
     )
     Ansible(
@@ -1870,3 +1890,725 @@ grammar_12: Grammar = clean_up(
 )
 
 assert is_valid_grammar(grammar_12)
+
+
+# ======================================================================
+# bug_1: galaxy.collection.verify_collections did not verify that a locally
+# installed collection directory actually contains a MANIFEST.json before
+# treating it as installed.  The fix raises an AnsibleError
+# ("Collection <ns>.<name> does not appear to have a MANIFEST.json. ...")
+# when the directory is present but the manifest is missing.
+#
+# System-test format:  ``<mode> <namespace> <name> <version>`` where
+#   ``<mode>`` is ``nomanifest`` (installed dir WITHOUT MANIFEST.json -- the
+#   trigger) or ``manifest`` (dir WITH a valid MANIFEST.json).  The harness
+#   builds the directory, calls verify_collections with NO galaxy apis and
+#   prints the raised AnsibleError message.  For ``nomanifest`` the fixed
+#   build raises the manifest-missing error (buggy instead falls through to
+#   the remote-lookup error); for ``manifest`` both builds raise the same
+#   remote-lookup error.  The oracle expects the fixed-build message.
+# ======================================================================
+
+_B1_NO_MANIFEST = (
+    "Collection %s.%s does not appear to have a MANIFEST.json. "
+    "A MANIFEST.json is expected if the collection has been built and "
+    "installed via ansible-galaxy."
+)
+_B1_NO_REMOTE = "Failed to find remote collection %s.%s:%s on any of the galaxy servers"
+
+
+def _b1_expected(mode: str, namespace: str, name: str, version: str) -> str:
+    if mode == "nomanifest":
+        return _B1_NO_MANIFEST % (namespace, name)
+    return _B1_NO_REMOTE % (namespace, name, version)
+
+
+class Ansible1API(AnsibleAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            mode = process.args[2]
+            namespace = process.args[3]
+            name = process.args[4]
+            version = process.args[5]
+        except IndexError:
+            return TestResult.UNDEFINED, "Malformed test input"
+        if mode not in ("nomanifest", "manifest"):
+            return TestResult.UNDEFINED, "Malformed test input"
+        expected = _b1_expected(mode, namespace, name, version)
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == expected:
+            return TestResult.PASSING, f"Expected {expected!r}"
+        return TestResult.FAILING, f"Expected {expected!r}, but was {out!r}"
+
+
+class Ansible1TestGenerator:
+    @staticmethod
+    def _word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(3, 7)))
+
+    @staticmethod
+    def _version() -> str:
+        return ".".join(str(random.randint(0, 9)) for _ in range(3))
+
+    def make_failing(self) -> str:
+        version = "*" if random.random() < 0.5 else self._version()
+        return f"nomanifest {self._word()} {self._word()} {version}"
+
+    def make_passing(self) -> str:
+        return f"manifest {self._word()} {self._word()} {self._version()}"
+
+
+class Ansible1SystemtestGenerator(SystemtestGenerator, Ansible1TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return self.make_failing(), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return self.make_passing(), TestResult.PASSING
+
+
+class Ansible1UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Ansible1TestGenerator
+):
+    @staticmethod
+    def _body(mode: str, namespace: str, name: str, version: str) -> List[ast.stmt]:
+        expected = _b1_expected(mode, namespace, name, version)
+        src = (
+            "import os, json, tempfile\n"
+            "from ansible.errors import AnsibleError\n"
+            "from ansible.galaxy.collection import verify_collections\n"
+            f"mode, namespace, name, version = {mode!r}, {namespace!r}, {name!r}, {version!r}\n"
+            "root = tempfile.mkdtemp()\n"
+            "cdir = os.path.join(root, namespace, name)\n"
+            "os.makedirs(cdir)\n"
+            "if mode == 'manifest':\n"
+            "    with open(os.path.join(cdir, 'MANIFEST.json'), 'w') as fh:\n"
+            "        json.dump({'collection_info': {'namespace': namespace, "
+            "'name': name, 'version': '1.0.0', 'dependencies': {}}}, fh)\n"
+            "try:\n"
+            "    verify_collections([('%s.%s' % (namespace, name), version, None)], "
+            "[root], [], False, False)\n"
+            "    actual = 'NO_ERROR'\n"
+            "except AnsibleError as e:\n"
+            "    actual = e.message\n"
+            f"self.assertEqual({expected!r}, actual)\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        version = "*" if random.random() < 0.5 else self._version()
+        test = self.get_empty_test()
+        test.body = self._body("nomanifest", self._word(), self._word(), version)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("manifest", self._word(), self._word(), self._version())
+        return test, TestResult.PASSING
+
+
+grammar_1: Grammar = clean_up(
+    {
+        "<start>": ["<mode> <word> <word> <version>"],
+        "<mode>": ["nomanifest", "manifest"],
+        "<word>": ["<letter><letters>"],
+        "<letters>": ["", "<letter><letters>"],
+        "<letter>": srange(string.ascii_lowercase),
+        "<version>": ["*", "<num>.<num>.<num>"],
+        "<num>": ["<digit><digits>"],
+        "<digits>": ["", "<digit><digits>"],
+        "<digit>": srange(string.digits),
+    }
+)
+
+assert is_valid_grammar(grammar_1)
+
+
+# ======================================================================
+# bug_6: galaxy.collection.CollectionRequirement._meets_requirements kept
+# the "parent and version == '*' and requirement != '*'" guard INSIDE the
+# ``if not op:`` branch and executed ``break`` (treating an unknown-version
+# installed collection as unable to meet a new pinned requirement -> raising
+# AnsibleError).  The fix moves the guard out of that branch and replaces the
+# ``break`` with ``display.warning(...); continue`` so an unknown installed
+# version is accepted (with a warning) rather than raising.
+#
+# System-test format:  ``<mode> <namespace> <name> <parent> <have> <req>``.
+#   ``<mode>`` is ``unknown`` (installed version '*', a pinned ``<req>`` and a
+#   truthy ``<parent>`` -- the trigger), ``wild`` (installed '*', req '*') or
+#   ``match`` (installed ``<have>``, req == ``<have>``).  The harness builds a
+#   skip=True CollectionRequirement and calls add_requirement, printing
+#   ``OK <latest_version>`` or ``ERROR:<Exc>``.  The oracle expects the fixed
+#   result (``OK *`` for unknown/wild, ``OK <have>`` for match); the buggy
+#   build raises for ``unknown``.
+# ======================================================================
+
+
+def _b6_expected(mode: str, have: str) -> Optional[str]:
+    if mode in ("unknown", "wild"):
+        return "OK *"
+    if mode == "match":
+        return "OK %s" % have
+    return None
+
+
+class Ansible6API(AnsibleAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            mode = process.args[2]
+            have = process.args[6]
+        except IndexError:
+            return TestResult.UNDEFINED, "Malformed test input"
+        expected = _b6_expected(mode, have)
+        if expected is None:
+            return TestResult.UNDEFINED, "Malformed test input"
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == expected:
+            return TestResult.PASSING, f"Expected {expected!r}"
+        return TestResult.FAILING, f"Expected {expected!r}, but was {out!r}"
+
+
+class Ansible6TestGenerator:
+    @staticmethod
+    def _word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(3, 7)))
+
+    def _parent(self) -> str:
+        return f"{self._word()}.{self._word()}"
+
+    @staticmethod
+    def _version() -> str:
+        return ".".join(str(random.randint(0, 9)) for _ in range(3))
+
+    def make_failing(self) -> str:
+        return (
+            f"unknown {self._word()} {self._word()} {self._parent()} * "
+            f"{self._version()}"
+        )
+
+    def make_passing(self) -> str:
+        if random.random() < 0.5:
+            return f"wild {self._word()} {self._word()} {self._parent()} * *"
+        v = self._version()
+        return f"match {self._word()} {self._word()} {self._parent()} {v} {v}"
+
+
+class Ansible6SystemtestGenerator(SystemtestGenerator, Ansible6TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return self.make_failing(), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return self.make_passing(), TestResult.PASSING
+
+
+class Ansible6UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Ansible6TestGenerator
+):
+    @staticmethod
+    def _body(mode: str, ns: str, name: str, parent: str, have: str, req: str) -> List[ast.stmt]:
+        expected = _b6_expected(mode, have)
+        src = (
+            "from ansible.errors import AnsibleError\n"
+            "from ansible.galaxy.collection import CollectionRequirement\n"
+            f"mode, ns, name, parent, have, req = {mode!r}, {ns!r}, {name!r}, "
+            f"{parent!r}, {have!r}, {req!r}\n"
+            "obj = CollectionRequirement(ns, name, None, 'https://galaxy.com', "
+            "[have], have, False, skip=True)\n"
+            "try:\n"
+            "    obj.add_requirement(parent, req)\n"
+            "    actual = 'OK %s' % obj.latest_version\n"
+            "except AnsibleError:\n"
+            "    actual = 'ERROR:AnsibleError'\n"
+            "except Exception as e:\n"
+            "    actual = 'OTHER:%s' % type(e).__name__\n"
+            f"self.assertEqual({expected!r}, actual)\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body(
+            "unknown", self._word(), self._word(), self._parent(), "*", self._version()
+        )
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        if random.random() < 0.5:
+            test.body = self._body(
+                "wild", self._word(), self._word(), self._parent(), "*", "*"
+            )
+        else:
+            v = self._version()
+            test.body = self._body(
+                "match", self._word(), self._word(), self._parent(), v, v
+            )
+        return test, TestResult.PASSING
+
+
+grammar_6: Grammar = clean_up(
+    {
+        "<start>": ["<mode> <word> <word> <parent> <vers> <vers>"],
+        "<mode>": ["unknown", "wild", "match"],
+        "<parent>": ["<word>.<word>", "<word>"],
+        "<word>": ["<letter><letters>"],
+        "<letters>": ["", "<letter><letters>"],
+        "<letter>": srange(string.ascii_lowercase),
+        "<vers>": ["*", "<num>.<num>.<num>"],
+        "<num>": ["<digit><digits>"],
+        "<digits>": ["", "<digit><digits>"],
+        "<digit>": srange(string.digits),
+    }
+)
+
+assert is_valid_grammar(grammar_6)
+
+
+# ======================================================================
+# bug_9: modules.packaging.os.redhat_subscription attached a pool without an
+# explicit quantity as ``[SUBMAN_CMD, 'attach', '--pool', pool_id,
+# '--quantity', quantity]`` where ``main`` had defaulted the missing quantity
+# to ``1``.  This forces ``--quantity 1`` even when the user did not request a
+# quantity.  The fix defaults the quantity to ``None`` and only appends
+# ``--quantity`` when it is not None, so a plain pool id becomes
+# ``[SUBMAN_CMD, 'attach', '--pool', pool_id]``.
+#
+# System-test format:  ``<mode> <pool_id> [<quantity>]`` where ``<mode>`` is
+#   ``noq`` (pool without quantity -- the trigger) or ``withq`` (pool WITH an
+#   explicit ``<quantity>``).  The harness drives redhat_subscription.main()
+#   with run_command stubbed and prints the JSON of the ``attach`` command.
+#   The oracle expects the fixed command (no ``--quantity`` for ``noq``); the
+#   buggy build appends ``--quantity 1``.
+# ======================================================================
+
+_B9_SUBMAN = "/testbin/subscription-manager"
+
+
+def _b9_expected(mode: str, pool_id: str, quantity: Optional[str]) -> Optional[List[str]]:
+    if mode == "noq":
+        return [_B9_SUBMAN, "attach", "--pool", pool_id]
+    if mode == "withq" and quantity is not None:
+        return [_B9_SUBMAN, "attach", "--pool", pool_id, "--quantity", str(int(quantity))]
+    return None
+
+
+class Ansible9API(AnsibleAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            mode = process.args[2]
+            pool_id = process.args[3]
+        except IndexError:
+            return TestResult.UNDEFINED, "Malformed test input"
+        quantity = process.args[4] if len(process.args) > 4 else None
+        expected = _b9_expected(mode, pool_id, quantity)
+        if expected is None:
+            return TestResult.UNDEFINED, "Malformed test input"
+        out = process.stdout.decode("utf8").strip()
+        try:
+            actual = json.loads(out)
+        except ValueError:
+            return TestResult.FAILING, f"Expected {expected!r}, but was {out!r}"
+        if process.returncode == 0 and actual == expected:
+            return TestResult.PASSING, f"Expected {expected!r}"
+        return TestResult.FAILING, f"Expected {expected!r}, but was {actual!r}"
+
+
+class Ansible9TestGenerator:
+    @staticmethod
+    def _pool_id() -> str:
+        return "".join(random.choices("0123456789abcdef", k=32))
+
+    @staticmethod
+    def _quantity() -> int:
+        return random.randint(1, 9)
+
+    def make_failing(self) -> str:
+        return f"noq {self._pool_id()}"
+
+    def make_passing(self) -> str:
+        return f"withq {self._pool_id()} {self._quantity()}"
+
+
+class Ansible9SystemtestGenerator(SystemtestGenerator, Ansible9TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return self.make_failing(), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return self.make_passing(), TestResult.PASSING
+
+
+class Ansible9UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Ansible9TestGenerator
+):
+    @staticmethod
+    def _body(mode: str, pool_id: str, quantity: Optional[int]) -> List[ast.stmt]:
+        expected = _b9_expected(
+            mode, pool_id, None if quantity is None else str(quantity)
+        )
+        src = (
+            "import contextlib, io, json\n"
+            "from unittest import mock\n"
+            "from ansible.module_utils import basic\n"
+            "from ansible.module_utils._text import to_bytes\n"
+            "from ansible.modules.packaging.os import redhat_subscription\n"
+            f"mode, pool_id, quantity = {mode!r}, {pool_id!r}, {quantity!r}\n"
+            "basic._ANSIBLE_ARGS = to_bytes(json.dumps({'ANSIBLE_MODULE_ARGS': {"
+            "'state': 'present', 'username': 'admin', 'password': 'admin', "
+            "'org_id': 'admin', 'pool_ids': "
+            "([{pool_id: quantity}] if mode == 'withq' else [pool_id])}}))\n"
+            "available = chr(10).join(['Subscription Name:   SP Server', "
+            "'Pool ID:             ' + pool_id, 'Available:           5', ''])\n"
+            "calls = []\n"
+            "def fake_run_command(args, *a, **kw):\n"
+            "    calls.append(args)\n"
+            "    joined = ' '.join(args) if isinstance(args, (list, tuple)) else args\n"
+            "    if 'identity' in joined:\n"
+            "        return (1, 'This system is not yet registered.', '')\n"
+            "    if 'list' in joined and '--available' in joined:\n"
+            "        return (0, available, '')\n"
+            "    return (0, '', '')\n"
+            "with mock.patch.object(redhat_subscription.RegistrationBase, "
+            "'REDHAT_REPO', create=True), mock.patch.object(redhat_subscription, "
+            "'isfile', return_value=False), mock.patch.object(redhat_subscription, "
+            "'unlink', return_value=True), mock.patch.object(basic.AnsibleModule, "
+            "'get_bin_path', return_value='/testbin/subscription-manager'), "
+            "mock.patch.object(basic.AnsibleModule, 'run_command', "
+            "side_effect=fake_run_command):\n"
+            "    buf = io.StringIO()\n"
+            "    try:\n"
+            "        with contextlib.redirect_stdout(buf):\n"
+            "            redhat_subscription.main()\n"
+            "    except SystemExit:\n"
+            "        pass\n"
+            "attach = None\n"
+            "for c in calls:\n"
+            "    if isinstance(c, (list, tuple)) and 'attach' in c and '--pool' in c:\n"
+            "        attach = list(c)\n"
+            "        break\n"
+            f"self.assertEqual({expected!r}, attach)\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("noq", self._pool_id(), None)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("withq", self._pool_id(), self._quantity())
+        return test, TestResult.PASSING
+
+
+grammar_9: Grammar = clean_up(
+    {
+        "<start>": ["noq <poolid>", "withq <poolid> <quantity>"],
+        "<poolid>": ["<hex><hexes>"],
+        "<hexes>": ["", "<hex><hexes>"],
+        "<hex>": srange("0123456789abcdef"),
+        "<quantity>": ["<digit><digits>"],
+        "<digits>": ["", "<digit><digits>"],
+        "<digit>": srange(string.digits),
+    }
+)
+
+assert is_valid_grammar(grammar_9)
+
+
+# ======================================================================
+# bug_13: cli.galaxy.GalaxyCLI.execute_install parsed every collection
+# argument with ``name, dummy, requirement = collection_input.partition(':')``.
+# For a URL (or file path) argument this split the value at the scheme colon
+# (e.g. ``https://host/x.tar.gz`` -> name ``https``, requirement
+# ``//host/x.tar.gz``).  The fix treats an argument that is an existing file
+# or an http/https URL as the whole name with requirement ``*``.
+#
+# System-test format:  ``<mode> <collection_input>`` where ``<mode>`` is
+#   ``url`` (an http/https URL -- the trigger) or ``name`` (a ``ns.name`` or
+#   ``ns.name:version`` collection name).  The harness drives
+#   GalaxyCLI(...).run() with install_collections mocked and prints the JSON
+#   of the requirements list passed to it.  The oracle expects the fixed
+#   parse (whole URL + ``*``); the buggy build splits the URL at the colon.
+# ======================================================================
+
+
+def _b13_expected(mode: str, collection_input: str) -> Optional[list]:
+    if mode == "url":
+        return [[collection_input, "*", None]]
+    if mode == "name":
+        name, _, requirement = collection_input.partition(":")
+        return [[name, requirement or "*", None]]
+    return None
+
+
+class Ansible13API(AnsibleAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            mode = process.args[2]
+            collection_input = process.args[3]
+        except IndexError:
+            return TestResult.UNDEFINED, "Malformed test input"
+        expected = _b13_expected(mode, collection_input)
+        if expected is None:
+            return TestResult.UNDEFINED, "Malformed test input"
+        out = process.stdout.decode("utf8").strip()
+        try:
+            actual = json.loads(out)
+        except ValueError:
+            return TestResult.FAILING, f"Expected {expected!r}, but was {out!r}"
+        if process.returncode == 0 and actual == expected:
+            return TestResult.PASSING, f"Expected {expected!r}"
+        return TestResult.FAILING, f"Expected {expected!r}, but was {actual!r}"
+
+
+class Ansible13TestGenerator:
+    @staticmethod
+    def _word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(3, 7)))
+
+    @staticmethod
+    def _version() -> str:
+        return ".".join(str(random.randint(0, 9)) for _ in range(3))
+
+    def make_failing(self) -> str:
+        scheme = random.choice(("https", "http"))
+        return (
+            f"url {scheme}://{self._word()}/{self._word()}/"
+            f"{self._word()}-{self._version()}.tar.gz"
+        )
+
+    def make_passing(self) -> str:
+        if random.random() < 0.5:
+            return f"name {self._word()}.{self._word()}"
+        return f"name {self._word()}.{self._word()}:{self._version()}"
+
+
+class Ansible13SystemtestGenerator(SystemtestGenerator, Ansible13TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return self.make_failing(), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return self.make_passing(), TestResult.PASSING
+
+
+class Ansible13UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Ansible13TestGenerator
+):
+    @staticmethod
+    def _body(mode: str, collection_input: str) -> List[ast.stmt]:
+        expected = _b13_expected(mode, collection_input)
+        src = (
+            "import contextlib, io, json, tempfile\n"
+            "from unittest import mock\n"
+            "import ansible.cli.galaxy\n"
+            "from ansible.cli.galaxy import GalaxyCLI\n"
+            "from ansible.utils import context_objects as co\n"
+            f"collection_input = {collection_input!r}\n"
+            "co.GlobalCLIArgs._Singleton__instance = None\n"
+            "output_dir = tempfile.mkdtemp()\n"
+            "captured = {}\n"
+            "def fake_install(requirements, *a, **kw):\n"
+            "    captured['requirements'] = requirements\n"
+            "with mock.patch.object(ansible.cli.galaxy, 'install_collections', "
+            "side_effect=fake_install):\n"
+            "    buf = io.StringIO()\n"
+            "    try:\n"
+            "        with contextlib.redirect_stdout(buf):\n"
+            "            GalaxyCLI(args=['ansible-galaxy', 'collection', 'install', "
+            "collection_input, '--collections-path', output_dir]).run()\n"
+            "    except SystemExit:\n"
+            "        pass\n"
+            "actual = json.loads(json.dumps(captured.get('requirements')))\n"
+            f"self.assertEqual({expected!r}, actual)\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        scheme = random.choice(("https", "http"))
+        collection_input = (
+            f"{scheme}://{self._word()}/{self._word()}/"
+            f"{self._word()}-{self._version()}.tar.gz"
+        )
+        test = self.get_empty_test()
+        test.body = self._body("url", collection_input)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        if random.random() < 0.5:
+            collection_input = f"{self._word()}.{self._word()}"
+        else:
+            collection_input = f"{self._word()}.{self._word()}:{self._version()}"
+        test = self.get_empty_test()
+        test.body = self._body("name", collection_input)
+        return test, TestResult.PASSING
+
+
+grammar_13: Grammar = clean_up(
+    {
+        "<start>": ["url <url>", "name <cname>"],
+        "<url>": ["<scheme>://<word>/<word>/<word>-<ver>.tar.gz"],
+        "<scheme>": ["https", "http"],
+        "<cname>": ["<word>.<word>", "<word>.<word>:<ver>"],
+        "<ver>": ["<num>.<num>.<num>"],
+        "<num>": ["<digit><digits>"],
+        "<digits>": ["", "<digit><digits>"],
+        "<digit>": srange(string.digits),
+        "<word>": ["<letter><letters>"],
+        "<letters>": ["", "<letter><letters>"],
+        "<letter>": srange(string.ascii_lowercase),
+    }
+)
+
+assert is_valid_grammar(grammar_13)
+
+
+# ======================================================================
+# bug_14: galaxy.api.GalaxyAPI.fetch_role_related built the pagination URL
+# with ``_urljoin(self.api_server, data['next_link'])``.  Because
+# ``next_link`` already contains the ``/api`` path prefix while
+# ``api_server`` ends in ``/api/``, the joined URL doubled the prefix
+# (``https://host/api/api/v1/...``).  The fix rebuilds a base URL from just
+# the scheme+netloc of ``api_server`` and joins ``next_link`` onto that.
+#
+# System-test format:  ``<mode> <host> <role_id>`` where ``<mode>`` is
+#   ``page`` (a paginated response whose next_link forces a second request --
+#   the trigger) or ``single`` (one page, no pagination).  The harness drives
+#   fetch_role_related with open_url mocked and prints the URL of the LAST
+#   request.  The oracle expects the correctly-joined URL; the buggy build
+#   doubles the ``/api`` prefix on the second request.
+# ======================================================================
+
+
+def _b14_expected(mode: str, host: str, role_id: int) -> Optional[str]:
+    if mode == "page":
+        return (
+            "https://%s/api/v1/roles/%d/versions/?page=2&page_size=50"
+            % (host, role_id)
+        )
+    if mode == "single":
+        return "https://%s/api/v1/roles/%d/versions/?page_size=50" % (host, role_id)
+    return None
+
+
+class Ansible14API(AnsibleAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            mode = process.args[2]
+            host = process.args[3]
+            role_id = int(process.args[4])
+        except (IndexError, ValueError):
+            return TestResult.UNDEFINED, "Malformed test input"
+        expected = _b14_expected(mode, host, role_id)
+        if expected is None:
+            return TestResult.UNDEFINED, "Malformed test input"
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == expected:
+            return TestResult.PASSING, f"Expected {expected!r}"
+        return TestResult.FAILING, f"Expected {expected!r}, but was {out!r}"
+
+
+class Ansible14TestGenerator:
+    @staticmethod
+    def _host() -> str:
+        word = "".join(random.choices(string.ascii_lowercase, k=random.randint(4, 8)))
+        return word + random.choice(("", ".com", ".org", ".io"))
+
+    @staticmethod
+    def _role_id() -> int:
+        return random.randint(1, 9999)
+
+    def make_failing(self) -> str:
+        return f"page {self._host()} {self._role_id()}"
+
+    def make_passing(self) -> str:
+        return f"single {self._host()} {self._role_id()}"
+
+
+class Ansible14SystemtestGenerator(SystemtestGenerator, Ansible14TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return self.make_failing(), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return self.make_passing(), TestResult.PASSING
+
+
+class Ansible14UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Ansible14TestGenerator
+):
+    @staticmethod
+    def _body(mode: str, host: str, role_id: int) -> List[ast.stmt]:
+        expected = _b14_expected(mode, host, role_id)
+        src = (
+            "import json\n"
+            "from io import StringIO\n"
+            "from unittest import mock\n"
+            "from ansible import context\n"
+            "from ansible.galaxy import api as galaxy_api\n"
+            "from ansible.galaxy.api import GalaxyAPI\n"
+            "from ansible.galaxy.token import GalaxyToken\n"
+            f"mode, host, role_id = {mode!r}, {host!r}, {role_id}\n"
+            "context.CLIARGS._store = {'ignore_certs': False}\n"
+            "api = GalaxyAPI(None, 'test', 'https://%s/api/' % host)\n"
+            "api._available_api_versions = {'v1': 'v1'}\n"
+            "api.token = GalaxyToken('my token')\n"
+            "next_link = '/api/v1/roles/%d/versions/?page=2&page_size=50' % role_id\n"
+            "if mode == 'page':\n"
+            "    responses = [{'count': 2, 'results': [{'name': '3.5.1'}], "
+            "'next_link': next_link, 'next': None, 'previous_link': None, "
+            "'previous': None}, {'count': 2, 'results': [{'name': '3.5.2'}], "
+            "'next_link': None, 'next': None, 'previous_link': None, "
+            "'previous': None}]\n"
+            "else:\n"
+            "    responses = [{'count': 1, 'results': [{'name': '3.5.1'}], "
+            "'next_link': None, 'next': None, 'previous_link': None, "
+            "'previous': None}]\n"
+            "mock_open = mock.MagicMock()\n"
+            "mock_open.side_effect = [StringIO(json.dumps(r)) for r in responses]\n"
+            "with mock.patch.object(galaxy_api, 'open_url', mock_open):\n"
+            "    api.fetch_role_related('versions', role_id)\n"
+            "urls = [c[0][0] for c in mock_open.call_args_list]\n"
+            "actual = urls[-1] if urls else 'NOCALL'\n"
+            f"self.assertEqual({expected!r}, actual)\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("page", self._host(), self._role_id())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("single", self._host(), self._role_id())
+        return test, TestResult.PASSING
+
+
+grammar_14: Grammar = clean_up(
+    {
+        "<start>": ["<mode> <host> <id>"],
+        "<mode>": ["page", "single"],
+        "<host>": ["<word>", "<word>.com", "<word>.org", "<word>.io"],
+        "<id>": ["<digit><digits>"],
+        "<digits>": ["", "<digit><digits>"],
+        "<digit>": srange(string.digits),
+        "<word>": ["<letter><letters>"],
+        "<letters>": ["", "<letter><letters>"],
+        "<letter>": srange(string.ascii_lowercase),
+    }
+)
+
+assert is_valid_grammar(grammar_14)

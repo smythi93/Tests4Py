@@ -75,6 +75,10 @@ def register():
             os.path.join("test", "server_test.py::MetricsHandlerTest::test_get")
         ],
         skip_tests=["_ServerTest", "UNIXServerTest", "_INETServerTest"],
+        unittests=Luigi1UnittestGenerator(),
+        systemtests=Luigi1SystemtestGenerator(),
+        api=Luigi1API(),
+        grammar=grammar_1,
         loc=15700,
     )
     Luigi(
@@ -120,6 +124,10 @@ def register():
                 "redshift_test.py::TestS3CopyToTable::test_s3_copy_with_nonetype_columns",
             )
         ],
+        unittests=Luigi4UnittestGenerator(),
+        systemtests=Luigi4SystemtestGenerator(),
+        api=Luigi4API(),
+        grammar=grammar_4,
         loc=13587,
     )
     Luigi(
@@ -171,6 +179,10 @@ def register():
                 "scheduler_api_test.py::SchedulerApiTest::test_status_wont_override",
             )
         ],
+        unittests=Luigi7UnittestGenerator(),
+        systemtests=Luigi7SystemtestGenerator(),
+        api=Luigi7API(),
+        grammar=grammar_7,
         loc=13176,
     )
     Luigi(
@@ -195,6 +207,10 @@ def register():
                 "redshift_test.py::TestS3CopyToSchemaTable::test_s3_copy_to_table",
             ),
         ],
+        unittests=Luigi8UnittestGenerator(),
+        systemtests=Luigi8SystemtestGenerator(),
+        api=Luigi8API(),
+        grammar=grammar_8,
         loc=13126,
     )
     Luigi(
@@ -208,6 +224,10 @@ def register():
                 "execution_summary_test.py::ExecutionSummaryTest::test_status_with_task_retry",
             )
         ],
+        unittests=Luigi9UnittestGenerator(),
+        systemtests=Luigi9SystemtestGenerator(),
+        api=Luigi9API(),
+        grammar=grammar_9,
         loc=12759,
     )
     Luigi(
@@ -221,6 +241,10 @@ def register():
                 "scheduler_test.py::SchedulerWorkerTest::test_get_pending_tasks_with_many_done_tasks",
             )
         ],
+        unittests=Luigi10UnittestGenerator(),
+        systemtests=Luigi10SystemtestGenerator(),
+        api=Luigi10API(),
+        grammar=grammar_10,
         loc=12759,
     )
     Luigi(
@@ -234,6 +258,10 @@ def register():
                 "scheduler_api_test.py::SchedulerApiTest::test_batch_ignore_items_not_ready",
             )
         ],
+        unittests=Luigi11UnittestGenerator(),
+        systemtests=Luigi11SystemtestGenerator(),
+        api=Luigi11API(),
+        grammar=grammar_11,
         loc=12099,
     )
     Luigi(
@@ -247,6 +275,10 @@ def register():
                 "hdfs_client_test.py::HdfsClientTest::test_get_autoconfig_client_cached",
             )
         ],
+        unittests=Luigi12UnittestGenerator(),
+        systemtests=Luigi12SystemtestGenerator(),
+        api=Luigi12API(),
+        grammar=grammar_12,
         loc=11778,
     )
     Luigi(
@@ -277,6 +309,10 @@ def register():
                 "central_planner_test.py::CentralPlannerTest::test_no_crash_on_only_disable_hard_timeout",
             )
         ],
+        unittests=Luigi14UnittestGenerator(),
+        systemtests=Luigi14SystemtestGenerator(),
+        api=Luigi14API(),
+        grammar=grammar_14,
         loc=11580,
     )
     Luigi(
@@ -290,6 +326,10 @@ def register():
                 "central_planner_test.py::CentralPlannerTest::test_assistants_dont_nurture_finished_statuses",
             )
         ],
+        unittests=Luigi15UnittestGenerator(),
+        systemtests=Luigi15SystemtestGenerator(),
+        api=Luigi15API(),
+        grammar=grammar_15,
         loc=11261,
     )
     Luigi(
@@ -303,6 +343,10 @@ def register():
                 "central_planner_test.py::CentralPlannerTest::test_re_enable_failed_task_assistant",
             )
         ],
+        unittests=Luigi16UnittestGenerator(),
+        systemtests=Luigi16SystemtestGenerator(),
+        api=Luigi16API(),
+        grammar=grammar_16,
         loc=10639,
     )
     Luigi(
@@ -331,6 +375,10 @@ def register():
                 "test_no_automatic_re_enable_after_auto_then_manual_disable",
             )
         ],
+        unittests=Luigi18UnittestGenerator(),
+        systemtests=Luigi18SystemtestGenerator(),
+        api=Luigi18API(),
+        grammar=grammar_18,
         loc=10061,
     )
     Luigi(
@@ -344,6 +392,10 @@ def register():
                 "central_planner_test.py::CentralPlannerTest::test_automatic_re_enable_with_one_failure_allowed",
             )
         ],
+        unittests=Luigi19UnittestGenerator(),
+        systemtests=Luigi19SystemtestGenerator(),
+        api=Luigi19API(),
+        grammar=grammar_19,
         loc=10061,
     )
     Luigi(
@@ -380,6 +432,10 @@ def register():
                 "test", "scheduler_test.py::SchedulerTest::test_worker_prune_after_init"
             )
         ],
+        unittests=Luigi22UnittestGenerator(),
+        systemtests=Luigi22SystemtestGenerator(),
+        api=Luigi22API(),
+        grammar=grammar_22,
         loc=9223,
     )
     Luigi(
@@ -400,6 +456,10 @@ def register():
                 "worker_external_task_test.py::WorkerExternalTaskTest::test_external_dependency_completes_later",
             ),
         ],
+        unittests=Luigi23UnittestGenerator(),
+        systemtests=Luigi23SystemtestGenerator(),
+        api=Luigi23API(),
+        grammar=grammar_23,
         loc=9233,
     )
     Luigi(
@@ -447,6 +507,10 @@ def register():
                 "hadoop_jar_test.py::HadoopJarJobTaskTest::test_missing_jar",
             )
         ],
+        unittests=Luigi26UnittestGenerator(),
+        systemtests=Luigi26SystemtestGenerator(),
+        api=Luigi26API(),
+        grammar=grammar_26,
         loc=8551,
     )
     Luigi(
@@ -487,6 +551,10 @@ def register():
                 "hive_test.py::HiveCommandClientTest::test_apacheclient_table_exists",
             ),
         ],
+        unittests=Luigi28UnittestGenerator(),
+        systemtests=Luigi28SystemtestGenerator(),
+        api=Luigi28API(),
+        grammar=grammar_28,
         loc=8316,
     )
     Luigi(
@@ -517,6 +585,10 @@ def register():
                 "test_event_callbacks.py::TestEventCallbacks::test_processing_time_handler_failure",
             ),
         ],
+        unittests=Luigi30UnittestGenerator(),
+        systemtests=Luigi30SystemtestGenerator(),
+        api=Luigi30API(),
+        grammar=grammar_30,
         loc=8296,
     )
     Luigi(
@@ -530,6 +602,10 @@ def register():
                 "central_planner_test.py::CentralPlannerTest::test_assistant_get_work_external_task",
             )
         ],
+        unittests=Luigi31UnittestGenerator(),
+        systemtests=Luigi31SystemtestGenerator(),
+        api=Luigi31API(),
+        grammar=grammar_31,
         loc=8291,
     )
     Luigi(
@@ -1411,3 +1487,1980 @@ grammar_27: Grammar = clean_up(
 )
 
 assert is_valid_grammar(grammar_27)
+
+
+# ======================================================================
+# bug_22: ``scheduler.Worker.__init__`` used ``last_active=None`` as the
+# default, so a ``Worker`` created without an explicit ``last_active`` had
+# ``last_active is None``.  ``Worker.prune`` then evaluates
+# ``self.last_active + config.worker_disconnect_delay`` which raises
+# ``TypeError`` (``None + int``) — i.e. pruning a freshly-created worker
+# crashes.  The fix defaults ``last_active`` to a timestamp so pruning
+# always works.
+#
+# System-test format:  ``<mode> <id> <delay> [<last_active>]`` where
+#   ``<mode>`` is ``default`` (the trigger: no ``last_active`` given, so it
+#   defaults to ``None`` on the buggy build and pruning crashes) or
+#   ``explicit`` (a numeric ``last_active`` is supplied, so pruning works on
+#   both builds).  The harness creates the worker, calls ``prune`` and
+#   prints ``HARNESS_OK``; the oracle -- knowing the CORRECT behaviour is
+#   that pruning always succeeds -- returns PASSING iff ``HARNESS_OK``.
+# ======================================================================
+
+
+class Luigi22API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and "HARNESS_OK" in out:
+            return TestResult.PASSING, out
+        return TestResult.FAILING, out or process.stderr.decode("utf8").strip()
+
+
+class Luigi22TestGenerator:
+    @staticmethod
+    def generate_int(lo: int = 1, hi: int = 99999) -> int:
+        return random.randint(lo, hi)
+
+
+class Luigi22SystemtestGenerator(SystemtestGenerator, Luigi22TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return (
+            f"default {self.generate_int()} {self.generate_int()}",
+            TestResult.FAILING,
+        )
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return (
+            f"explicit {self.generate_int()} {self.generate_int()} "
+            f"{self.generate_int()}",
+            TestResult.PASSING,
+        )
+
+
+class Luigi22UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi22TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.Import(names=[ast.alias(name="types")]),
+            ast.Import(names=[ast.alias(name="luigi.scheduler")]),
+        ]
+
+    def _body(self, mode: str, wid: int, delay: int, la: int) -> List[ast.stmt]:
+        if mode == "explicit":
+            create = f"w = luigi.scheduler.Worker({wid}, last_active={la})"
+        else:
+            create = f"w = luigi.scheduler.Worker({wid})"
+        return ast.parse(
+            f"{create}\n"
+            f"cfg = types.SimpleNamespace(worker_disconnect_delay={delay})\n"
+            f"w.prune(cfg)\n"
+            f"self.assertIsNotNone(w.last_active)\n"
+        ).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body(
+            "default", self.generate_int(), self.generate_int(), 0
+        )
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body(
+            "explicit", self.generate_int(), self.generate_int(), self.generate_int()
+        )
+        return test, TestResult.PASSING
+
+
+grammar_22: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["default <int> <int>", "explicit <int> <int> <int>"],
+            "<int>": ["<digit>", "<digit><int>"],
+            "<digit>": srange(string.digits),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_22)
+
+
+# ======================================================================
+# bug_26: ``HadoopJarJobRunner.run_job`` guarded a missing jar with
+# ``if not job.jar() or not os.path.exists(job.jar()):`` and then logged
+# ``os.path.abspath(job.jar())``.  When ``job.jar()`` is ``None`` the
+# ``os.path.abspath(None)`` call raises ``TypeError`` instead of the
+# intended ``HadoopJarJobError`` -- i.e. a task with an undefined jar
+# crashes with the wrong exception.  The fix raises
+# ``HadoopJarJobError("Jar not defined")`` up-front when the jar is falsy.
+#
+# System-test format:  ``<mode> <name>`` where ``<mode>`` is ``none`` (the
+#   trigger: ``jar()`` returns ``None`` -> ``TypeError`` on the buggy build,
+#   ``HadoopJarJobError`` on the fixed one) or ``missing`` (``jar()`` returns
+#   a non-existent path -> ``HadoopJarJobError`` on both builds).  The
+#   correct behaviour is that running a job with no usable jar raises
+#   ``HadoopJarJobError``; the harness runs it, prints ``HARNESS_OK`` iff
+#   that exception was raised, and the oracle returns PASSING iff so.
+# ======================================================================
+
+
+class Luigi26API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and "HARNESS_OK" in out:
+            return TestResult.PASSING, out
+        return TestResult.FAILING, out or process.stderr.decode("utf8").strip()
+
+
+class Luigi26TestGenerator:
+    @staticmethod
+    def generate_name() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(4, 9)))
+
+
+class Luigi26SystemtestGenerator(SystemtestGenerator, Luigi26TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return f"none {self.generate_name()}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return f"missing {self.generate_name()}", TestResult.PASSING
+
+
+class Luigi26UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi26TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.ImportFrom(
+                module="luigi.contrib.hadoop_jar",
+                names=[
+                    ast.alias(name="HadoopJarJobRunner"),
+                    ast.alias(name="HadoopJarJobError"),
+                ],
+                level=0,
+            )
+        ]
+
+    def _body(self, mode: str, name: str) -> List[ast.stmt]:
+        if mode == "none":
+            jar_return = "None"
+        else:
+            jar_return = repr(f"/no/such/dir_{name}/{name}.jar")
+        return ast.parse(
+            f"class FakeJob_{name}:\n"
+            f"    def ssh(self):\n        return None\n"
+            f"    def jar(self):\n        return {jar_return}\n"
+            f"runner = HadoopJarJobRunner()\n"
+            f"self.assertRaises(HadoopJarJobError, runner.run_job, FakeJob_{name}())\n"
+        ).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("none", self.generate_name())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("missing", self.generate_name())
+        return test, TestResult.PASSING
+
+
+grammar_26: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<mode> <name>"],
+            "<mode>": ["none", "missing"],
+            "<name>": ["<letter><letters>"],
+            "<letters>": ["", "<letter><letters>"],
+            "<letter>": srange(string.ascii_lowercase),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_26)
+
+
+# ======================================================================
+# bug_12: ``luigi.contrib.hdfs.get_autoconfig_client`` rebuilt the HDFS
+# client on every call, so two consecutive calls returned *different*
+# client objects.  The fix caches the client in a per-thread
+# ``threading.local`` (``client_cache`` argument), so within one thread the
+# same object is returned each time.
+#
+# System-test format:  ``<mode> <word>`` where ``<mode>`` is ``same`` (the
+#   trigger: two calls must return the identical object -- true on the fixed
+#   build, false on the buggy one) or ``instance`` (a single call returns a
+#   non-None client -- true on both builds).  ``<word>`` only makes the
+#   inputs distinct.  The correct behaviour is that repeated calls are
+#   cached; the harness prints ``HARNESS_OK`` iff the checked property holds
+#   and the oracle returns PASSING iff so.
+# ======================================================================
+
+
+class Luigi12API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and "HARNESS_OK" in out:
+            return TestResult.PASSING, out
+        return TestResult.FAILING, out or process.stderr.decode("utf8").strip()
+
+
+class Luigi12TestGenerator:
+    @staticmethod
+    def generate_word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(4, 9)))
+
+
+class Luigi12SystemtestGenerator(SystemtestGenerator, Luigi12TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return f"same {self.generate_word()}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return f"instance {self.generate_word()}", TestResult.PASSING
+
+
+class Luigi12UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi12TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.ImportFrom(
+                module="luigi.contrib.hdfs",
+                names=[ast.alias(name="get_autoconfig_client")],
+                level=0,
+            )
+        ]
+
+    def _body(self, mode: str, word: str) -> List[ast.stmt]:
+        if mode == "same":
+            check = (
+                "self.assertIs(get_autoconfig_client(), get_autoconfig_client())"
+            )
+        else:
+            check = "self.assertIsNotNone(get_autoconfig_client())"
+        return ast.parse(f"note = {word!r}\n{check}\n").body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("same", self.generate_word())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("instance", self.generate_word())
+        return test, TestResult.PASSING
+
+
+grammar_12: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<mode> <word>"],
+            "<mode>": ["same", "instance"],
+            "<word>": ["<letter><letters>"],
+            "<letters>": ["", "<letter><letters>"],
+            "<letter>": srange(string.ascii_lowercase),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_12)
+
+
+# ======================================================================
+# bug_28: ``HiveCommandClient.table_exists`` compared the table name
+# case-sensitively (``table in stdout``), so a table queried with different
+# casing than Hive reports (Hive lower-cases table names) was reported as
+# missing.  The fix compares ``table.lower() in stdout``.
+#
+# System-test format:  ``<mode> <name>`` where ``<mode>`` is ``mixed`` (the
+#   trigger: a mixed-case table name whose lower-cased form is what Hive
+#   returns -> found only on the fixed build) or ``plain`` (an all-lowercase
+#   name that matches exactly -> found on both builds).  ``run_hive_cmd`` is
+#   stubbed to return the lower-cased name.  The correct behaviour is that
+#   the table is found; the harness prints ``HARNESS_OK`` iff
+#   ``table_exists`` is truthy and the oracle returns PASSING iff so.
+# ======================================================================
+
+
+class Luigi28API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and "HARNESS_OK" in out:
+            return TestResult.PASSING, out
+        return TestResult.FAILING, out or process.stderr.decode("utf8").strip()
+
+
+class Luigi28TestGenerator:
+    @staticmethod
+    def generate_word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(4, 9)))
+
+
+class Luigi28SystemtestGenerator(SystemtestGenerator, Luigi28TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return f"mixed {self.generate_word().capitalize()}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return f"plain {self.generate_word()}", TestResult.PASSING
+
+
+class Luigi28UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi28TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.Import(
+                names=[ast.alias(name="luigi.contrib.hive", asname="hive")]
+            )
+        ]
+
+    def _body(self, table: str) -> List[ast.stmt]:
+        lower = table.lower()
+        return ast.parse(
+            f"hive.run_hive_cmd = lambda *a, **k: 'OK\\n{lower}'\n"
+            f"client = hive.HiveCommandClient()\n"
+            f"self.assertTrue(client.table_exists({table!r}))\n"
+        ).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body(self.generate_word().capitalize())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body(self.generate_word())
+        return test, TestResult.PASSING
+
+
+grammar_28: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<mode> <name>"],
+            "<mode>": ["mixed", "plain"],
+            "<name>": ["<letter><letters>"],
+            "<letters>": ["", "<letter><letters>"],
+            "<letter>": srange(string.ascii_letters),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_28)
+
+
+# ======================================================================
+# bug_4: ``S3CopyToTable.copy`` computed ``if len(self.columns) > 0`` -- but
+# ``columns`` may legitimately be ``None`` (no explicit column list), and
+# ``len(None)`` raises ``TypeError``, crashing the COPY.  The fix guards
+# with ``if self.columns and len(self.columns) > 0``.
+#
+# System-test format:  ``<mode> <word>`` where ``<mode>`` is ``none`` (the
+#   trigger: ``columns=None`` -> ``TypeError`` on the buggy build, clean
+#   COPY on the fixed one) or ``cols`` (a non-empty column list -> works on
+#   both builds).  ``<word>`` is the table name (distinctness).  The correct
+#   behaviour is that ``copy`` runs without error; the harness prints
+#   ``HARNESS_OK`` iff it does and the oracle returns PASSING iff so.
+# ======================================================================
+
+
+class Luigi4API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and "HARNESS_OK" in out:
+            return TestResult.PASSING, out
+        return TestResult.FAILING, out or process.stderr.decode("utf8").strip()
+
+
+class Luigi4TestGenerator:
+    @staticmethod
+    def generate_word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(4, 9)))
+
+
+class Luigi4SystemtestGenerator(SystemtestGenerator, Luigi4TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return f"none {self.generate_word()}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return f"cols {self.generate_word()}", TestResult.PASSING
+
+
+class Luigi4UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi4TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.Import(names=[ast.alias(name="luigi")]),
+            ast.Import(names=[ast.alias(name="luigi.contrib.redshift")]),
+            ast.ImportFrom(
+                module="unittest", names=[ast.alias(name="mock")], level=0
+            ),
+        ]
+
+    def _body(self, mode: str, word: str) -> List[ast.stmt]:
+        cls_name = f"Dummy_{mode}_{word}"
+        cols = "None" if mode == "none" else "(('a', 'int'), ('b', 'varchar'))"
+        return ast.parse(
+            f"class {cls_name}(luigi.contrib.redshift.S3CopyToTable):\n"
+            f"    host = 'h'\n"
+            f"    database = 'd'\n"
+            f"    user = 'u'\n"
+            f"    password = 'p'\n"
+            f"    aws_access_key_id = 'key'\n"
+            f"    aws_secret_access_key = 'secret'\n"
+            f"    copy_options = ''\n"
+            f"    table = luigi.Parameter(default={word!r})\n"
+            f"    columns = {cols}\n"
+            f"    def s3_load_path(self):\n"
+            f"        return 's3://bucket/key'\n"
+            f"task = {cls_name}()\n"
+            f"luigi.contrib.redshift.S3CopyToTable.copy("
+            f"task, mock.Mock(), 's3://bucket/key')\n"
+            f"self.assertTrue(True)\n"
+        ).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("none", self.generate_word())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("cols", self.generate_word())
+        return test, TestResult.PASSING
+
+
+grammar_4: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<mode> <word>"],
+            "<mode>": ["none", "cols"],
+            "<word>": ["<letter><letters>"],
+            "<letters>": ["", "<letter><letters>"],
+            "<letter>": srange(string.ascii_lowercase),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_4)
+
+
+# ======================================================================
+# bug_10: ``scheduler.Worker.get_pending_tasks`` -- when the worker has at
+# least as many tasks as there are pending tasks in the whole state -- fell
+# into an ``else`` branch that returned ``state.get_pending_tasks()``, i.e.
+# *every* pending task in the scheduler, not just the ones belonging to this
+# worker.  The fix filters that result by ``self.id in task.workers``.
+#
+# System-test format:  ``<mode> <tag>`` where ``<mode>`` is ``trigger`` (the
+#   target worker owns 1 pending + 1 done task while another worker owns a
+#   pending task, forcing the buggy ``else`` branch that leaks the other
+#   worker's task) or ``safe`` (the target owns just 1 pending task while
+#   many other pending tasks exist, forcing the correct ``if`` branch on
+#   both builds).  ``<tag>`` makes ids distinct.  The correct behaviour is
+#   that the worker's pending set is exactly its own pending task; the
+#   harness prints ``HARNESS_OK`` iff so and the oracle returns PASSING iff.
+# ======================================================================
+
+
+class Luigi10API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and "HARNESS_OK" in out:
+            return TestResult.PASSING, out
+        return TestResult.FAILING, out or process.stderr.decode("utf8").strip()
+
+
+class Luigi10TestGenerator:
+    @staticmethod
+    def generate_tag() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(4, 9)))
+
+
+class Luigi10SystemtestGenerator(SystemtestGenerator, Luigi10TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return f"trigger {self.generate_tag()}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return f"safe {self.generate_tag()}", TestResult.PASSING
+
+
+class Luigi10UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi10TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [ast.Import(names=[ast.alias(name="luigi.scheduler")])]
+
+    def _body(self, mode: str, tag: str) -> List[ast.stmt]:
+        tw, ow, tp, op = f"TW_{tag}", f"OW_{tag}", f"TP_{tag}", f"OP_{tag}"
+        extra = ""
+        if mode == "trigger":
+            extra = (
+                f"sch.add_task(worker={tw!r}, task_id='DN_{tag}', status='DONE')\n"
+            )
+        else:
+            extra = (
+                f"sch.add_task(worker={ow!r}, task_id='EP1_{tag}', status='PENDING')\n"
+                f"sch.add_task(worker={ow!r}, task_id='EP2_{tag}', status='PENDING')\n"
+            )
+        return ast.parse(
+            f"sch = luigi.scheduler.Scheduler()\n"
+            f"sch.add_task(worker={tw!r}, task_id={tp!r}, status='PENDING')\n"
+            f"sch.add_task(worker={ow!r}, task_id={op!r}, status='PENDING')\n"
+            f"{extra}"
+            f"st = sch._state\n"
+            f"target = st.get_worker({tw!r})\n"
+            f"got = {{t.id for t in target.get_pending_tasks(st)}}\n"
+            f"self.assertEqual(got, {{{tp!r}}})\n"
+        ).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("trigger", self.generate_tag())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("safe", self.generate_tag())
+        return test, TestResult.PASSING
+
+
+grammar_10: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<mode> <tag>"],
+            "<mode>": ["trigger", "safe"],
+            "<tag>": ["<letter><letters>"],
+            "<letters>": ["", "<letter><letters>"],
+            "<letter>": srange(string.ascii_lowercase),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_10)
+
+
+# ======================================================================
+# bug_11: ``Scheduler.get_work`` batched together *all* same-family
+# batchable tasks without checking that each was actually schedulable, so a
+# batch could include tasks whose dependencies were not yet done.  The fix
+# adds ``and self._schedulable(task)`` to the batching condition, excluding
+# not-ready tasks from the batch.
+#
+# System-test format:  ``<mode> <tag> <pattern>`` where ``<pattern>`` is a
+#   string of ``r`` (ready: dep already DONE) / ``n`` (not-ready: dep on an
+#   unfinished task) characters.  ``<mode>`` is ``mix`` (the trigger: the
+#   pattern contains at least one ``n``, so the buggy build wrongly batches
+#   the not-ready tasks) or ``allready`` (all ``r`` -> both builds batch
+#   everything).  ``<tag>`` makes ids distinct.  The correct batch contains
+#   exactly the ready tasks' params; the harness prints ``HARNESS_OK`` iff
+#   the batch equals that and the oracle returns PASSING iff so.
+# ======================================================================
+
+
+class Luigi11API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and "HARNESS_OK" in out:
+            return TestResult.PASSING, out
+        return TestResult.FAILING, out or process.stderr.decode("utf8").strip()
+
+
+class Luigi11TestGenerator:
+    @staticmethod
+    def generate_tag() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(4, 9)))
+
+    def generate_mix_pattern(self) -> str:
+        length = random.randint(3, 6)
+        # first task ready; ensure at least one 'n'
+        chars = ["r"] + [random.choice("rn") for _ in range(length - 1)]
+        if "n" not in chars:
+            chars[random.randint(1, length - 1)] = "n"
+        return "".join(chars)
+
+    @staticmethod
+    def generate_allready_pattern() -> str:
+        return "r" * random.randint(2, 6)
+
+
+class Luigi11SystemtestGenerator(SystemtestGenerator, Luigi11TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return (
+            f"mix {self.generate_tag()} {self.generate_mix_pattern()}",
+            TestResult.FAILING,
+        )
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return (
+            f"allready {self.generate_tag()} {self.generate_allready_pattern()}",
+            TestResult.PASSING,
+        )
+
+
+_LUIGI11_CONF = (
+    "{'retry_delay': 100, 'remove_delay': 1000, 'worker_disconnect_delay': 10, "
+    "'disable_persist': 10, 'disable_window': 10, 'retry_count': 3, "
+    "'disable_hard_timeout': 3600}"
+)
+
+
+class Luigi11UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi11TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.ImportFrom(
+                module="luigi.scheduler",
+                names=[ast.alias(name="Scheduler"), ast.alias(name="DONE")],
+                level=0,
+            )
+        ]
+
+    def _body(self, tag: str, pattern: str) -> List[ast.stmt]:
+        fam = f"A{tag}"
+        ready = [str(i) for i, ch in enumerate(pattern, 1) if ch == "r"]
+        lines = [
+            f"sch = Scheduler(**{_LUIGI11_CONF})",
+            f"sch.add_task_batcher(worker='myworker', task_family={fam!r}, "
+            f"batched_args=['a'])",
+        ]
+        for i, ch in enumerate(pattern, 1):
+            dep = f"NOTDONE_{tag}" if ch == "n" else f"DONE_{tag}"
+            lines.append(
+                f"sch.add_task(worker='myworker', task_id='{fam}_a_{i}', "
+                f"family={fam!r}, params={{'a': {str(i)!r}}}, batchable=True, "
+                f"deps=[{dep!r}])"
+            )
+        lines.append(
+            f"sch.add_task(worker='myworker', task_id='NOTDONE_{tag}', runnable=False)"
+        )
+        lines.append(
+            f"sch.add_task(worker='myworker', task_id='DONE_{tag}', status=DONE)"
+        )
+        lines.append(
+            "got = sch.get_work(worker='myworker')['task_params'].get('a', [])"
+        )
+        lines.append(f"self.assertEqual(got, {ready!r})")
+        return ast.parse("\n".join(lines)).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body(self.generate_tag(), self.generate_mix_pattern())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body(self.generate_tag(), self.generate_allready_pattern())
+        return test, TestResult.PASSING
+
+
+grammar_11: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<mode> <tag> <pattern>"],
+            "<mode>": ["mix", "allready"],
+            "<tag>": ["<letter><letters>"],
+            "<letters>": ["", "<letter><letters>"],
+            "<letter>": srange(string.ascii_lowercase),
+            "<pattern>": ["<rn>", "<rn><pattern>"],
+            "<rn>": ["r", "n"],
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_11)
+
+
+# ======================================================================
+# bug_31: ``CentralPlannerScheduler.get_work`` computed
+# ``in_workers = assistant or worker in task.workers``.  For an *assistant*
+# this was always true, so an assistant could be handed an external
+# (``runnable=False``) task belonging to another worker.  The fix uses
+# ``(assistant and task.workers) or worker in task.workers`` so a bare
+# external task is not offered to an assistant.
+#
+# System-test format:  ``<mode> <owner> <task> <assistant>`` where
+#   ``<mode>`` is ``external`` (the trigger: an external task owned by
+#   another worker is wrongly returned to the assistant on the buggy build)
+#   or ``done`` (a DONE task -> no work returned on both builds).  The
+#   correct behaviour is that the assistant gets ``task_id is None``; the
+#   harness prints ``HARNESS_OK`` iff so and the oracle returns PASSING iff.
+# ======================================================================
+
+
+class Luigi31API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and "HARNESS_OK" in out:
+            return TestResult.PASSING, out
+        return TestResult.FAILING, out or process.stderr.decode("utf8").strip()
+
+
+class Luigi31TestGenerator:
+    @staticmethod
+    def generate_word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(4, 9)))
+
+    def generate_triple(self) -> Tuple[str, str, str]:
+        return self.generate_word(), self.generate_word(), self.generate_word()
+
+
+class Luigi31SystemtestGenerator(SystemtestGenerator, Luigi31TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        o, t, a = self.generate_triple()
+        return f"external {o} {t} {a}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        o, t, a = self.generate_triple()
+        return f"done {o} {t} {a}", TestResult.PASSING
+
+
+_LUIGI31_CONF = (
+    "{'retry_delay': 100, 'remove_delay': 1000, 'worker_disconnect_delay': 10, "
+    "'disable_persist': 10, 'disable_window': 10, 'disable_failures': 3}"
+)
+
+
+class Luigi31UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi31TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.ImportFrom(
+                module="luigi.scheduler",
+                names=[
+                    ast.alias(name="CentralPlannerScheduler"),
+                    ast.alias(name="DONE"),
+                ],
+                level=0,
+            )
+        ]
+
+    def _body(self, mode: str, owner: str, task: str, asst: str) -> List[ast.stmt]:
+        if mode == "external":
+            add = f"sch.add_task({owner!r}, task_id={task!r}, runnable=False)"
+        else:
+            add = f"sch.add_task({owner!r}, task_id={task!r}, status=DONE)"
+        return ast.parse(
+            f"sch = CentralPlannerScheduler(**{_LUIGI31_CONF})\n"
+            f"{add}\n"
+            f"r = sch.get_work({asst!r}, assistant=True)\n"
+            f"self.assertIsNone(r['task_id'])\n"
+        ).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        o, t, a = self.generate_triple()
+        test = self.get_empty_test()
+        test.body = self._body("external", o, t, a)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        o, t, a = self.generate_triple()
+        test = self.get_empty_test()
+        test.body = self._body("done", o, t, a)
+        return test, TestResult.PASSING
+
+
+grammar_31: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<mode> <word> <word> <word>"],
+            "<mode>": ["external", "done"],
+            "<word>": ["<letter><letters>"],
+            "<letters>": ["", "<letter><letters>"],
+            "<letter>": srange(string.ascii_lowercase),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_31)
+
+
+# ======================================================================
+# bug_23: like bug_22, ``scheduler.Worker.__init__`` stored
+# ``self.last_active = last_active`` with a ``None`` default, so a freshly
+# created worker had ``last_active is None`` and ``prune`` crashed with
+# ``TypeError`` (``None + int``).  The fix stores ``last_active or
+# time.time()`` (this commit also adds ``prune_on_get_work``).
+#
+# System-test format:  ``<mode> <id> <delay> [<last_active>]`` -- ``default``
+#   (trigger: no ``last_active`` -> crash on the buggy build) or ``explicit``
+#   (a numeric ``last_active`` -> works on both).  The correct behaviour is
+#   that pruning a new worker succeeds; the harness prints ``HARNESS_OK`` iff
+#   it does and the oracle returns PASSING iff so.
+# ======================================================================
+
+
+class Luigi23API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and "HARNESS_OK" in out:
+            return TestResult.PASSING, out
+        return TestResult.FAILING, out or process.stderr.decode("utf8").strip()
+
+
+class Luigi23TestGenerator:
+    @staticmethod
+    def generate_int(lo: int = 1, hi: int = 99999) -> int:
+        return random.randint(lo, hi)
+
+
+class Luigi23SystemtestGenerator(SystemtestGenerator, Luigi23TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return (
+            f"default {self.generate_int()} {self.generate_int()}",
+            TestResult.FAILING,
+        )
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return (
+            f"explicit {self.generate_int()} {self.generate_int()} "
+            f"{self.generate_int()}",
+            TestResult.PASSING,
+        )
+
+
+class Luigi23UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi23TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.Import(names=[ast.alias(name="types")]),
+            ast.Import(names=[ast.alias(name="luigi.scheduler")]),
+        ]
+
+    def _body(self, mode: str, wid: int, delay: int, la: int) -> List[ast.stmt]:
+        if mode == "explicit":
+            create = f"w = luigi.scheduler.Worker({wid}, last_active={la})"
+        else:
+            create = f"w = luigi.scheduler.Worker({wid})"
+        return ast.parse(
+            f"{create}\n"
+            f"cfg = types.SimpleNamespace(worker_disconnect_delay={delay})\n"
+            f"w.prune(cfg)\n"
+            f"self.assertIsNotNone(w.last_active)\n"
+        ).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("default", self.generate_int(), self.generate_int(), 0)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body(
+            "explicit", self.generate_int(), self.generate_int(), self.generate_int()
+        )
+        return test, TestResult.PASSING
+
+
+grammar_23: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["default <int> <int>", "explicit <int> <int> <int>"],
+            "<int>": ["<digit>", "<digit><int>"],
+            "<digit>": srange(string.digits),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_23)
+
+
+# ======================================================================
+# bug_16: ``CentralPlannerScheduler.prune`` used
+# ``if task.id not in necessary_tasks and self._state.prune(task, cfg)``.
+# Because ``and`` short-circuits, ``self._state.prune`` (which also resets
+# FAILED tasks to PENDING after the retry delay and re-enables disabled
+# tasks) was skipped for *necessary* tasks -- so a still-needed FAILED task
+# was never retried when an assistant kept it necessary.  The fix computes
+# ``removed = self._state.prune(...)`` unconditionally, then decides removal.
+#
+# System-test format:  ``<mode> <tag>`` where ``<mode>`` is ``assistant``
+#   (the trigger: an assistant keeps the FAILED task necessary, so the buggy
+#   build never resets it to PENDING) or ``plain`` (no assistant, so the
+#   task is not necessary and gets reset on both builds).  After the retry
+#   delay the correct status is PENDING; the harness prints ``HARNESS_OK``
+#   iff the task became PENDING and the oracle returns PASSING iff so.
+# ======================================================================
+
+
+class Luigi16API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and "HARNESS_OK" in out:
+            return TestResult.PASSING, out
+        return TestResult.FAILING, out or process.stderr.decode("utf8").strip()
+
+
+class Luigi16TestGenerator:
+    @staticmethod
+    def generate_tag() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(4, 9)))
+
+
+class Luigi16SystemtestGenerator(SystemtestGenerator, Luigi16TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return f"assistant {self.generate_tag()}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return f"plain {self.generate_tag()}", TestResult.PASSING
+
+
+_LUIGI16_CONF = (
+    "{'retry_delay': 100, 'remove_delay': 1000, 'worker_disconnect_delay': 10, "
+    "'disable_persist': 10, 'disable_window': 10, 'disable_failures': 3, "
+    "'disable_hard_timeout': 3600}"
+)
+
+
+class Luigi16UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi16TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.Import(names=[ast.alias(name="time")]),
+            ast.ImportFrom(
+                module="luigi.scheduler",
+                names=[
+                    ast.alias(name="CentralPlannerScheduler"),
+                    ast.alias(name="FAILED"),
+                ],
+                level=0,
+            ),
+        ]
+
+    def _body(self, mode: str, tag: str) -> List[ast.stmt]:
+        w, tid = f"W_{tag}", f"A_{tag}"
+        if mode == "assistant":
+            setup = (
+                f"    sch.add_worker({w!r}, [('assistant', True)])\n"
+                f"    sch.add_task(worker={w!r}, task_id={tid!r}, "
+                f"status=FAILED, assistant=True)\n"
+            )
+        else:
+            setup = (
+                f"    sch.add_task(worker={w!r}, task_id={tid!r}, status=FAILED)\n"
+            )
+        return ast.parse(
+            f"_orig = time.time\n"
+            f"try:\n"
+            f"    time.time = lambda: 0\n"
+            f"    sch = CentralPlannerScheduler(**{_LUIGI16_CONF})\n"
+            f"{setup}"
+            f"    time.time = lambda: 101\n"
+            f"    sch.ping(worker={w!r})\n"
+            f"    status = sch.task_list('', '')[{tid!r}]['status']\n"
+            f"finally:\n"
+            f"    time.time = _orig\n"
+            f"self.assertEqual(status, 'PENDING')\n"
+        ).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("assistant", self.generate_tag())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("plain", self.generate_tag())
+        return test, TestResult.PASSING
+
+
+grammar_16: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<mode> <tag>"],
+            "<mode>": ["assistant", "plain"],
+            "<tag>": ["<letter><letters>"],
+            "<letters>": ["", "<letter><letters>"],
+            "<letter>": srange(string.ascii_lowercase),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_16)
+
+
+# ======================================================================
+# bug_15: ``SimpleTaskState.get_necessary_tasks`` treated only ``DONE`` and
+# ``DISABLED`` as finished, so an ``UNKNOWN`` task was kept "necessary" by an
+# assistant and therefore never pruned/removed.  The fix adds ``UNKNOWN`` to
+# the finished set so such tasks are not nurtured.
+#
+# System-test format:  ``<mode> <tag>`` where ``<mode>`` is ``unknown`` (the
+#   trigger: an UNKNOWN task is wrongly kept alive on the buggy build) or
+#   ``done``/``disabled`` (finished statuses that are removed on both
+#   builds).  After pruning with an assistant present the correct behaviour
+#   is that the task is removed; the harness prints ``HARNESS_OK`` iff the
+#   task no longer exists and the oracle returns PASSING iff so.
+# ======================================================================
+
+
+class Luigi15API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and "HARNESS_OK" in out:
+            return TestResult.PASSING, out
+        return TestResult.FAILING, out or process.stderr.decode("utf8").strip()
+
+
+class Luigi15TestGenerator:
+    @staticmethod
+    def generate_tag() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(4, 9)))
+
+
+class Luigi15SystemtestGenerator(SystemtestGenerator, Luigi15TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return f"unknown {self.generate_tag()}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        mode = random.choice(("done", "disabled"))
+        return f"{mode} {self.generate_tag()}", TestResult.PASSING
+
+
+class Luigi15UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi15TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.Import(names=[ast.alias(name="time")]),
+            ast.ImportFrom(
+                module="luigi.scheduler",
+                names=[ast.alias(name="CentralPlannerScheduler")],
+                level=0,
+            ),
+        ]
+
+    def _body(self, mode: str, tag: str) -> List[ast.stmt]:
+        w, up, tid = f"AS_{tag}", f"UP_{tag}", f"T_{tag}"
+        status = mode.upper()
+        return ast.parse(
+            f"_orig = time.time\n"
+            f"try:\n"
+            f"    time.time = lambda: 1\n"
+            f"    sch = CentralPlannerScheduler(retry_delay=100000000000)\n"
+            f"    sch.add_worker({w!r}, [('assistant', True)])\n"
+            f"    sch.ping(worker={w!r})\n"
+            f"    sch.add_task(worker={up!r}, task_id={tid!r}, status={status!r})\n"
+            f"    time.time = lambda: 100000\n"
+            f"    sch.ping(worker={w!r})\n"
+            f"    sch.prune()\n"
+            f"    time.time = lambda: 200000\n"
+            f"    sch.ping(worker={w!r})\n"
+            f"    sch.prune()\n"
+            f"    exists = {tid!r} in sch.task_list(None, '')\n"
+            f"finally:\n"
+            f"    time.time = _orig\n"
+            f"self.assertFalse(exists)\n"
+        ).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("unknown", self.generate_tag())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        mode = random.choice(("done", "disabled"))
+        test = self.get_empty_test()
+        test.body = self._body(mode, self.generate_tag())
+        return test, TestResult.PASSING
+
+
+grammar_15: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<mode> <tag>"],
+            "<mode>": ["unknown", "done", "disabled"],
+            "<tag>": ["<letter><letters>"],
+            "<letters>": ["", "<letter><letters>"],
+            "<letter>": srange(string.ascii_lowercase),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_15)
+
+
+# ======================================================================
+# bug_19: ``SimpleTaskState.set_status`` ran the FAILED-handling block
+# (``if new_status == FAILED and task.can_disable():`` -> add_failure /
+# re-disable) even for tasks that were *already* DISABLED.  That bumped the
+# ``scheduler_disable_time`` on every failure, so a disabled task could
+# never be automatically re-enabled after ``disable_persist`` elapsed.  The
+# fix adds ``and task.status != DISABLED``.
+#
+# System-test format:  ``<mode> <tag>`` where ``<mode>`` is ``reenable`` (the
+#   trigger: ``disable_failures=1`` disables the task, which must re-enable
+#   to FAILED after ``disable_persist`` -- but stays DISABLED on the buggy
+#   build) or ``stayfailed`` (a high ``disable_failures`` so the task is
+#   never disabled and stays FAILED on both builds).  The correct status
+#   after the persist window is FAILED; the harness prints ``HARNESS_OK``
+#   iff so and the oracle returns PASSING iff so.
+# ======================================================================
+
+
+class Luigi19API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and "HARNESS_OK" in out:
+            return TestResult.PASSING, out
+        return TestResult.FAILING, out or process.stderr.decode("utf8").strip()
+
+
+class Luigi19TestGenerator:
+    @staticmethod
+    def generate_tag() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(4, 9)))
+
+
+class Luigi19SystemtestGenerator(SystemtestGenerator, Luigi19TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return f"reenable {self.generate_tag()}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return f"stayfailed {self.generate_tag()}", TestResult.PASSING
+
+
+class Luigi19UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi19TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.Import(names=[ast.alias(name="time")]),
+            ast.ImportFrom(
+                module="luigi.scheduler",
+                names=[
+                    ast.alias(name="CentralPlannerScheduler"),
+                    ast.alias(name="FAILED"),
+                ],
+                level=0,
+            ),
+        ]
+
+    def _body(self, mode: str, tag: str) -> List[ast.stmt]:
+        w, tid = f"w_{tag}", f"T_{tag}"
+        df = 1 if mode == "reenable" else 1000
+        return ast.parse(
+            f"_orig = time.time\n"
+            f"try:\n"
+            f"    time.time = lambda: 0\n"
+            f"    sch = CentralPlannerScheduler(disable_failures={df}, "
+            f"disable_persist=100)\n"
+            f"    sch.add_task(worker={w!r}, task_id={tid!r}, status=FAILED)\n"
+            f"    time.time = lambda: 101\n"
+            f"    status = sch.task_list('', '')[{tid!r}]['status']\n"
+            f"finally:\n"
+            f"    time.time = _orig\n"
+            f"self.assertEqual(status, 'FAILED')\n"
+        ).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("reenable", self.generate_tag())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("stayfailed", self.generate_tag())
+        return test, TestResult.PASSING
+
+
+grammar_19: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<mode> <tag>"],
+            "<mode>": ["reenable", "stayfailed"],
+            "<tag>": ["<letter><letters>"],
+            "<letters>": ["", "<letter><letters>"],
+            "<letter>": srange(string.ascii_lowercase),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_19)
+
+
+# ======================================================================
+# bug_18: ``SimpleTaskState.set_status`` had ``elif
+# task.scheduler_disable_time is not None: return`` -- so once a task had
+# been *auto*-disabled (scheduler_disable_time set), a subsequent *manual*
+# ``DISABLED`` was ignored (early return), leaving scheduler_disable_time in
+# place; the task then auto-re-enabled after ``disable_persist``.  The fix
+# adds ``and new_status != DISABLED`` so a manual disable is applied,
+# clearing the auto-disable timer and making the disable permanent.
+#
+# System-test format:  ``<mode> <tag>`` where ``<mode>`` is ``automanual``
+#   (the trigger: auto-disable via 2 failures, then a manual disable -- must
+#   stay DISABLED, but re-enables to FAILED on the buggy build) or
+#   ``manualonly`` (a plain manual disable that stays DISABLED on both).
+#   The correct status after the persist window is DISABLED; the harness
+#   prints ``HARNESS_OK`` iff so and the oracle returns PASSING iff so.
+# ======================================================================
+
+
+class Luigi18API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and "HARNESS_OK" in out:
+            return TestResult.PASSING, out
+        return TestResult.FAILING, out or process.stderr.decode("utf8").strip()
+
+
+class Luigi18TestGenerator:
+    @staticmethod
+    def generate_tag() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(4, 9)))
+
+
+class Luigi18SystemtestGenerator(SystemtestGenerator, Luigi18TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return f"automanual {self.generate_tag()}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return f"manualonly {self.generate_tag()}", TestResult.PASSING
+
+
+class Luigi18UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi18TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.Import(names=[ast.alias(name="time")]),
+            ast.ImportFrom(
+                module="luigi.scheduler",
+                names=[
+                    ast.alias(name="CentralPlannerScheduler"),
+                    ast.alias(name="FAILED"),
+                    ast.alias(name="DISABLED"),
+                ],
+                level=0,
+            ),
+        ]
+
+    def _body(self, mode: str, tag: str) -> List[ast.stmt]:
+        w, tid = f"w_{tag}", f"T_{tag}"
+        if mode == "automanual":
+            setup = (
+                f"    sch.add_task(worker={w!r}, task_id={tid!r}, status=FAILED)\n"
+                f"    sch.add_task(worker={w!r}, task_id={tid!r}, status=FAILED)\n"
+                f"    sch.add_task(worker={w!r}, task_id={tid!r}, status=DISABLED)\n"
+            )
+        else:
+            setup = (
+                f"    sch.add_task(worker={w!r}, task_id={tid!r}, status=DISABLED)\n"
+            )
+        return ast.parse(
+            f"_orig = time.time\n"
+            f"try:\n"
+            f"    time.time = lambda: 0\n"
+            f"    sch = CentralPlannerScheduler(disable_failures=2, "
+            f"disable_persist=100)\n"
+            f"{setup}"
+            f"    time.time = lambda: 101\n"
+            f"    status = sch.task_list('', '')[{tid!r}]['status']\n"
+            f"finally:\n"
+            f"    time.time = _orig\n"
+            f"self.assertEqual(status, 'DISABLED')\n"
+        ).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("automanual", self.generate_tag())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("manualonly", self.generate_tag())
+        return test, TestResult.PASSING
+
+
+grammar_18: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<mode> <tag>"],
+            "<mode>": ["automanual", "manualonly"],
+            "<tag>": ["<letter><letters>"],
+            "<letters>": ["", "<letter><letters>"],
+            "<letter>": srange(string.ascii_lowercase),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_18)
+
+
+# ======================================================================
+# bug_14: the ``scheduler`` config defaulted ``disable_failures`` and
+# ``disable_hard_timeout`` to ``None``.  With only ``disable_hard_timeout``
+# configured, ``Task.has_excessive_failures`` still evaluated
+# ``num_failures() >= self.disable_failures`` where ``disable_failures`` is
+# ``None`` -> ``TypeError`` (int >= NoneType), crashing the scheduler when a
+# task failed.  The fix defaults both to ``999999999`` (and drops the now
+# unnecessary ``can_disable`` guard).
+#
+# System-test format:  ``<mode> <tag>`` where ``<mode>`` is ``hardonly`` (the
+#   trigger: only ``disable_hard_timeout`` set, so failing a task crashes on
+#   the buggy build) or ``bothset`` (both limits set, so no crash on either
+#   build).  The correct behaviour is that failing a task never crashes the
+#   scheduler; the harness prints ``HARNESS_OK`` iff it completes and the
+#   oracle returns PASSING iff so.
+# ======================================================================
+
+
+class Luigi14API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and "HARNESS_OK" in out:
+            return TestResult.PASSING, out
+        return TestResult.FAILING, out or process.stderr.decode("utf8").strip()
+
+
+class Luigi14TestGenerator:
+    @staticmethod
+    def generate_tag() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(4, 9)))
+
+
+class Luigi14SystemtestGenerator(SystemtestGenerator, Luigi14TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return f"hardonly {self.generate_tag()}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return f"bothset {self.generate_tag()}", TestResult.PASSING
+
+
+class Luigi14UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi14TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.Import(names=[ast.alias(name="time")]),
+            ast.ImportFrom(
+                module="luigi.scheduler",
+                names=[
+                    ast.alias(name="CentralPlannerScheduler"),
+                    ast.alias(name="FAILED"),
+                ],
+                level=0,
+            ),
+        ]
+
+    def _body(self, mode: str, tag: str) -> List[ast.stmt]:
+        w, a, b = f"w_{tag}", f"A_{tag}", f"B_{tag}"
+        if mode == "hardonly":
+            create = "CentralPlannerScheduler(retry_delay=5, disable_hard_timeout=100)"
+        else:
+            create = (
+                "CentralPlannerScheduler(retry_delay=5, disable_hard_timeout=100, "
+                "disable_failures=100)"
+            )
+        return ast.parse(
+            f"_orig = time.time\n"
+            f"try:\n"
+            f"    time.time = lambda: 1\n"
+            f"    sch = {create}\n"
+            f"    sch.add_worker({w!r}, [])\n"
+            f"    sch.ping(worker={w!r})\n"
+            f"    time.time = lambda: 2\n"
+            f"    sch.add_task(worker={w!r}, task_id={a!r})\n"
+            f"    sch.add_task(worker={w!r}, task_id={b!r}, deps=[{a!r}])\n"
+            f"    sch.get_work(worker={w!r})\n"
+            f"    sch.add_task(worker={w!r}, task_id={a!r}, status=FAILED)\n"
+            f"    time.time = lambda: 10\n"
+            f"    sch.prune()\n"
+            f"    sch.get_work(worker={w!r})\n"
+            f"finally:\n"
+            f"    time.time = _orig\n"
+            f"self.assertTrue(True)\n"
+        ).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("hardonly", self.generate_tag())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("bothset", self.generate_tag())
+        return test, TestResult.PASSING
+
+
+grammar_14: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<mode> <tag>"],
+            "<mode>": ["hardonly", "bothset"],
+            "<tag>": ["<letter><letters>"],
+            "<letters>": ["", "<letter><letters>"],
+            "<letter>": srange(string.ascii_lowercase),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_14)
+
+
+# ======================================================================
+# bug_7: ``Scheduler.add_task`` only refused to re-schedule a RUNNING task
+# when the incoming status was ``PENDING`` (``not (task.status in (RUNNING,
+# BATCH_RUNNING) and status == PENDING)``).  So another worker could
+# override the status of a task actively RUNNING on a different worker (e.g.
+# to UNKNOWN), losing the RUNNING state.  The fix blocks any non-terminal
+# override from a worker that is not the one running the task.
+#
+# System-test format:  ``<mode> <tag>`` where ``<mode>`` is ``override`` (the
+#   trigger: a second worker sets the RUNNING task to UNKNOWN -- accepted on
+#   the buggy build, blocked on the fixed one) or ``blocked`` (the second
+#   worker sets PENDING, which is blocked on both builds).  The correct
+#   behaviour is that the task stays RUNNING; the harness prints
+#   ``HARNESS_OK`` iff the task is still RUNNING and the oracle returns
+#   PASSING iff so.
+# ======================================================================
+
+
+class Luigi7API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and "HARNESS_OK" in out:
+            return TestResult.PASSING, out
+        return TestResult.FAILING, out or process.stderr.decode("utf8").strip()
+
+
+class Luigi7TestGenerator:
+    @staticmethod
+    def generate_tag() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(4, 9)))
+
+
+class Luigi7SystemtestGenerator(SystemtestGenerator, Luigi7TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return f"override {self.generate_tag()}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return f"blocked {self.generate_tag()}", TestResult.PASSING
+
+
+_LUIGI7_CONF = (
+    "{'retry_delay': 100, 'remove_delay': 1000, 'worker_disconnect_delay': 10, "
+    "'disable_persist': 10, 'disable_window': 10, 'retry_count': 3, "
+    "'disable_hard_timeout': 3600}"
+)
+
+
+class Luigi7UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi7TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.ImportFrom(
+                module="luigi.scheduler",
+                names=[ast.alias(name="Scheduler")],
+                level=0,
+            )
+        ]
+
+    def _body(self, mode: str, tag: str) -> List[ast.stmt]:
+        x, y, a = f"X_{tag}", f"Y_{tag}", f"A_{tag}"
+        newstatus = "UNKNOWN" if mode == "override" else "PENDING"
+        return ast.parse(
+            f"sch = Scheduler(**{_LUIGI7_CONF})\n"
+            f"sch.add_task(worker={x!r}, task_id={a!r})\n"
+            f"sch.get_work(worker={x!r})\n"
+            f"sch.add_task(worker={y!r}, task_id={a!r}, status={newstatus!r})\n"
+            f"status = sch.task_list('', '')[{a!r}]['status']\n"
+            f"self.assertEqual(status, 'RUNNING')\n"
+        ).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("override", self.generate_tag())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("blocked", self.generate_tag())
+        return test, TestResult.PASSING
+
+
+grammar_7: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<mode> <tag>"],
+            "<mode>": ["override", "blocked"],
+            "<tag>": ["<letter><letters>"],
+            "<letters>": ["", "<letter><letters>"],
+            "<letter>": srange(string.ascii_lowercase),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_7)
+
+
+# ======================================================================
+# bug_9: ``execution_summary`` classified any task that ever emitted a
+# FAILED event as ``failed`` -- even if it later succeeded on a retry.  So
+# the run summary reported ``:( ... there were failed tasks`` for a task
+# that actually completed.  The fix tracks ``ever_failed`` separately and
+# defines ``failed = ever_failed - completed``, reporting ``:) ... they all
+# suceeded in a retry`` when every failure eventually completed.
+#
+# System-test format:  ``<mode> <tag>`` where ``<mode>`` is ``retry`` (the
+#   trigger: a task fails once then completes -- the buggy summary still
+#   shows a sad ``:(``) or ``clean`` (a task that succeeds first try -- happy
+#   on both builds).  The correct behaviour is that the summary contains no
+#   ``:(``; the harness prints ``HARNESS_OK`` iff the summary has no ``:(``
+#   and the oracle returns PASSING iff so.
+# ======================================================================
+
+
+class Luigi9API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and "HARNESS_OK" in out:
+            return TestResult.PASSING, out
+        return TestResult.FAILING, out or process.stderr.decode("utf8").strip()
+
+
+class Luigi9TestGenerator:
+    @staticmethod
+    def generate_tag() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(4, 9)))
+
+
+class Luigi9SystemtestGenerator(SystemtestGenerator, Luigi9TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return f"retry {self.generate_tag()}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return f"clean {self.generate_tag()}", TestResult.PASSING
+
+
+class Luigi9UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi9TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.Import(names=[ast.alias(name="luigi")]),
+            ast.Import(names=[ast.alias(name="luigi.worker")]),
+            ast.Import(names=[ast.alias(name="luigi.scheduler")]),
+            ast.Import(names=[ast.alias(name="luigi.execution_summary")]),
+        ]
+
+    def _body(self, mode: str, tag: str) -> List[ast.stmt]:
+        if mode == "retry":
+            run_def = (
+                "def _run(t):\n"
+                "    t.run_count += 1\n"
+                "    if t.run_count == 1:\n"
+                "        raise ValueError()\n"
+            )
+        else:
+            run_def = "def _run(t):\n    t.run_count += 1\n"
+        return ast.parse(
+            f"{run_def}"
+            f"def _complete(t):\n"
+            f"    return t.run_count > 0\n"
+            f"Foo = type('Foo_{tag}', (luigi.Task,), "
+            f"{{'run_count': 0, 'run': _run, 'complete': _complete}})\n"
+            f"sch = luigi.scheduler.Scheduler(prune_on_get_work=False)\n"
+            f"w = luigi.worker.Worker(scheduler=sch)\n"
+            f"w.add(Foo())\n"
+            f"w.run()\n"
+            f"w.add(Foo())\n"
+            f"w.run()\n"
+            f"s = luigi.execution_summary.summary(w)\n"
+            f"self.assertNotIn(':(', s)\n"
+        ).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("retry", self.generate_tag())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("clean", self.generate_tag())
+        return test, TestResult.PASSING
+
+
+grammar_9: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<mode> <tag>"],
+            "<mode>": ["retry", "clean"],
+            "<tag>": ["<letter><letters>"],
+            "<letters>": ["", "<letter><letters>"],
+            "<letter>": srange(string.ascii_lowercase),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_9)
+
+
+# ======================================================================
+# bug_30: ``worker.TaskProcess.run`` wrapped the task execution in a
+# ``try/finally`` whose ``finally`` block fired ``Event.PROCESSING_TIME`` and
+# ``Event.SUCCESS`` (and called ``on_success``) whenever ``status`` was not
+# SUSPENDED -- even when the task actually *failed*.  So a failing task
+# wrongly triggered a SUCCESS event in addition to FAILURE.  The fix only
+# fires the success events when the task truly produced no new deps and did
+# not error.
+#
+# System-test format:  ``<mode> <tag>`` where ``<mode>`` is ``fail`` (the
+#   trigger: a failing task, which fires *both* SUCCESS and FAILURE on the
+#   buggy build) or ``succeed`` (a succeeding task, which fires only
+#   SUCCESS on both builds).  The correct behaviour is that exactly one
+#   terminal event fires per run; the harness prints ``HARNESS_OK`` iff the
+#   total number of SUCCESS+FAILURE events is 1 and the oracle returns
+#   PASSING iff so.
+# ======================================================================
+
+
+class Luigi30API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and "HARNESS_OK" in out:
+            return TestResult.PASSING, out
+        return TestResult.FAILING, out or process.stderr.decode("utf8").strip()
+
+
+class Luigi30TestGenerator:
+    @staticmethod
+    def generate_tag() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(4, 9)))
+
+
+class Luigi30SystemtestGenerator(SystemtestGenerator, Luigi30TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return f"fail {self.generate_tag()}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return f"succeed {self.generate_tag()}", TestResult.PASSING
+
+
+class Luigi30UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi30TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.Import(names=[ast.alias(name="luigi")]),
+            ast.ImportFrom(
+                module="luigi",
+                names=[
+                    ast.alias(name="Event"),
+                    ast.alias(name="Task"),
+                    ast.alias(name="build"),
+                ],
+                level=0,
+            ),
+        ]
+
+    def _body(self, mode: str, tag: str) -> List[ast.stmt]:
+        fail_bool = "True" if mode == "fail" else "False"
+        return ast.parse(
+            f"class DummyException_{tag}(Exception):\n"
+            f"    pass\n"
+            f"def _run(self):\n"
+            f"    if self.fail:\n"
+            f"        raise DummyException_{tag}()\n"
+            f"T = type('ET_{tag}', (Task,), "
+            f"{{'fail': luigi.BoolParameter(), 'run': _run}})\n"
+            f"successes = []\n"
+            f"failures = []\n"
+            f"def _s(task):\n"
+            f"    successes.append(task)\n"
+            f"def _f(task, exc):\n"
+            f"    failures.append(task)\n"
+            f"T.event_handler(Event.SUCCESS)(_s)\n"
+            f"T.event_handler(Event.FAILURE)(_f)\n"
+            f"t = T({fail_bool})\n"
+            f"build([t], local_scheduler=True)\n"
+            f"self.assertEqual(len(successes) + len(failures), 1)\n"
+        ).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("fail", self.generate_tag())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("succeed", self.generate_tag())
+        return test, TestResult.PASSING
+
+
+grammar_30: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<mode> <tag>"],
+            "<mode>": ["fail", "succeed"],
+            "<tag>": ["<letter><letters>"],
+            "<letters>": ["", "<letter><letters>"],
+            "<letter>": srange(string.ascii_lowercase),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_30)
+
+
+# ======================================================================
+# bug_1: ``server.MetricsHandler.get`` obtained ``metrics =
+# collector.generate_latest()`` and then, when metrics were present, called
+# ``metrics.configure_http_handler(self)`` -- invoking the method on the
+# *metrics payload* instead of on the *metrics collector*.  The fix calls
+# ``metrics_collector.configure_http_handler(self)``.
+#
+# System-test format:  ``<mode> <tag>`` where ``<mode>`` is ``metrics`` (the
+#   trigger: ``generate_latest`` returns a payload, so the collector's
+#   ``configure_http_handler`` must be called -- it is not on the buggy
+#   build) or ``nometrics`` (``generate_latest`` returns ``None`` so the
+#   collector method is not called on either build).  The correct behaviour
+#   is that the collector's ``configure_http_handler`` is called iff metrics
+#   are present; the harness prints ``HARNESS_OK`` iff observed == expected
+#   and the oracle returns PASSING iff so.
+# ======================================================================
+
+
+class Luigi1API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and "HARNESS_OK" in out:
+            return TestResult.PASSING, out
+        return TestResult.FAILING, out or process.stderr.decode("utf8").strip()
+
+
+class Luigi1TestGenerator:
+    @staticmethod
+    def generate_tag() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(4, 9)))
+
+
+class Luigi1SystemtestGenerator(SystemtestGenerator, Luigi1TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return f"metrics {self.generate_tag()}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return f"nometrics {self.generate_tag()}", TestResult.PASSING
+
+
+class Luigi1UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi1TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.ImportFrom(
+                module="unittest", names=[ast.alias(name="mock")], level=0
+            ),
+            ast.Import(names=[ast.alias(name="tornado.web")]),
+            ast.Import(names=[ast.alias(name="luigi.server")]),
+        ]
+
+    def _body(self, mode: str, tag: str) -> List[ast.stmt]:
+        has_metrics = mode == "metrics"
+        payload = "mock.MagicMock()" if has_metrics else "None"
+        return ast.parse(
+            f"note = {tag!r}\n"
+            f"sched = mock.MagicMock()\n"
+            f"handler = luigi.server.MetricsHandler("
+            f"tornado.web.Application(), mock.MagicMock(), scheduler=sched)\n"
+            f"coll = sched._state._metrics_collector\n"
+            f"coll.generate_latest.return_value = {payload}\n"
+            f"with mock.patch.object(handler, 'write'):\n"
+            f"    handler.get()\n"
+            f"self.assertEqual(coll.configure_http_handler.called, {has_metrics})\n"
+        ).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("metrics", self.generate_tag())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("nometrics", self.generate_tag())
+        return test, TestResult.PASSING
+
+
+grammar_1: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<mode> <tag>"],
+            "<mode>": ["metrics", "nometrics"],
+            "<tag>": ["<letter><letters>"],
+            "<letters>": ["", "<letter><letters>"],
+            "<letter>": srange(string.ascii_lowercase),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_1)
+
+
+# ======================================================================
+# bug_8: ``S3CopyToTable.does_table_exist`` built its existence-check SQL
+# comparing the table name case-sensitively (``where tablename = %s`` /
+# ``where table_schema = %s and table_name = %s``).  Because Redshift stores
+# identifiers lower-cased, a table queried with different casing was
+# reported missing.  The fix wraps the bound params in ``lower(%s)``.
+#
+# System-test format:  ``<mode> <tag> <table>`` where ``<mode>`` is ``lower``
+#   (the trigger: the generated query must use ``lower(`` -- it does not on
+#   the buggy build) or ``exists`` (an invariant -- the query always
+#   contains ``table_exists`` on both builds).  The correct behaviour is a
+#   case-insensitive existence query; the harness prints ``HARNESS_OK`` iff
+#   the checked substring is present and the oracle returns PASSING iff so.
+# ======================================================================
+
+
+class Luigi8API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and "HARNESS_OK" in out:
+            return TestResult.PASSING, out
+        return TestResult.FAILING, out or process.stderr.decode("utf8").strip()
+
+
+class Luigi8TestGenerator:
+    @staticmethod
+    def generate_word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(4, 9)))
+
+
+class Luigi8SystemtestGenerator(SystemtestGenerator, Luigi8TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return (
+            f"lower {self.generate_word()} {self.generate_word()}",
+            TestResult.FAILING,
+        )
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return (
+            f"exists {self.generate_word()} {self.generate_word()}",
+            TestResult.PASSING,
+        )
+
+
+class Luigi8UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi8TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.ImportFrom(
+                module="unittest", names=[ast.alias(name="mock")], level=0
+            ),
+            ast.Import(names=[ast.alias(name="luigi")]),
+            ast.Import(names=[ast.alias(name="luigi.contrib.redshift")]),
+        ]
+
+    def _body(self, mode: str, tag: str, table: str) -> List[ast.stmt]:
+        cls_name = f"Dummy_{tag}"
+        substr = "lower(" if mode == "lower" else "table_exists"
+        return ast.parse(
+            f"class {cls_name}(luigi.contrib.redshift.S3CopyToTable):\n"
+            f"    host = 'h'\n"
+            f"    database = 'd'\n"
+            f"    user = 'u'\n"
+            f"    password = 'p'\n"
+            f"    aws_access_key_id = 'key'\n"
+            f"    aws_secret_access_key = 'secret'\n"
+            f"    copy_options = ''\n"
+            f"    table = luigi.Parameter(default={table!r})\n"
+            f"    columns = None\n"
+            f"    def s3_load_path(self):\n"
+            f"        return 's3://bucket/key'\n"
+            f"task = {cls_name}()\n"
+            f"conn = mock.MagicMock()\n"
+            f"cursor = conn.cursor.return_value\n"
+            f"luigi.contrib.redshift.S3CopyToTable.does_table_exist(task, conn)\n"
+            f"query = cursor.execute.call_args[0][0]\n"
+            f"self.assertIn({substr!r}, query)\n"
+        ).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("lower", self.generate_word(), self.generate_word())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("exists", self.generate_word(), self.generate_word())
+        return test, TestResult.PASSING
+
+
+grammar_8: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<mode> <word> <word>"],
+            "<mode>": ["lower", "exists"],
+            "<word>": ["<letter><letters>"],
+            "<letters>": ["", "<letter><letters>"],
+            "<letter>": srange(string.ascii_lowercase),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_8)
