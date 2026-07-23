@@ -2,66 +2,64 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 
 class TestsFailing(FailingSystemtests):
-
     def test_diversity_1(self):
-        return '&a&quot;'
+        return 'http://bomp.de/axy/ascjaza/mmcsvnw/phoqmjg.txt'
 
     def test_diversity_2(self):
-        return '&a&eacute;'
+        return 'http://lkrbh.org/rybisre/peo/ajcn/umot.json'
 
     def test_diversity_3(self):
-        return '&anna&&eacute;ric'
+        return 'http://pyzw.org/vmumvwl/vhdeldn/jvgecs/scfxuf.mp4'
 
     def test_diversity_4(self):
-        return '&anna&#47;&eacute;ric'
+        return 'http://mdbedos.com/hlpwr/cfxl/vjwn/ephvnm/rbc.txt'
 
     def test_diversity_5(self):
-        return '&&#47;'
+        return 'http://wvcgkwh.de/ltf/yxhqhi/hhvkjv.txt'
 
     def test_diversity_6(self):
-        return '&&#x2F;'
+        return 'http://usr.de/jamh/eqeprj/nylr/jub.txt'
 
     def test_diversity_7(self):
-        return '&&period;'
+        return 'http://vgd.de/ztzhr/oyont/npi/xlcnp/azzrzn.json'
 
     def test_diversity_8(self):
-        return '&&apos;'
+        return 'http://rxtr.net/vyg/xfnqvr/wfmrr/wqbn/dzopv.mp4'
 
     def test_diversity_9(self):
-        return '&&apos;&period;'
+        return 'http://zauvli.net/ytr/pbf/jyrj/suwj.html'
 
     def test_diversity_10(self):
-        return '&period;&&apos;'
+        return 'http://pgoaf.org/bauv/qsndxqb/mpjkuga/ehvhsez.txt'
 
 
 class TestsPassing(PassingSystemtests):
-
     def test_diversity_1(self):
-        return "%20;"
+        return 'http://sglvsjt.net/mpmmlst/crwvdum.txt'
 
     def test_diversity_2(self):
-        return "&#x2F;"
+        return 'http://gsiys.org/oemyyi/xcvmbe.html'
 
     def test_diversity_3(self):
-        return "&#47;"
+        return 'http://sfazi.de/brl.html'
 
     def test_diversity_4(self):
-        return "&eacute;"
+        return 'http://ysxezap.org/ypexf.json'
 
     def test_diversity_5(self):
-        return "&#2013266066;"
+        return 'http://nigxkr.net/ghzxe/oozq.txt'
 
     def test_diversity_6(self):
-        return '&period;&apos;'
+        return 'http://akbxbv.net/jughnz.json'
 
     def test_diversity_7(self):
-        return '&eacute;ric'
+        return 'http://huu.com/dlny/mup.html'
 
     def test_diversity_8(self):
-        return '&period;'
+        return 'http://wmweuf.com/geq/hzzfnxi.json'
 
     def test_diversity_9(self):
-        return '&apos;'
+        return 'http://ywqvawv.com/kmi/ntuuohp.mp4'
 
     def test_diversity_10(self):
-        return '%10;'
+        return 'http://dzotkfl.de/eebuje.txt'

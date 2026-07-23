@@ -2,66 +2,64 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 
 class TestsFailing(FailingSystemtests):
-    # It takes system executables with get_all_executables(), so there is no input.
     def test_diversity_1(self):
-        return ""
+        return "git semi"
 
     def test_diversity_2(self):
-        return ""
+        return "ls semi"
 
     def test_diversity_3(self):
-        return ""
+        return "cat semi"
 
     def test_diversity_4(self):
-        return ""
+        return "echo semi"
 
     def test_diversity_5(self):
-        return ""
+        return "cp semi"
 
     def test_diversity_6(self):
-        return ""
+        return "mv semi"
 
     def test_diversity_7(self):
-        return ""
+        return "rm semi"
 
     def test_diversity_8(self):
-        return ""
+        return "date semi"
 
     def test_diversity_9(self):
-        return ""
+        return "grep semi"
 
     def test_diversity_10(self):
-        return ""
+        return "sort semi"
 
 
 class TestsPassing(PassingSystemtests):
-    # It takes system executables with get_all_executables(), so there is no input.
     def test_diversity_1(self):
-        return ""
+        return "head plain"
 
     def test_diversity_2(self):
-        return ""
+        return "tail plain"
 
     def test_diversity_3(self):
-        return ""
+        return "uniq plain"
 
     def test_diversity_4(self):
-        return ""
+        return "wc plain"
 
     def test_diversity_5(self):
-        return ""
+        return "pwd plain"
 
     def test_diversity_6(self):
-        return ""
+        return "sed plain"
 
     def test_diversity_7(self):
-        return ""
+        return "awk plain"
 
     def test_diversity_8(self):
-        return ""
+        return "find plain"
 
     def test_diversity_9(self):
-        return ""
+        return "tar plain"
 
     def test_diversity_10(self):
-        return ""
+        return "curl plain"

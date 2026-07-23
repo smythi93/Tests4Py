@@ -14,6 +14,13 @@ from tests4py.cli.framework.default import (
     tests4py_info,
     tests4py_test,
 )
+from tests4py.cli.framework.docker import (
+    tests4py_docker_env,
+    tests4py_docker_project,
+    tests4py_docker_instance,
+    tests4py_docker_run,
+    tests4py_docker_mode,
+)
 from tests4py.cli.framework.grammar import tests4py_grammar
 from tests4py.cli.framework.sfl import tests4py_sfl_instrument, tests4py_sfl_events
 from tests4py.constants import (
@@ -28,6 +35,12 @@ from tests4py.constants import (
     CLEAR,
     GRAMMAR,
     RUN,
+    DOCKER,
+    DOCKER_ENV,
+    DOCKER_PROJECT,
+    DOCKER_INSTANCE,
+    DOCKER_RUN,
+    DOCKER_MODE,
     DEFAULT_WORK_DIR,
     GENERATE,
     DEFAULT_SUB_PATH_SYSTEMTESTS,
@@ -112,6 +125,11 @@ def get_parser():
     )
     run_parser = commands.add_parser(
         RUN, help="Run an input on a project and observe its result"
+    )
+    docker_parser = commands.add_parser(
+        DOCKER,
+        help="Optional containerised backend: build the layered env/project/"
+        "instance images and run bugs inside Docker",
     )
 
     # Checkout
@@ -506,6 +524,63 @@ def get_parser():
         help=f"The path or string of the input",
     )
 
+    # Docker (optional backend)
+    docker_commands = docker_parser.add_subparsers(
+        help="The docker subcommand to execute", dest="subcommand"
+    )
+    docker_env = docker_commands.add_parser(
+        DOCKER_ENV, help="Build the reusable environment image (OS + pyenv + t4p)"
+    )
+    docker_env.add_argument(
+        "--python",
+        dest="default_python",
+        default="3.10.9",
+        help="Default interpreter baked into the environment image",
+    )
+    docker_project = docker_commands.add_parser(
+        DOCKER_PROJECT, help="Build a project image warmed by one bug"
+    )
+    docker_project.add_argument(
+        "-p", dest="project_name", required=True, help="The project name"
+    )
+    docker_project.add_argument(
+        "-i",
+        dest="warm_bug",
+        type=int,
+        default=1,
+        help="The bug id to warm the project image with (default 1)",
+    )
+    docker_instance = docker_commands.add_parser(
+        DOCKER_INSTANCE, help="Build an instance image for one specific bug"
+    )
+    docker_instance.add_argument(
+        "-p", dest="project_name", required=True, help="The project name"
+    )
+    docker_instance.add_argument(
+        "-i", dest="bug_id", type=int, required=True, help="The bug id"
+    )
+    docker_run = docker_commands.add_parser(
+        DOCKER_RUN, help="Run a t4p command inside a bug's instance container"
+    )
+    docker_run.add_argument(
+        "-p", dest="project_name", required=True, help="The project name"
+    )
+    docker_run.add_argument(
+        "-i", dest="bug_id", type=int, required=True, help="The bug id"
+    )
+    docker_run.add_argument(
+        "command",
+        nargs=argparse.REMAINDER,
+        help="The t4p command to run in the container (default: the bug's failing "
+        "tests). Example: systemtest generate -n 4",
+    )
+    docker_mode = docker_commands.add_parser(
+        DOCKER_MODE, help="Set the execution backend (pyenv or docker)"
+    )
+    docker_mode.add_argument(
+        "backend", choices=["pyenv", "docker"], help="The backend to use"
+    )
+
     return arguments
 
 
@@ -620,6 +695,30 @@ def main(*args: str, stdout=sys.stdout, stderr=sys.stderr):
             inputs=args.test,
             invoke_oracle=args.invoke_oracle,
         )
+    elif args.command == DOCKER:
+        if args.subcommand == DOCKER_ENV:
+            report = tests4py_docker_env(default_python=args.default_python)
+        elif args.subcommand == DOCKER_PROJECT:
+            report = tests4py_docker_project(
+                project_name=args.project_name, warm_bug=args.warm_bug
+            )
+        elif args.subcommand == DOCKER_INSTANCE:
+            report = tests4py_docker_instance(
+                project_name=args.project_name, bug_id=args.bug_id
+            )
+        elif args.subcommand == DOCKER_RUN:
+            report = tests4py_docker_run(
+                project_name=args.project_name,
+                bug_id=args.bug_id,
+                command=args.command or None,
+            )
+        elif args.subcommand == DOCKER_MODE:
+            report = tests4py_docker_mode(mode=args.backend)
+        else:
+            raise NotImplementedError(
+                f"Subcommand {args.subcommand} not implemented for command "
+                f"{args.command}"
+            )
     else:
         raise NotImplementedError(f"Command {args.command} not implemented")
 

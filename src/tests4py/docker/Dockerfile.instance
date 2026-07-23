@@ -1,0 +1,34 @@
+# syntax=docker/dockerfile:1
+#
+# Layer 3 of 3 -- the INSTANCE image.
+#
+# Built on top of a project image. It checks out and builds one specific bug,
+# leaving a ready-to-run work directory at /work/<project>_<bug>. Running the
+# container executes Tests4Py commands (test / generate / run) against it.
+#
+#   docker build -f src/tests4py/docker/Dockerfile.instance \
+#     --build-arg PROJECT=middle --build-arg BUG=1 \
+#     --build-arg PROJECT_IMAGE=tests4py-project-middle:latest \
+#     -t tests4py-instance-middle-1:latest .
+#
+#   docker run --rm tests4py-instance-middle-1:latest t4p test -w /work/middle_1
+#
+ARG PROJECT_IMAGE=tests4py-project-middle:latest
+FROM ${PROJECT_IMAGE}
+
+ARG PROJECT=middle
+ARG BUG=1
+ENV T4P_PROJECT=${PROJECT} \
+    T4P_BUG=${BUG} \
+    T4P_WORK=/work/${PROJECT}_${BUG}
+
+RUN t4p checkout -p "${PROJECT}" -i "${BUG}" -w /work \
+    && t4p build -w "/work/${PROJECT}_${BUG}"
+
+LABEL org.tests4py.layer="instance" \
+      org.tests4py.project="${PROJECT}" \
+      org.tests4py.bug="${BUG}"
+
+WORKDIR /work
+# Default: run the bug's failing tests. Override with any `t4p ...` command.
+CMD ["sh", "-c", "t4p test -w \"$T4P_WORK\""]

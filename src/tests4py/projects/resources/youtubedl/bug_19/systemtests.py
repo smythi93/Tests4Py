@@ -1,0 +1,65 @@
+from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
+
+
+class TestsFailing(FailingSystemtests):
+    def test_diversity_1(self):
+        return 'eyJvdXR0bXBsIjogIiUodGl0bGUpcy4lKGV4dClzIiwgImluZm8iOiB7ImlkIjogIjc2NDAwNyIsICJleHQiOiAibTRhIiwgInRpdGxlIjogIm9idWhtbiAkVDRQVkFSIG9hZCJ9LCAiZXhwZWN0ZWQiOiAib2J1aG1uICRUNFBWQVIgb2FkLm00YSJ9'
+
+    def test_diversity_2(self):
+        return 'eyJvdXR0bXBsIjogIiUodGl0bGUpcy4lKGV4dClzIiwgImluZm8iOiB7ImlkIjogIjU4ODQ3NiIsICJleHQiOiAibTRhIiwgInRpdGxlIjogImJleSAkVDRQVkFSIG16cnkifSwgImV4cGVjdGVkIjogImJleSAkVDRQVkFSIG16cnkubTRhIn0='
+
+    def test_diversity_3(self):
+        return 'eyJvdXR0bXBsIjogIiUodGl0bGUpcy4lKGV4dClzIiwgImluZm8iOiB7ImlkIjogIjk3NjA2OCIsICJleHQiOiAibXA0IiwgInRpdGxlIjogInhzcSAkVDRQVkFSIG5zZyJ9LCAiZXhwZWN0ZWQiOiAieHNxICRUNFBWQVIgbnNnLm1wNCJ9'
+
+    def test_diversity_4(self):
+        return 'eyJvdXR0bXBsIjogIiUodGl0bGUpcy4lKGV4dClzIiwgImluZm8iOiB7ImlkIjogIjk5MjM2IiwgImV4dCI6ICJtNGEiLCAidGl0bGUiOiAidXp0ICRUNFBWQVIgZm1kdyJ9LCAiZXhwZWN0ZWQiOiAidXp0ICRUNFBWQVIgZm1kdy5tNGEifQ=='
+
+    def test_diversity_5(self):
+        return 'eyJvdXR0bXBsIjogIiUodGl0bGUpcy4lKGV4dClzIiwgImluZm8iOiB7ImlkIjogIjQ1MDQ5IiwgImV4dCI6ICJtNGEiLCAidGl0bGUiOiAidWVmY2Z2ICRUNFBWQVIgY255In0sICJleHBlY3RlZCI6ICJ1ZWZjZnYgJFQ0UFZBUiBjbnkubTRhIn0='
+
+    def test_diversity_6(self):
+        return 'eyJvdXR0bXBsIjogIiUodGl0bGUpcy4lKGV4dClzIiwgImluZm8iOiB7ImlkIjogIjQxOTU0MCIsICJleHQiOiAibTRhIiwgInRpdGxlIjogInB0Ymhmb24gJFQ0UFZBUiBxeXJtYiJ9LCAiZXhwZWN0ZWQiOiAicHRiaGZvbiAkVDRQVkFSIHF5cm1iLm00YSJ9'
+
+    def test_diversity_7(self):
+        return 'eyJvdXR0bXBsIjogIiUodGl0bGUpcy4lKGV4dClzIiwgImluZm8iOiB7ImlkIjogIjI3OTAzMSIsICJleHQiOiAibTRhIiwgInRpdGxlIjogInJkaWJ5ZSAkVDRQVkFSIGt5ZGdqIn0sICJleHBlY3RlZCI6ICJyZGlieWUgJFQ0UFZBUiBreWRnai5tNGEifQ=='
+
+    def test_diversity_8(self):
+        return 'eyJvdXR0bXBsIjogIiUodGl0bGUpcy4lKGV4dClzIiwgImluZm8iOiB7ImlkIjogIjQ3OTI3MyIsICJleHQiOiAibWt2IiwgInRpdGxlIjogInRxbGggJFQ0UFZBUiB0ZXN6ZiJ9LCAiZXhwZWN0ZWQiOiAidHFsaCAkVDRQVkFSIHRlc3pmLm1rdiJ9'
+
+    def test_diversity_9(self):
+        return 'eyJvdXR0bXBsIjogIiUodGl0bGUpcy4lKGV4dClzIiwgImluZm8iOiB7ImlkIjogIjgxOTExNSIsICJleHQiOiAibWt2IiwgInRpdGxlIjogInBjanAgJFQ0UFZBUiBma3cifSwgImV4cGVjdGVkIjogInBjanAgJFQ0UFZBUiBma3cubWt2In0='
+
+    def test_diversity_10(self):
+        return 'eyJvdXR0bXBsIjogIiUodGl0bGUpcy4lKGV4dClzIiwgImluZm8iOiB7ImlkIjogIjcwNjE1MSIsICJleHQiOiAibXA0IiwgInRpdGxlIjogInJpbGlqdGwgJFQ0UFZBUiBiYW1kcXIifSwgImV4cGVjdGVkIjogInJpbGlqdGwgJFQ0UFZBUiBiYW1kcXIubXA0In0='
+
+
+class TestsPassing(PassingSystemtests):
+    def test_diversity_1(self):
+        return 'eyJvdXR0bXBsIjogIiUodGl0bGUpcy0lKGlkKXMuJShleHQpcyIsICJpbmZvIjogeyJpZCI6ICIzNjI5NjAiLCAiZXh0IjogIm00YSIsICJ0aXRsZSI6ICJoenZvIGh3c2hyIn0sICJleHBlY3RlZCI6ICJoenZvIGh3c2hyLTM2Mjk2MC5tNGEifQ=='
+
+    def test_diversity_2(self):
+        return 'eyJvdXR0bXBsIjogIiUodGl0bGUpcy0lKGlkKXMuJShleHQpcyIsICJpbmZvIjogeyJpZCI6ICIzNDg4NyIsICJleHQiOiAibTRhIiwgInRpdGxlIjogIndnc3ogaHh3d2l3In0sICJleHBlY3RlZCI6ICJ3Z3N6IGh4d3dpdy0zNDg4Ny5tNGEifQ=='
+
+    def test_diversity_3(self):
+        return 'eyJvdXR0bXBsIjogIiUodGl0bGUpcy4lKGV4dClzIiwgImluZm8iOiB7ImlkIjogIjEzODgwOSIsICJleHQiOiAibTRhIiwgInRpdGxlIjogIm9mZ3JwZyByc2J2d2UifSwgImV4cGVjdGVkIjogIm9mZ3JwZyByc2J2d2UubTRhIn0='
+
+    def test_diversity_4(self):
+        return 'eyJvdXR0bXBsIjogIiUodGl0bGUpcy0lKGlkKXMuJShleHQpcyIsICJpbmZvIjogeyJpZCI6ICIzMzU3MzIiLCAiZXh0IjogIm1rdiIsICJ0aXRsZSI6ICJvaWwgc25wZ2QifSwgImV4cGVjdGVkIjogIm9pbCBzbnBnZC0zMzU3MzIubWt2In0='
+
+    def test_diversity_5(self):
+        return 'eyJvdXR0bXBsIjogIiUodGl0bGUpcy0lKGlkKXMuJShleHQpcyIsICJpbmZvIjogeyJpZCI6ICI0OTczNTUiLCAiZXh0IjogIm00YSIsICJ0aXRsZSI6ICJqYmlpIGl0ZXFjaSJ9LCAiZXhwZWN0ZWQiOiAiamJpaSBpdGVxY2ktNDk3MzU1Lm00YSJ9'
+
+    def test_diversity_6(self):
+        return 'eyJvdXR0bXBsIjogIiUodGl0bGUpcy0lKGlkKXMuJShleHQpcyIsICJpbmZvIjogeyJpZCI6ICI3MjIwNzAiLCAiZXh0IjogIm00YSIsICJ0aXRsZSI6ICJmdnJyIHFscWpkIn0sICJleHBlY3RlZCI6ICJmdnJyIHFscWpkLTcyMjA3MC5tNGEifQ=='
+
+    def test_diversity_7(self):
+        return 'eyJvdXR0bXBsIjogIiUodGl0bGUpcy4lKGV4dClzIiwgImluZm8iOiB7ImlkIjogIjc1MDQ1NyIsICJleHQiOiAibXA0IiwgInRpdGxlIjogInlpa2IgY2pudyJ9LCAiZXhwZWN0ZWQiOiAieWlrYiBjam53Lm1wNCJ9'
+
+    def test_diversity_8(self):
+        return 'eyJvdXR0bXBsIjogIiUodGl0bGUpcy4lKGV4dClzIiwgImluZm8iOiB7ImlkIjogIjkzMzMwIiwgImV4dCI6ICJ3ZWJtIiwgInRpdGxlIjogImFheWhyIGd5ZGVobG4ifSwgImV4cGVjdGVkIjogImFheWhyIGd5ZGVobG4ud2VibSJ9'
+
+    def test_diversity_9(self):
+        return 'eyJvdXR0bXBsIjogIiUodGl0bGUpcy0lKGlkKXMuJShleHQpcyIsICJpbmZvIjogeyJpZCI6ICIyNDA4MDYiLCAiZXh0IjogIm1wNCIsICJ0aXRsZSI6ICJua2RtZyB2d3R4eCJ9LCAiZXhwZWN0ZWQiOiAibmtkbWcgdnd0eHgtMjQwODA2Lm1wNCJ9'
+
+    def test_diversity_10(self):
+        return 'eyJvdXR0bXBsIjogIiUodGl0bGUpcy0lKGlkKXMuJShleHQpcyIsICJpbmZvIjogeyJpZCI6ICIxNDIyMiIsICJleHQiOiAibWt2IiwgInRpdGxlIjogIm1raXNidCByeHRzZWF2In0sICJleHBlY3RlZCI6ICJta2lzYnQgcnh0c2Vhdi0xNDIyMi5ta3YifQ=='

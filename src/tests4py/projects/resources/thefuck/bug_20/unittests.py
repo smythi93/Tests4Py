@@ -1,75 +1,69 @@
 import unittest
-from thefuck.types import Command
-from thefuck.rules.dirty_unzip import _zip_file
 from thefuck.rules.dirty_unzip import get_new_command
+from thefuck.types import Command
 
 
 class TestsFailing(unittest.TestCase):
+
     def test_diversity_1(self):
-        self.assertEqual('lgeWWVqTUfOdIc, lxkQWl', _zip_file(Command('unzip lgeWWVqTUfOdIc.zip, lxkQWl.zip', '', '')))
+        self.assertEqual("unzip 'okkb zcvp.zip' -d 'okkb zcvp'", get_new_command(Command("unzip 'okkb zcvp.zip'", '', '')))
 
     def test_diversity_2(self):
-        self.assertEqual("unzip 'wrIzCEo kTbdO.zip' -d 'wrIzCEo kTbdO'",
-                         get_new_command(Command("unzip 'wrIzCEo kTbdO.zip'", '', '')))
+        self.assertEqual("unzip 'kwdn jzye.zip' -d 'kwdn jzye'", get_new_command(Command("unzip 'kwdn jzye.zip'", '', '')))
 
     def test_diversity_3(self):
-        self.assertEqual("unzip 'QoLBjfJvcv iMkng.zip' -d 'QoLBjfJvcv iMkng'",
-                         get_new_command(Command("unzip 'QoLBjfJvcv iMkng.zip'", '', '')))
+        self.assertEqual("unzip 'zhdj wtlr.zip' -d 'zhdj wtlr'", get_new_command(Command("unzip 'zhdj wtlr.zip'", '', '')))
 
     def test_diversity_4(self):
-        self.assertEqual('abGYJ, NfMFixvKoZhvND', _zip_file(Command('unzip abGYJ.zip, NfMFixvKoZhvND.zip', '', '')))
+        self.assertEqual("unzip 'klkw tcoz.zip' -d 'klkw tcoz'", get_new_command(Command("unzip 'klkw tcoz.zip'", '', '')))
 
     def test_diversity_5(self):
-        self.assertEqual('KweNZAOyhvB, bYogNneZlkGDYKU',
-                         _zip_file(Command('unzip KweNZAOyhvB.zip, bYogNneZlkGDYKU.zip', '', '')))
+        self.assertEqual("unzip 'zivz gxth.zip' -d 'zivz gxth'", get_new_command(Command("unzip 'zivz gxth.zip'", '', '')))
 
     def test_diversity_6(self):
-        self.assertEqual("unzip 'sgFyxBNW SvsZqnTA.zip' -d 'sgFyxBNW SvsZqnTA'",
-                         get_new_command(Command("unzip 'sgFyxBNW SvsZqnTA.zip'", '', '')))
+        self.assertEqual("unzip 'rzgw ikgw.zip' -d 'rzgw ikgw'", get_new_command(Command("unzip 'rzgw ikgw.zip'", '', '')))
 
     def test_diversity_7(self):
-        self.assertEqual('oKrja, AvIHK', _zip_file(Command('unzip oKrja.zip, AvIHK.zip', '', '')))
+        self.assertEqual("unzip 'arqi rznj.zip' -d 'arqi rznj'", get_new_command(Command("unzip 'arqi rznj.zip'", '', '')))
 
     def test_diversity_8(self):
-        self.assertEqual("unzip xaMGlDBopY\\ dZmlixXEjixM.zip -d 'xaMGlDBopY dZmlixXEjixM'",
-                         get_new_command(Command('unzip xaMGlDBopY\\ dZmlixXEjixM.zip', '', '')))
+        self.assertEqual("unzip 'vkyv zgga.zip' -d 'vkyv zgga'", get_new_command(Command("unzip 'vkyv zgga.zip'", '', '')))
 
     def test_diversity_9(self):
-        self.assertEqual('jYYbrDwaWptJ, uyopElXi', _zip_file(Command('unzip jYYbrDwaWptJ.zip, uyopElXi.zip', '', '')))
+        self.assertEqual("unzip 'pyyo mxgu.zip' -d 'pyyo mxgu'", get_new_command(Command("unzip 'pyyo mxgu.zip'", '', '')))
 
     def test_diversity_10(self):
-        self.assertEqual("unzip KUlVMKuah\\ WwAvJuXzJw.zip -d 'KUlVMKuah WwAvJuXzJw'",
-                         get_new_command(Command('unzip KUlVMKuah\\ WwAvJuXzJw.zip', '', '')))
+        self.assertEqual("unzip 'rqhi xjuk.zip' -d 'rqhi xjuk'", get_new_command(Command("unzip 'rqhi xjuk.zip'", '', '')))
 
 
 class TestsPassing(unittest.TestCase):
 
     def test_diversity_1(self):
-        self.assertEqual('unzip gyLCwqHJI.zip -d gyLCwqHJI', get_new_command(Command('unzip gyLCwqHJI.zip', '', '')))
+        self.assertEqual('unzip vshkrv.zip -d vshkrv', get_new_command(Command('unzip vshkrv.zip', '', '')))
 
     def test_diversity_2(self):
-        self.assertEqual('VaMMPHbhihP.zip', _zip_file(Command('unzip VaMMPHbhihP.zip', '', '')))
+        self.assertEqual('unzip piklmw.zip -d piklmw', get_new_command(Command('unzip piklmw.zip', '', '')))
 
     def test_diversity_3(self):
-        self.assertEqual('GdFeLDvcOP.zip', _zip_file(Command('unzip GdFeLDvcOP.zip', '', '')))
+        self.assertEqual('unzip hcrxdh.zip -d hcrxdh', get_new_command(Command('unzip hcrxdh.zip', '', '')))
 
     def test_diversity_4(self):
-        self.assertEqual('unzip cCtXqphc.zip -d cCtXqphc', get_new_command(Command('unzip cCtXqphc.zip', '', '')))
+        self.assertEqual('unzip ylqjbz.zip -d ylqjbz', get_new_command(Command('unzip ylqjbz.zip', '', '')))
 
     def test_diversity_5(self):
-        self.assertEqual('unzip vuJRTjLAeYK -d vuJRTjLAeYK', get_new_command(Command('unzip vuJRTjLAeYK', '', '')))
+        self.assertEqual('unzip pwrrye.zip -d pwrrye', get_new_command(Command('unzip pwrrye.zip', '', '')))
 
     def test_diversity_6(self):
-        self.assertEqual('iOQPbebeU.zip', _zip_file(Command('unzip iOQPbebeU.zip', '', '')))
+        self.assertEqual('unzip xqwymq.zip -d xqwymq', get_new_command(Command('unzip xqwymq.zip', '', '')))
 
     def test_diversity_7(self):
-        self.assertEqual('sXxFlJICq.zip', _zip_file(Command('unzip sXxFlJICq.zip', '', '')))
+        self.assertEqual('unzip jmvpxg.zip -d jmvpxg', get_new_command(Command('unzip jmvpxg.zip', '', '')))
 
     def test_diversity_8(self):
-        self.assertEqual('TcpSnB.zip', _zip_file(Command('unzip TcpSnB', '', '')))
+        self.assertEqual('unzip drqmll.zip -d drqmll', get_new_command(Command('unzip drqmll.zip', '', '')))
 
     def test_diversity_9(self):
-        self.assertEqual('unzip JoFFeu -d JoFFeu', get_new_command(Command('unzip JoFFeu', '', '')))
+        self.assertEqual('unzip btihei.zip -d btihei', get_new_command(Command('unzip btihei.zip', '', '')))
 
     def test_diversity_10(self):
-        self.assertEqual('wWwSdecb.zip', _zip_file(Command('unzip wWwSdecb.zip', '', '')))
+        self.assertEqual('unzip uhjgzj.zip -d uhjgzj', get_new_command(Command('unzip uhjgzj.zip', '', '')))

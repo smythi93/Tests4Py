@@ -1,70 +1,70 @@
 import unittest
+from thefuck.rules.ls_lah import match
 from thefuck.types import Command
 from thefuck.types import Settings
-from thefuck.rules.ls_lah import match
 
 
 class TestsFailing(unittest.TestCase):
 
     def test_diversity_1(self):
-        self.assertEqual(True, match(Command('ls -lah /sGzXFXZtleQhC', '', ''), Settings()))
+        self.assertEqual(False, match(Command('als ubogcrkgs', '', ''), Settings()))
 
     def test_diversity_2(self):
-        self.assertEqual(True, match(Command('ls -lah /GFZElgNtlGcELai', '', ''), Settings()))
+        self.assertEqual(False, match(Command('mls dnjzyez', '', ''), Settings()))
 
     def test_diversity_3(self):
-        self.assertEqual(True, match(Command('pacman -s rLBHRuHR', '', ''), Settings()))
+        self.assertEqual(False, match(Command('pls ujzzyzu', '', ''), Settings()))
 
     def test_diversity_4(self):
-        self.assertEqual(True, match(Command('pacman -s WArGColaH', '', ''), Settings()))
+        self.assertEqual(False, match(Command('bls lkwtcozzi', '', ''), Settings()))
 
     def test_diversity_5(self):
-        self.assertEqual(True, match(Command('ls -lah /hDdXTgPNIu', '', ''), Settings()))
+        self.assertEqual(False, match(Command('xls zgxthrzgwi', '', ''), Settings()))
 
     def test_diversity_6(self):
-        self.assertEqual(True, match(Command('pacman -s gcbBMERgo', '', ''), Settings()))
+        self.assertEqual(False, match(Command('pls hmbxmqhj', '', ''), Settings()))
 
     def test_diversity_7(self):
-        self.assertEqual(True, match(Command('pacman -s xlbAsoRtPKRhZhC', '', ''), Settings()))
+        self.assertEqual(False, match(Command('zls gihzekpvb', '', ''), Settings()))
 
     def test_diversity_8(self):
-        self.assertEqual(True, match(Command('ls -lah /VUSjpjL', '', ''), Settings()))
+        self.assertEqual(False, match(Command('xls dmohflhdh', '', ''), Settings()))
 
     def test_diversity_9(self):
-        self.assertEqual(True, match(Command('ls -lah /TRVxodoKo', '', ''), Settings()))
+        self.assertEqual(False, match(Command('kls hixjuk', '', ''), Settings()))
 
     def test_diversity_10(self):
-        self.assertEqual(True, match(Command('ls -lah /psaCbLg', '', ''), Settings()))
+        self.assertEqual(False, match(Command('zls yyyes', '', ''), Settings()))
 
 
 class TestsPassing(unittest.TestCase):
 
     def test_diversity_1(self):
-        self.assertEqual(True, match(Command('ls /meWAsmJNnMxhG', '', ''), Settings()))
+        self.assertEqual(True, match(Command('ls wymqjmv', '', ''), Settings()))
 
     def test_diversity_2(self):
-        self.assertEqual(True, match(Command('ls wkyNbG.py', '', ''), Settings()))
+        self.assertEqual(True, match(Command('ls jfahvdoiq', '', ''), Settings()))
 
     def test_diversity_3(self):
-        self.assertEqual(True, match(Command('ls /rymAInKKiIZpUoy', '', ''), Settings()))
+        self.assertEqual(True, match(Command('ls iheiuhjg', '', ''), Settings()))
 
     def test_diversity_4(self):
-        self.assertEqual(True, match(Command('ls /ZpvgvMdgeM', '', ''), Settings()))
+        self.assertEqual(True, match(Command('ls jchxxvmt', '', ''), Settings()))
 
     def test_diversity_5(self):
-        self.assertEqual(True, match(Command('ls ZgcmTBx.py', '', ''), Settings()))
+        self.assertEqual(True, match(Command('ls agsspmwbtp', '', ''), Settings()))
 
     def test_diversity_6(self):
-        self.assertEqual(True, match(Command('ls SNUIjzCSbF.py', '', ''), Settings()))
+        self.assertEqual(True, match(Command('ls biuowvw', '', ''), Settings()))
 
     def test_diversity_7(self):
-        self.assertEqual(True, match(Command('ls /MpdlqHKKKJHoQh', '', ''), Settings()))
+        self.assertEqual(True, match(Command('ls etubqcsexf', '', ''), Settings()))
 
     def test_diversity_8(self):
-        self.assertEqual(True, match(Command('ls cstuWwjzf.py', '', ''), Settings()))
+        self.assertEqual(True, match(Command('ls zynnitmggx', '', ''), Settings()))
 
     def test_diversity_9(self):
-        self.assertEqual(True, match(Command('ls uxUXMrez.py', '', ''), Settings()))
+        self.assertEqual(True, match(Command('ls xeptudhdh', '', ''), Settings()))
 
     def test_diversity_10(self):
-        self.assertEqual(True, match(Command('ls hFsaymDLFNXKd.py', '', ''), Settings()))
+        self.assertEqual(True, match(Command('ls yftbvuydd', '', ''), Settings()))

@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return 'dDSEvsd' '' '' '' '' '' '' 'DKAUv' 'hvkgNyc'
+        return "'True' 'ubogcrkgs' 'dnjzyez' '1' '2'"
 
     def test_diversity_2(self):
-        return 'LREJKGS' '' '' '' '' '' '' 'aAJGAd' 'TzysJo'
+        return "'True' 'ujzzyzu' 'lkwtcozzi' '1' '2'"
 
     def test_diversity_3(self):
-        return 'fsqAa' '' '' '' '' '' '' 'xnHkRRZ' 'DHadALjE'
+        return "'True' 'zgxthrzgwi' 'hmbxmqhj' '1' '2'"
 
     def test_diversity_4(self):
-        return 'ADRdew' '' '' '' '' '' '' 'ZUNONj' 'JEtSG'
+        return "'True' 'gihzekpvb' 'dmohflhdh' '1' '2'"
 
     def test_diversity_5(self):
-        return 'dsrjwJA' '' '' '' '' '' '' 'lkYQAF' 'fiDFFUB'
+        return "'True' 'hixjuk' 'yyyes' '1' '2'"
 
     def test_diversity_6(self):
-        return 'krhdhlD' '' '' '' '' '' '' 'XbRJyfZ' 'JgnpLhj'
+        return "'True' 'uibcunrh' 'ptetlrrkss' '1' '2'"
 
     def test_diversity_7(self):
-        return 'easdjK' '' '' '' '' '' '' 'eiKCbtq' 'CRuOR'
+        return "'True' 'qdezhtmb' 'emypbpqo' '1' '2'"
 
     def test_diversity_8(self):
-        return 'KDHEl' '' '' '' '' '' '' 'wKEpGXQ' 'sTdTO'
+        return "'True' 'ezndfzdyjz' 'areoybqhg' '1' '2'"
 
     def test_diversity_9(self):
-        return 'jdsef' '' '' '' '' '' '' 'qHnvJKt' 'bCdVA'
+        return "'True' 'phvkdihx' 'lqggv' '1' '2'"
 
     def test_diversity_10(self):
-        return 'akrew' '' '' '' '' '' '' 'miNdANoc' 'NBSK'
+        return "'True' 'alwrajnnhe' 'kwwtclb' '1' '2'"
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return 'anrg' '' '' '' '' '' '' 'anrg' 'fphKl'
+        return "'True' 'slmajhtw' 'dlrncxm' '5' '5'"
 
     def test_diversity_2(self):
-        return 'gLSdMjzb' '' '' '' '' '' '' 'gLSdMjzb' 'FjMv'
+        return "'True' 'xfhhoiey' 'jivuswn' '5' '5'"
 
     def test_diversity_3(self):
-        return 'efgT' '' '' '' '' '' '' 'efgT' 'RilWUH'
+        return "'True' 'zsojvtihha' 'ezxreimio' '5' '5'"
 
     def test_diversity_4(self):
-        return 'FkaO' '' '' '' '' '' '' 'FkaO' 'DwpW'
+        return "'True' 'yqtyk' 'dvpypqjym' '5' '5'"
 
     def test_diversity_5(self):
-        return 'zAuwYXJ' '' '' '' '' '' '' 'zAuwYXJ' 'KxLBoxs'
+        return "'True' 'mijnzmpx' 'xrlwtd' '5' '5'"
 
     def test_diversity_6(self):
-        return 'cpam' '' '' '' '' '' '' 'cpam' 'MDjqnfxx'
+        return "'True' 'sldnoocajm' 'mgwcmckrf' '5' '5'"
 
     def test_diversity_7(self):
-        return 'MHBzMcJU' '' '' '' '' '' '' 'MHBzMcJU' 'ljznnG'
+        return "'True' 'rclybuqcnn' 'pjvwflu' '5' '5'"
 
     def test_diversity_8(self):
-        return 'asTw' '' '' '' '' '' '' 'asTw' 'UKQp'
+        return "'True' 'cjmjaviat' 'dcshskfhn' '5' '5'"
 
     def test_diversity_9(self):
-        return 'fUuR' '' '' '' '' '' '' 'fUuR' 'ezPPbZeP'
+        return "'True' 'bmbgl' 'xjbfx' '5' '5'"
 
     def test_diversity_10(self):
-        return 'sjwuey' '' '' '' '' '' '' 'sjwuey' 'srueju'
+        return "'True' 'nxfpgz' 'ulmegcw' '5' '5'"

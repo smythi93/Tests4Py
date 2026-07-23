@@ -5,94 +5,64 @@ from thefuck.types import Settings
 class TestsFailing(unittest.TestCase):
 
     def test_diversity_1(self):
-        settings = Settings({'XzfAQWMGZsRno, VxpzWICmx'})
-        new_settings = settings.update()
-        self.assertEqual({'XzfAQWMGZsRno, VxpzWICmx'}, new_settings)
+        self.assertEqual('dnjzyez', Settings({'ubogcrkgs': 'dnjzyez'}).update(**{'ubogcrkgs': 'ujzzyzux'})['ubogcrkgs'])
+
     def test_diversity_2(self):
-        settings = Settings({'TNcSbgpTHDaP, CmyiNBnFGYpN'})
-        new_settings = settings.update()
-        self.assertEqual({'TNcSbgpTHDaP, CmyiNBnFGYpN'}, new_settings)
+        self.assertEqual('zgxthrzgwi', Settings({'lkwtcozzi': 'zgxthrzgwi'}).update(**{'lkwtcozzi': 'hmbxmqhjx'})['lkwtcozzi'])
+
     def test_diversity_3(self):
-        settings = Settings({'anhzcgMTXGlVGl, zuqmADw'})
-        new_settings = settings.update()
-        self.assertEqual({'anhzcgMTXGlVGl, zuqmADw'}, new_settings)
+        self.assertEqual('dmohflhdh', Settings({'gihzekpvb': 'dmohflhdh'}).update(**{'gihzekpvb': 'hixjukx'})['gihzekpvb'])
 
     def test_diversity_4(self):
-        settings = Settings({'ybrClZAWaGol, LholEhnooW'})
-        new_settings = settings.update()
-        self.assertEqual({'ybrClZAWaGol, LholEhnooW'}, new_settings)
+        self.assertEqual('uibcunrh', Settings({'yyyes': 'uibcunrh'}).update(**{'yyyes': 'ptetlrrkssx'})['yyyes'])
+
     def test_diversity_5(self):
-        settings = Settings({'RgiNdUF, cOaOP'})
-        new_settings = settings.update()
-        self.assertEqual({'RgiNdUF, cOaOP'}, new_settings)
+        self.assertEqual('emypbpqo', Settings({'qdezhtmb': 'emypbpqo'}).update(**{'qdezhtmb': 'ezndfzdyjzx'})['qdezhtmb'])
+
     def test_diversity_6(self):
-        settings = Settings({'fxSOvW, rbkSGedKTtAWNCB'})
-        new_settings = settings.update()
-        self.assertEqual({'fxSOvW, rbkSGedKTtAWNCB'}, new_settings)
+        self.assertEqual('phvkdihx', Settings({'areoybqhg': 'phvkdihx'}).update(**{'areoybqhg': 'lqggvx'})['areoybqhg'])
+
     def test_diversity_7(self):
-        settings = Settings({'lnzMcGuixAG, lDDNDxIvbJqkJP'})
-        new_settings = settings.update()
-        self.assertEqual({'lnzMcGuixAG, lDDNDxIvbJqkJP'}, new_settings)
+        self.assertEqual('kwwtclb', Settings({'alwrajnnhe': 'kwwtclb'}).update(**{'alwrajnnhe': 'qjbzpwrx'})['alwrajnnhe'])
 
     def test_diversity_8(self):
-        settings = Settings({'ILrSPfCSzxzoV, FUqgGFUGxNwd'})
-        new_settings = settings.update()
-        self.assertEqual({'ILrSPfCSzxzoV, FUqgGFUGxNwd'}, new_settings)
+        self.assertEqual('vpxgdrqm', Settings({'mbddhpzysz': 'vpxgdrqm'}).update(**{'mbddhpzysz': 'iqzlfastx'})['mbddhpzysz'])
 
     def test_diversity_9(self):
-        settings = Settings({'QvalBsqqAzZu, FBKRDZghW'})
-        new_settings = settings.update()
-        self.assertEqual({'QvalBsqqAzZu, FBKRDZghW'}, new_settings)
+        self.assertEqual('guwwagss', Settings({'hjgzjchxxv': 'guwwagss'}).update(**{'hjgzjchxxv': 'vcogxkbiux'})['hjgzjchxxv'])
+
     def test_diversity_10(self):
-        settings = Settings({'HbrpoCOeh, ejsgcJ'})
-        new_settings = settings.update()
-        self.assertEqual({'HbrpoCOeh, ejsgcJ'}, new_settings)
+        self.assertEqual('ydxrn', Settings({'brtbetubq': 'ydxrn'}).update(**{'brtbetubq': 'zynnitmggxx'})['brtbetubq'])
 
 
 class TestsPassing(unittest.TestCase):
 
     def test_diversity_1(self):
-        settings = Settings({'DvlxQtyDpA': 'zsNolylewSFnQz'})
-        new_settings = settings.update()
-        self.assertEqual({'DvlxQtyDpA': 'zsNolylewSFnQz'}, new_settings)
+        self.assertEqual('zvwbpdxk', Settings({'tuvqttelsb': 'zvwbpdxk'}).update(**{'tuvqttelsb': 'zvwbpdxk'})['tuvqttelsb'])
+
     def test_diversity_2(self):
-        settings = Settings({'LEbguvrGHpFvqL': 'PNkCXfCQCBS'})
-        new_settings = settings.update()
-        self.assertEqual({'LEbguvrGHpFvqL': 'PNkCXfCQCBS'}, new_settings)
+        self.assertEqual('txbxl', Settings({'nnohs': 'txbxl'}).update(**{'nnohs': 'txbxl'})['nnohs'])
+
     def test_diversity_3(self):
-        settings = Settings({'HlcBdEQeqjPhk': 'jjnuOxfCJowceio'})
-        new_settings = settings.update()
-        self.assertEqual({'HlcBdEQeqjPhk': 'jjnuOxfCJowceio'}, new_settings)
+        self.assertEqual('rxprfrswd', Settings({'zngnwjkmk': 'rxprfrswd'}).update(**{'zngnwjkmk': 'rxprfrswd'})['zngnwjkmk'])
+
     def test_diversity_4(self):
-        settings = Settings({'auqSOiuULLXR': 'kZZcpdxSyLnHeNT'})
-        new_settings = settings.update()
-        self.assertEqual({'auqSOiuULLXR': 'kZZcpdxSyLnHeNT'}, new_settings)
+        self.assertEqual('kirqg', Settings({'jitgvfeu': 'kirqg'}).update(**{'jitgvfeu': 'kirqg'})['jitgvfeu'])
+
     def test_diversity_5(self):
-        settings = Settings({'LQQQVkn': 'iynqcuFUfMinD'})
-        new_settings = settings.update()
-        self.assertEqual({'LQQQVkn': 'iynqcuFUfMinD'}, new_settings)
+        self.assertEqual('ilshvwckq', Settings({'ssxtwexf': 'ilshvwckq'}).update(**{'ssxtwexf': 'ilshvwckq'})['ssxtwexf'])
 
     def test_diversity_6(self):
-        settings = Settings({'erpmZTeoIiKS': 'eeuRLagy'})
-        new_settings = settings.update()
-        self.assertEqual({'erpmZTeoIiKS': 'eeuRLagy'}, new_settings)
+        self.assertEqual('qpgkedcsse', Settings({'pokfebf': 'qpgkedcsse'}).update(**{'pokfebf': 'qpgkedcsse'})['pokfebf'])
 
     def test_diversity_7(self):
-        settings = Settings({'drCrgcmKIqTgG': 'zhkEhsizUbVuZtV'})
-        new_settings = settings.update()
-        self.assertEqual({'drCrgcmKIqTgG': 'zhkEhsizUbVuZtV'}, new_settings)
+        self.assertEqual('cuhssxzsi', Settings({'xgfjv': 'cuhssxzsi'}).update(**{'xgfjv': 'cuhssxzsi'})['xgfjv'])
 
     def test_diversity_8(self):
-        settings = Settings({'xITcAGpzDkPpl': 'BmpimsKjzVMtSF'})
-        new_settings = settings.update()
-        self.assertEqual({'xITcAGpzDkPpl': 'BmpimsKjzVMtSF'}, new_settings)
+        self.assertEqual('wwwesuhb', Settings({'yidfixc': 'wwwesuhb'}).update(**{'yidfixc': 'wwwesuhb'})['yidfixc'])
 
     def test_diversity_9(self):
-        settings = Settings({'pbAVAuYmryZgb': 'BEdsmVdtVkD'})
-        new_settings = settings.update()
-        self.assertEqual({'pbAVAuYmryZgb': 'BEdsmVdtVkD'}, new_settings)
+        self.assertEqual('kndcxrsvml', Settings({'cxazil': 'kndcxrsvml'}).update(**{'cxazil': 'kndcxrsvml'})['cxazil'])
 
     def test_diversity_10(self):
-        settings = Settings({'BKTCcf': 'QlqEFR'})
-        new_settings = settings.update()
-        self.assertEqual({'BKTCcf': 'QlqEFR'}, new_settings)
+        self.assertEqual('hbzoyb', Settings({'lsfti': 'hbzoyb'}).update(**{'lsfti': 'hbzoyb'})['lsfti'])

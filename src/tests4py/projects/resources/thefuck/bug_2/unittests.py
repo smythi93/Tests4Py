@@ -1,66 +1,87 @@
 import unittest
+import os
 from thefuck.utils import get_all_executables
+import thefuck.utils as _tfu
+
+# The buggy get_all_executables splits $PATH on a hard-coded ':' instead of
+# os.pathsep. Force a Windows-style separator so the fault is observable: with
+# ';' the buggy code sees one bogus directory and finds nothing, the fixed code
+# splits correctly. memoize is disabled so every test recomputes.
+_tfu.memoize.disabled = True
+_DIRS = ["/usr/bin", "/bin", "/usr/sbin", "/sbin"]
+
+
+def _semi():
+    os.pathsep = ";"
+    os.environ["PATH"] = ";".join(_DIRS)
+
+
+def _plain():
+    os.pathsep = ":"
+    os.environ["PATH"] = ":".join(_DIRS)
 
 
 class TestsFailing(unittest.TestCase):
+
     def test_diversity_1(self):
-        self.assertIn('mnsdgjefh', get_all_executables())
+        _semi(); self.assertIn("git", get_all_executables())
 
     def test_diversity_2(self):
-        self.assertIn('NYEfTEWuJlisaiHgK', get_all_executables())
+        _semi(); self.assertIn("ls", get_all_executables())
 
     def test_diversity_3(self):
-        self.assertIn('JJFgWmDN', get_all_executables())
+        _semi(); self.assertIn("cat", get_all_executables())
 
     def test_diversity_4(self):
-        self.assertIn('runfXeIVrZAWplDW', get_all_executables())
+        _semi(); self.assertIn("echo", get_all_executables())
 
     def test_diversity_5(self):
-        self.assertIn('wExmEGsKxhBQog', get_all_executables())
+        _semi(); self.assertIn("cp", get_all_executables())
 
     def test_diversity_6(self):
-        self.assertIn('dgGqJoBnq', get_all_executables())
+        _semi(); self.assertIn("mv", get_all_executables())
 
     def test_diversity_7(self):
-        self.assertIn('LPXADgIZXbEayKR', get_all_executables())
+        _semi(); self.assertIn("rm", get_all_executables())
 
     def test_diversity_8(self):
-        self.assertIn('cwmvbtfEAHWCzHgg', get_all_executables())
+        _semi(); self.assertIn("date", get_all_executables())
 
     def test_diversity_9(self):
-        self.assertIn('SESWAgGOTAmvtMsGr', get_all_executables())
+        _semi(); self.assertIn("grep", get_all_executables())
 
     def test_diversity_10(self):
-        self.assertIn('RQjelimEumbvIgjIH', get_all_executables())
+        _semi(); self.assertIn("sort", get_all_executables())
 
 
 class TestsPassing(unittest.TestCase):
+
     def test_diversity_1(self):
-        self.assertIn('mount', get_all_executables())
+        _plain(); self.assertIn("head", get_all_executables())
 
     def test_diversity_2(self):
-        self.assertIn('last', get_all_executables())
+        _plain(); self.assertIn("tail", get_all_executables())
 
     def test_diversity_3(self):
-        self.assertIn('heap', get_all_executables())
+        _plain(); self.assertIn("uniq", get_all_executables())
 
     def test_diversity_4(self):
-        self.assertIn('pip', get_all_executables())
+        _plain(); self.assertIn("wc", get_all_executables())
 
     def test_diversity_5(self):
-        self.assertIn('istack', get_all_executables())
+        _plain(); self.assertIn("pwd", get_all_executables())
 
     def test_diversity_6(self):
-        self.assertIn('jarsigner', get_all_executables())
+        _plain(); self.assertIn("sed", get_all_executables())
 
     def test_diversity_7(self):
-        self.assertIn('libtool', get_all_executables)
+        _plain(); self.assertIn("awk", get_all_executables())
 
     def test_diversity_8(self):
-        self.assertIn('nl', get_all_executables())
+        _plain(); self.assertIn("find", get_all_executables())
 
     def test_diversity_9(self):
-        self.assertIn('bundler', get_all_executables())
+        _plain(); self.assertIn("tar", get_all_executables())
 
     def test_diversity_10(self):
-        self.assertIn('ifconfig', get_all_executables())
+        _plain(); self.assertIn("curl", get_all_executables())

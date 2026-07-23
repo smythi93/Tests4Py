@@ -3,63 +3,62 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return 'vagrant uroxtqscNpk devbox' '' 'VM must be running to open SSH connection. Run `vagrant up`\nto start the virtual machine.'
+        return "'True' 'vagrant TtQgj loYGzVxLsM'"
 
     def test_diversity_2(self):
-        return 'vagrant rVYvfYqswhRuEOK devbox' '' 'VM must be running to open SSH connection. Run `vagrant up`\nto start the virtual machine.'
+        return "'True' 'vagrant yXRhWRKyceFO ZPEJQwOGdPQL'"
 
     def test_diversity_3(self):
-        return 'vagrant JHIyKc devbox' '' 'VM must be running to open SSH connection. Run `vagrant up`\nto start the virtual machine.'
+        return "'True' 'vagrant ivdYxgyPvWgqf SnhROjOCamgfpnN'"
 
     def test_diversity_4(self):
-        return 'vagrant llCBLH devbox' '' 'VM must be running to open SSH connection. Run `vagrant up`\nto start the virtual machine.'
+        return "'True' 'vagrant ZssMYbwoLuUmlJg xjHLpKVbVj'"
 
     def test_diversity_5(self):
-        return 'vagrant QMsLOtlmKw devbox' '' 'VM must be running to open SSH connection. Run `vagrant up`\nto start the virtual machine.'
+        return "'True' 'vagrant BqgnlaLtXyJywJF oTvOWJjUPAhd'"
 
     def test_diversity_6(self):
-        return 'vagrant reZDvjxqU devbox' '' 'VM must be running to open SSH connection. Run `vagrant up`\nto start the virtual machine.'
+        return "'True' 'vagrant ZkpRC UYLwEloxQAMQA'"
 
     def test_diversity_7(self):
-        return 'vagrant tFsJwIsAaLbc devbox' '' 'VM must be running to open SSH connection. Run `vagrant up`\nto start the virtual machine.'
+        return "'True' 'vagrant JGtVm KAFypbPDU'"
 
     def test_diversity_8(self):
-        return 'vagrant XOrhwK devbox' '' 'VM must be running to open SSH connection. Run `vagrant up`\nto start the virtual machine.'
+        return "'True' 'vagrant vdOWKRKViJ DiFelVsJiCS'"
 
     def test_diversity_9(self):
-        return 'vagrant KUKgenpEdjV devbox' '' 'VM must be running to open SSH connection. Run `vagrant up`\nto start the virtual machine.'
+        return "'True' 'vagrant WFMQBPZKtGb eyYdZl'"
 
     def test_diversity_10(self):
-        return 'vagrant BlWyfbqpgpq devbox' '' 'VM must be running to open SSH connection. Run `vagrant up`\nto start the virtual machine.'
-
+        return "'True' 'vagrant uREQd mUADkbMwDYtSLB'"
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return 'vagrant bvRFXdMcgHeA devbox' '' 'VM must be running to open SSH connection. Run `vagrant up`\nto start the virtual machine.'
+        return "'False' 'vagrant DMylAG'"
 
     def test_diversity_2(self):
-        return 'vagrant muNIu' '' 'VM must be running to open SSH connection. Run `vagrant up`\nto start the virtual machine.'
+        return "'False' 'vagrant udejxpiPZMRpuh'"
 
     def test_diversity_3(self):
-        return 'vagrant opQDq' '' 'VM must be running to open SSH connection. Run `vagrant up`\nto start the virtual machine.'
+        return "'False' 'vagrant rCMiHhbBb'"
 
     def test_diversity_4(self):
-        return 'vagrant ddQBRwroyzRy' '' 'VM must be running to open SSH connection. Run `vagrant up`\nto start the virtual machine.'
+        return "'False' 'vagrant ASqIZwPWhkwkydd'"
 
     def test_diversity_5(self):
-        return 'vagrant rYrZKrUjwAvuXE' '' 'VM must be running to open SSH connection. Run `vagrant up`\nto start the virtual machine.'
+        return "'False' 'vagrant QOERQlwxyOUqL'"
 
     def test_diversity_6(self):
-        return 'vagrant oRmBnDNcIi' '' 'VM must be running to open SSH connection. Run `vagrant up`\nto start the virtual machine.'
+        return "'False' 'vagrant XnzeB'"
 
     def test_diversity_7(self):
-        return 'vagrant ZKEZIaVu' '' 'VM must be running to open SSH connection. Run `vagrant up`\nto start the virtual machine.'
+        return "'False' 'vagrant XqGesp'"
 
     def test_diversity_8(self):
-        return 'vagrant iJsNex' '' 'VM must be running to open SSH connection. Run `vagrant up`\nto start the virtual machine.'
+        return "'False' 'vagrant jrOqcA'"
 
     def test_diversity_9(self):
-        return 'vagrant lspZj devbox' '' 'VM must be running to open SSH connection. Run `vagrant up`\nto start the virtual machine.'
+        return "'False' 'vagrant VCtpK'"
 
     def test_diversity_10(self):
-        return 'vagrant gxPHyUpAPOy devbox' '' 'VM must be running to open SSH connection. Run `vagrant up`\nto start the virtual machine.'
+        return "'False' 'vagrant lIgvpWocT'"

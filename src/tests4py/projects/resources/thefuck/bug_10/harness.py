@@ -1,37 +1,16 @@
 import sys
+
 from thefuck.types import Command
 from thefuck.rules.man import get_new_command
 
+# man.get_new_command gained a "No manual entry for X" special case on the fixed
+# build: for a digit-less command whose stderr is exactly "No manual entry for
+# <last_arg>" it returns the single suggestion [<last_arg> --help] (length 1),
+# whereas the buggy build has no such case and always returns three suggestions
+# (length 3). Reporting len(result) distinguishes the two builds. argv:
+# expected-len, script, stderr.
 if __name__ == "__main__":
-    assert len(sys.argv) >= 5
-    if len(sys.argv) == 5:
-        expected = sys.argv[1]
-        expected = expected.replace(expected[len(expected) - 1], "")
-        expected = expected.replace(expected[0], "")
-        script = sys.argv[2]
-        script = script.replace(script[len(script) - 1], "")
-        std_out = sys.argv[3]
-        std_out = std_out.replace(std_out[len(std_out) - 1], "")
-        std_err = sys.argv[4]
-
-        print(get_new_command(Command(script, std_out, std_err)))
-
-    else:
-        expected = " ".join(sys.argv[1:4])
-        expected = expected.replace("([", "[")
-        expected = expected.replace("],", "]")
-        script = sys.argv[4]
-        script = script.replace(script[len(script) - 1], "")
-
-        std_out = sys.argv[5]
-        std_out = std_out.replace(std_out[len(std_out) - 1], "")
-
-        std_err = sys.argv[6]
-        if "\\n" in std_err:
-            std_err = std_err.replace("\\n)", "\n")
-        else:
-            std_err = std_err.replace(")", "")
-
-        print(get_new_command(Command(script, std_out, std_err)))
-
-
+    script = sys.argv[2]
+    stderr = sys.argv[3]
+    result = get_new_command(Command(script, "", stderr))
+    print(len(result))

@@ -1,67 +1,67 @@
 import unittest
 from thefuck.types import Command
-from thefuck.rules.git_push import get_new_command
-
+from thefuck.rules.man import get_new_command
 
 class TestsFailing(unittest.TestCase):
+
     def test_diversity_1(self):
-        self.assertEqual('man -s4 write', get_new_command(Command('man -s5 write', 'Output Message: NaYdiirEs', '')))
+        self.assertEqual(1, len(get_new_command(Command('man dYWIb', '', 'No manual entry for dYWIb'))))
 
     def test_diversity_2(self):
-        self.assertEqual(['read --help', 'man 5 read', 'man 4 read'], get_new_command(Command('man read', 'Output Message: pRAcoFwDDM', '')))
+        self.assertEqual(1, len(get_new_command(Command('man ocpgikFvOFrmH', '', 'No manual entry for ocpgikFvOFrmH'))))
 
     def test_diversity_3(self):
-        self.assertEqual(['read --help', 'man 5 read', 'man 4 read'], get_new_command(Command('man read', 'Output Message: qqlFCwwt', '')))
+        self.assertEqual(1, len(get_new_command(Command('man puIHnCB', '', 'No manual entry for puIHnCB'))))
 
     def test_diversity_4(self):
-        self.assertEqual('man 5 read', get_new_command(Command('man 4 read', 'Output Message: wfodG', '')))
+        self.assertEqual(1, len(get_new_command(Command('man tZyNzEPDTKZC', '', 'No manual entry for tZyNzEPDTKZC'))))
 
     def test_diversity_5(self):
-        self.assertEqual(['missing --help', 'man 5 missing', 'man 4 missing'],get_new_command(Command('man missing', 'Output Message: EjkNONDIvDpd', 'No manual entry for missing\n')))
+        self.assertEqual(1, len(get_new_command(Command('man DvyXvTAUhpff', '', 'No manual entry for DvyXvTAUhpff'))))
 
     def test_diversity_6(self):
-        self.assertEqual('man 4 read', get_new_command(Command('man 5 read', 'Output Message: FweuoUvJlUWsS', '')))
+        self.assertEqual(1, len(get_new_command(Command('man srBuqRf', '', 'No manual entry for srBuqRf'))))
 
     def test_diversity_7(self):
-        self.assertEqual(['read --help', 'man 5 read', 'man 4 read'], get_new_command(Command('man read', 'Output Message: EjpeKmKTzXYOeEK', '')))
+        self.assertEqual(1, len(get_new_command(Command('man qllByiPXNN', '', 'No manual entry for qllByiPXNN'))))
 
     def test_diversity_8(self):
-        self.assertEqual('man 4 read', get_new_command(Command('man 5 read', 'Output Message: lmbZwZe', '')))
+        self.assertEqual(1, len(get_new_command(Command('man PHZVbDAw', '', 'No manual entry for PHZVbDAw'))))
 
     def test_diversity_9(self):
-        self.assertEqual(['missing --help', 'man 5 missing', 'man 4 missing'], get_new_command(Command('man missing', 'Output Message: cVRVsecitAf', 'No manual entry for missing\n')))
+        self.assertEqual(1, len(get_new_command(Command('man zeXhz', '', 'No manual entry for zeXhz'))))
 
     def test_diversity_10(self):
-        self.assertEqual('man 4 read', get_new_command(Command('man 5 read', 'Output Message: IoEcQKViBKhm', '')))
-
+        self.assertEqual(1, len(get_new_command(Command('man RQepOV', '', 'No manual entry for RQepOV'))))
 
 class TestsPassing(unittest.TestCase):
+
     def test_diversity_1(self):
-        self.assertEqual('man -s2 read', get_new_command(Command('man -s3 read', 'Output Message: RskCrCzUeRMc', '')))
+        self.assertEqual(3, len(get_new_command(Command('man IvpbHscWuFy', '', 'some output KIvNrT'))))
 
     def test_diversity_2(self):
-        self.assertEqual('man -s 2 read', get_new_command(Command('man -s 3 read', 'Output Message: rRgvPU', '')))
+        self.assertEqual(3, len(get_new_command(Command('man UKtNhVXdiOH', '', 'some output UpmSL'))))
 
     def test_diversity_3(self):
-        self.assertEqual('man -s3 read', get_new_command(Command('man -s2 read', 'Output Message: PUaKdqDRFvndJ', '')))
+        self.assertEqual(3, len(get_new_command(Command('man RzkVHsRpD', '', 'some output StQikFPegJUwvMy'))))
 
     def test_diversity_4(self):
-        self.assertEqual('man 2 read', get_new_command(Command('man 3 read', 'Output Message: MRnvIHUDX', '')))
+        self.assertEqual(3, len(get_new_command(Command('man gUzLzyZi', '', 'some output mAXDjzJKH'))))
 
     def test_diversity_5(self):
-        self.assertEqual('man -s 3 read', get_new_command(Command('man -s 2 read', 'Output Message: kxqTeTeZCEhVXc', '')))
+        self.assertEqual(3, len(get_new_command(Command('man kuSPPo', '', 'some output UIJERLkvQWbyc'))))
 
     def test_diversity_6(self):
-        self.assertEqual('man 3 write', get_new_command(Command('man 2 write', 'Output Message: uRQBNIfmY', '')))
+        self.assertEqual(3, len(get_new_command(Command('man RKJarcAtbJD', '', 'some output ljKuBUQSlei'))))
 
     def test_diversity_7(self):
-        self.assertEqual('man 3 read', get_new_command(Command('man 2 read', 'Output Message: XRmzjoMJQuSg', '')))
+        self.assertEqual(3, len(get_new_command(Command('man shksdZPkx', '', 'some output FoSvyJjzlLB'))))
 
     def test_diversity_8(self):
-        self.assertEqual('man -s2 read', get_new_command(Command('man -s3 read', 'Output Message: TxeSHTFYCIadDW', '')))
+        self.assertEqual(3, len(get_new_command(Command('man cXgEPcydUIA', '', 'some output uynybrFnQ'))))
 
     def test_diversity_9(self):
-        self.assertEqual(['missing --help', 'man 3 missing', 'man 2 missing'], get_new_command(Command('man missing', 'Output Message: ZnaVcODmdpJYSs', 'No manual entry for missing\n')))
+        self.assertEqual(3, len(get_new_command(Command('man aKeyfu', '', 'some output mXLogFvDI'))))
 
     def test_diversity_10(self):
-        self.assertEqual('man -s 3 write', get_new_command(Command('man -s 2 write', 'Output Message: BPeJCFYPEulfcFE', '')))
+        self.assertEqual(3, len(get_new_command(Command('man WuXmAJkprdkyZ', '', 'some output gfxIjDFFye'))))

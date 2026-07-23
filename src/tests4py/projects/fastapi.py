@@ -291,8 +291,8 @@ def register():
             Path("tests", "test_union_inherited_body.py"),
         ],
         api=FastAPI9API(),
-        # systemtests=FastAPI9SystemtestGenerator(),
-        # unittests=FastAPI9UnittestGenerator(),
+        systemtests=FastAPI9SystemtestGenerator(),
+        unittests=FastAPI9UnittestGenerator(),
         loc=3625,
     )
     FastAPI(
@@ -307,6 +307,9 @@ def register():
             Path("tests", "test_dependency_overrides.py"),
             Path("tests", "test_skip_defaults.py"),
         ],
+        api=FastAPI10API(),
+        systemtests=FastAPI10SystemtestGenerator(),
+        unittests=FastAPI10UnittestGenerator(),
         loc=3613,
     )
     FastAPI(
@@ -335,6 +338,9 @@ def register():
             Path("tests", "test_union_body.py"),
             Path("tests", "test_union_inherited_body.py"),
         ],
+        api=FastAPI11API(),
+        systemtests=FastAPI11SystemtestGenerator(),
+        unittests=FastAPI11UnittestGenerator(),
         loc=3591,
     )
     FastAPI(
@@ -358,6 +364,9 @@ def register():
             Path("tests", "test_security_http_digest.py"),
             Path("tests", "test_security_http_digest_optional.py"),
         ],
+        api=FastAPI12API(),
+        systemtests=FastAPI12SystemtestGenerator(),
+        unittests=FastAPI12UnittestGenerator(),
         loc=3396,
     )
     FastAPI(
@@ -377,6 +386,9 @@ def register():
             Path("tests", "test_include_route.py"),
             Path("tests", "test_ws_router.py"),
         ],
+        api=FastAPI13API(),
+        systemtests=FastAPI13SystemtestGenerator(),
+        unittests=FastAPI13UnittestGenerator(),
         loc=2703,
     )
     FastAPI(
@@ -397,6 +409,9 @@ def register():
             Path("tests", "test_multi_body_errors.py"),
             Path("tests", "test_put_no_body.py"),
         ],
+        api=FastAPI14API(),
+        systemtests=FastAPI14SystemtestGenerator(),
+        unittests=FastAPI14UnittestGenerator(),
         loc=2533,
     )
     FastAPI(
@@ -413,6 +428,9 @@ def register():
             Path("tests", "test_include_route.py"),
             Path("tests", "test_ws_router.py"),
         ],
+        api=FastAPI15API(),
+        systemtests=FastAPI15SystemtestGenerator(),
+        unittests=FastAPI15UnittestGenerator(),
         loc=2495,
     )
     FastAPI(
@@ -433,6 +451,9 @@ def register():
             Path("tests", "test_datetime_custom_encoder.py"),
             Path("tests", "test_jsonable_encoder.py"),
         ],
+        api=FastAPI16API(),
+        systemtests=FastAPI16SystemtestGenerator(),
+        unittests=FastAPI16UnittestGenerator(),
         loc=2427,
     )
 
@@ -456,6 +477,7 @@ class FastAPIDefaultAPI(API, GrammarVisitor):
         self.mode = None
         self.data = None
         self.aliased = False
+        self.parsed = False
 
     def visit_options(self, node: ComplexDerivationTree):
         self.websockets = dict()
@@ -471,8 +493,10 @@ class FastAPIDefaultAPI(API, GrammarVisitor):
         self.generic_visit(node)
 
     def prepare_args(self, args: List[str], work_dir: Path) -> List[str]:
+        self.parsed = False
         try:
             self.visit_source(shlex.join(args))
+            self.parsed = True
         except SyntaxError as e:
             raise SpecificationError(f"Cannot parse contents of {args}: {e}")
         return args
@@ -614,7 +638,7 @@ class FastAPI3API(FastAPIDefaultAPI):
 
 class FastAPI4API(FastAPIDefaultAPI):
     def condition(self, process: subprocess.CompletedProcess) -> bool:
-        return process.returncode in (0, 200) and self.path == "/openapi.json"
+        return process.returncode in (0, 200) and self.url == "/openapi.json"
 
     def contains(self, process: subprocess.CompletedProcess) -> bool:
         response = eval(process.stdout.decode("utf-8"))
@@ -655,7 +679,20 @@ class FastAPI6API(FastAPIDefaultAPI):
         return process.returncode == 166
 
     def contains(self, process: subprocess.CompletedProcess) -> bool:
-        return b"value_error.missing" in process.stdout
+        # The buggy version rejects a non-typing-sequence Form parameter with a
+        # 422; depending on the declared type this surfaces as a missing-value
+        # or an invalid-list validation error.
+        return (
+            b"value_error.missing" in process.stdout
+            or b"type_error.list" in process.stdout
+        )
+
+    def error_handling(self, process: subprocess.CompletedProcess) -> bool:
+        return (
+            process.returncode != 0
+            and process.returncode != 200
+            and process.returncode != 166
+        )
 
 
 class FastAPI7API(FastAPIDefaultAPI):
@@ -682,7 +719,7 @@ class FastAPI7API(FastAPIDefaultAPI):
 class FastAPI8API(FastAPIDefaultAPI):
     def condition(self, process: subprocess.CompletedProcess) -> bool:
         return (
-            self.path == "/routes/"
+            self.url == "/routes/"
             and process.returncode != 0
             and process.returncode != 200
         )
@@ -695,11 +732,147 @@ class FastAPI8API(FastAPIDefaultAPI):
 
 
 class FastAPI9API(FastAPIDefaultAPI):
-    pass
+    # bug_9: a custom request-body ``media_type`` is dropped from the generated
+    # OpenAPI schema on the buggy version (it falls back to application/json).
+    def condition(self, process: subprocess.CompletedProcess) -> bool:
+        return self.url == "/openapi.json" and process.returncode in (0, 200)
+
+    def contains(self, process: subprocess.CompletedProcess) -> bool:
+        return b"application/vnd.api+json" not in process.stdout
 
 
 class FastAPI10API(FastAPIDefaultAPI):
-    pass
+    # bug_10: a response returned through ``response_model_skip_defaults=True``
+    # must drop fields left at their default value; the buggy version keeps them.
+    # The skip route returns a model whose sub field carries the sentinel default
+    # ``defaultmarker``: on the buggy version it leaks into the response.
+    def condition(self, process: subprocess.CompletedProcess) -> bool:
+        return process.returncode in (0, 200)
+
+    def contains(self, process: subprocess.CompletedProcess) -> bool:
+        return b"defaultmarker" in process.stdout
+
+
+class FastAPI11API(FastAPIDefaultAPI):
+    # bug_11: a ``Union[ModelA, ModelB]`` request body must be read from the body;
+    # the buggy ``is_scalar_field`` mistakes it for a scalar query parameter, so a
+    # valid POST is rejected with a 422 that locates the missing value in
+    # ``query`` (returncode 166 == 422 & 0xFF). The fixed version accepts it (200).
+    def condition(self, process: subprocess.CompletedProcess) -> bool:
+        return process.returncode == 166
+
+    def contains(self, process: subprocess.CompletedProcess) -> bool:
+        return (
+            b"value_error.missing" in process.stdout and b"query" in process.stdout
+        )
+
+    def error_handling(self, process: subprocess.CompletedProcess) -> bool:
+        return (
+            process.returncode != 0
+            and process.returncode != 200
+            and process.returncode != 166
+        )
+
+
+class FastAPI12API(FastAPIDefaultAPI):
+    # bug_12: ``HTTPBearer(auto_error=False)`` must return ``None`` (not raise)
+    # when the Authorization scheme is not ``bearer``; the buggy version raises a
+    # 403 regardless of ``auto_error`` (returncode 147 == 403 & 0xFF). The fixed
+    # version answers 200 with the "no credentials" branch.
+    def condition(self, process: subprocess.CompletedProcess) -> bool:
+        return process.returncode == 147
+
+    def contains(self, process: subprocess.CompletedProcess) -> bool:
+        return b"Invalid authentication credentials" in process.stdout
+
+    def error_handling(self, process: subprocess.CompletedProcess) -> bool:
+        return (
+            process.returncode != 0
+            and process.returncode != 200
+            and process.returncode != 147
+        )
+
+
+class FastAPI13API(FastAPIDefaultAPI):
+    # bug_13: ``include_router`` reuses a mutable ``responses`` dict across the
+    # router's routes, so each route's OpenAPI schema accumulates the additional
+    # responses of the preceding routes. Each ``-ar`` route declares exactly one
+    # extra response (+ the 200), so on the fixed version every route lists two
+    # responses; on the buggy version later routes list more.
+    def condition(self, process: subprocess.CompletedProcess) -> bool:
+        return self.url == "/openapi.json" and process.returncode in (0, 200)
+
+    def contains(self, process: subprocess.CompletedProcess) -> bool:
+        try:
+            response = eval(process.stdout.decode("utf-8"))
+        except Exception:
+            return False
+        if not isinstance(response, dict):
+            return False
+        for path, methods in response.get("paths", {}).items():
+            if not isinstance(methods, dict):
+                continue
+            for _method, operation in methods.items():
+                if not isinstance(operation, dict):
+                    continue
+                responses = operation.get("responses", {})
+                if isinstance(responses, dict) and len(responses) > 2:
+                    return True
+        return False
+
+
+class FastAPI14API(FastAPIDefaultAPI):
+    # bug_14: a ``Dict[str, X]`` field's OpenAPI ``additionalProperties`` must be
+    # the value schema (a dict); the buggy schema model types it as
+    # ``Union[bool, Any]`` so the schema dict is coerced to the boolean ``True``.
+    # Inspecting /openapi.json exposes a boolean ``additionalProperties``.
+    def condition(self, process: subprocess.CompletedProcess) -> bool:
+        return self.url == "/openapi.json" and process.returncode in (0, 200)
+
+    @staticmethod
+    def _has_bool_additional_properties(obj) -> bool:
+        stack = [obj]
+        while stack:
+            cur = stack.pop()
+            if isinstance(cur, dict):
+                for key, value in cur.items():
+                    if key == "additionalProperties" and isinstance(value, bool):
+                        return True
+                    stack.append(value)
+            elif isinstance(cur, list):
+                stack.extend(cur)
+        return False
+
+    def contains(self, process: subprocess.CompletedProcess) -> bool:
+        try:
+            response = eval(process.stdout.decode("utf-8"))
+        except Exception:
+            return False
+        return self._has_bool_additional_properties(response)
+
+
+class FastAPI15API(FastAPIDefaultAPI):
+    # bug_15: ``include_router`` drops WebSocket routes on the buggy version, so a
+    # websocket registered on an included router is missing; connecting to it
+    # raises ``WebSocketDisconnect`` and the harness exits non-zero. The fixed
+    # version propagates the route and the connection succeeds (exit 0).
+    def condition(self, process: subprocess.CompletedProcess) -> bool:
+        return process.returncode != 0 and process.returncode != 200
+
+    def contains(self, process: subprocess.CompletedProcess) -> bool:
+        return b"WebSocketDisconnect" in process.stderr
+
+
+class FastAPI16API(FastAPIDefaultAPI):
+    # bug_16: ``jsonable_encoder`` reads ``obj.Config.json_encoders`` directly, so
+    # a model whose ``Config`` defines no ``json_encoders`` raises an
+    # ``AttributeError`` (the harness then exits non-zero). The fixed version uses
+    # ``getattr`` with a fallback and serializes the model (200).
+    def condition(self, process: subprocess.CompletedProcess) -> bool:
+        return process.returncode != 0 and process.returncode != 200
+
+    def contains(self, process: subprocess.CompletedProcess) -> bool:
+        return b"has no attribute 'json_encoders'" in process.stderr
 
 
 class FastAPISystemtestGenerator(SystemtestGenerator, ABC):
@@ -930,67 +1103,290 @@ class FastAPI2SystemtestGenerator(FastAPIDefaultSystemtestGenerator):
 
 
 class FastAPI3SystemtestGenerator(FastAPISystemtestGenerator):
+    # bug_3 concerns response-model serialization: a GET route returning the
+    # ``Item`` model serializes correctly, but requesting it through an alias
+    # triggers the (buggy) validation/serialization error.
+    @staticmethod
+    def _word(a: int = 2, b: int = 8) -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(a, b)))
+
+    def _path(self) -> str:
+        return "/" + "/".join(self._word() for _ in range(random.randint(1, 3))) + "/"
+
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        pass
+        path = self._path()
+        return f"-gs {path} Item -a {self._word(3, 10)} -m get -u {path}", TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        pass
+        path = self._path()
+        return f"-gs {path} Item -m get -u {path}", TestResult.PASSING
 
 
 class FastAPI4SystemtestGenerator(FastAPISystemtestGenerator):
+    # bug_4: a path parameter reused in a dependency is duplicated in the
+    # OpenAPI schema on the buggy version. Requesting /openapi.json for a
+    # reused-parameter route exposes the duplicate (fails); a plain route's
+    # schema stays unique (passes).
+    @staticmethod
+    def _word(a: int = 3, b: int = 8) -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(a, b)))
+
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        pass
+        return f"-rp {self._word()} -m get -u /openapi.json", TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        pass
+        return (
+            f"-gs /{self._word()} Item -m get -u /openapi.json",
+            TestResult.PASSING,
+        )
 
 
 class FastAPI5SystemtestGenerator(FastAPISystemtestGenerator):
+    # bug_5: returning a sub-model instance (ModelA, which carries ``password``)
+    # where its base type (ModelB) is declared must filter ``password`` out;
+    # the buggy version leaks it. ModelCA nests such a leak (fails); ModelCB /
+    # ModelB carry no password (pass).
+    @staticmethod
+    def _word(a: int = 4, b: int = 12) -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(a, b)))
+
+    def _path(self) -> str:
+        return "/" + "/".join(self._word() for _ in range(random.randint(1, 2))) + "/"
+
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        pass
+        path = self._path()
+        return (
+            f"-gs {path} ModelCA -ma {self._word()} {self._word()} -m get -u {path}",
+            TestResult.FAILING,
+        )
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        pass
+        path = self._path()
+        model = random.choice(["ModelCB", "ModelB"])
+        return (
+            f"-gs {path} {model} -mb {self._word()} -m get -u {path}",
+            TestResult.PASSING,
+        )
 
 
 class FastAPI6SystemtestGenerator(FastAPISystemtestGenerator):
+    # bug_6: a non-typing-sequence (``list``) Form parameter is rejected with a
+    # 422 on the buggy version but accepted on the fixed one. Posting such a
+    # form fails; a plain (non-form) request is unaffected (passes).
+    @staticmethod
+    def _word(a: int = 3, b: int = 8) -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(a, b)))
+
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        pass
+        items = ",".join(self._word() for _ in range(random.randint(2, 4)))
+        return f"-fl {items} -m post -u /form", TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        pass
+        path = "/" + self._word() + "/"
+        return f"-gs {path} Item -m get -u {path}", TestResult.PASSING
 
 
 class FastAPI7SystemtestGenerator(FastAPISystemtestGenerator):
+    # bug_7: rendering a request-validation error that references a Decimal
+    # constraint (the Item ``age`` is a ``condecimal(gt=0)``) fails to serialize
+    # the Decimal on the buggy version. Posting an invalid age triggers the
+    # error (fails); a valid age serializes fine (passes).
+    @staticmethod
+    def _word(a: int = 3, b: int = 9) -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(a, b)))
+
+    def _test(self, age: int) -> str:
+        path = "/" + self._word() + "/"
+        price = round(random.uniform(0.1, 99.9), 1)
+        body = '{"name":"%s","price":%s,"age":%d,"ids":[]}' % (self._word(), price, age)
+        return f"-ps {path} Item -m post -u {path} -d '{body}'"
+
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        pass
+        return self._test(-random.randint(1, 100)), TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        pass
+        return self._test(random.randint(1, 100)), TestResult.PASSING
 
 
 class FastAPI8SystemtestGenerator(FastAPISystemtestGenerator):
+    # bug_8: a nested router loses its custom ``route_class``; the /routes/
+    # endpoint reads a custom attribute (``x_type``) from every route and raises
+    # AttributeError on the buggy version. Requesting /routes/ fails; requesting
+    # a concrete nested endpoint returns normally (passes).
+    @staticmethod
+    def _word(a: int = 3, b: int = 8) -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(a, b)))
+
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        pass
+        return (
+            f"-cr {self._word()} {self._word()} -m get -u /routes/",
+            TestResult.FAILING,
+        )
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        pass
+        prefix = self._word()
+        return (
+            f"-cr {prefix} {self._word()} -m get -u /root/{prefix}/item",
+            TestResult.PASSING,
+        )
 
 
 class FastAPI9SystemtestGenerator(FastAPISystemtestGenerator):
+    # bug_9: a custom request-body media type is dropped from the OpenAPI schema
+    # on the buggy version. Inspecting /openapi.json for a custom-media route
+    # exposes the loss (fails); a normal request is unaffected (passes).
+    @staticmethod
+    def _word(a: int = 3, b: int = 8) -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(a, b)))
+
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        pass
+        return f"-mt {self._word()} -m get -u /openapi.json", TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        pass
+        path = "/" + self._word() + "/"
+        return f"-gs {path} Item -m get -u {path}", TestResult.PASSING
 
 
 class FastAPI10SystemtestGenerator(FastAPISystemtestGenerator):
+    # bug_10: a response returned through ``response_model_skip_defaults=True``
+    # must drop default-valued fields; the buggy version leaks them. Requesting
+    # the skip route exposes the leaked default marker (fails); a plain GET
+    # returning Item carries no such default (passes).
+    @staticmethod
+    def _word(a: int = 3, b: int = 8) -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(a, b)))
+
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        pass
+        path = self._word()
+        return f"-sd {path} -m get -u /{path}", TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        pass
+        path = "/" + self._word() + "/"
+        return f"-gs {path} Item -m get -u {path}", TestResult.PASSING
+
+
+class FastAPI11SystemtestGenerator(FastAPISystemtestGenerator):
+    # bug_11: a ``Union[...]`` request body is misread as a scalar query parameter
+    # on the buggy version, so a valid POST fails with a 422 located in ``query``.
+    # Posting a valid union body triggers the fault (fails); a plain GET returning
+    # Item is unaffected (passes).
+    @staticmethod
+    def _word(a: int = 3, b: int = 8) -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(a, b)))
+
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        path = self._word()
+        if random.getrandbits(1):
+            body = '{"price":%d}' % random.randint(1, 999)
+        else:
+            body = '{"name":"%s"}' % self._word()
+        return f"-ub {path} -m post -u /{path} -d '{body}'", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        path = "/" + self._word() + "/"
+        return f"-gs {path} Item -m get -u {path}", TestResult.PASSING
+
+
+class FastAPI12SystemtestGenerator(FastAPISystemtestGenerator):
+    # bug_12: ``HTTPBearer(auto_error=False)`` wrongly raises 403 on a non-bearer
+    # Authorization scheme on the buggy version instead of returning None (200).
+    # Sending a non-bearer scheme triggers the fault (fails); a proper Bearer
+    # header (or none) is accepted (passes).
+    _SCHEMES = ["Basic", "Digest", "Token", "Negotiate", "OAuth", "Bear"]
+
+    @staticmethod
+    def _word(a: int = 3, b: int = 8) -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(a, b)))
+
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        path = self._word()
+        scheme = random.choice(self._SCHEMES)
+        return (
+            f"-bs {path} -ah {scheme} {self._word()} -m get -u /{path}",
+            TestResult.FAILING,
+        )
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        path = self._word()
+        if random.getrandbits(1):
+            return (
+                f"-bs {path} -ah Bearer {self._word()} -m get -u /{path}",
+                TestResult.PASSING,
+            )
+        return f"-bs {path} -m get -u /{path}", TestResult.PASSING
+
+
+class FastAPI13SystemtestGenerator(FastAPISystemtestGenerator):
+    # bug_13: ``include_router`` leaks each route's additional responses into the
+    # following routes' OpenAPI schema on the buggy version. Inspecting
+    # /openapi.json for an additional-responses router exposes the accumulation
+    # (fails); a plain GET returning Item is unaffected (passes).
+    @staticmethod
+    def _word(a: int = 3, b: int = 8) -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(a, b)))
+
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return f"-ar {self._word()} -m get -u /openapi.json", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        path = "/" + self._word() + "/"
+        return f"-gs {path} Item -m get -u {path}", TestResult.PASSING
+
+
+class FastAPI14SystemtestGenerator(FastAPISystemtestGenerator):
+    # bug_14: a ``Dict[str, X]`` field's ``additionalProperties`` schema is coerced
+    # to the boolean ``True`` in the OpenAPI output on the buggy version.
+    # Inspecting /openapi.json for such a route exposes the boolean (fails); a
+    # plain GET returning Item is unaffected (passes).
+    @staticmethod
+    def _word(a: int = 3, b: int = 8) -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(a, b)))
+
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return f"-ap {self._word()} -m get -u /openapi.json", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        path = "/" + self._word() + "/"
+        return f"-gs {path} Item -m get -u {path}", TestResult.PASSING
+
+
+class FastAPI15SystemtestGenerator(FastAPISystemtestGenerator):
+    # bug_15: ``include_router`` drops WebSocket routes on the buggy version, so
+    # connecting to a websocket defined on an included router fails. Connecting to
+    # such a route triggers the fault (fails); a plain GET returning Item is
+    # unaffected (passes).
+    @staticmethod
+    def _word(a: int = 3, b: int = 8) -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(a, b)))
+
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        path = "/" + self._word()
+        return (
+            f"-wr {path} {self._word()} -m websocket -u {path}",
+            TestResult.FAILING,
+        )
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        path = "/" + self._word() + "/"
+        return f"-gs {path} Item -m get -u {path}", TestResult.PASSING
+
+
+class FastAPI16SystemtestGenerator(FastAPISystemtestGenerator):
+    # bug_16: ``jsonable_encoder`` raises AttributeError for a model whose Config
+    # defines no ``json_encoders`` on the buggy version. Requesting a route that
+    # returns such a model triggers the fault (fails); a plain GET returning Item
+    # (whose default Config carries ``json_encoders``) is unaffected (passes).
+    @staticmethod
+    def _word(a: int = 3, b: int = 8) -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(a, b)))
+
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        path = self._word()
+        return f"-ce {path} -m get -u /{path}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        path = "/" + self._word() + "/"
+        return f"-gs {path} Item -m get -u {path}", TestResult.PASSING
 
 
 class FastAPI1UnittestGenerator(UnittestGenerator, FastAPI1TestGenerator):
@@ -1096,7 +1492,18 @@ class FastAPI2UnittestGenerator(UnittestGenerator):
     def __init__(self):
         super().__init__()
         self.string_fuzzer = GrammarFuzzer(grammar_request, start_symbol="<json_str>")
-        self.json_fuzzer = GrammarFuzzer(grammar_request, start_symbol="<json>")
+        # Use the *unwrapped* JSON symbol: the top-level <json> adds shell-quote
+        # wrappers ("<json_>") for the CLI, which are invalid when embedded as a
+        # Python literal in a unit test.
+        self.json_fuzzer = GrammarFuzzer(grammar_request, start_symbol="<json_>")
+
+    def _fuzz_string(self) -> str:
+        # The CLI grammar shell-escapes quotes (\"); a unit test embeds the
+        # value as a Python literal, so undo that escaping.
+        return self.string_fuzzer.fuzz().replace('\\"', '"')
+
+    def _fuzz_json(self) -> str:
+        return self.json_fuzzer.fuzz().replace('\\"', '"')
 
     def get_utils(self) -> List[ast.stmt]:
         return ast.parse(
@@ -1174,18 +1581,18 @@ self.assertEqual({expected_status}, status)
         return test
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        expected = self.string_fuzzer.fuzz()
+        expected = self._fuzz_string()
         arguments = ['"websocket"', '"/router/"', f"override={expected}"]
         if random.getrandbits(1):
-            arguments.append(f"data={self.json_fuzzer.fuzz()}")
+            arguments.append(f"data={self._fuzz_json()}")
         return self._get_test(arguments, expected), TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        value = self.string_fuzzer.fuzz()
+        value = self._fuzz_string()
         status = 200
         if random.getrandbits(1):
             expected = value
-            arguments = ["websocket", "/router/", f"depend={value}"]
+            arguments = ['"websocket"', '"/router/"', f"depend={value}"]
         else:
             p = random.random()
             e = value.replace('"', "")
@@ -1207,7 +1614,7 @@ self.assertEqual({expected_status}, status)
         if random.random() < 0.1:
             arguments.append(f"override={value}")
         if random.getrandbits(1):
-            arguments.append(f"data={self.json_fuzzer.fuzz()}")
+            arguments.append(f"data={self._fuzz_json()}")
         return (
             self._get_test(arguments, expected, expected_status=status),
             TestResult.PASSING,
@@ -1215,67 +1622,844 @@ self.assertEqual({expected_status}, status)
 
 
 class FastAPI3UnittestGenerator(UnittestGenerator):
+    # bug_3: a response_model whose field carries an alias fails to serialize on
+    # the buggy version (raises a ValidationError). A test that asserts the
+    # correct aliased serialization therefore passes on the fixed version and
+    # fails on the buggy one; without an alias the serialization is unaffected.
+    def get_imports(self) -> List[ast.stmt]:
+        return ast.parse(
+            "from fastapi import FastAPI\n"
+            "from pydantic import BaseModel, Field\n"
+            "try:\n"
+            "    from fastapi.testclient import TestClient\n"
+            "except ImportError:\n"
+            "    from starlette.testclient import TestClient\n"
+        ).body
+
+    def get_utils(self) -> List[ast.stmt]:
+        return ast.parse(
+            "@staticmethod\n"
+            "def run_test(alias, value, price):\n"
+            "    app = FastAPI()\n"
+            "    if alias:\n"
+            "        class Item(BaseModel):\n"
+            "            name: str = Field(..., alias=alias)\n"
+            "            price: float = None\n"
+            "        item = Item(**{alias: value, 'price': price})\n"
+            "    else:\n"
+            "        class Item(BaseModel):\n"
+            "            name: str = None\n"
+            "            price: float = None\n"
+            "        item = Item(name=value, price=price)\n"
+            "    @app.get('/item', response_model=Item)\n"
+            "    def get_item():\n"
+            "        return item\n"
+            "    client = TestClient(app)\n"
+            "    response = client.get('/item')\n"
+            "    return response.status_code, response.json()\n"
+        ).body
+
+    @staticmethod
+    def _word(a: int = 3, b: int = 10) -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(a, b)))
+
+    def _test(self, alias, value, price) -> ast.FunctionDef:
+        key = alias if alias else "name"
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"status, body = self.run_test({alias!r}, {value!r}, {price!r})\n"
+            f"self.assertEqual(200, status)\n"
+            f"self.assertEqual({{{key!r}: {value!r}, 'price': {price!r}}}, body)\n"
+        ).body
+        return test
+
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass
+        return (
+            self._test(self._word(), self._word(), round(random.uniform(0.1, 99.9), 1)),
+            TestResult.FAILING,
+        )
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass
+        return (
+            self._test(None, self._word(), round(random.uniform(0.1, 99.9), 1)),
+            TestResult.PASSING,
+        )
 
 
 class FastAPI4UnittestGenerator(UnittestGenerator):
+    # bug_4: a path parameter reused in a dependency is duplicated in the
+    # OpenAPI schema on the buggy version. Asserting the parameter list is
+    # duplicate-free fails on buggy / passes on fixed; a route without such a
+    # dependency keeps a unique list (passes on both).
+    def get_imports(self) -> List[ast.stmt]:
+        return ast.parse(
+            "from fastapi import Depends, FastAPI\n"
+            "try:\n"
+            "    from fastapi.testclient import TestClient\n"
+            "except ImportError:\n"
+            "    from starlette.testclient import TestClient\n"
+        ).body
+
+    def get_utils(self) -> List[ast.stmt]:
+        return ast.parse(
+            "@staticmethod\n"
+            "def run_test(prefix, with_dependency):\n"
+            "    app = FastAPI()\n"
+            "    async def check(item_id: int):\n"
+            "        return True\n"
+            "    path = '/' + prefix + '/{item_id}'\n"
+            "    if with_dependency:\n"
+            "        @app.get(path, dependencies=[Depends(check)])\n"
+            "        async def read(item_id: int):\n"
+            "            return {'item_id': item_id}\n"
+            "    else:\n"
+            "        @app.get(path)\n"
+            "        async def read(item_id: int):\n"
+            "            return {'item_id': item_id}\n"
+            "    schema = TestClient(app).get('/openapi.json').json()\n"
+            "    params = schema['paths'][path]['get']['parameters']\n"
+            "    return [p['name'] for p in params]\n"
+        ).body
+
+    @staticmethod
+    def _word(a: int = 3, b: int = 8) -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(a, b)))
+
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"names = self.run_test({self._word()!r}, True)\n"
+            f"self.assertEqual(len(names), len(set(names)))\n"
+        ).body
+        return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"names = self.run_test({self._word()!r}, False)\n"
+            f"self.assertEqual(len(names), len(set(names)))\n"
+        ).body
+        return test, TestResult.PASSING
 
 
 class FastAPI5UnittestGenerator(UnittestGenerator):
+    # bug_5: a response_model must filter a sub-model down to its declared type,
+    # but the buggy version leaks extra fields (e.g. ``password``) from a
+    # subclass instance. Asserting the leaked field is absent fails on the buggy
+    # version and passes on the fixed one; asserting the retained field is
+    # present passes on both.
+    def get_imports(self) -> List[ast.stmt]:
+        return ast.parse(
+            "from fastapi import Depends, FastAPI\n"
+            "from pydantic import BaseModel\n"
+            "try:\n"
+            "    from fastapi.testclient import TestClient\n"
+            "except ImportError:\n"
+            "    from starlette.testclient import TestClient\n"
+        ).body
+
+    def get_utils(self) -> List[ast.stmt]:
+        return ast.parse(
+            "@staticmethod\n"
+            "def run_test(username, password):\n"
+            "    app = FastAPI()\n"
+            "    class ModelB(BaseModel):\n"
+            "        username: str\n"
+            "    class ModelC(ModelB):\n"
+            "        password: str\n"
+            "    class ModelA(BaseModel):\n"
+            "        name: str\n"
+            "        description: str = None\n"
+            "        model_b: ModelB\n"
+            "    async def get_model_c() -> ModelC:\n"
+            "        return ModelC(username=username, password=password)\n"
+            "    @app.get('/model', response_model=ModelA)\n"
+            "    async def get_model_a(model_c=Depends(get_model_c)):\n"
+            "        return {'name': 'n', 'description': 'd', 'model_b': model_c}\n"
+            "    client = TestClient(app)\n"
+            "    return client.get('/model').json()['model_b']\n"
+        ).body
+
+    @staticmethod
+    def _word(a: int = 4, b: int = 12) -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(a, b)))
+
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass
+        user, pwd = self._word(), self._word()
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"model_b = self.run_test({user!r}, {pwd!r})\n"
+            f"self.assertNotIn('password', model_b)\n"
+        ).body
+        return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass
+        user, pwd = self._word(), self._word()
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"model_b = self.run_test({user!r}, {pwd!r})\n"
+            f"self.assertEqual({user!r}, model_b['username'])\n"
+        ).body
+        return test, TestResult.PASSING
 
 
 class FastAPI6UnittestGenerator(UnittestGenerator):
+    # bug_6: a non-typing-sequence (list/set/tuple) Form parameter is rejected
+    # (HTTP 422) on the buggy version but accepted on the fixed one. Asserting a
+    # successful list form therefore fails on buggy / passes on fixed; a plain
+    # ``str`` form is unaffected (passes on both).
+    def get_imports(self) -> List[ast.stmt]:
+        return ast.parse(
+            "from fastapi import FastAPI, Form\n"
+            "try:\n"
+            "    from fastapi.testclient import TestClient\n"
+            "except ImportError:\n"
+            "    from starlette.testclient import TestClient\n"
+        ).body
+
+    def get_utils(self) -> List[ast.stmt]:
+        return ast.parse(
+            "@staticmethod\n"
+            "def run_list_form(items):\n"
+            "    app = FastAPI()\n"
+            "    @app.post('/form')\n"
+            "    def post_form(items: list = Form(...)):\n"
+            "        return items\n"
+            "    return TestClient(app).post('/form', data={'items': items})\n"
+            "@staticmethod\n"
+            "def run_str_form(value):\n"
+            "    app = FastAPI()\n"
+            "    @app.post('/form')\n"
+            "    def post_form(value: str = Form(...)):\n"
+            "        return value\n"
+            "    return TestClient(app).post('/form', data={'value': value})\n"
+        ).body
+
+    @staticmethod
+    def _word(a: int = 3, b: int = 9) -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(a, b)))
+
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass
+        items = [self._word() for _ in range(random.randint(2, 4))]
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"response = self.run_list_form({items!r})\n"
+            f"self.assertEqual(200, response.status_code)\n"
+            f"self.assertEqual({items!r}, response.json())\n"
+        ).body
+        return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass
+        value = self._word()
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"response = self.run_str_form({value!r})\n"
+            f"self.assertEqual(200, response.status_code)\n"
+            f"self.assertEqual({value!r}, response.json())\n"
+        ).body
+        return test, TestResult.PASSING
 
 
 class FastAPI7UnittestGenerator(UnittestGenerator):
+    # bug_7: posting an invalid ``condecimal`` field produces a validation error
+    # whose serialization of the Decimal constraint raises a TypeError on the
+    # buggy version. A test expecting the clean 422 therefore fails on buggy /
+    # passes on fixed; a valid post is unaffected.
+    def get_imports(self) -> List[ast.stmt]:
+        return ast.parse(
+            "from decimal import Decimal\n"
+            "from fastapi import FastAPI\n"
+            "from pydantic import BaseModel, condecimal\n"
+            "try:\n"
+            "    from fastapi.testclient import TestClient\n"
+            "except ImportError:\n"
+            "    from starlette.testclient import TestClient\n"
+        ).body
+
+    def get_utils(self) -> List[ast.stmt]:
+        return ast.parse(
+            "@staticmethod\n"
+            "def run_test(name, price, age):\n"
+            "    app = FastAPI()\n"
+            "    class Item(BaseModel):\n"
+            "        name: str\n"
+            "        price: float = None\n"
+            "        age: condecimal(gt=Decimal(0.0))\n"
+            "    @app.post('/item')\n"
+            "    def post_item(item: Item):\n"
+            "        return {'item': item}\n"
+            "    client = TestClient(app)\n"
+            "    return client.post('/item', json={'name': name, 'price': price, 'age': age})\n"
+        ).body
+
+    @staticmethod
+    def _word(a: int = 3, b: int = 9) -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(a, b)))
+
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass
+        name, price, age = self._word(), round(random.uniform(0.1, 99.9), 1), -random.randint(1, 100)
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"response = self.run_test({name!r}, {price!r}, {age!r})\n"
+            f"self.assertEqual(422, response.status_code)\n"
+        ).body
+        return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass
+        name, price, age = self._word(), round(random.uniform(0.1, 99.9), 1), random.randint(1, 100)
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"response = self.run_test({name!r}, {price!r}, {age!r})\n"
+            f"self.assertEqual(200, response.status_code)\n"
+        ).body
+        return test, TestResult.PASSING
 
 
 class FastAPI8UnittestGenerator(UnittestGenerator):
+    # bug_8: ``include_router`` does not propagate a custom ``route_class`` to
+    # nested routes, so accessing a custom attribute (``x_type``) on them raises
+    # AttributeError on the buggy version. A nested setup therefore fails on
+    # buggy / passes on fixed; a flat (non-nested) setup keeps its class (passes
+    # on both).
+    def get_imports(self) -> List[ast.stmt]:
+        return ast.parse(
+            "from fastapi import APIRouter, FastAPI\n"
+            "from fastapi.routing import APIRoute\n"
+            "try:\n"
+            "    from fastapi.testclient import TestClient\n"
+            "except ImportError:\n"
+            "    from starlette.testclient import TestClient\n"
+        ).body
+
+    def get_utils(self) -> List[ast.stmt]:
+        return ast.parse(
+            "@staticmethod\n"
+            "def run_test(prefix, msg, check_x_type):\n"
+            "    app = FastAPI()\n"
+            "    class RouteA(APIRoute):\n"
+            "        x_type = 'A'\n"
+            "    class RouteB(APIRoute):\n"
+            "        x_type = 'B'\n"
+            "    router_a = APIRouter(route_class=RouteA)\n"
+            "    router_b = APIRouter(route_class=RouteB)\n"
+            "    @router_b.get('/item')\n"
+            "    def get_b():\n"
+            "        return {'msg': msg}\n"
+            "    router_a.include_router(router=router_b, prefix='/' + prefix)\n"
+            "    app.include_router(router=router_a, prefix='/root')\n"
+            "    @app.get('/routes/')\n"
+            "    def routes():\n"
+            "        return [r.x_type for r in app.routes\n"
+            "                if isinstance(r, APIRoute) and r.path.startswith('/root')]\n"
+            "    client = TestClient(app)\n"
+            "    return client.get('/routes/' if check_x_type else '/root/' + prefix + '/item')\n"
+        ).body
+
+    @staticmethod
+    def _word(a: int = 3, b: int = 8) -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(a, b)))
+
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"response = self.run_test({self._word()!r}, {self._word()!r}, True)\n"
+            f"self.assertEqual(200, response.status_code)\n"
+        ).body
+        return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"response = self.run_test({self._word()!r}, {self._word()!r}, False)\n"
+            f"self.assertEqual(200, response.status_code)\n"
+        ).body
+        return test, TestResult.PASSING
 
 
 class FastAPI9UnittestGenerator(UnittestGenerator):
+    # bug_9: a custom request-body media type is dropped from the OpenAPI schema
+    # on the buggy version. Asserting the custom media type is present fails on
+    # buggy / passes on fixed; the default media type is always present (passes).
+    def get_imports(self) -> List[ast.stmt]:
+        return ast.parse(
+            "from fastapi import Body, FastAPI\n"
+            "from pydantic import BaseModel\n"
+            "try:\n"
+            "    from fastapi.testclient import TestClient\n"
+            "except ImportError:\n"
+            "    from starlette.testclient import TestClient\n"
+        ).body
+
+    def get_utils(self) -> List[ast.stmt]:
+        return ast.parse(
+            "@staticmethod\n"
+            "def run_test(path, custom):\n"
+            "    app = FastAPI()\n"
+            "    class Product(BaseModel):\n"
+            "        name: str\n"
+            "        price: float\n"
+            "    if custom:\n"
+            "        @app.post('/' + path)\n"
+            "        async def create(data: Product = Body(..., media_type='application/vnd.api+json', embed=True)):\n"
+            "            return data\n"
+            "    else:\n"
+            "        @app.post('/' + path)\n"
+            "        async def create(data: Product):\n"
+            "            return data\n"
+            "    schema = TestClient(app).get('/openapi.json').json()\n"
+            "    content = schema['paths']['/' + path]['post']['requestBody']['content']\n"
+            "    return list(content.keys())\n"
+        ).body
+
+    @staticmethod
+    def _word(a: int = 3, b: int = 8) -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(a, b)))
+
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"media = self.run_test({self._word()!r}, True)\n"
+            f"self.assertIn('application/vnd.api+json', media)\n"
+        ).body
+        return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"media = self.run_test({self._word()!r}, False)\n"
+            f"self.assertIn('application/json', media)\n"
+        ).body
+        return test, TestResult.PASSING
 
 
 class FastAPI10UnittestGenerator(UnittestGenerator):
+    # bug_10: a route using ``response_model_skip_defaults=True`` must omit
+    # fields left at their default; the buggy version keeps them. Asserting the
+    # defaults are skipped fails on buggy / passes on fixed; asserting explicitly
+    # set values are echoed passes on both.
+    def get_imports(self) -> List[ast.stmt]:
+        return ast.parse(
+            "from fastapi import FastAPI\n"
+            "from pydantic import BaseModel\n"
+            "try:\n"
+            "    from fastapi.testclient import TestClient\n"
+            "except ImportError:\n"
+            "    from starlette.testclient import TestClient\n"
+        ).body
+
+    def get_utils(self) -> List[ast.stmt]:
+        return ast.parse(
+            "@staticmethod\n"
+            "def run_test(path, marker, fill):\n"
+            "    app = FastAPI()\n"
+            "    class SubModel(BaseModel):\n"
+            "        marker: str = 'defaultmarker'\n"
+            "    class Model(BaseModel):\n"
+            "        x: int = None\n"
+            "        sub: SubModel\n"
+            "    if fill:\n"
+            "        @app.get('/' + path, response_model=Model, response_model_skip_defaults=True)\n"
+            "        def get():\n"
+            "            return Model(x=5, sub={'marker': marker})\n"
+            "    else:\n"
+            "        @app.get('/' + path, response_model=Model, response_model_skip_defaults=True)\n"
+            "        def get():\n"
+            "            return Model(sub={})\n"
+            "    return TestClient(app).get('/' + path).json()\n"
+        ).body
+
+    @staticmethod
+    def _word(a: int = 3, b: int = 8) -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(a, b)))
+
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"body = self.run_test({self._word()!r}, {self._word()!r}, False)\n"
+            f"self.assertEqual({{'sub': {{}}}}, body)\n"
+        ).body
+        return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass
+        marker = self._word()
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"body = self.run_test({self._word()!r}, {marker!r}, True)\n"
+            f"self.assertEqual({marker!r}, body['sub']['marker'])\n"
+            f"self.assertEqual(5, body['x'])\n"
+        ).body
+        return test, TestResult.PASSING
+
+
+class FastAPI11UnittestGenerator(UnittestGenerator):
+    # bug_11: a ``Union[...]`` request body is misread as a scalar query parameter
+    # on the buggy version. Asserting a valid union POST succeeds (200) fails on
+    # buggy / passes on fixed; a single-model body POST is accepted on both.
+    def get_imports(self) -> List[ast.stmt]:
+        return ast.parse(
+            "from typing import Union\n"
+            "from fastapi import FastAPI\n"
+            "from pydantic import BaseModel\n"
+            "try:\n"
+            "    from fastapi.testclient import TestClient\n"
+            "except ImportError:\n"
+            "    from starlette.testclient import TestClient\n"
+        ).body
+
+    def get_utils(self) -> List[ast.stmt]:
+        return ast.parse(
+            "@staticmethod\n"
+            "def run_test(path, body, union):\n"
+            "    app = FastAPI()\n"
+            "    class ItemA(BaseModel):\n"
+            "        name: str = None\n"
+            "    class ItemB(BaseModel):\n"
+            "        price: int\n"
+            "    if union:\n"
+            "        @app.post('/' + path)\n"
+            "        def save(item: Union[ItemB, ItemA]):\n"
+            "            return {'item': item}\n"
+            "    else:\n"
+            "        @app.post('/' + path)\n"
+            "        def save(item: ItemB):\n"
+            "            return {'item': item}\n"
+            "    resp = TestClient(app).post('/' + path, json=body)\n"
+            "    return resp.status_code, resp.json()\n"
+        ).body
+
+    @staticmethod
+    def _word(a: int = 3, b: int = 8) -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(a, b)))
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        price = random.randint(1, 999)
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"status, body = self.run_test({self._word()!r}, {{'price': {price}}}, True)\n"
+            f"self.assertEqual(200, status)\n"
+            f"self.assertEqual({{'item': {{'price': {price}}}}}, body)\n"
+        ).body
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        price = random.randint(1, 999)
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"status, body = self.run_test({self._word()!r}, {{'price': {price}}}, False)\n"
+            f"self.assertEqual(200, status)\n"
+            f"self.assertEqual({{'item': {{'price': {price}}}}}, body)\n"
+        ).body
+        return test, TestResult.PASSING
+
+
+class FastAPI12UnittestGenerator(UnittestGenerator):
+    # bug_12: ``HTTPBearer(auto_error=False)`` must return None (200 branch) for a
+    # non-bearer scheme; the buggy version raises 403. Asserting the 200 "no
+    # credentials" answer for a wrong scheme fails on buggy / passes on fixed; a
+    # proper Bearer header is accepted on both.
+    def get_imports(self) -> List[ast.stmt]:
+        return ast.parse(
+            "from typing import Optional\n"
+            "from fastapi import FastAPI, Security\n"
+            "from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer\n"
+            "try:\n"
+            "    from fastapi.testclient import TestClient\n"
+            "except ImportError:\n"
+            "    from starlette.testclient import TestClient\n"
+        ).body
+
+    def get_utils(self) -> List[ast.stmt]:
+        return ast.parse(
+            "@staticmethod\n"
+            "def run_test(path, scheme, cred):\n"
+            "    app = FastAPI()\n"
+            "    security = HTTPBearer(auto_error=False)\n"
+            "    @app.get('/' + path)\n"
+            "    def read_current_user(credentials: Optional[HTTPAuthorizationCredentials] = Security(security)):\n"
+            "        if credentials is None:\n"
+            "            return {'msg': 'Create an account first'}\n"
+            "        return {'scheme': credentials.scheme, 'credentials': credentials.credentials}\n"
+            "    headers = {}\n"
+            "    if scheme is not None:\n"
+            "        headers['Authorization'] = scheme + ' ' + cred\n"
+            "    resp = TestClient(app).get('/' + path, headers=headers)\n"
+            "    return resp.status_code, resp.json()\n"
+        ).body
+
+    _SCHEMES = ["Basic", "Digest", "Token", "Negotiate", "OAuth", "Bear"]
+
+    @staticmethod
+    def _word(a: int = 3, b: int = 8) -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(a, b)))
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        scheme = random.choice(self._SCHEMES)
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"status, body = self.run_test({self._word()!r}, {scheme!r}, {self._word()!r})\n"
+            f"self.assertEqual(200, status)\n"
+            f"self.assertEqual({{'msg': 'Create an account first'}}, body)\n"
+        ).body
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        cred = self._word()
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"status, body = self.run_test({self._word()!r}, 'Bearer', {cred!r})\n"
+            f"self.assertEqual(200, status)\n"
+            f"self.assertEqual({{'scheme': 'Bearer', 'credentials': {cred!r}}}, body)\n"
+        ).body
+        return test, TestResult.PASSING
+
+
+class FastAPI13UnittestGenerator(UnittestGenerator):
+    # bug_13: ``include_router`` leaks a route's additional responses into the
+    # following routes' OpenAPI schema on the buggy version. Asserting every route
+    # lists exactly its own extra response (+ 200) fails on buggy / passes on
+    # fixed; a single-route router never leaks (passes on both).
+    def get_imports(self) -> List[ast.stmt]:
+        return ast.parse(
+            "from fastapi import APIRouter, FastAPI\n"
+            "try:\n"
+            "    from fastapi.testclient import TestClient\n"
+            "except ImportError:\n"
+            "    from starlette.testclient import TestClient\n"
+        ).body
+
+    def get_utils(self) -> List[ast.stmt]:
+        return ast.parse(
+            "@staticmethod\n"
+            "def run_test(routes):\n"
+            "    app = FastAPI()\n"
+            "    router = APIRouter()\n"
+            "    for name, code in routes:\n"
+            "        @router.get('/' + name, responses={code: {'description': 'd_' + name}})\n"
+            "        async def handler():\n"
+            "            return 'ok'\n"
+            "    app.include_router(router)\n"
+            "    schema = TestClient(app).get('/openapi.json').json()\n"
+            "    return {p: sorted(m['get']['responses'].keys()) for p, m in schema['paths'].items()}\n"
+        ).body
+
+    @staticmethod
+    def _word(a: int = 3, b: int = 8) -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(a, b)))
+
+    def _routes(self, n: int) -> List[Tuple[str, int]]:
+        names = set()
+        while len(names) < n:
+            names.add(self._word())
+        return list(zip(sorted(names), [501, 502, 503, 504, 505][:n]))
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        routes = self._routes(3)
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"result = self.run_test({routes!r})\n"
+            f"for codes in result.values():\n"
+            f"    self.assertEqual(2, len(codes))\n"
+        ).body
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        routes = self._routes(1)
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"result = self.run_test({routes!r})\n"
+            f"for codes in result.values():\n"
+            f"    self.assertEqual(2, len(codes))\n"
+        ).body
+        return test, TestResult.PASSING
+
+
+class FastAPI14UnittestGenerator(UnittestGenerator):
+    # bug_14: a ``Dict[str, X]`` field's ``additionalProperties`` schema is coerced
+    # to the boolean ``True`` on the buggy version. Asserting it stays a schema
+    # dict fails on buggy / passes on fixed; a plain ``str`` field's schema type
+    # is reported correctly on both.
+    def get_imports(self) -> List[ast.stmt]:
+        return ast.parse(
+            "from typing import Dict\n"
+            "from fastapi import FastAPI\n"
+            "from pydantic import BaseModel\n"
+            "try:\n"
+            "    from fastapi.testclient import TestClient\n"
+            "except ImportError:\n"
+            "    from starlette.testclient import TestClient\n"
+        ).body
+
+    def get_utils(self) -> List[ast.stmt]:
+        return ast.parse(
+            "@staticmethod\n"
+            "def run_test(path, kind):\n"
+            "    app = FastAPI()\n"
+            "    if kind == 'dict':\n"
+            "        class M(BaseModel):\n"
+            "            items: Dict[str, int]\n"
+            "    else:\n"
+            "        class M(BaseModel):\n"
+            "            name: str\n"
+            "    @app.post('/' + path)\n"
+            "    def foo(m: M):\n"
+            "        return m\n"
+            "    schema = TestClient(app).get('/openapi.json').json()\n"
+            "    return schema['components']['schemas']['M']['properties']\n"
+        ).body
+
+    @staticmethod
+    def _word(a: int = 3, b: int = 8) -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(a, b)))
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"props = self.run_test({self._word()!r}, 'dict')\n"
+            f"self.assertIsInstance(props['items']['additionalProperties'], dict)\n"
+        ).body
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"props = self.run_test({self._word()!r}, 'plain')\n"
+            f"self.assertEqual('string', props['name']['type'])\n"
+        ).body
+        return test, TestResult.PASSING
+
+
+class FastAPI15UnittestGenerator(UnittestGenerator):
+    # bug_15: ``include_router`` drops WebSocket routes on the buggy version.
+    # Asserting a websocket on an included router answers correctly fails on buggy
+    # / passes on fixed; a websocket registered directly on the app works on both.
+    def get_imports(self) -> List[ast.stmt]:
+        return ast.parse(
+            "from fastapi import APIRouter, FastAPI\n"
+            "try:\n"
+            "    from fastapi import WebSocket\n"
+            "except ImportError:\n"
+            "    from starlette.websockets import WebSocket\n"
+            "try:\n"
+            "    from fastapi.testclient import TestClient\n"
+            "except ImportError:\n"
+            "    from starlette.testclient import TestClient\n"
+        ).body
+
+    def get_utils(self) -> List[ast.stmt]:
+        return ast.parse(
+            "@staticmethod\n"
+            "def run_test(path, message, via_include):\n"
+            "    app = FastAPI()\n"
+            "    if via_include:\n"
+            "        router = APIRouter()\n"
+            "        @router.websocket_route(path)\n"
+            "        async def idx(websocket: WebSocket):\n"
+            "            await websocket.accept()\n"
+            "            await websocket.send_text(message)\n"
+            "            await websocket.close()\n"
+            "        app.include_router(router)\n"
+            "    else:\n"
+            "        @app.websocket_route(path)\n"
+            "        async def idx2(websocket: WebSocket):\n"
+            "            await websocket.accept()\n"
+            "            await websocket.send_text(message)\n"
+            "            await websocket.close()\n"
+            "    client = TestClient(app)\n"
+            "    try:\n"
+            "        with client.websocket_connect(path) as ws:\n"
+            "            return ws.receive_text()\n"
+            "    except Exception as e:\n"
+            "        return 'ERROR:' + type(e).__name__\n"
+        ).body
+
+    @staticmethod
+    def _word(a: int = 3, b: int = 8) -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(a, b)))
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        message = self._word()
+        path = "/" + self._word()
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"received = self.run_test({path!r}, {message!r}, True)\n"
+            f"self.assertEqual({message!r}, received)\n"
+        ).body
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        message = self._word()
+        path = "/" + self._word()
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"received = self.run_test({path!r}, {message!r}, False)\n"
+            f"self.assertEqual({message!r}, received)\n"
+        ).body
+        return test, TestResult.PASSING
+
+
+class FastAPI16UnittestGenerator(UnittestGenerator):
+    # bug_16: ``jsonable_encoder`` reads ``obj.Config.json_encoders`` directly and
+    # raises AttributeError for a model whose Config defines none. Asserting such a
+    # model encodes to its enum value fails on buggy / passes on fixed; a model
+    # without a custom Config (default ``json_encoders``) encodes on both.
+    def get_imports(self) -> List[ast.stmt]:
+        return ast.parse(
+            "from enum import Enum\n"
+            "from fastapi.encoders import jsonable_encoder\n"
+            "from pydantic import BaseModel\n"
+        ).body
+
+    _ROLES = [
+        "admin",
+        "normal",
+        "guest",
+        "root",
+        "user",
+        "viewer",
+        "editor",
+        "owner",
+        "member",
+        "banned",
+    ]
+
+    def get_utils(self) -> List[ast.stmt]:
+        roles = "\n".join(f"        {r} = {r!r}" for r in self._ROLES)
+        return ast.parse(
+            "@staticmethod\n"
+            "def run_test(role, use_config):\n"
+            "    class RoleEnum(Enum):\n"
+            f"{roles}\n"
+            "    if use_config:\n"
+            "        class M(BaseModel):\n"
+            "            role: RoleEnum = None\n"
+            "            class Config:\n"
+            "                use_enum_values = True\n"
+            "    else:\n"
+            "        class M(BaseModel):\n"
+            "            role: RoleEnum = None\n"
+            "    try:\n"
+            "        return jsonable_encoder(M(role=RoleEnum[role]))\n"
+            "    except Exception as e:\n"
+            "        return {'error': type(e).__name__}\n"
+        ).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        role = random.choice(self._ROLES)
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"result = self.run_test({role!r}, True)\n"
+            f"self.assertEqual({{'role': {role!r}}}, result)\n"
+        ).body
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        role = random.choice(self._ROLES)
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"result = self.run_test({role!r}, False)\n"
+            f"self.assertEqual({{'role': {role!r}}}, result)\n"
+        ).body
+        return test, TestResult.PASSING
 
 
 grammar_jsonable_encoder: Grammar = clean_up(
@@ -1351,6 +2535,18 @@ grammar_request: Grammar = clean_up(
                 "-<get>",
                 "-<post>",
                 "-<alias>",
+                "-<custom_routes>",
+                "-<reused_param>",
+                "-<form_list>",
+                "-<media_type>",
+                "-<skip_defaults>",
+                "-<union_body>",
+                "-<bearer_security>",
+                "-<auth>",
+                "-<additional_responses>",
+                "-<additional_properties>",
+                "-<ws_router>",
+                "-<config_encoder>",
             ],
             # OPTIONS
             "<websocket>": get_possible_options("ws", "<arg><sep><arg>"),
@@ -1365,6 +2561,18 @@ grammar_request: Grammar = clean_up(
             "<get>": get_possible_options("gs", "<arg><sep><model>"),
             "<post>": get_possible_options("ps", "<arg><sep><model>"),
             "<alias>": get_possible_options("a", "<arg>"),
+            "<custom_routes>": get_possible_options("cr", "<arg><sep><arg>"),
+            "<reused_param>": get_possible_options("rp", "<arg>"),
+            "<form_list>": get_possible_options("fl", "<arg>"),
+            "<media_type>": get_possible_options("mt", "<arg>"),
+            "<skip_defaults>": get_possible_options("sd", "<arg>"),
+            "<union_body>": get_possible_options("ub", "<arg>"),
+            "<bearer_security>": get_possible_options("bs", "<arg>"),
+            "<auth>": get_possible_options("ah", "<arg><sep><arg>"),
+            "<additional_responses>": get_possible_options("ar", "<arg>"),
+            "<additional_properties>": get_possible_options("ap", "<arg>"),
+            "<ws_router>": get_possible_options("wr", "<arg><sep><arg>"),
+            "<config_encoder>": get_possible_options("ce", "<arg>"),
             # UTILS
             "<r_mode>": ["get", "post", "websocket"],
             "<json>": ["<json_>", '"<json_>"', "'<json_>'"],
@@ -1417,6 +2625,18 @@ grammar_request_generic: Grammar = clean_up(
                 "-<get>",
                 "-<post>",
                 "-<alias>",
+                "-<custom_routes>",
+                "-<reused_param>",
+                "-<form_list>",
+                "-<media_type>",
+                "-<skip_defaults>",
+                "-<union_body>",
+                "-<bearer_security>",
+                "-<auth>",
+                "-<additional_responses>",
+                "-<additional_properties>",
+                "-<ws_router>",
+                "-<config_encoder>",
             ],
             # OPTIONS
             "<websocket>": get_possible_options("ws", "<arg><sep><arg>"),
@@ -1431,6 +2651,18 @@ grammar_request_generic: Grammar = clean_up(
             "<get>": get_possible_options("gs", "<arg><sep><arg>"),
             "<post>": get_possible_options("ps", "<arg><sep><arg>"),
             "<alias>": get_possible_options("a", "<arg>"),
+            "<custom_routes>": get_possible_options("cr", "<arg><sep><arg>"),
+            "<reused_param>": get_possible_options("rp", "<arg>"),
+            "<form_list>": get_possible_options("fl", "<arg>"),
+            "<media_type>": get_possible_options("mt", "<arg>"),
+            "<skip_defaults>": get_possible_options("sd", "<arg>"),
+            "<union_body>": get_possible_options("ub", "<arg>"),
+            "<bearer_security>": get_possible_options("bs", "<arg>"),
+            "<auth>": get_possible_options("ah", "<arg><sep><arg>"),
+            "<additional_responses>": get_possible_options("ar", "<arg>"),
+            "<additional_properties>": get_possible_options("ap", "<arg>"),
+            "<ws_router>": get_possible_options("wr", "<arg><sep><arg>"),
+            "<config_encoder>": get_possible_options("ce", "<arg>"),
         },
         **FLOAT,
     )

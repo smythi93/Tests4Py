@@ -1,9 +1,17 @@
 import abc
+import ast
+import json
 import os.path
+import random
+import string
+import subprocess
 from pathlib import Path
 from typing import List, Optional, Any, Tuple
 
 from tests4py.constants import PYTHON
+from tests4py.grammars import python
+from tests4py.grammars.default import clean_up
+from tests4py.grammars.fuzzer import Grammar, is_valid_grammar, srange
 from tests4py.projects import Project, Status, TestingFramework, TestStatus
 from tests4py.tests.generator import UnittestGenerator, SystemtestGenerator
 from tests4py.tests.utils import API, TestResult
@@ -24,6 +32,7 @@ class Ansible(Project):
         unittests: Optional[UnittestGenerator] = None,
         systemtests: Optional[SystemtestGenerator] = None,
         api: Optional[API] = None,
+        grammar: Optional[Grammar] = None,
         loc: int = 0,
         relevant_test_files: Optional[List[Path]] = None,
         skip_tests: Optional[List[str]] = None,
@@ -46,7 +55,7 @@ class Ansible(Project):
             unittests=unittests,
             systemtests=systemtests,
             api=api,
-            grammar=None,
+            grammar=grammar,
             loc=loc,
             setup=[[PYTHON, "-m", "pip", "install", "-e", "."]],
             source_base=[Path("lib", "ansible")],
@@ -82,6 +91,10 @@ def register():
             ),
         ],
         included_packages=["galaxy"],
+        api=Ansible1API(),
+        unittests=Ansible1UnittestGenerator(),
+        systemtests=Ansible1SystemtestGenerator(),
+        grammar=grammar_1,
         loc=55990,
     )
     Ansible(
@@ -94,6 +107,10 @@ def register():
             os.path.join("test", "units", "utils", "test_version.py::test_numeric"),
         ],
         included_packages=["utils"],
+        api=Ansible2API(),
+        unittests=Ansible2UnittestGenerator(),
+        systemtests=Ansible2SystemtestGenerator(),
+        grammar=grammar_2,
         loc=55936,
     )
     Ansible(
@@ -112,6 +129,10 @@ def register():
             ),
         ],
         included_packages=["module_utils"],
+        api=Ansible3API(),
+        unittests=Ansible3UnittestGenerator(),
+        systemtests=Ansible3SystemtestGenerator(),
+        grammar=grammar_3,
         loc=55902,
     )
     Ansible(
@@ -129,6 +150,10 @@ def register():
         ],
         relevant_test_files=[Path("test", "units", "playbook")],
         included_packages=["playbook"],
+        api=Ansible4API(),
+        unittests=Ansible4UnittestGenerator(),
+        systemtests=Ansible4SystemtestGenerator(),
+        grammar=grammar_4,
         loc=55805,
     )
     Ansible(
@@ -165,6 +190,10 @@ def register():
             )
         ],
         included_packages=["module_utils"],
+        api=Ansible5API(),
+        unittests=Ansible5UnittestGenerator(),
+        systemtests=Ansible5SystemtestGenerator(),
+        grammar=grammar_5,
         loc=55640,
     )
     Ansible(
@@ -196,7 +225,10 @@ def register():
             "test_build_requirement_from_path_no_version",
         ],
         included_packages=["galaxy"],
-        # test_status_fixed=TestStatus.FAILING,
+        api=Ansible6API(),
+        unittests=Ansible6UnittestGenerator(),
+        systemtests=Ansible6SystemtestGenerator(),
+        grammar=grammar_6,
         loc=718675,
     )
     Ansible(
@@ -236,6 +268,10 @@ def register():
         ],
         relevant_test_files=[Path("test", "units", "plugins", "shell")],
         included_packages=["plugins"],
+        api=Ansible8API(),
+        unittests=Ansible8UnittestGenerator(),
+        systemtests=Ansible8SystemtestGenerator(),
+        grammar=grammar_8,
         loc=718558,
     )
     Ansible(
@@ -272,6 +308,10 @@ def register():
             ),
         ],
         included_packages=["modules"],
+        api=Ansible9API(),
+        unittests=Ansible9UnittestGenerator(),
+        systemtests=Ansible9SystemtestGenerator(),
+        grammar=grammar_9,
         loc=718035,
     )
     Ansible(
@@ -296,6 +336,10 @@ def register():
             ),
         ],
         included_packages=["modules"],
+        api=Ansible10API(),
+        unittests=Ansible10UnittestGenerator(),
+        systemtests=Ansible10SystemtestGenerator(),
+        grammar=grammar_10,
         loc=717990,
     )
     Ansible(
@@ -325,6 +369,10 @@ def register():
         ],
         relevant_test_files=[Path("test", "units", "modules", "network", "ios")],
         included_packages=["modules"],
+        api=Ansible11API(),
+        unittests=Ansible11UnittestGenerator(),
+        systemtests=Ansible11SystemtestGenerator(),
+        grammar=grammar_11,
         loc=714515,
     )
     Ansible(
@@ -364,6 +412,10 @@ def register():
         ],
         relevant_test_files=[Path("test", "units", "plugins", "lookup")],
         included_packages=["plugins"],
+        api=Ansible12API(),
+        unittests=Ansible12UnittestGenerator(),
+        systemtests=Ansible12SystemtestGenerator(),
+        grammar=grammar_12,
         loc=714514,
     )
     Ansible(
@@ -380,6 +432,10 @@ def register():
             ),
         ],
         included_packages=["cli", "galaxy"],
+        api=Ansible13API(),
+        unittests=Ansible13UnittestGenerator(),
+        systemtests=Ansible13SystemtestGenerator(),
+        grammar=grammar_13,
         loc=711087,
     )
     Ansible(
@@ -396,6 +452,10 @@ def register():
             ),
         ],
         included_packages=["galaxy"],
+        api=Ansible14API(),
+        unittests=Ansible14UnittestGenerator(),
+        systemtests=Ansible14SystemtestGenerator(),
+        grammar=grammar_14,
         loc=705660,
     )
     Ansible(
@@ -416,6 +476,10 @@ def register():
             ),
         ],
         included_packages=["modules"],
+        api=Ansible15API(),
+        unittests=Ansible15UnittestGenerator(),
+        systemtests=Ansible15SystemtestGenerator(),
+        grammar=grammar_15,
         loc=701141,
     )
     Ansible(
@@ -452,6 +516,10 @@ def register():
             )
         ],
         included_packages=["module_utils"],
+        api=Ansible16API(),
+        unittests=Ansible16UnittestGenerator(),
+        systemtests=Ansible16SystemtestGenerator(),
+        grammar=grammar_16,
         loc=623199,
     )
     Ansible(
@@ -469,6 +537,10 @@ def register():
             ),
         ],
         included_packages=["module_utils"],
+        api=Ansible17API(),
+        unittests=Ansible17UnittestGenerator(),
+        systemtests=Ansible17SystemtestGenerator(),
+        grammar=grammar_17,
         loc=622794,
     )
     Ansible(
@@ -487,13 +559,2056 @@ def register():
             ),
         ],
         included_packages=["module_utils"],
+        api=Ansible3API(),
+        unittests=Ansible3UnittestGenerator(),
+        systemtests=Ansible3SystemtestGenerator(),
+        grammar=grammar_3,
         loc=55902,
     )
 
 
 class AnsibleAPI(API, abc.ABC):
-    def __init__(self, default_timeout: int = 5):
+    def __init__(self, default_timeout: int = 10):
         super().__init__(default_timeout=default_timeout)
 
     def oracle(self, args: Any) -> Tuple[TestResult, str]:
         return TestResult.UNDEFINED, ""
+
+
+# ======================================================================
+# bug_2: ansible.utils.version._Alpha / _Numeric implemented ``__gt__``
+# as ``not self.__lt__(other)``, so ``x > x`` (equal operands) wrongly
+# returned True instead of False.  The fix redefines ``__gt__`` as
+# ``not self.__le__(other)`` (and ``__ge__`` as ``not self.__lt__(other)``).
+#
+# System-test format:  ``<kind> <a> <b> <op>`` where ``<kind>`` is
+#   ``alpha`` (operands are strings) or ``numeric`` (operands are ints),
+#   and ``<op>`` is one of ``lt le gt ge eq ne``.  The harness builds the
+#   two wrapper objects and prints the boolean of ``a <op> b``; the oracle
+#   compares against the correct result computed with native comparison.
+#   The ONLY distinguishing case is ``gt`` on equal operands.
+# ======================================================================
+
+_VERSION_OPS = ("lt", "le", "gt", "ge", "eq", "ne")
+
+
+def _correct_version_cmp(kind: str, a: str, b: str, op: str) -> bool:
+    if kind == "numeric":
+        left, right = int(a), int(b)
+    else:
+        left, right = a, b
+    return {
+        "lt": left < right,
+        "le": left <= right,
+        "gt": left > right,
+        "ge": left >= right,
+        "eq": left == right,
+        "ne": left != right,
+    }[op]
+
+
+class Ansible2API(AnsibleAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            kind = process.args[2]
+            a = process.args[3]
+            b = process.args[4]
+            op = process.args[5]
+        except IndexError:
+            return TestResult.UNDEFINED, "Malformed test input"
+        try:
+            expected = _correct_version_cmp(kind, a, b, op)
+        except (ValueError, KeyError):
+            return TestResult.UNDEFINED, "Malformed test input"
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == str(expected):
+            return TestResult.PASSING, f"Expected {expected}"
+        return TestResult.FAILING, f"Expected {expected}, but was {out!r}"
+
+
+class Ansible2TestGenerator:
+    @staticmethod
+    def generate_word() -> str:
+        return "".join(
+            random.choices(string.ascii_lowercase, k=random.randint(1, 5))
+        )
+
+    @staticmethod
+    def generate_number() -> int:
+        return random.randint(0, 999)
+
+    def generate_operands(self, kind: str) -> Tuple[str, str]:
+        if kind == "numeric":
+            return str(self.generate_number()), str(self.generate_number())
+        return self.generate_word(), self.generate_word()
+
+    def make_failing(self) -> str:
+        # ``gt`` on EQUAL operands is the only case that distinguishes the
+        # buggy (`x > x` -> True) from the fixed (`x > x` -> False) build.
+        kind = random.choice(("alpha", "numeric"))
+        if kind == "numeric":
+            value = str(self.generate_number())
+        else:
+            value = self.generate_word()
+        return f"{kind} {value} {value} gt"
+
+    def make_passing(self) -> str:
+        # Distinct operands with any operator never trigger the fault.
+        kind = random.choice(("alpha", "numeric"))
+        while True:
+            a, b = self.generate_operands(kind)
+            if a != b:
+                break
+        op = random.choice(_VERSION_OPS)
+        return f"{kind} {a} {b} {op}"
+
+
+class Ansible2SystemtestGenerator(SystemtestGenerator, Ansible2TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return self.make_failing(), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return self.make_passing(), TestResult.PASSING
+
+
+class Ansible2UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Ansible2TestGenerator
+):
+    @staticmethod
+    def _body(kind: str, a: str, b: str, op: str) -> List[ast.stmt]:
+        expected = _correct_version_cmp(kind, a, b, op)
+        src = (
+            "from ansible.utils.version import _Alpha, _Numeric\n"
+            "ops = {'lt': lambda x, y: x < y, 'le': lambda x, y: x <= y, "
+            "'gt': lambda x, y: x > y, 'ge': lambda x, y: x >= y, "
+            "'eq': lambda x, y: x == y, 'ne': lambda x, y: x != y}\n"
+            f"kind, a, b, op = {kind!r}, {a!r}, {b!r}, {op!r}\n"
+            "if kind == 'numeric':\n"
+            "    left, right = _Numeric(int(a)), _Numeric(int(b))\n"
+            "else:\n"
+            "    left, right = _Alpha(a), _Alpha(b)\n"
+            f"self.assertEqual({expected!r}, ops[op](left, right))\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        kind = random.choice(("alpha", "numeric"))
+        value = (
+            str(self.generate_number())
+            if kind == "numeric"
+            else self.generate_word()
+        )
+        test = self.get_empty_test()
+        test.body = self._body(kind, value, value, "gt")
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        kind = random.choice(("alpha", "numeric"))
+        while True:
+            a, b = self.generate_operands(kind)
+            if a != b:
+                break
+        op = random.choice(_VERSION_OPS)
+        test = self.get_empty_test()
+        test.body = self._body(kind, a, b, op)
+        return test, TestResult.PASSING
+
+
+grammar_2: Grammar = clean_up(
+    {
+        "<start>": ["<alpha_test>", "<numeric_test>"],
+        "<alpha_test>": ["alpha <word> <word> <op>"],
+        "<numeric_test>": ["numeric <number> <number> <op>"],
+        "<word>": ["<letter><letters>"],
+        "<letters>": ["", "<letter><letters>"],
+        "<letter>": srange(string.ascii_lowercase),
+        "<number>": ["<digit><digits>"],
+        "<digits>": ["", "<digit><digits>"],
+        "<digit>": srange(string.digits),
+        "<op>": list(_VERSION_OPS),
+    }
+)
+
+assert is_valid_grammar(grammar_2)
+
+
+# ======================================================================
+# bug_5: module_utils.common.validation.check_required_arguments built the
+# "missing required arguments" error message from ``", ".join(missing)``
+# using the argument_spec's insertion order.  The fix joins
+# ``sorted(missing)`` so the message is deterministic (alphabetical).
+#
+# System-test format:  a space-separated list of REQUIRED argument names
+#   (all missing).  The harness builds an ``OrderedDict`` spec from those
+#   names, calls check_required_arguments with empty parameters and prints
+#   the raised message.  The oracle compares against the SORTED message.
+#   Names given in non-sorted order distinguish buggy from fixed.
+# ======================================================================
+
+
+class Ansible5API(AnsibleAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        names = [a for a in process.args[2:]]
+        if not names:
+            return TestResult.UNDEFINED, "Malformed test input"
+        expected = "missing required arguments: " + ", ".join(sorted(names))
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == expected:
+            return TestResult.PASSING, f"Expected {expected!r}"
+        return TestResult.FAILING, f"Expected {expected!r}, but was {out!r}"
+
+
+class Ansible5TestGenerator:
+    @staticmethod
+    def generate_name() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(2, 6)))
+
+    def generate_distinct_names(self, k: int) -> List[str]:
+        names = set()
+        while len(names) < k:
+            names.add(self.generate_name())
+        return list(names)
+
+    def make_failing(self) -> str:
+        # names in a NON-sorted order -> buggy keeps that order, fixed sorts
+        k = random.randint(2, 4)
+        names = self.generate_distinct_names(k)
+        while names == sorted(names):
+            random.shuffle(names)
+        return " ".join(names)
+
+    def make_passing(self) -> str:
+        # names already sorted -> buggy and fixed both emit the same message
+        k = random.randint(1, 4)
+        return " ".join(sorted(self.generate_distinct_names(k)))
+
+
+class Ansible5SystemtestGenerator(SystemtestGenerator, Ansible5TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return self.make_failing(), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return self.make_passing(), TestResult.PASSING
+
+
+class Ansible5UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Ansible5TestGenerator
+):
+    @staticmethod
+    def _body(names: List[str]) -> List[ast.stmt]:
+        expected = "missing required arguments: " + ", ".join(sorted(names))
+        src = (
+            "from collections import OrderedDict\n"
+            "from ansible.module_utils.common.validation import "
+            "check_required_arguments\n"
+            "from ansible.module_utils._text import to_native\n"
+            f"names = {names!r}\n"
+            "spec = OrderedDict((n, {'required': True}) for n in names)\n"
+            "try:\n"
+            "    check_required_arguments(spec, {})\n"
+            "    msg = 'NO_ERROR'\n"
+            "except TypeError as e:\n"
+            "    msg = to_native(e)\n"
+            f"self.assertEqual({expected!r}, msg)\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        k = random.randint(2, 4)
+        names = self.generate_distinct_names(k)
+        while names == sorted(names):
+            random.shuffle(names)
+        test = self.get_empty_test()
+        test.body = self._body(names)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        k = random.randint(1, 4)
+        names = sorted(self.generate_distinct_names(k))
+        test = self.get_empty_test()
+        test.body = self._body(names)
+        return test, TestResult.PASSING
+
+
+grammar_5: Grammar = clean_up(
+    {
+        "<start>": ["<names>"],
+        "<names>": ["<word>", "<word> <names>"],
+        "<word>": ["<letter><letters>"],
+        "<letters>": ["", "<letter><letters>"],
+        "<letter>": srange(string.ascii_lowercase),
+    }
+)
+
+assert is_valid_grammar(grammar_5)
+
+
+# ======================================================================
+# bug_8: plugins.shell.powershell.ShellModule.join_path split every part
+# on backslash and dropped empty components, so a UNC path lost its
+# leading ``\\`` (e.g. ``\\host\share\...`` became ``host\share\...``).
+# The fix rebuilds the path with ``ntpath.normpath``/``ntpath.join``.
+#
+# System-test format:  a space-separated list of path components using
+#   FORWARD slashes (shlex-safe).  A leading ``//host/share/...`` component
+#   is a UNC path (the trigger); plain relative components are unaffected.
+#   The harness prints ``ShellModule().join_path(*parts)`` and the oracle
+#   compares it to the correct ntpath-based composition.
+# ======================================================================
+
+
+def _correct_join_path(parts: List[str]) -> str:
+    import ntpath
+
+    normed = [ntpath.normpath(p) for p in parts]
+    return ntpath.join(normed[0], *[p.strip("\\") for p in normed[1:]])
+
+
+class Ansible8API(AnsibleAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        parts = [a for a in process.args[2:]]
+        if not parts:
+            return TestResult.UNDEFINED, "Malformed test input"
+        try:
+            expected = _correct_join_path(parts)
+        except Exception:
+            return TestResult.UNDEFINED, "Malformed test input"
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == expected:
+            return TestResult.PASSING, f"Expected {expected!r}"
+        return TestResult.FAILING, f"Expected {expected!r}, but was {out!r}"
+
+
+class Ansible8TestGenerator:
+    @staticmethod
+    def _seg() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(3, 6)))
+
+    def _relative_arg(self) -> str:
+        return "/".join(self._seg() for _ in range(random.randint(1, 3)))
+
+    def make_failing_args(self) -> List[str]:
+        host, share = self._seg(), self._seg()
+        first = (
+            "//"
+            + host
+            + "/"
+            + share
+            + "/"
+            + "/".join(self._seg() for _ in range(random.randint(1, 2)))
+        )
+        rest = [self._relative_arg() for _ in range(random.randint(1, 3))]
+        return [first] + rest
+
+    def make_passing_args(self) -> List[str]:
+        return [self._relative_arg() for _ in range(random.randint(2, 4))]
+
+
+class Ansible8SystemtestGenerator(SystemtestGenerator, Ansible8TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return " ".join(self.make_failing_args()), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return " ".join(self.make_passing_args()), TestResult.PASSING
+
+
+class Ansible8UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Ansible8TestGenerator
+):
+    @staticmethod
+    def _body(args: List[str]) -> List[ast.stmt]:
+        src = (
+            "import ntpath\n"
+            "from ansible.plugins.shell.powershell import ShellModule\n"
+            f"args = {args!r}\n"
+            "normed = [ntpath.normpath(a) for a in args]\n"
+            "expected = ntpath.join(normed[0], "
+            "*[p.strip(chr(92)) for p in normed[1:]])\n"
+            "self.assertEqual(expected, ShellModule().join_path(*args))\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body(self.make_failing_args())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body(self.make_passing_args())
+        return test, TestResult.PASSING
+
+
+grammar_8: Grammar = clean_up(
+    {
+        "<start>": ["<tokens>"],
+        "<tokens>": ["<token>", "<token> <tokens>"],
+        "<token>": ["<char><chars>"],
+        "<chars>": ["", "<char><chars>"],
+        "<char>": srange(string.ascii_lowercase) + ["/"],
+    }
+)
+
+assert is_valid_grammar(grammar_8)
+
+
+# ======================================================================
+# bug_10: modules.system.pamd.PamdService.remove crashed when deleting the
+# LAST rule in the linked list: it unconditionally executed
+# ``current_line.next.prev = current_line.prev`` even when ``next`` was
+# ``None`` -> AttributeError.  The fix guards ``if current_line.next is not
+# None`` (and initialises ``prev``/``next`` on PamdRule).
+#
+# System-test format:  ``<idx> <rule> <rule> ...`` where each ``<rule>`` is
+#   ``type:control:path`` (colon-separated, no spaces) and ``<idx>`` is the
+#   index of the rule to remove.  The harness builds a PamdService, removes
+#   that rule, and prints ``OK`` on success or ``ERROR:<Exc>``.  Removing
+#   the LAST rule triggers the fault; the oracle expects ``OK``.
+# ======================================================================
+
+
+class Ansible10API(AnsibleAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        if len(process.args) < 4:
+            return TestResult.UNDEFINED, "Malformed test input"
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == "OK":
+            return TestResult.PASSING, "Rule removed successfully"
+        return TestResult.FAILING, f"Expected 'OK', but was {out!r}"
+
+
+class Ansible10TestGenerator:
+    _TYPES = ("auth", "account", "session", "password")
+    _CONTROLS = ("required", "sufficient", "optional", "requisite")
+
+    @staticmethod
+    def _word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(3, 6)))
+
+    def _rules(self, n: int) -> List[Tuple[str, str, str]]:
+        used = set()
+        rules = []
+        while len(rules) < n:
+            path = "pam" + self._word() + ".so"
+            if path in used:
+                continue
+            used.add(path)
+            rules.append(
+                (random.choice(self._TYPES), random.choice(self._CONTROLS), path)
+            )
+        return rules
+
+    def make_failing(self) -> Tuple[int, List[Tuple[str, str, str]]]:
+        n = random.randint(2, 5)
+        rules = self._rules(n)
+        return n - 1, rules  # remove the LAST rule -> triggers the fault
+
+    def make_passing(self) -> Tuple[int, List[Tuple[str, str, str]]]:
+        n = random.randint(3, 6)
+        rules = self._rules(n)
+        return random.randint(1, n - 2), rules  # remove a MIDDLE rule
+
+
+def _format_pamd_system(idx: int, rules: List[Tuple[str, str, str]]) -> str:
+    return f"{idx} " + " ".join(":".join(r) for r in rules)
+
+
+class Ansible10SystemtestGenerator(SystemtestGenerator, Ansible10TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        idx, rules = self.make_failing()
+        return _format_pamd_system(idx, rules), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        idx, rules = self.make_passing()
+        return _format_pamd_system(idx, rules), TestResult.PASSING
+
+
+class Ansible10UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Ansible10TestGenerator
+):
+    @staticmethod
+    def _body(idx: int, rules: List[Tuple[str, str, str]]) -> List[ast.stmt]:
+        rules_list = [list(r) for r in rules]
+        src = (
+            "from ansible.modules.system.pamd import PamdService\n"
+            f"rules = {rules_list!r}\n"
+            f"idx = {idx}\n"
+            "content = chr(10).join(' '.join(r) for r in rules)\n"
+            "svc = PamdService(content)\n"
+            "t, c, p = rules[idx]\n"
+            "try:\n"
+            "    changed = svc.remove(t, c, p)\n"
+            "    result = 'OK' if (changed and not svc.has_rule(t, c, p)) "
+            "else 'FAIL'\n"
+            "except Exception as e:\n"
+            "    result = 'ERROR:' + type(e).__name__\n"
+            "self.assertEqual('OK', result)\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        idx, rules = self.make_failing()
+        test = self.get_empty_test()
+        test.body = self._body(idx, rules)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        idx, rules = self.make_passing()
+        test = self.get_empty_test()
+        test.body = self._body(idx, rules)
+        return test, TestResult.PASSING
+
+
+grammar_10: Grammar = clean_up(
+    {
+        "<start>": ["<chars>"],
+        "<chars>": ["", "<char><chars>"],
+        "<char>": srange(string.ascii_lowercase + string.digits + " :._"),
+    }
+)
+
+assert is_valid_grammar(grammar_10)
+
+
+# ======================================================================
+# bug_3 / bug_18 (same commit): module_utils.facts.system.distribution
+# .DistributionFiles.parse_distribution_file_Debian only recognised Kali
+# from ``/etc/lsb-release`` (``elif path == '/etc/lsb-release' and 'Kali'
+# in data``).  Kali 2020.2 ships its identity in ``/etc/os-release``, so
+# detection failed.  The fix accepts both ``/etc/lsb-release`` and
+# ``/etc/os-release``.
+#
+# System-test format:  ``<distro> <path> <version>`` where ``<distro>`` is
+#   ``kali``/``ubuntu``/``steamos``, ``<path>`` is ``os``/``lsb`` and
+#   ``<version>`` is a version string.  The harness builds a minimal
+#   os-/lsb-release blob, calls the parser and prints ``<matched>
+#   <distribution>``.  ``kali os`` distinguishes buggy (``False None``)
+#   from fixed (``True Kali``); the oracle expects the fixed result.
+# ======================================================================
+
+_DISTRO_NAMES = {"kali": "Kali", "ubuntu": "Ubuntu", "steamos": "SteamOS"}
+
+
+class Ansible3API(AnsibleAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            distro = process.args[2]
+        except IndexError:
+            return TestResult.UNDEFINED, "Malformed test input"
+        if distro not in _DISTRO_NAMES:
+            return TestResult.UNDEFINED, "Malformed test input"
+        expected = f"True {_DISTRO_NAMES[distro]}"
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == expected:
+            return TestResult.PASSING, f"Expected {expected!r}"
+        return TestResult.FAILING, f"Expected {expected!r}, but was {out!r}"
+
+
+class Ansible3TestGenerator:
+    @staticmethod
+    def generate_version() -> str:
+        return f"{random.randint(2000, 2099)}.{random.randint(0, 9)}"
+
+    def make_failing(self) -> str:
+        # kali advertised via /etc/os-release: buggy fails to detect it
+        return f"kali os {self.generate_version()}"
+
+    def make_passing(self) -> str:
+        # every other combination detects identically on both builds
+        distro = random.choice(("kali", "ubuntu", "steamos"))
+        if distro == "kali":
+            path = "lsb"
+        else:
+            path = random.choice(("os", "lsb"))
+        return f"{distro} {path} {self.generate_version()}"
+
+
+class Ansible3SystemtestGenerator(SystemtestGenerator, Ansible3TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return self.make_failing(), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return self.make_passing(), TestResult.PASSING
+
+
+class Ansible3UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Ansible3TestGenerator
+):
+    @staticmethod
+    def _body(distro: str, path_kind: str, version: str) -> List[ast.stmt]:
+        expected = f"True {_DISTRO_NAMES[distro]}"
+        src = (
+            "from ansible.module_utils.facts.system.distribution import "
+            "DistributionFiles\n"
+            f"distro, path_kind, version = {distro!r}, {path_kind!r}, {version!r}\n"
+            "if distro == 'kali':\n"
+            "    data = 'NAME=\"Kali GNU/Linux Rolling\" VERSION=\"' + version + '\"'\n"
+            "elif distro == 'ubuntu':\n"
+            "    data = 'NAME=\"Ubuntu\" VERSION=\"' + version + '\"'\n"
+            "else:\n"
+            "    data = 'NAME=\"SteamOS\" VERSION=\"' + version + '\"'\n"
+            "path = '/etc/os-release' if path_kind == 'os' else '/etc/lsb-release'\n"
+            "df = DistributionFiles(module=None)\n"
+            "matched, facts = df.parse_distribution_file_Debian("
+            "distro, data, path, {'distribution_release': 'NA'})\n"
+            "result = '%s %s' % (matched, facts.get('distribution'))\n"
+            f"self.assertEqual({expected!r}, result)\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("kali", "os", self.generate_version())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        distro = random.choice(("kali", "ubuntu", "steamos"))
+        path_kind = "lsb" if distro == "kali" else random.choice(("os", "lsb"))
+        test = self.get_empty_test()
+        test.body = self._body(distro, path_kind, self.generate_version())
+        return test, TestResult.PASSING
+
+
+grammar_3: Grammar = clean_up(
+    {
+        "<start>": ["<distro> <path> <version>"],
+        "<distro>": ["kali", "ubuntu", "steamos"],
+        "<path>": ["os", "lsb"],
+        "<version>": ["<vchar><vchars>"],
+        "<vchars>": ["", "<vchar><vchars>"],
+        "<vchar>": srange(string.digits) + ["."],
+    }
+)
+
+assert is_valid_grammar(grammar_3)
+
+
+# ======================================================================
+# bug_16: module_utils.facts.hardware.linux.LinuxHardware.get_cpu_facts
+# only forced the ``processor`` count for ARM systems
+# (``startswith(('armv', 'aarch'))``).  On Power (ppc) cpuinfo lists both
+# ``processor`` and ``cpu`` entries, so the processor count was doubled.
+# The fix adds ``'ppc'`` to the prefix tuple.
+#
+# System-test format:  ``<arch> <n>`` where ``<arch>`` is a CPU
+#   architecture and ``<n>`` the number of processors.  The harness builds
+#   a synthetic cpuinfo (Power-style for ppc, Intel-style otherwise),
+#   patches the file readers, and prints ``processor_count``.  A ``ppc*``
+#   architecture doubles the count on the buggy build; the oracle expects
+#   the correct value ``n``.
+# ======================================================================
+
+
+class Ansible16API(AnsibleAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            n = int(process.args[3])
+        except (IndexError, ValueError):
+            return TestResult.UNDEFINED, "Malformed test input"
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == str(n):
+            return TestResult.PASSING, f"Expected processor_count={n}"
+        return TestResult.FAILING, f"Expected processor_count={n}, but was {out!r}"
+
+
+class Ansible16TestGenerator:
+    _PPC = ("ppc64", "ppc64le", "ppc")
+    _OTHER = ("x86_64", "i386", "amd64")
+
+    @staticmethod
+    def generate_n() -> int:
+        return random.randint(2, 8)
+
+    def make_failing(self) -> str:
+        return f"{random.choice(self._PPC)} {self.generate_n()}"
+
+    def make_passing(self) -> str:
+        return f"{random.choice(self._OTHER)} {self.generate_n()}"
+
+
+class Ansible16SystemtestGenerator(SystemtestGenerator, Ansible16TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return self.make_failing(), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return self.make_passing(), TestResult.PASSING
+
+
+class Ansible16UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Ansible16TestGenerator
+):
+    @staticmethod
+    def _body(arch: str, n: int) -> List[ast.stmt]:
+        src = (
+            "from unittest import mock\n"
+            "from ansible.module_utils.facts.hardware import linux\n"
+            f"arch, n = {arch!r}, {n}\n"
+            "lines = []\n"
+            "if arch.startswith(('ppc', 'powerpc')):\n"
+            "    for k in range(n):\n"
+            "        lines.append('processor : %d' % k)\n"
+            "        lines.append('cpu : POWER8 (architected), altivec supported')\n"
+            "    lines.append('timebase : 512000000')\n"
+            "else:\n"
+            "    for k in range(n):\n"
+            "        lines.append('processor : %d' % k)\n"
+            "        lines.append('vendor_id : GenuineIntel')\n"
+            "        lines.append('model name : Intel(R) Xeon(R) CPU')\n"
+            "inst = linux.LinuxHardware(mock.Mock())\n"
+            "with mock.patch('os.path.exists', return_value=False), "
+            "mock.patch('os.access', return_value=True), "
+            "mock.patch('ansible.module_utils.facts.hardware.linux."
+            "get_file_lines', side_effect=[[], lines]):\n"
+            "    facts = inst.get_cpu_facts("
+            "collected_facts={'ansible_architecture': arch})\n"
+            "self.assertEqual(n, facts.get('processor_count'))\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        arch = random.choice(self._PPC)
+        test = self.get_empty_test()
+        test.body = self._body(arch, self.generate_n())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        arch = random.choice(self._OTHER)
+        test = self.get_empty_test()
+        test.body = self._body(arch, self.generate_n())
+        return test, TestResult.PASSING
+
+
+grammar_16: Grammar = clean_up(
+    {
+        "<start>": ["<arch> <n>"],
+        "<arch>": ["ppc64", "ppc64le", "ppc", "x86_64", "i386", "amd64"],
+        "<n>": ["<digit><digits>"],
+        "<digits>": ["", "<digit><digits>"],
+        "<digit>": srange(string.digits),
+    }
+)
+
+assert is_valid_grammar(grammar_16)
+
+
+# ======================================================================
+# bug_15: modules.network.eos.eos_eapi.map_obj_to_commands guarded the
+# state (shutdown / no shutdown) command with ``if needs_update('state')
+# and not needs_update('vrf')``.  When BOTH state and vrf changed, the
+# state command was dropped.  The fix uses ``if needs_update('state')``.
+#
+# System-test format:  ``<want_state> <want_vrf> <have_state> <have_vrf>``
+#   where each field is ``started``/``stopped``/``none`` (states) or a vrf
+#   name / ``none``.  The harness builds want/have dicts (all protocol keys
+#   None) and prints the ``|``-joined command list.  A case where state and
+#   vrf both need updating distinguishes buggy from fixed; the oracle
+#   compares against the correct command list.
+# ======================================================================
+
+_EOS_KEYS = (
+    "http",
+    "http_port",
+    "https",
+    "https_port",
+    "local_http",
+    "local_http_port",
+    "socket",
+)
+
+
+def _eos_val(token: str) -> Optional[str]:
+    return None if token == "none" else token
+
+
+def _correct_eos_commands(ws, wv, hs, hv) -> List[str]:
+    commands: List[str] = []
+
+    def needs(w, h):
+        return w is not None and w != h
+
+    def add(cmd):
+        if "management api http-commands" not in commands:
+            commands.insert(0, "management api http-commands")
+        commands.append(cmd)
+
+    if needs(ws, hs):  # fixed: guarded on state only
+        if ws == "stopped":
+            add("shutdown")
+        elif ws == "started":
+            add("no shutdown")
+    if needs(wv, hv):
+        add("vrf %s" % wv)
+        if ws == "stopped":
+            add("shutdown")
+        elif ws == "started":
+            add("no shutdown")
+    return commands
+
+
+class Ansible15API(AnsibleAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            ws, wv, hs, hv = (_eos_val(process.args[i]) for i in range(2, 6))
+        except IndexError:
+            return TestResult.UNDEFINED, "Malformed test input"
+        expected = "|".join(_correct_eos_commands(ws, wv, hs, hv))
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == expected:
+            return TestResult.PASSING, f"Expected {expected!r}"
+        return TestResult.FAILING, f"Expected {expected!r}, but was {out!r}"
+
+
+class Ansible15TestGenerator:
+    @staticmethod
+    def _vrf_word() -> str:
+        while True:
+            w = "".join(
+                random.choices(string.ascii_lowercase, k=random.randint(3, 6))
+            )
+            if w not in ("none", "started", "stopped"):
+                return w
+
+    def make_failing(self) -> str:
+        # both state and vrf need updating -> buggy drops the state command
+        ws = random.choice(("started", "stopped"))
+        hs = "stopped" if ws == "started" else "started"
+        return f"{ws} {self._vrf_word()} {hs} none"
+
+    def make_passing(self) -> str:
+        if random.random() < 0.5:
+            # state-only change (vrf unchanged)
+            ws = random.choice(("started", "stopped"))
+            hs = "stopped" if ws == "started" else "started"
+            return f"{ws} none {hs} none"
+        # vrf-only change (state not updated)
+        wv = self._vrf_word()
+        hs = random.choice(("started", "stopped"))
+        return f"none {wv} {hs} none"
+
+
+class Ansible15SystemtestGenerator(SystemtestGenerator, Ansible15TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return self.make_failing(), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return self.make_passing(), TestResult.PASSING
+
+
+class Ansible15UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Ansible15TestGenerator
+):
+    @staticmethod
+    def _body(ws, wv, hs, hv) -> List[ast.stmt]:
+        expected = "|".join(
+            _correct_eos_commands(_eos_val(ws), _eos_val(wv), _eos_val(hs), _eos_val(hv))
+        )
+        src = (
+            "from ansible.modules.network.eos.eos_eapi import map_obj_to_commands\n"
+            f"keys = {list(_EOS_KEYS)!r}\n"
+            f"ws, wv, hs, hv = {ws!r}, {wv!r}, {hs!r}, {hv!r}\n"
+            "def val(x):\n"
+            "    return None if x == 'none' else x\n"
+            "want = {k: None for k in keys}\n"
+            "want['state'], want['vrf'] = val(ws), val(wv)\n"
+            "have = {k: None for k in keys}\n"
+            "have['state'], have['vrf'] = val(hs), val(hv)\n"
+            "commands = map_obj_to_commands((want, have), None, [])\n"
+            f"self.assertEqual({expected!r}, '|'.join(commands))\n"
+        )
+        return ast.parse(src).body
+
+    def _fields_failing(self):
+        ws = random.choice(("started", "stopped"))
+        hs = "stopped" if ws == "started" else "started"
+        return ws, self._vrf_word(), hs, "none"
+
+    def _fields_passing(self):
+        if random.random() < 0.5:
+            ws = random.choice(("started", "stopped"))
+            hs = "stopped" if ws == "started" else "started"
+            return ws, "none", hs, "none"
+        return "none", self._vrf_word(), random.choice(("started", "stopped")), "none"
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body(*self._fields_failing())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body(*self._fields_passing())
+        return test, TestResult.PASSING
+
+
+grammar_15: Grammar = clean_up(
+    {
+        "<start>": ["<state> <vrf> <state> <vrf>"],
+        "<state>": ["started", "stopped", "none"],
+        "<vrf>": ["none", "<word>"],
+        "<word>": ["<letter><letters>"],
+        "<letters>": ["", "<letter><letters>"],
+        "<letter>": srange(string.ascii_lowercase),
+    }
+)
+
+assert is_valid_grammar(grammar_15)
+
+
+# ======================================================================
+# bug_17: module_utils.facts.hardware.linux.LinuxHardware.get_mount_facts
+# used the raw mtab fields, so octal escape sequences (e.g. a space
+# encoded as ``\040`` in a mount path) were never decoded.  The fix adds
+# ``_replace_octal_escapes`` and applies it to every mtab field.
+#
+# System-test format:  ``<mode> <name1> <name2>`` where ``<mode>`` is
+#   ``esc`` (mount path ``/mnt/<name1>\040<name2>`` -- the trigger) or
+#   ``plain`` (``/mnt/<name1><name2>``).  The harness mocks the mtab/uuid
+#   helpers, runs get_mount_facts and prints the resulting mount path.
+#   The oracle expects the decoded path (space for ``esc``).
+# ======================================================================
+
+
+class Ansible17API(AnsibleAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            mode = process.args[2]
+            name1 = process.args[3]
+            name2 = process.args[4]
+        except IndexError:
+            return TestResult.UNDEFINED, "Malformed test input"
+        if mode == "esc":
+            expected = f"/mnt/{name1} {name2}"
+        else:
+            expected = f"/mnt/{name1}{name2}"
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == expected:
+            return TestResult.PASSING, f"Expected {expected!r}"
+        return TestResult.FAILING, f"Expected {expected!r}, but was {out!r}"
+
+
+class Ansible17TestGenerator:
+    @staticmethod
+    def _word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(3, 6)))
+
+    def make_failing(self) -> str:
+        return f"esc {self._word()} {self._word()}"
+
+    def make_passing(self) -> str:
+        return f"plain {self._word()} {self._word()}"
+
+
+class Ansible17SystemtestGenerator(SystemtestGenerator, Ansible17TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return self.make_failing(), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return self.make_passing(), TestResult.PASSING
+
+
+class Ansible17UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Ansible17TestGenerator
+):
+    @staticmethod
+    def _body(mode: str, name1: str, name2: str) -> List[ast.stmt]:
+        if mode == "esc":
+            expected = f"/mnt/{name1} {name2}"
+        else:
+            expected = f"/mnt/{name1}{name2}"
+        src = (
+            "from unittest import mock\n"
+            "from ansible.module_utils.facts.hardware import linux\n"
+            f"mode, name1, name2 = {mode!r}, {name1!r}, {name2!r}\n"
+            "if mode == 'esc':\n"
+            "    mount_raw = '/mnt/' + name1 + chr(92) + '040' + name2\n"
+            "else:\n"
+            "    mount_raw = '/mnt/' + name1 + name2\n"
+            "entries = [['/dev/sdz', mount_raw, 'ext4', 'rw,relatime', '0', '0']]\n"
+            "lh = linux.LinuxHardware(module=mock.Mock(), load_on_init=False)\n"
+            "with mock.patch.object(linux.LinuxHardware, '_mtab_entries', "
+            "return_value=entries), mock.patch.object(linux.LinuxHardware, "
+            "'_find_bind_mounts', return_value=[]), mock.patch.object("
+            "linux.LinuxHardware, '_lsblk_uuid', return_value={}), "
+            "mock.patch.object(linux.LinuxHardware, '_udevadm_uuid', "
+            "return_value=''):\n"
+            "    result = lh.get_mount_facts()\n"
+            "mounts = result['mounts']\n"
+            "actual = mounts[0]['mount'] if mounts else 'NO_MOUNT'\n"
+            f"self.assertEqual({expected!r}, actual)\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("esc", self._word(), self._word())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("plain", self._word(), self._word())
+        return test, TestResult.PASSING
+
+
+grammar_17: Grammar = clean_up(
+    {
+        "<start>": ["<mode> <word> <word>"],
+        "<mode>": ["esc", "plain"],
+        "<word>": ["<letter><letters>"],
+        "<letters>": ["", "<letter><letters>"],
+        "<letter>": srange(string.ascii_lowercase),
+    }
+)
+
+assert is_valid_grammar(grammar_17)
+
+
+# ======================================================================
+# bug_4: playbook.collectionsearch.CollectionSearch._load_collections did
+# not warn when a collection name was actually a Jinja template (which is
+# not supported).  The fix iterates the collection names and emits a
+# ``display.warning('"collections" is not templatable ...')`` for each
+# templated entry.
+#
+# System-test format:  a single collection name token.  A templated name
+#   (contains ``{{ }}``) must produce the warning; a plain name must not.
+#   The harness calls ``_load_collections`` capturing stderr and prints
+#   ``WARN``/``NOWARN``.  The oracle expects ``WARN`` iff the name is a
+#   template.
+# ======================================================================
+
+
+class Ansible4API(AnsibleAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            name = process.args[2]
+        except IndexError:
+            return TestResult.UNDEFINED, "Malformed test input"
+        expected = "WARN" if ("{{" in name and "}}" in name) else "NOWARN"
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == expected:
+            return TestResult.PASSING, f"Expected {expected}"
+        return TestResult.FAILING, f"Expected {expected}, but was {out!r}"
+
+
+class Ansible4TestGenerator:
+    @staticmethod
+    def _word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(3, 6)))
+
+    def make_failing(self) -> str:
+        if random.random() < 0.5:
+            return f"{self._word()}.{{{{{self._word()}}}}}"
+        return f"{{{{{self._word()}}}}}"
+
+    def make_passing(self) -> str:
+        if random.random() < 0.5:
+            return f"{self._word()}.{self._word()}"
+        return self._word()
+
+
+class Ansible4SystemtestGenerator(SystemtestGenerator, Ansible4TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return self.make_failing(), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return self.make_passing(), TestResult.PASSING
+
+
+class Ansible4UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Ansible4TestGenerator
+):
+    @staticmethod
+    def _body(name: str) -> List[ast.stmt]:
+        expected = "WARN" if ("{{" in name and "}}" in name) else "NOWARN"
+        src = (
+            "import io, contextlib\n"
+            "from ansible.playbook.collectionsearch import CollectionSearch\n"
+            f"name = {name!r}\n"
+            "cs = CollectionSearch()\n"
+            "buf = io.StringIO()\n"
+            "with contextlib.redirect_stderr(buf):\n"
+            "    result = cs._load_collections(None, [name])\n"
+            "err = buf.getvalue()\n"
+            "actual = 'WARN' if (('is not templatable' in err) and "
+            "(name in err)) else 'NOWARN'\n"
+            f"self.assertEqual({expected!r}, actual)\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body(self.make_failing())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body(self.make_passing())
+        return test, TestResult.PASSING
+
+
+grammar_4: Grammar = clean_up(
+    {
+        "<start>": ["<word>.{{<word>}}", "{{<word>}}", "<word>.<word>", "<word>"],
+        "<word>": ["<letter><letters>"],
+        "<letters>": ["", "<letter><letters>"],
+        "<letter>": srange(string.ascii_lowercase),
+    }
+)
+
+assert is_valid_grammar(grammar_4)
+
+
+# ======================================================================
+# bug_11: modules.network.ios.ios_banner.map_obj_to_commands built the
+# banner command with ``want['text'].strip()``, stripping ALL surrounding
+# whitespace (including significant leading/trailing spaces).  The fix uses
+# ``want['text'].strip('\n')`` so only newlines are removed.
+#
+# System-test format:  ``<mode> <word>`` where ``<mode>`` is ``pad``
+#   (text = ``"  <word>  "`` -- the trigger), ``nl`` (newline padded) or
+#   ``plain``.  The harness calls map_obj_to_commands and prints the banner
+#   command.  The oracle expects the command built with ``strip('\n')``.
+# ======================================================================
+
+
+def _ios_build_text(mode: str, word: str) -> str:
+    if mode == "pad":
+        return "  " + word + "  "
+    if mode == "nl":
+        return "\n" + word + "\n"
+    return word
+
+
+class Ansible11API(AnsibleAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            mode = process.args[2]
+            word = process.args[3]
+        except IndexError:
+            return TestResult.UNDEFINED, "Malformed test input"
+        text = _ios_build_text(mode, word)
+        expected = "banner login @\n" + text.strip("\n") + "\n@"
+        out = process.stdout.decode("utf8").rstrip("\n")
+        if process.returncode == 0 and out == expected:
+            return TestResult.PASSING, "Banner command matches"
+        return TestResult.FAILING, f"Expected {expected!r}, but was {out!r}"
+
+
+class Ansible11TestGenerator:
+    @staticmethod
+    def _word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(3, 6)))
+
+    def make_failing(self) -> str:
+        return f"pad {self._word()}"
+
+    def make_passing(self) -> str:
+        return f"{random.choice(('nl', 'plain'))} {self._word()}"
+
+
+class Ansible11SystemtestGenerator(SystemtestGenerator, Ansible11TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return self.make_failing(), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return self.make_passing(), TestResult.PASSING
+
+
+class Ansible11UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Ansible11TestGenerator
+):
+    @staticmethod
+    def _body(mode: str, word: str) -> List[ast.stmt]:
+        text = _ios_build_text(mode, word)
+        expected = "banner login @\n" + text.strip("\n") + "\n@"
+        src = (
+            "from types import SimpleNamespace\n"
+            "from ansible.modules.network.ios.ios_banner import "
+            "map_obj_to_commands\n"
+            f"mode, word = {mode!r}, {word!r}\n"
+            "if mode == 'pad':\n"
+            "    text = '  ' + word + '  '\n"
+            "elif mode == 'nl':\n"
+            "    text = chr(10) + word + chr(10)\n"
+            "else:\n"
+            "    text = word\n"
+            "module = SimpleNamespace(params={'state': 'present', "
+            "'banner': 'login'})\n"
+            "cmds = map_obj_to_commands(({'text': text}, {'text': None}), module)\n"
+            "actual = cmds[0] if cmds else 'NONE'\n"
+            f"self.assertEqual({expected!r}, actual)\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("pad", self._word())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body(random.choice(("nl", "plain")), self._word())
+        return test, TestResult.PASSING
+
+
+grammar_11: Grammar = clean_up(
+    {
+        "<start>": ["<mode> <word>"],
+        "<mode>": ["pad", "nl", "plain"],
+        "<word>": ["<letter><letters>"],
+        "<letters>": ["", "<letter><letters>"],
+        "<letter>": srange(string.ascii_lowercase),
+    }
+)
+
+assert is_valid_grammar(grammar_11)
+
+
+# ======================================================================
+# bug_12: plugins.lookup.env.LookupModule.run read variables with
+# ``os.getenv(var, '')`` instead of the encoding-aware
+# ``py3compat.environ.get(var, '')``.  The fix routes the lookup through
+# ``ansible.utils.py3compat.environ``.
+#
+# System-test format:  ``<mode> <var> <value>`` where ``<mode>`` is
+#   ``patch`` (patch ``py3compat.environ.get`` to return ``<value>`` with
+#   ``<var>`` absent from os.environ -- buggy still reads os.getenv and
+#   returns '') or ``real`` (set the real env var).  The harness runs the
+#   env lookup and prints the value; the oracle expects ``<value>``.
+# ======================================================================
+
+
+class Ansible12API(AnsibleAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            value = process.args[4]
+        except IndexError:
+            return TestResult.UNDEFINED, "Malformed test input"
+        out = process.stdout.decode("utf8").rstrip("\n")
+        if process.returncode == 0 and out == value:
+            return TestResult.PASSING, f"Expected {value!r}"
+        return TestResult.FAILING, f"Expected {value!r}, but was {out!r}"
+
+
+class Ansible12TestGenerator:
+    @staticmethod
+    def _word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(3, 7)))
+
+    def make_failing(self) -> str:
+        return f"patch {self._word()} {self._word()}"
+
+    def make_passing(self) -> str:
+        return f"real {self._word()} {self._word()}"
+
+
+class Ansible12SystemtestGenerator(SystemtestGenerator, Ansible12TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return self.make_failing(), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return self.make_passing(), TestResult.PASSING
+
+
+class Ansible12UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Ansible12TestGenerator
+):
+    @staticmethod
+    def _body(mode: str, var: str, value: str) -> List[ast.stmt]:
+        src = (
+            "import os\n"
+            "from unittest import mock\n"
+            "import ansible.utils.py3compat as py3compat\n"
+            "from ansible.plugins.loader import lookup_loader\n"
+            f"mode, var, value = {mode!r}, {var!r}, {value!r}\n"
+            "env_lookup = lookup_loader.get('env')\n"
+            "if mode == 'patch':\n"
+            "    os.environ.pop(var, None)\n"
+            "    with mock.patch.object(py3compat.environ, 'get', "
+            "lambda x, y=None: value):\n"
+            "        retval = env_lookup.run([var], None)\n"
+            "else:\n"
+            "    os.environ[var] = value\n"
+            "    retval = env_lookup.run([var], None)\n"
+            "actual = retval[0] if retval else 'EMPTY'\n"
+            "self.assertEqual(value, actual)\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("patch", self._word(), self._word())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("real", self._word(), self._word())
+        return test, TestResult.PASSING
+
+
+grammar_12: Grammar = clean_up(
+    {
+        "<start>": ["<mode> <word> <word>"],
+        "<mode>": ["patch", "real"],
+        "<word>": ["<letter><letters>"],
+        "<letters>": ["", "<letter><letters>"],
+        "<letter>": srange(string.ascii_lowercase),
+    }
+)
+
+assert is_valid_grammar(grammar_12)
+
+
+# ======================================================================
+# bug_1: galaxy.collection.verify_collections did not verify that a locally
+# installed collection directory actually contains a MANIFEST.json before
+# treating it as installed.  The fix raises an AnsibleError
+# ("Collection <ns>.<name> does not appear to have a MANIFEST.json. ...")
+# when the directory is present but the manifest is missing.
+#
+# System-test format:  ``<mode> <namespace> <name> <version>`` where
+#   ``<mode>`` is ``nomanifest`` (installed dir WITHOUT MANIFEST.json -- the
+#   trigger) or ``manifest`` (dir WITH a valid MANIFEST.json).  The harness
+#   builds the directory, calls verify_collections with NO galaxy apis and
+#   prints the raised AnsibleError message.  For ``nomanifest`` the fixed
+#   build raises the manifest-missing error (buggy instead falls through to
+#   the remote-lookup error); for ``manifest`` both builds raise the same
+#   remote-lookup error.  The oracle expects the fixed-build message.
+# ======================================================================
+
+_B1_NO_MANIFEST = (
+    "Collection %s.%s does not appear to have a MANIFEST.json. "
+    "A MANIFEST.json is expected if the collection has been built and "
+    "installed via ansible-galaxy."
+)
+_B1_NO_REMOTE = "Failed to find remote collection %s.%s:%s on any of the galaxy servers"
+
+
+def _b1_expected(mode: str, namespace: str, name: str, version: str) -> str:
+    if mode == "nomanifest":
+        return _B1_NO_MANIFEST % (namespace, name)
+    return _B1_NO_REMOTE % (namespace, name, version)
+
+
+class Ansible1API(AnsibleAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            mode = process.args[2]
+            namespace = process.args[3]
+            name = process.args[4]
+            version = process.args[5]
+        except IndexError:
+            return TestResult.UNDEFINED, "Malformed test input"
+        if mode not in ("nomanifest", "manifest"):
+            return TestResult.UNDEFINED, "Malformed test input"
+        expected = _b1_expected(mode, namespace, name, version)
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == expected:
+            return TestResult.PASSING, f"Expected {expected!r}"
+        return TestResult.FAILING, f"Expected {expected!r}, but was {out!r}"
+
+
+class Ansible1TestGenerator:
+    @staticmethod
+    def _word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(3, 7)))
+
+    @staticmethod
+    def _version() -> str:
+        return ".".join(str(random.randint(0, 9)) for _ in range(3))
+
+    def make_failing(self) -> str:
+        version = "*" if random.random() < 0.5 else self._version()
+        return f"nomanifest {self._word()} {self._word()} {version}"
+
+    def make_passing(self) -> str:
+        return f"manifest {self._word()} {self._word()} {self._version()}"
+
+
+class Ansible1SystemtestGenerator(SystemtestGenerator, Ansible1TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return self.make_failing(), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return self.make_passing(), TestResult.PASSING
+
+
+class Ansible1UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Ansible1TestGenerator
+):
+    @staticmethod
+    def _body(mode: str, namespace: str, name: str, version: str) -> List[ast.stmt]:
+        expected = _b1_expected(mode, namespace, name, version)
+        src = (
+            "import os, json, tempfile\n"
+            "from ansible.errors import AnsibleError\n"
+            "from ansible.galaxy.collection import verify_collections\n"
+            f"mode, namespace, name, version = {mode!r}, {namespace!r}, {name!r}, {version!r}\n"
+            "root = tempfile.mkdtemp()\n"
+            "cdir = os.path.join(root, namespace, name)\n"
+            "os.makedirs(cdir)\n"
+            "if mode == 'manifest':\n"
+            "    with open(os.path.join(cdir, 'MANIFEST.json'), 'w') as fh:\n"
+            "        json.dump({'collection_info': {'namespace': namespace, "
+            "'name': name, 'version': '1.0.0', 'dependencies': {}}}, fh)\n"
+            "try:\n"
+            "    verify_collections([('%s.%s' % (namespace, name), version, None)], "
+            "[root], [], False, False)\n"
+            "    actual = 'NO_ERROR'\n"
+            "except AnsibleError as e:\n"
+            "    actual = e.message\n"
+            f"self.assertEqual({expected!r}, actual)\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        version = "*" if random.random() < 0.5 else self._version()
+        test = self.get_empty_test()
+        test.body = self._body("nomanifest", self._word(), self._word(), version)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("manifest", self._word(), self._word(), self._version())
+        return test, TestResult.PASSING
+
+
+grammar_1: Grammar = clean_up(
+    {
+        "<start>": ["<mode> <word> <word> <version>"],
+        "<mode>": ["nomanifest", "manifest"],
+        "<word>": ["<letter><letters>"],
+        "<letters>": ["", "<letter><letters>"],
+        "<letter>": srange(string.ascii_lowercase),
+        "<version>": ["*", "<num>.<num>.<num>"],
+        "<num>": ["<digit><digits>"],
+        "<digits>": ["", "<digit><digits>"],
+        "<digit>": srange(string.digits),
+    }
+)
+
+assert is_valid_grammar(grammar_1)
+
+
+# ======================================================================
+# bug_6: galaxy.collection.CollectionRequirement._meets_requirements kept
+# the "parent and version == '*' and requirement != '*'" guard INSIDE the
+# ``if not op:`` branch and executed ``break`` (treating an unknown-version
+# installed collection as unable to meet a new pinned requirement -> raising
+# AnsibleError).  The fix moves the guard out of that branch and replaces the
+# ``break`` with ``display.warning(...); continue`` so an unknown installed
+# version is accepted (with a warning) rather than raising.
+#
+# System-test format:  ``<mode> <namespace> <name> <parent> <have> <req>``.
+#   ``<mode>`` is ``unknown`` (installed version '*', a pinned ``<req>`` and a
+#   truthy ``<parent>`` -- the trigger), ``wild`` (installed '*', req '*') or
+#   ``match`` (installed ``<have>``, req == ``<have>``).  The harness builds a
+#   skip=True CollectionRequirement and calls add_requirement, printing
+#   ``OK <latest_version>`` or ``ERROR:<Exc>``.  The oracle expects the fixed
+#   result (``OK *`` for unknown/wild, ``OK <have>`` for match); the buggy
+#   build raises for ``unknown``.
+# ======================================================================
+
+
+def _b6_expected(mode: str, have: str) -> Optional[str]:
+    if mode in ("unknown", "wild"):
+        return "OK *"
+    if mode == "match":
+        return "OK %s" % have
+    return None
+
+
+class Ansible6API(AnsibleAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            mode = process.args[2]
+            have = process.args[6]
+        except IndexError:
+            return TestResult.UNDEFINED, "Malformed test input"
+        expected = _b6_expected(mode, have)
+        if expected is None:
+            return TestResult.UNDEFINED, "Malformed test input"
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == expected:
+            return TestResult.PASSING, f"Expected {expected!r}"
+        return TestResult.FAILING, f"Expected {expected!r}, but was {out!r}"
+
+
+class Ansible6TestGenerator:
+    @staticmethod
+    def _word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(3, 7)))
+
+    def _parent(self) -> str:
+        return f"{self._word()}.{self._word()}"
+
+    @staticmethod
+    def _version() -> str:
+        return ".".join(str(random.randint(0, 9)) for _ in range(3))
+
+    def make_failing(self) -> str:
+        return (
+            f"unknown {self._word()} {self._word()} {self._parent()} * "
+            f"{self._version()}"
+        )
+
+    def make_passing(self) -> str:
+        if random.random() < 0.5:
+            return f"wild {self._word()} {self._word()} {self._parent()} * *"
+        v = self._version()
+        return f"match {self._word()} {self._word()} {self._parent()} {v} {v}"
+
+
+class Ansible6SystemtestGenerator(SystemtestGenerator, Ansible6TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return self.make_failing(), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return self.make_passing(), TestResult.PASSING
+
+
+class Ansible6UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Ansible6TestGenerator
+):
+    @staticmethod
+    def _body(mode: str, ns: str, name: str, parent: str, have: str, req: str) -> List[ast.stmt]:
+        expected = _b6_expected(mode, have)
+        src = (
+            "from ansible.errors import AnsibleError\n"
+            "from ansible.galaxy.collection import CollectionRequirement\n"
+            f"mode, ns, name, parent, have, req = {mode!r}, {ns!r}, {name!r}, "
+            f"{parent!r}, {have!r}, {req!r}\n"
+            "obj = CollectionRequirement(ns, name, None, 'https://galaxy.com', "
+            "[have], have, False, skip=True)\n"
+            "try:\n"
+            "    obj.add_requirement(parent, req)\n"
+            "    actual = 'OK %s' % obj.latest_version\n"
+            "except AnsibleError:\n"
+            "    actual = 'ERROR:AnsibleError'\n"
+            "except Exception as e:\n"
+            "    actual = 'OTHER:%s' % type(e).__name__\n"
+            f"self.assertEqual({expected!r}, actual)\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body(
+            "unknown", self._word(), self._word(), self._parent(), "*", self._version()
+        )
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        if random.random() < 0.5:
+            test.body = self._body(
+                "wild", self._word(), self._word(), self._parent(), "*", "*"
+            )
+        else:
+            v = self._version()
+            test.body = self._body(
+                "match", self._word(), self._word(), self._parent(), v, v
+            )
+        return test, TestResult.PASSING
+
+
+grammar_6: Grammar = clean_up(
+    {
+        "<start>": ["<mode> <word> <word> <parent> <vers> <vers>"],
+        "<mode>": ["unknown", "wild", "match"],
+        "<parent>": ["<word>.<word>", "<word>"],
+        "<word>": ["<letter><letters>"],
+        "<letters>": ["", "<letter><letters>"],
+        "<letter>": srange(string.ascii_lowercase),
+        "<vers>": ["*", "<num>.<num>.<num>"],
+        "<num>": ["<digit><digits>"],
+        "<digits>": ["", "<digit><digits>"],
+        "<digit>": srange(string.digits),
+    }
+)
+
+assert is_valid_grammar(grammar_6)
+
+
+# ======================================================================
+# bug_9: modules.packaging.os.redhat_subscription attached a pool without an
+# explicit quantity as ``[SUBMAN_CMD, 'attach', '--pool', pool_id,
+# '--quantity', quantity]`` where ``main`` had defaulted the missing quantity
+# to ``1``.  This forces ``--quantity 1`` even when the user did not request a
+# quantity.  The fix defaults the quantity to ``None`` and only appends
+# ``--quantity`` when it is not None, so a plain pool id becomes
+# ``[SUBMAN_CMD, 'attach', '--pool', pool_id]``.
+#
+# System-test format:  ``<mode> <pool_id> [<quantity>]`` where ``<mode>`` is
+#   ``noq`` (pool without quantity -- the trigger) or ``withq`` (pool WITH an
+#   explicit ``<quantity>``).  The harness drives redhat_subscription.main()
+#   with run_command stubbed and prints the JSON of the ``attach`` command.
+#   The oracle expects the fixed command (no ``--quantity`` for ``noq``); the
+#   buggy build appends ``--quantity 1``.
+# ======================================================================
+
+_B9_SUBMAN = "/testbin/subscription-manager"
+
+
+def _b9_expected(mode: str, pool_id: str, quantity: Optional[str]) -> Optional[List[str]]:
+    if mode == "noq":
+        return [_B9_SUBMAN, "attach", "--pool", pool_id]
+    if mode == "withq" and quantity is not None:
+        return [_B9_SUBMAN, "attach", "--pool", pool_id, "--quantity", str(int(quantity))]
+    return None
+
+
+class Ansible9API(AnsibleAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            mode = process.args[2]
+            pool_id = process.args[3]
+        except IndexError:
+            return TestResult.UNDEFINED, "Malformed test input"
+        quantity = process.args[4] if len(process.args) > 4 else None
+        expected = _b9_expected(mode, pool_id, quantity)
+        if expected is None:
+            return TestResult.UNDEFINED, "Malformed test input"
+        out = process.stdout.decode("utf8").strip()
+        try:
+            actual = json.loads(out)
+        except ValueError:
+            return TestResult.FAILING, f"Expected {expected!r}, but was {out!r}"
+        if process.returncode == 0 and actual == expected:
+            return TestResult.PASSING, f"Expected {expected!r}"
+        return TestResult.FAILING, f"Expected {expected!r}, but was {actual!r}"
+
+
+class Ansible9TestGenerator:
+    @staticmethod
+    def _pool_id() -> str:
+        return "".join(random.choices("0123456789abcdef", k=32))
+
+    @staticmethod
+    def _quantity() -> int:
+        return random.randint(1, 9)
+
+    def make_failing(self) -> str:
+        return f"noq {self._pool_id()}"
+
+    def make_passing(self) -> str:
+        return f"withq {self._pool_id()} {self._quantity()}"
+
+
+class Ansible9SystemtestGenerator(SystemtestGenerator, Ansible9TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return self.make_failing(), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return self.make_passing(), TestResult.PASSING
+
+
+class Ansible9UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Ansible9TestGenerator
+):
+    @staticmethod
+    def _body(mode: str, pool_id: str, quantity: Optional[int]) -> List[ast.stmt]:
+        expected = _b9_expected(
+            mode, pool_id, None if quantity is None else str(quantity)
+        )
+        src = (
+            "import contextlib, io, json\n"
+            "from unittest import mock\n"
+            "from ansible.module_utils import basic\n"
+            "from ansible.module_utils._text import to_bytes\n"
+            "from ansible.modules.packaging.os import redhat_subscription\n"
+            f"mode, pool_id, quantity = {mode!r}, {pool_id!r}, {quantity!r}\n"
+            "basic._ANSIBLE_ARGS = to_bytes(json.dumps({'ANSIBLE_MODULE_ARGS': {"
+            "'state': 'present', 'username': 'admin', 'password': 'admin', "
+            "'org_id': 'admin', 'pool_ids': "
+            "([{pool_id: quantity}] if mode == 'withq' else [pool_id])}}))\n"
+            "available = chr(10).join(['Subscription Name:   SP Server', "
+            "'Pool ID:             ' + pool_id, 'Available:           5', ''])\n"
+            "calls = []\n"
+            "def fake_run_command(args, *a, **kw):\n"
+            "    calls.append(args)\n"
+            "    joined = ' '.join(args) if isinstance(args, (list, tuple)) else args\n"
+            "    if 'identity' in joined:\n"
+            "        return (1, 'This system is not yet registered.', '')\n"
+            "    if 'list' in joined and '--available' in joined:\n"
+            "        return (0, available, '')\n"
+            "    return (0, '', '')\n"
+            "with mock.patch.object(redhat_subscription.RegistrationBase, "
+            "'REDHAT_REPO', create=True), mock.patch.object(redhat_subscription, "
+            "'isfile', return_value=False), mock.patch.object(redhat_subscription, "
+            "'unlink', return_value=True), mock.patch.object(basic.AnsibleModule, "
+            "'get_bin_path', return_value='/testbin/subscription-manager'), "
+            "mock.patch.object(basic.AnsibleModule, 'run_command', "
+            "side_effect=fake_run_command):\n"
+            "    buf = io.StringIO()\n"
+            "    try:\n"
+            "        with contextlib.redirect_stdout(buf):\n"
+            "            redhat_subscription.main()\n"
+            "    except SystemExit:\n"
+            "        pass\n"
+            "attach = None\n"
+            "for c in calls:\n"
+            "    if isinstance(c, (list, tuple)) and 'attach' in c and '--pool' in c:\n"
+            "        attach = list(c)\n"
+            "        break\n"
+            f"self.assertEqual({expected!r}, attach)\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("noq", self._pool_id(), None)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("withq", self._pool_id(), self._quantity())
+        return test, TestResult.PASSING
+
+
+grammar_9: Grammar = clean_up(
+    {
+        "<start>": ["noq <poolid>", "withq <poolid> <quantity>"],
+        "<poolid>": ["<hex><hexes>"],
+        "<hexes>": ["", "<hex><hexes>"],
+        "<hex>": srange("0123456789abcdef"),
+        "<quantity>": ["<digit><digits>"],
+        "<digits>": ["", "<digit><digits>"],
+        "<digit>": srange(string.digits),
+    }
+)
+
+assert is_valid_grammar(grammar_9)
+
+
+# ======================================================================
+# bug_13: cli.galaxy.GalaxyCLI.execute_install parsed every collection
+# argument with ``name, dummy, requirement = collection_input.partition(':')``.
+# For a URL (or file path) argument this split the value at the scheme colon
+# (e.g. ``https://host/x.tar.gz`` -> name ``https``, requirement
+# ``//host/x.tar.gz``).  The fix treats an argument that is an existing file
+# or an http/https URL as the whole name with requirement ``*``.
+#
+# System-test format:  ``<mode> <collection_input>`` where ``<mode>`` is
+#   ``url`` (an http/https URL -- the trigger) or ``name`` (a ``ns.name`` or
+#   ``ns.name:version`` collection name).  The harness drives
+#   GalaxyCLI(...).run() with install_collections mocked and prints the JSON
+#   of the requirements list passed to it.  The oracle expects the fixed
+#   parse (whole URL + ``*``); the buggy build splits the URL at the colon.
+# ======================================================================
+
+
+def _b13_expected(mode: str, collection_input: str) -> Optional[list]:
+    if mode == "url":
+        return [[collection_input, "*", None]]
+    if mode == "name":
+        name, _, requirement = collection_input.partition(":")
+        return [[name, requirement or "*", None]]
+    return None
+
+
+class Ansible13API(AnsibleAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            mode = process.args[2]
+            collection_input = process.args[3]
+        except IndexError:
+            return TestResult.UNDEFINED, "Malformed test input"
+        expected = _b13_expected(mode, collection_input)
+        if expected is None:
+            return TestResult.UNDEFINED, "Malformed test input"
+        out = process.stdout.decode("utf8").strip()
+        try:
+            actual = json.loads(out)
+        except ValueError:
+            return TestResult.FAILING, f"Expected {expected!r}, but was {out!r}"
+        if process.returncode == 0 and actual == expected:
+            return TestResult.PASSING, f"Expected {expected!r}"
+        return TestResult.FAILING, f"Expected {expected!r}, but was {actual!r}"
+
+
+class Ansible13TestGenerator:
+    @staticmethod
+    def _word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(3, 7)))
+
+    @staticmethod
+    def _version() -> str:
+        return ".".join(str(random.randint(0, 9)) for _ in range(3))
+
+    def make_failing(self) -> str:
+        scheme = random.choice(("https", "http"))
+        return (
+            f"url {scheme}://{self._word()}/{self._word()}/"
+            f"{self._word()}-{self._version()}.tar.gz"
+        )
+
+    def make_passing(self) -> str:
+        if random.random() < 0.5:
+            return f"name {self._word()}.{self._word()}"
+        return f"name {self._word()}.{self._word()}:{self._version()}"
+
+
+class Ansible13SystemtestGenerator(SystemtestGenerator, Ansible13TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return self.make_failing(), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return self.make_passing(), TestResult.PASSING
+
+
+class Ansible13UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Ansible13TestGenerator
+):
+    @staticmethod
+    def _body(mode: str, collection_input: str) -> List[ast.stmt]:
+        expected = _b13_expected(mode, collection_input)
+        src = (
+            "import contextlib, io, json, tempfile\n"
+            "from unittest import mock\n"
+            "import ansible.cli.galaxy\n"
+            "from ansible.cli.galaxy import GalaxyCLI\n"
+            "from ansible.utils import context_objects as co\n"
+            f"collection_input = {collection_input!r}\n"
+            "co.GlobalCLIArgs._Singleton__instance = None\n"
+            "output_dir = tempfile.mkdtemp()\n"
+            "captured = {}\n"
+            "def fake_install(requirements, *a, **kw):\n"
+            "    captured['requirements'] = requirements\n"
+            "with mock.patch.object(ansible.cli.galaxy, 'install_collections', "
+            "side_effect=fake_install):\n"
+            "    buf = io.StringIO()\n"
+            "    try:\n"
+            "        with contextlib.redirect_stdout(buf):\n"
+            "            GalaxyCLI(args=['ansible-galaxy', 'collection', 'install', "
+            "collection_input, '--collections-path', output_dir]).run()\n"
+            "    except SystemExit:\n"
+            "        pass\n"
+            "actual = json.loads(json.dumps(captured.get('requirements')))\n"
+            f"self.assertEqual({expected!r}, actual)\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        scheme = random.choice(("https", "http"))
+        collection_input = (
+            f"{scheme}://{self._word()}/{self._word()}/"
+            f"{self._word()}-{self._version()}.tar.gz"
+        )
+        test = self.get_empty_test()
+        test.body = self._body("url", collection_input)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        if random.random() < 0.5:
+            collection_input = f"{self._word()}.{self._word()}"
+        else:
+            collection_input = f"{self._word()}.{self._word()}:{self._version()}"
+        test = self.get_empty_test()
+        test.body = self._body("name", collection_input)
+        return test, TestResult.PASSING
+
+
+grammar_13: Grammar = clean_up(
+    {
+        "<start>": ["url <url>", "name <cname>"],
+        "<url>": ["<scheme>://<word>/<word>/<word>-<ver>.tar.gz"],
+        "<scheme>": ["https", "http"],
+        "<cname>": ["<word>.<word>", "<word>.<word>:<ver>"],
+        "<ver>": ["<num>.<num>.<num>"],
+        "<num>": ["<digit><digits>"],
+        "<digits>": ["", "<digit><digits>"],
+        "<digit>": srange(string.digits),
+        "<word>": ["<letter><letters>"],
+        "<letters>": ["", "<letter><letters>"],
+        "<letter>": srange(string.ascii_lowercase),
+    }
+)
+
+assert is_valid_grammar(grammar_13)
+
+
+# ======================================================================
+# bug_14: galaxy.api.GalaxyAPI.fetch_role_related built the pagination URL
+# with ``_urljoin(self.api_server, data['next_link'])``.  Because
+# ``next_link`` already contains the ``/api`` path prefix while
+# ``api_server`` ends in ``/api/``, the joined URL doubled the prefix
+# (``https://host/api/api/v1/...``).  The fix rebuilds a base URL from just
+# the scheme+netloc of ``api_server`` and joins ``next_link`` onto that.
+#
+# System-test format:  ``<mode> <host> <role_id>`` where ``<mode>`` is
+#   ``page`` (a paginated response whose next_link forces a second request --
+#   the trigger) or ``single`` (one page, no pagination).  The harness drives
+#   fetch_role_related with open_url mocked and prints the URL of the LAST
+#   request.  The oracle expects the correctly-joined URL; the buggy build
+#   doubles the ``/api`` prefix on the second request.
+# ======================================================================
+
+
+def _b14_expected(mode: str, host: str, role_id: int) -> Optional[str]:
+    if mode == "page":
+        return (
+            "https://%s/api/v1/roles/%d/versions/?page=2&page_size=50"
+            % (host, role_id)
+        )
+    if mode == "single":
+        return "https://%s/api/v1/roles/%d/versions/?page_size=50" % (host, role_id)
+    return None
+
+
+class Ansible14API(AnsibleAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            mode = process.args[2]
+            host = process.args[3]
+            role_id = int(process.args[4])
+        except (IndexError, ValueError):
+            return TestResult.UNDEFINED, "Malformed test input"
+        expected = _b14_expected(mode, host, role_id)
+        if expected is None:
+            return TestResult.UNDEFINED, "Malformed test input"
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == expected:
+            return TestResult.PASSING, f"Expected {expected!r}"
+        return TestResult.FAILING, f"Expected {expected!r}, but was {out!r}"
+
+
+class Ansible14TestGenerator:
+    @staticmethod
+    def _host() -> str:
+        word = "".join(random.choices(string.ascii_lowercase, k=random.randint(4, 8)))
+        return word + random.choice(("", ".com", ".org", ".io"))
+
+    @staticmethod
+    def _role_id() -> int:
+        return random.randint(1, 9999)
+
+    def make_failing(self) -> str:
+        return f"page {self._host()} {self._role_id()}"
+
+    def make_passing(self) -> str:
+        return f"single {self._host()} {self._role_id()}"
+
+
+class Ansible14SystemtestGenerator(SystemtestGenerator, Ansible14TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return self.make_failing(), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return self.make_passing(), TestResult.PASSING
+
+
+class Ansible14UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Ansible14TestGenerator
+):
+    @staticmethod
+    def _body(mode: str, host: str, role_id: int) -> List[ast.stmt]:
+        expected = _b14_expected(mode, host, role_id)
+        src = (
+            "import json\n"
+            "from io import StringIO\n"
+            "from unittest import mock\n"
+            "from ansible import context\n"
+            "from ansible.galaxy import api as galaxy_api\n"
+            "from ansible.galaxy.api import GalaxyAPI\n"
+            "from ansible.galaxy.token import GalaxyToken\n"
+            f"mode, host, role_id = {mode!r}, {host!r}, {role_id}\n"
+            "context.CLIARGS._store = {'ignore_certs': False}\n"
+            "api = GalaxyAPI(None, 'test', 'https://%s/api/' % host)\n"
+            "api._available_api_versions = {'v1': 'v1'}\n"
+            "api.token = GalaxyToken('my token')\n"
+            "next_link = '/api/v1/roles/%d/versions/?page=2&page_size=50' % role_id\n"
+            "if mode == 'page':\n"
+            "    responses = [{'count': 2, 'results': [{'name': '3.5.1'}], "
+            "'next_link': next_link, 'next': None, 'previous_link': None, "
+            "'previous': None}, {'count': 2, 'results': [{'name': '3.5.2'}], "
+            "'next_link': None, 'next': None, 'previous_link': None, "
+            "'previous': None}]\n"
+            "else:\n"
+            "    responses = [{'count': 1, 'results': [{'name': '3.5.1'}], "
+            "'next_link': None, 'next': None, 'previous_link': None, "
+            "'previous': None}]\n"
+            "mock_open = mock.MagicMock()\n"
+            "mock_open.side_effect = [StringIO(json.dumps(r)) for r in responses]\n"
+            "with mock.patch.object(galaxy_api, 'open_url', mock_open):\n"
+            "    api.fetch_role_related('versions', role_id)\n"
+            "urls = [c[0][0] for c in mock_open.call_args_list]\n"
+            "actual = urls[-1] if urls else 'NOCALL'\n"
+            f"self.assertEqual({expected!r}, actual)\n"
+        )
+        return ast.parse(src).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("page", self._host(), self._role_id())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("single", self._host(), self._role_id())
+        return test, TestResult.PASSING
+
+
+grammar_14: Grammar = clean_up(
+    {
+        "<start>": ["<mode> <host> <id>"],
+        "<mode>": ["page", "single"],
+        "<host>": ["<word>", "<word>.com", "<word>.org", "<word>.io"],
+        "<id>": ["<digit><digits>"],
+        "<digits>": ["", "<digit><digits>"],
+        "<digit>": srange(string.digits),
+        "<word>": ["<letter><letters>"],
+        "<letters>": ["", "<letter><letters>"],
+        "<letter>": srange(string.ascii_lowercase),
+    }
+)
+
+assert is_valid_grammar(grammar_14)

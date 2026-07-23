@@ -1,70 +1,69 @@
 import unittest
-from thefuck.types import Command
 from thefuck.rules.git_branch_exists import match
-from thefuck.rules.git_branch_exists import get_new_command
+from thefuck.types import Command
 
 
 class TestsFailing(unittest.TestCase):
 
     def test_diversity_1(self):
-        self.assertIn(False, match(Command('git branch -d wewegwewe SELECT * FROM database', "fatal: A branch named 'wewegwewe' already exists.")))
+        self.assertEqual(False, match(Command('git branch ubogcrkgs', "fatal: A branch named 'ubogcrkgs already exists.")))
 
     def test_diversity_2(self):
-        self.assertIn(False, match(Command('git branch -d asdqwewq SELECT * FROM database', "fatal: A branch named 'asdqwewq' already exists.")))
+        self.assertEqual(False, match(Command('git branch dnjzyez', "fatal: A branch named 'dnjzyez already exists.")))
 
     def test_diversity_3(self):
-        self.assertIn(False, match(Command('git branch -d jPmPcPbM SELECT * FROM database', "fatal: A branch named 'jPmPcPbM' already exists.")))
+        self.assertEqual(False, match(Command('git branch ujzzyzu', "fatal: A branch named 'ujzzyzu already exists.")))
 
     def test_diversity_4(self):
-        self.assertIn(False, match(Command('git branch -D fIJqafoZvUX SELECT * FROM database', "fatal: A branch named 'fIJqafoZvUX' already exists.")))
+        self.assertEqual(False, match(Command('git branch lkwtcozzi', "fatal: A branch named 'lkwtcozzi already exists.")))
 
     def test_diversity_5(self):
-        self.assertIn(False, match(Command('git branch -D LeLFrWHtWUH SELECT * FROM database', "fatal: A branch named 'LeLFrWHtWUH' already exists.")))
+        self.assertEqual(False, match(Command('git branch zgxthrzgwi', "fatal: A branch named 'zgxthrzgwi already exists.")))
 
     def test_diversity_6(self):
-        self.assertIn(['git branch -d DVExqaTCjeczWGN, git branch DVExqaTCjeczWGN'], get_new_command(Command('git branch -d DVExqaTCjeczWGN', 'fatal: A branch named "DVExqaTCjeczWGN" already exists.')))
+        self.assertEqual(False, match(Command('git branch hmbxmqhj', "fatal: A branch named 'hmbxmqhj already exists.")))
 
     def test_diversity_7(self):
-        self.assertIn(['git branch -d dwUArZ, git branch dwUArZ'], get_new_command(Command('git branch -d dwUArZ', 'fatal: A branch named "dwUArZ" already exists.')))
+        self.assertEqual(False, match(Command('git branch gihzekpvb', "fatal: A branch named 'gihzekpvb already exists.")))
 
     def test_diversity_8(self):
-        self.assertIn(['git branch -d olpcGtPweBhVV, git branch olpcGtPweBhVV'], get_new_command(Command('git branch -d olpcGtPweBhVV', 'fatal: A branch named "olpcGtPweBhVV" already exists.')))
+        self.assertEqual(False, match(Command('git branch dmohflhdh', "fatal: A branch named 'dmohflhdh already exists.")))
 
     def test_diversity_9(self):
-        self.assertEqual(['git branch -d ghnxSA, git checkout -b ghnxSA'], get_new_command(Command('git branch -d ghnxSA', 'fatal: A branch named "ghnxSA" already exists.')))
+        self.assertEqual(False, match(Command('git branch hixjuk', "fatal: A branch named 'hixjuk already exists.")))
 
     def test_diversity_10(self):
-        self.assertIn(['git branch -d YQTil, git checkout -b YQTil'], get_new_command(Command('git branch -d YQTil', 'fatal: A branch named "YQTil" already exists.')))
+        self.assertEqual(False, match(Command('git branch yyyes', "fatal: A branch named 'yyyes already exists.")))
 
 
 class TestsPassing(unittest.TestCase):
 
     def test_diversity_1(self):
-        self.assertIn(True, match(Command('git branch -d VoAAAUnyKUz', "fatal: A branch named 'VoAAAUnyKUz already exists.")))
+        self.assertEqual(True, match(Command('git branch qjbzpwr', "fatal: A branch named 'qjbzpwr' already exists.")))
 
     def test_diversity_2(self):
-        self.assertIn(True, match(Command('git branch -d BmtbqdtWpFoOoGn', "fatal: A branch named 'BmtbqdtWpFoOoGn already exists.")))
+        self.assertEqual(True, match(Command('git branch mbddhpzysz', "fatal: A branch named 'mbddhpzysz' already exists.")))
 
     def test_diversity_3(self):
-        self.assertIn(True, match(Command('git branch -d DIJCWQEIluo', "fatal: A branch named 'DIJCWQEIluo already exists.")))
+        self.assertEqual(True, match(Command('git branch vpxgdrqm', "fatal: A branch named 'vpxgdrqm' already exists.")))
 
     def test_diversity_4(self):
-        self.assertEqual(True, match(Command('git branch -D ghnxSA', "fatal: A branch named 'ghnxSA already exists.")))
+        self.assertEqual(True, match(Command('git branch iqzlfast', "fatal: A branch named 'iqzlfast' already exists.")))
 
     def test_diversity_5(self):
-        self.assertEqual(True, match(Command('git branch -D uRoZaDrCh', "fatal: A branch named 'uRoZaDrCh already exists.")))
+        self.assertEqual(True, match(Command('git branch hjgzjchxxv', "fatal: A branch named 'hjgzjchxxv' already exists.")))
 
     def test_diversity_6(self):
-        self.assertIn('git branch -d wDpkYUCBADCT && git checkout -b wDpkYUCBADCT', get_new_command(Command('git branch -d wDpkYUCBADCT', "fatal: A branch named 'wDpkYUCBADCT' already exists.")))
+        self.assertEqual(True, match(Command('git branch guwwagss', "fatal: A branch named 'guwwagss' already exists.")))
 
     def test_diversity_7(self):
-        self.assertIn('git branch -d vSYZrwIHIWoMQ && git checkout -b vSYZrwIHIWoMQ', get_new_command(Command('git branch -d vSYZrwIHIWoMQ', "fatal: A branch named 'vSYZrwIHIWoMQ' already exists.")))
+        self.assertEqual(True, match(Command('git branch vcogxkbiu', "fatal: A branch named 'vcogxkbiu' already exists.")))
 
     def test_diversity_8(self):
-        self.assertIn('git branch -d QwCmvXmPpS && git checkout -b QwCmvXmPpS', get_new_command(Command('git branch -d QwCmvXmPpS', "fatal: A branch named 'QwCmvXmPpS' already exists.")))
+        self.assertEqual(True, match(Command('git branch brtbetubq', "fatal: A branch named 'brtbetubq' already exists.")))
 
     def test_diversity_9(self):
-        self.assertEqual('git branch -d ewfoAnTGYNHMk && git branch ewfoAnTGYNHMk', get_new_command(Command('git branch -d ewfoAnTGYNHMk', "fatal: A branch named 'ewfoAnTGYNHMk' already exists.")))
+        self.assertEqual(True, match(Command('git branch ydxrn', "fatal: A branch named 'ydxrn' already exists.")))
 
     def test_diversity_10(self):
-        self.assertEqual('git branch -d vSYZrwIHIWoMQ && git branch vSYZrwIHIWoMQ', get_new_command(Command('git branch -d vSYZrwIHIWoMQ', "fatal: A branch named 'vSYZrwIHIWoMQ' already exists.")))
+        self.assertEqual(True, match(Command('git branch zynnitmggx', "fatal: A branch named 'zynnitmggx' already exists.")))

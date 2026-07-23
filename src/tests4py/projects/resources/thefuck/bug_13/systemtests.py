@@ -3,63 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return 'git branch -d muTjdAtQMCIwR SELECT * FROM database' '' "fatal: A branch named 'muTjdAtQMCIwR' already exists."
+        return '(\'True\', \'git checkout -b ubogcrkgs\', "fatal: A branch named \'ubogcrkgs\' already exists.")'
 
     def test_diversity_2(self):
-        return 'git branch -d JIkpdi' '' "fatal: A branch named 'JIkpdi' already exists."
+        return '(\'True\', \'git checkout -b dnjzyez\', "fatal: A branch named \'dnjzyez\' already exists.")'
 
     def test_diversity_3(self):
-        return 'git branch -d aebZiAxSX' '' "fatal: A branch named 'aebZiAxSX' already exists."
+        return '(\'True\', \'git checkout -b ujzzyzu\', "fatal: A branch named \'ujzzyzu\' already exists.")'
 
     def test_diversity_4(self):
-        return 'git branch -d BlLtbeP' '' "fatal: A branch named 'BlLtbeP' already exists."
+        return '(\'True\', \'git checkout -b lkwtcozzi\', "fatal: A branch named \'lkwtcozzi\' already exists.")'
 
     def test_diversity_5(self):
-        return 'git branch -D YHHQqQbiP SELECT * FROM database' '' "fatal: A branch named 'YHHQqQbiP' already exists."
+        return '(\'True\', \'git checkout -b zgxthrzgwi\', "fatal: A branch named \'zgxthrzgwi\' already exists.")'
 
     def test_diversity_6(self):
-        return 'git branch -d LnsFRLMbtZMytXX' '' "fatal: A branch named 'LnsFRLMbtZMytXX' already exists."
+        return '(\'True\', \'git checkout -b hmbxmqhj\', "fatal: A branch named \'hmbxmqhj\' already exists.")'
 
     def test_diversity_7(self):
-        return 'git branch -d dpJBugeHfz' '' "fatal: A branch named 'dpJBugeHfz' already exists."
+        return '(\'True\', \'git checkout -b gihzekpvb\', "fatal: A branch named \'gihzekpvb\' already exists.")'
 
     def test_diversity_8(self):
-        return 'git branch -d bOXCGjusBMJMjUe SELECT * FROM database' '' "fatal: A branch named 'bOXCGjusBMJMjUe' already exists."
+        return '(\'True\', \'git checkout -b dmohflhdh\', "fatal: A branch named \'dmohflhdh\' already exists.")'
 
     def test_diversity_9(self):
-        return 'git branch -d nyCmZEqimFlLBBQ' '' "fatal: A branch named 'nyCmZEqimFlLBBQ' already exists."
+        return '(\'True\', \'git checkout -b hixjuk\', "fatal: A branch named \'hixjuk\' already exists.")'
 
     def test_diversity_10(self):
-        return 'git branch -d hSOwZQHjXGE' '' "fatal: A branch named 'hSOwZQHjXGE' already exists."
+        return '(\'True\', \'git checkout -b yyyes\', "fatal: A branch named \'yyyes\' already exists.")'
 
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return 'git branch -d ATSooVUN' '' "fatal: A branch named 'ATSooVUN already exists."
+        return '(\'True\', \'git branch qjbzpwr\', "fatal: A branch named \'qjbzpwr\' already exists.")'
 
     def test_diversity_2(self):
-        return 'git branch -D RcUHolyBDc' '' "fatal: A branch named 'RcUHolyBDc already exists."
+        return '(\'True\', \'git branch mbddhpzysz\', "fatal: A branch named \'mbddhpzysz\' already exists.")'
 
     def test_diversity_3(self):
-        return 'git branch -d CibAmH' '' "fatal: A branch named 'CibAmH' already exists."
+        return '(\'True\', \'git branch vpxgdrqm\', "fatal: A branch named \'vpxgdrqm\' already exists.")'
 
     def test_diversity_4(self):
-        return 'git branch -D NHtHg' '' "fatal: A branch named 'NHtHg already exists."
+        return '(\'True\', \'git branch iqzlfast\', "fatal: A branch named \'iqzlfast\' already exists.")'
 
     def test_diversity_5(self):
-        return 'git branch -d AUeVSHeKVtOKqGd' '' "fatal: A branch named 'AUeVSHeKVtOKqGd' already exists."
+        return '(\'True\', \'git branch hjgzjchxxv\', "fatal: A branch named \'hjgzjchxxv\' already exists.")'
 
     def test_diversity_6(self):
-        return 'git branch -D pHZUDkKsqIvO' '' "fatal: A branch named 'pHZUDkKsqIvO already exists."
+        return '(\'True\', \'git branch guwwagss\', "fatal: A branch named \'guwwagss\' already exists.")'
 
     def test_diversity_7(self):
-        return 'git branch -d QHZtvDPXt' '' "fatal: A branch named 'QHZtvDPXt' already exists."
+        return '(\'True\', \'git branch vcogxkbiu\', "fatal: A branch named \'vcogxkbiu\' already exists.")'
 
     def test_diversity_8(self):
-        return 'git branch -d GmLgqwfIEoSwGZV' '' "fatal: A branch named 'GmLgqwfIEoSwGZV' already exists."
+        return '(\'True\', \'git branch brtbetubq\', "fatal: A branch named \'brtbetubq\' already exists.")'
 
     def test_diversity_9(self):
-        return 'git branch -d NyUGujFPR' '' "fatal: A branch named 'NyUGujFPR already exists."
+        return '(\'True\', \'git branch ydxrn\', "fatal: A branch named \'ydxrn\' already exists.")'
 
     def test_diversity_10(self):
-        return 'git branch -D iHjAmAwxFKPFV' '' "fatal: A branch named 'iHjAmAwxFKPFV already exists."
+        return '(\'True\', \'git branch zynnitmggx\', "fatal: A branch named \'zynnitmggx\' already exists.")'

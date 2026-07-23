@@ -1,70 +1,365 @@
 import unittest
-from thefuck.utils import cache
-
 
 class TestsFailing(unittest.TestCase):
 
     def test_diversity_1(self):
-        self.assertIsNone(cache({}, 'kxnpfKjUrswooG', {}))
+        import shelve
+        import thefuck.utils as _u
+
+        class _Shelf(dict):
+
+            def close(self):
+                pass
+        shelve.open = lambda *a, **k: _Shelf()
+
+        @_u.cache()
+        def _compute():
+            return 'uXIXU'
+        self.assertEqual('uXIXU', _compute())
 
     def test_diversity_2(self):
-        self.assertIsNone(cache({}, 'XbQwSHfjMIbLftg', {}))
+        import shelve
+        import thefuck.utils as _u
+
+        class _Shelf(dict):
+
+            def close(self):
+                pass
+        shelve.open = lambda *a, **k: _Shelf()
+
+        @_u.cache()
+        def _compute():
+            return 'tYpfLNbUKsQCv'
+        self.assertEqual('tYpfLNbUKsQCv', _compute())
 
     def test_diversity_3(self):
-        self.assertIsNone(cache({}, 'JUdRrwOUr', {}))
+        import shelve
+        import thefuck.utils as _u
+
+        class _Shelf(dict):
+
+            def close(self):
+                pass
+        shelve.open = lambda *a, **k: _Shelf()
+
+        @_u.cache()
+        def _compute():
+            return 'maUCkwnmqGu'
+        self.assertEqual('maUCkwnmqGu', _compute())
 
     def test_diversity_4(self):
-        self.assertIsNone(cache({}, 'LkYIpSoPtrvgjmw', {}))
+        import shelve
+        import thefuck.utils as _u
+
+        class _Shelf(dict):
+
+            def close(self):
+                pass
+        shelve.open = lambda *a, **k: _Shelf()
+
+        @_u.cache()
+        def _compute():
+            return 'ZlAScUo'
+        self.assertEqual('ZlAScUo', _compute())
 
     def test_diversity_5(self):
-        self.assertIsNone(cache({}, 'ftiCDwBot', {}))
+        import shelve
+        import thefuck.utils as _u
+
+        class _Shelf(dict):
+
+            def close(self):
+                pass
+        shelve.open = lambda *a, **k: _Shelf()
+
+        @_u.cache()
+        def _compute():
+            return 'NqRJUYcQrx'
+        self.assertEqual('NqRJUYcQrx', _compute())
 
     def test_diversity_6(self):
-        self.assertIsNone(cache({}, 'gUzdtKnY', {}))
+        import shelve
+        import thefuck.utils as _u
+
+        class _Shelf(dict):
+
+            def close(self):
+                pass
+        shelve.open = lambda *a, **k: _Shelf()
+
+        @_u.cache()
+        def _compute():
+            return 'GdBNgsIInAe'
+        self.assertEqual('GdBNgsIInAe', _compute())
 
     def test_diversity_7(self):
-        self.assertIsNone(cache({}, 'rSLEsodtept', {}))
+        import shelve
+        import thefuck.utils as _u
+
+        class _Shelf(dict):
+
+            def close(self):
+                pass
+        shelve.open = lambda *a, **k: _Shelf()
+
+        @_u.cache()
+        def _compute():
+            return 'jZxNgxwkcdS'
+        self.assertEqual('jZxNgxwkcdS', _compute())
 
     def test_diversity_8(self):
-        self.assertIsNone(cache({}, 'mKTgcPrGWcILzz', {}))
+        import shelve
+        import thefuck.utils as _u
+
+        class _Shelf(dict):
+
+            def close(self):
+                pass
+        shelve.open = lambda *a, **k: _Shelf()
+
+        @_u.cache()
+        def _compute():
+            return 'sZtFMXMmxesQ'
+        self.assertEqual('sZtFMXMmxesQ', _compute())
 
     def test_diversity_9(self):
-        self.assertIsNone(cache({}, 'OYBEgGNLdMEMNZ', {}))
+        import shelve
+        import thefuck.utils as _u
+
+        class _Shelf(dict):
+
+            def close(self):
+                pass
+        shelve.open = lambda *a, **k: _Shelf()
+
+        @_u.cache()
+        def _compute():
+            return 'fuIGFmLiJx'
+        self.assertEqual('fuIGFmLiJx', _compute())
 
     def test_diversity_10(self):
-        self.assertIsNone(cache({}, 'LtUWgOOI', {}))
+        import shelve
+        import thefuck.utils as _u
 
+        class _Shelf(dict):
+
+            def close(self):
+                pass
+        shelve.open = lambda *a, **k: _Shelf()
+
+        @_u.cache()
+        def _compute():
+            return 'RIFwYBA'
+        self.assertEqual('RIFwYBA', _compute())
 
 class TestsPassing(unittest.TestCase):
 
     def test_diversity_1(self):
-        self.assertIsNotNone(cache({}, 'MzYpPETZajJFIYJ', {'key': {'etag': '0', 'value': 'MzYpPETZajJFIYJ'}}))
+        import shelve
+        import thefuck.utils as _u
+
+        class _Shelf(dict):
+
+            def close(self):
+                pass
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *a):
+                self.close()
+        shelve.open = lambda *a, **k: _Shelf()
+
+        @_u.cache()
+        def _compute():
+            return 'lsxfT'
+        self.assertEqual('lsxfT', _compute())
 
     def test_diversity_2(self):
-        self.assertIsNotNone(cache({'key': {'etag': '0', 'value': 'gupMNKqEJyHSZVl'}}, 'gupMNKqEJyHSZVl', {}))
+        import shelve
+        import thefuck.utils as _u
+
+        class _Shelf(dict):
+
+            def close(self):
+                pass
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *a):
+                self.close()
+        shelve.open = lambda *a, **k: _Shelf()
+
+        @_u.cache()
+        def _compute():
+            return 'jZatmNjFBG'
+        self.assertEqual('jZatmNjFBG', _compute())
 
     def test_diversity_3(self):
-        self.assertIsNotNone(cache({}, 'VvHuyEjzurAADM', {'key': {'etag': '0', 'value': 'VvHuyEjzurAADM'}}))
+        import shelve
+        import thefuck.utils as _u
+
+        class _Shelf(dict):
+
+            def close(self):
+                pass
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *a):
+                self.close()
+        shelve.open = lambda *a, **k: _Shelf()
+
+        @_u.cache()
+        def _compute():
+            return 'xjIFGBtYRjSV'
+        self.assertEqual('xjIFGBtYRjSV', _compute())
 
     def test_diversity_4(self):
-        self.assertIsNotNone(cache({}, 'VnwdypzRdnwkb', {'key': {'etag': '0', 'value': 'VnwdypzRdnwkb'}}))
+        import shelve
+        import thefuck.utils as _u
+
+        class _Shelf(dict):
+
+            def close(self):
+                pass
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *a):
+                self.close()
+        shelve.open = lambda *a, **k: _Shelf()
+
+        @_u.cache()
+        def _compute():
+            return 'GuqymCGrBMdJZ'
+        self.assertEqual('GuqymCGrBMdJZ', _compute())
 
     def test_diversity_5(self):
-        self.assertIsNotNone(cache({'key': {'etag': '0', 'value': 'YopvFiCuuaXg'}}, 'YopvFiCuuaXg', {}))
+        import shelve
+        import thefuck.utils as _u
+
+        class _Shelf(dict):
+
+            def close(self):
+                pass
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *a):
+                self.close()
+        shelve.open = lambda *a, **k: _Shelf()
+
+        @_u.cache()
+        def _compute():
+            return 'YlRVyVqgdyAd'
+        self.assertEqual('YlRVyVqgdyAd', _compute())
 
     def test_diversity_6(self):
-        self.assertIsNotNone(cache({}, 'FLabwklSeb', {'key': {'etag': '0', 'value': 'FLabwklSeb'}}))
+        import shelve
+        import thefuck.utils as _u
+
+        class _Shelf(dict):
+
+            def close(self):
+                pass
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *a):
+                self.close()
+        shelve.open = lambda *a, **k: _Shelf()
+
+        @_u.cache()
+        def _compute():
+            return 'yselwq'
+        self.assertEqual('yselwq', _compute())
 
     def test_diversity_7(self):
-        self.assertIsNotNone(cache({'key': {'etag': '0', 'value': 'gzUjvr'}}, 'gzUjvr', {}))
+        import shelve
+        import thefuck.utils as _u
+
+        class _Shelf(dict):
+
+            def close(self):
+                pass
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *a):
+                self.close()
+        shelve.open = lambda *a, **k: _Shelf()
+
+        @_u.cache()
+        def _compute():
+            return 'BIycwk'
+        self.assertEqual('BIycwk', _compute())
 
     def test_diversity_8(self):
-        self.assertIsNotNone(cache({}, 'mIlByVG', {'key': {'etag': '0', 'value': 'mIlByVG'}}))
+        import shelve
+        import thefuck.utils as _u
+
+        class _Shelf(dict):
+
+            def close(self):
+                pass
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *a):
+                self.close()
+        shelve.open = lambda *a, **k: _Shelf()
+
+        @_u.cache()
+        def _compute():
+            return 'AckwHcT'
+        self.assertEqual('AckwHcT', _compute())
 
     def test_diversity_9(self):
-        self.assertIsNotNone(cache({'key': {'etag': '0', 'value': 'DGWREkiFdO'}}, 'DGWREkiFdO', {}))
+        import shelve
+        import thefuck.utils as _u
+
+        class _Shelf(dict):
+
+            def close(self):
+                pass
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *a):
+                self.close()
+        shelve.open = lambda *a, **k: _Shelf()
+
+        @_u.cache()
+        def _compute():
+            return 'NmKFhCSaLJedI'
+        self.assertEqual('NmKFhCSaLJedI', _compute())
 
     def test_diversity_10(self):
-        self.assertIsNotNone(cache({'key': {'etag': '0', 'value': 'CSkbVE'}}, 'CSkbVE', {}))
+        import shelve
+        import thefuck.utils as _u
 
+        class _Shelf(dict):
 
+            def close(self):
+                pass
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *a):
+                self.close()
+        shelve.open = lambda *a, **k: _Shelf()
+
+        @_u.cache()
+        def _compute():
+            return 'rIoyIv'
+        self.assertEqual('rIoyIv', _compute())

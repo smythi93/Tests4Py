@@ -30,7 +30,7 @@ jobs:
         pip install -e .[test]
     - name: Test with pytest
       run: |
-        python3 -m pytest --html=report.html --self-contained-html --cov-report xml:coverage.xml --cov-report term --cov-config=.coveragerc --cov=tests4py tests/
+        python3 -m pytest -m "not subjects" --html=report.html --self-contained-html --cov-report xml:coverage.xml --cov-report term --cov-config=.coveragerc --cov=tests4py tests/
         python3 -m coverage lcov
     - uses: actions/upload-artifact@v4
       with:
@@ -38,6 +38,10 @@ jobs:
         path: report.html
     - name: Coveralls
       uses: coverallsapp/github-action@v2
+      # Coverage upload is a report, not a correctness gate: a Coveralls outage
+      # must not fail the build.
+      continue-on-error: true
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         path-to-lcov: coverage.lcov
+        fail-on-error: false

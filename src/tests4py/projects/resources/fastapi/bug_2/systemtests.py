@@ -58,7 +58,7 @@ class TestsPassing(PassingSystemtests):
         return "-ws / dep -ds dep -m websocket -u /"
 
     def test_diversity_8(self):
-        return "-gs /valid/ OtherItem -m get -u /valid/"
+        return "-gs /valid/ Item -os Item over -m get -u /valid/"
 
     def test_diversity_9(self):
         return "-gs /valid/ Item -a aliased_name -m get -u /valid/"

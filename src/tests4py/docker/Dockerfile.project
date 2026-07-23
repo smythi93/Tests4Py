@@ -1,0 +1,30 @@
+# syntax=docker/dockerfile:1
+#
+# Layer 2 of 3 -- the PROJECT image.
+#
+# Built on top of the environment image. It "warms" a project by checking out
+# and building one representative bug, which installs that project's pinned
+# Python version and its (often heavy) dependency set into the shared pyenv /
+# ~/.t4p cache. Sibling bugs of the same project then build in seconds because
+# the expensive layers are already present.
+#
+#   docker build -f src/tests4py/docker/Dockerfile.project \
+#     --build-arg PROJECT=middle --build-arg WARM_BUG=1 \
+#     -t tests4py-project-middle:latest .
+#
+ARG ENV_IMAGE=tests4py-env:latest
+FROM ${ENV_IMAGE}
+
+ARG PROJECT=middle
+ARG WARM_BUG=1
+ENV T4P_PROJECT=${PROJECT}
+
+# Checkout + build one bug to prime the pyenv version and dependency cache.
+RUN t4p checkout -p "${PROJECT}" -i "${WARM_BUG}" -w /warm \
+    && t4p build -w "/warm/${PROJECT}_${WARM_BUG}"
+
+LABEL org.tests4py.layer="project" \
+      org.tests4py.project="${PROJECT}"
+
+WORKDIR /work
+CMD ["bash"]
