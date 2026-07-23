@@ -93,7 +93,10 @@ def register():
                 "beam_dataflow_test.py::BeamDataflowTest::test_get_target_path",
             )
         ],
-        test_status_fixed=TestStatus.FAILING,
+        unittests=Luigi2UnittestGenerator(),
+        systemtests=Luigi2SystemtestGenerator(),
+        api=Luigi2API(),
+        grammar=grammar_2,
         loc=15699,
     )
     Luigi(
@@ -360,7 +363,10 @@ def register():
                 "scheduler_test.py::SchedulerTest::test_local_scheduler_task_history_status",
             )
         ],
-        test_status_fixed=TestStatus.FAILING,
+        unittests=Luigi17UnittestGenerator(),
+        systemtests=Luigi17SystemtestGenerator(),
+        api=Luigi17API(),
+        grammar=grammar_17,
         loc=10639,
     )
     Luigi(
@@ -406,7 +412,10 @@ def register():
         test_cases=[
             os.path.join("test", "task_test.py::TaskTest::test_task_to_str_to_task")
         ],
-        test_status_fixed=TestStatus.FAILING,
+        unittests=Luigi20UnittestGenerator(),
+        systemtests=Luigi20SystemtestGenerator(),
+        api=Luigi20API(),
+        grammar=grammar_20,
         loc=9226,
     )
     Luigi(
@@ -419,7 +428,10 @@ def register():
                 "test", "interface_test.py::InterfaceTest::test_just_run_main_task_cls"
             )
         ],
-        test_status_fixed=TestStatus.FAILING,
+        unittests=Luigi21UnittestGenerator(),
+        systemtests=Luigi21SystemtestGenerator(),
+        api=Luigi21API(),
+        grammar=grammar_21,
         loc=9174,
     )
     Luigi(
@@ -475,7 +487,10 @@ def register():
                 "test", "contrib", "spark_test.py::SparkSubmitTaskTest::test_defaults"
             ),
         ],
-        test_status_fixed=TestStatus.FAILING,
+        unittests=Luigi24UnittestGenerator(),
+        systemtests=Luigi24SystemtestGenerator(),
+        api=Luigi24API(),
+        grammar=grammar_24,
         loc=8987,
     )
     Luigi(
@@ -492,7 +507,10 @@ def register():
                 "redshift_test.py::TestS3CopyToTable::test_s3_copy_to_table",
             ),
         ],
-        test_status_fixed=TestStatus.FAILING,
+        unittests=Luigi25UnittestGenerator(),
+        systemtests=Luigi25SystemtestGenerator(),
+        api=Luigi25API(),
+        grammar=grammar_25,
         loc=8587,
     )
     Luigi(
@@ -3464,3 +3482,647 @@ grammar_8: Grammar = clean_up(
 )
 
 assert is_valid_grammar(grammar_8)
+
+
+# ======================================================================
+# bug_20: ``Task.to_str_params`` serialized only *significant* parameters
+# (``if params[param_name].significant``).  ``from_str_params`` however
+# reads ``params_str[param_name]`` for *every* declared parameter, so a
+# task that has an *insignificant* parameter could not be round-tripped:
+# ``to_str_params`` dropped the insignificant key and ``from_str_params``
+# raised ``KeyError``.  The fix serializes *all* parameters.
+#
+# System-test format:  ``<mode> <word>`` where ``<mode>`` is ``insig`` (the
+#   trigger: the task carries an insignificant parameter, so the round-trip
+#   raises ``KeyError`` on the buggy build) or ``sig`` (only significant
+#   parameters, so the round-trip succeeds on both builds).  The harness
+#   round-trips the task through ``to_str_params``/``from_str_params`` and
+#   prints ``HARNESS_OK`` iff the reconstructed task equals the original;
+#   the oracle -- knowing the CORRECT behaviour is that the round-trip
+#   always succeeds -- returns PASSING iff ``HARNESS_OK`` was printed.
+# ======================================================================
+
+
+class Luigi20API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and "HARNESS_OK" in out:
+            return TestResult.PASSING, out
+        return TestResult.FAILING, out or process.stderr.decode("utf8").strip()
+
+
+class Luigi20TestGenerator:
+    @staticmethod
+    def generate_word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(4, 9)))
+
+
+class Luigi20SystemtestGenerator(SystemtestGenerator, Luigi20TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return f"insig {self.generate_word()}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return f"sig {self.generate_word()}", TestResult.PASSING
+
+
+class Luigi20UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi20TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [ast.Import(names=[ast.alias(name="luigi")])]
+
+    def _body(self, mode: str, w: str) -> List[ast.stmt]:
+        cls_name = f"Task_{mode}_{w}"
+        if mode == "insig":
+            attrs = (
+                "    x = luigi.Parameter()\n"
+                "    y = luigi.Parameter(significant=False)\n"
+            )
+            create = f"original = {cls_name}(x={('vx' + w)!r}, y={('vy' + w)!r})"
+        else:
+            attrs = (
+                "    x = luigi.Parameter()\n"
+                "    z = luigi.Parameter()\n"
+            )
+            create = f"original = {cls_name}(x={('vx' + w)!r}, z={('vz' + w)!r})"
+        return ast.parse(
+            f"class {cls_name}(luigi.Task):\n"
+            f"{attrs}"
+            f"{create}\n"
+            f"other = {cls_name}.from_str_params(original.to_str_params())\n"
+            f"self.assertEqual(original, other)\n"
+        ).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("insig", self.generate_word())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("sig", self.generate_word())
+        return test, TestResult.PASSING
+
+
+grammar_20: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<mode> <word>"],
+            "<mode>": ["insig", "sig"],
+            "<word>": ["<letter><letters>"],
+            "<letters>": ["", "<letter><letters>"],
+            "<letter>": srange(string.ascii_lowercase),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_20)
+
+
+# ======================================================================
+# bug_24: ``SparkSubmitTask._dict_arg`` wrapped every ``prop=value`` in an
+# extra pair of double quotes -- ``'"{0}={1}"'.format(prop, value)`` --
+# which leaked the literal quotes into the ``spark-submit`` command line
+# (e.g. ``['--conf', '"Prop=Value"']`` instead of ``['--conf',
+# 'Prop=Value']``).  The fix drops the quotes: ``'{0}={1}'.format(...)``.
+#
+# System-test format:  ``<mode> <name> <prop> <val>`` where ``<mode>`` is
+#   ``dict`` (the trigger: a non-empty dict, so the buggy build emits the
+#   quoted form) or ``empty`` (an empty dict, so ``_dict_arg`` returns
+#   ``[]`` on both builds).  The harness prints ``repr(_dict_arg(name,
+#   value))``; the oracle -- knowing the CORRECT behaviour is the
+#   quote-free ``["<name>", "<prop>=<val>"]`` (or ``[]``) -- returns
+#   PASSING iff the printed value equals that.
+# ======================================================================
+
+
+class Luigi24API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            mode = process.args[2]
+            name = process.args[3]
+            prop = process.args[4]
+            val = process.args[5]
+        except (IndexError, ValueError):
+            return TestResult.UNDEFINED, "Malformed test input"
+        if mode == "dict":
+            expected = [name, "{0}={1}".format(prop, val)]
+        else:
+            expected = []
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == repr(expected):
+            return TestResult.PASSING, f"Expected {expected!r}"
+        return TestResult.FAILING, f"Expected {expected!r}, but was {out!r}"
+
+
+class Luigi24TestGenerator:
+    @staticmethod
+    def generate_word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(3, 8)))
+
+    def generate_triple(self) -> Tuple[str, str, str]:
+        return self.generate_word(), self.generate_word(), self.generate_word()
+
+
+class Luigi24SystemtestGenerator(SystemtestGenerator, Luigi24TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        name, prop, val = self.generate_triple()
+        return f"dict --{name} {prop} {val}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        name, prop, val = self.generate_triple()
+        return f"empty --{name} {prop} {val}", TestResult.PASSING
+
+
+class Luigi24UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi24TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.ImportFrom(
+                module="luigi.contrib.spark",
+                names=[ast.alias(name="SparkSubmitTask")],
+                level=0,
+            )
+        ]
+
+    def _body(self, mode: str, name: str, prop: str, val: str) -> List[ast.stmt]:
+        if mode == "dict":
+            value = f"{{{prop!r}: {val!r}}}"
+            expected = [f"--{name}", f"{prop}={val}"]
+        else:
+            value = "{}"
+            expected = []
+        return ast.parse(
+            f"self.assertEqual(\n"
+            f"    SparkSubmitTask._dict_arg(None, {('--' + name)!r}, {value}),\n"
+            f"    {expected!r},\n"
+            f")\n"
+        ).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        name, prop, val = self.generate_triple()
+        test = self.get_empty_test()
+        test.body = self._body("dict", name, prop, val)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        name, prop, val = self.generate_triple()
+        test = self.get_empty_test()
+        test.body = self._body("empty", name, prop, val)
+        return test, TestResult.PASSING
+
+
+grammar_24: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<mode> --<word> <word> <word>"],
+            "<mode>": ["dict", "empty"],
+            "<word>": ["<letter><letters>"],
+            "<letters>": ["", "<letter><letters>"],
+            "<letter>": srange(string.ascii_lowercase),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_24)
+
+
+# ======================================================================
+# bug_2: ``BeamDataflowJobTask.get_target_path`` had a broken branch for
+# ``BigQueryTarget``: it built the ``"{}:{}.{}"`` string but never
+# ``return``-ed it (and referenced non-existent ``target.project_id``
+# attributes), so passing a ``BigQueryTarget`` produced ``None`` /
+# ``AttributeError`` instead of ``"project:dataset.table"``.  The fix
+# returns ``"{}:{}.{}".format(target.table.project_id,
+# target.table.dataset_id, target.table.table_id)``.
+#
+# System-test format:  ``<kind> ...`` where ``<kind>`` is ``bq <p> <d> <t>``
+#   (the trigger: a BigQueryTarget, mishandled on the buggy build) or
+#   ``local <path>`` / ``gcs gs://<path>`` (a LocalTarget/GCSTarget, whose
+#   ``return target.path`` branch works on both builds).  The harness prints
+#   ``repr(get_target_path(target))``; the oracle -- knowing the CORRECT
+#   result (``"<p>:<d>.<t>"`` for bq, the path otherwise) -- returns PASSING
+#   iff the printed value equals it.
+# ======================================================================
+
+
+class Luigi2API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            kind = process.args[2]
+            if kind == "bq":
+                expected = "{}:{}.{}".format(
+                    process.args[3], process.args[4], process.args[5]
+                )
+            else:
+                expected = process.args[3]
+        except (IndexError, ValueError):
+            return TestResult.UNDEFINED, "Malformed test input"
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == repr(expected):
+            return TestResult.PASSING, f"Expected {expected!r}"
+        return TestResult.FAILING, f"Expected {expected!r}, but was {out!r}"
+
+
+class Luigi2TestGenerator:
+    @staticmethod
+    def generate_word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(3, 8)))
+
+
+class Luigi2SystemtestGenerator(SystemtestGenerator, Luigi2TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        p, d, t = self.generate_word(), self.generate_word(), self.generate_word()
+        return f"bq {p} {d} {t}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        if random.random() < 0.5:
+            return f"local out_{self.generate_word()}", TestResult.PASSING
+        return (
+            f"gcs gs://{self.generate_word()}/{self.generate_word()}",
+            TestResult.PASSING,
+        )
+
+
+class Luigi2UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi2TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.Import(names=[ast.alias(name="luigi")]),
+            ast.ImportFrom(
+                module="luigi.contrib",
+                names=[ast.alias(name="bigquery"), ast.alias(name="gcs")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="luigi.contrib.beam_dataflow",
+                names=[ast.alias(name="BeamDataflowJobTask")],
+                level=0,
+            ),
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        p, d, t = self.generate_word(), self.generate_word(), self.generate_word()
+        test = self.get_empty_test()
+        test.body = ast.parse(
+            f"target = bigquery.BigQueryTarget({p!r}, {d!r}, {t!r}, client='fake_client')\n"
+            f"self.assertEqual(BeamDataflowJobTask.get_target_path(target), {f'{p}:{d}.{t}'!r})\n"
+        ).body
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        if random.random() < 0.5:
+            path = f"out_{self.generate_word()}"
+            test.body = ast.parse(
+                f"target = luigi.LocalTarget({path!r})\n"
+                f"self.assertEqual(BeamDataflowJobTask.get_target_path(target), {path!r})\n"
+            ).body
+        else:
+            path = f"gs://{self.generate_word()}/{self.generate_word()}"
+            test.body = ast.parse(
+                f"target = gcs.GCSTarget({path!r}, client='fake_client')\n"
+                f"self.assertEqual(BeamDataflowJobTask.get_target_path(target), {path!r})\n"
+            ).body
+        return test, TestResult.PASSING
+
+
+grammar_2: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["bq <word> <word> <word>", "local out_<word>", "gcs gs://<word>/<word>"],
+            "<word>": ["<letter><letters>"],
+            "<letters>": ["", "<letter><letters>"],
+            "<letter>": srange(string.ascii_lowercase),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_2)
+
+
+# ======================================================================
+# bug_17: ``_WorkerSchedulerFactory.create_local_scheduler`` created a
+# ``CentralPlannerScheduler(prune_on_get_work=True)`` without forcing
+# ``record_task_history=False``.  A *local* (in-process) scheduler has no
+# task-history database, yet if the user's config set
+# ``[scheduler] record_task_history=True`` the local scheduler would honour
+# it and try to build a ``DbTaskHistory`` -- so ``_config.record_task_history``
+# came back ``True`` (and construction could even fail).  The fix passes
+# ``record_task_history=False`` so a local scheduler never records history.
+#
+# System-test format:  ``<mode> <word>`` where ``<mode>`` is ``on`` (the
+#   trigger: config sets ``record_task_history=True``, which the buggy local
+#   scheduler wrongly honours) or ``off`` (config leaves it False).  The
+#   harness sets the config accordingly, builds a local scheduler and prints
+#   ``_config.record_task_history``; the oracle -- knowing the CORRECT
+#   behaviour is that a local scheduler is ALWAYS ``False`` -- returns
+#   PASSING iff the printed value is ``False``.
+# ======================================================================
+
+
+class Luigi17API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == "False":
+            return TestResult.PASSING, out
+        return TestResult.FAILING, out or process.stderr.decode("utf8").strip()
+
+
+class Luigi17TestGenerator:
+    @staticmethod
+    def generate_word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(4, 9)))
+
+
+class Luigi17SystemtestGenerator(SystemtestGenerator, Luigi17TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return f"on {self.generate_word()}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return f"off {self.generate_word()}", TestResult.PASSING
+
+
+class Luigi17UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi17TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.Import(names=[ast.alias(name="luigi.configuration")]),
+            ast.ImportFrom(
+                module="luigi.interface",
+                names=[ast.alias(name="_WorkerSchedulerFactory")],
+                level=0,
+            ),
+        ]
+
+    def _body(self, mode: str, tag: str) -> List[ast.stmt]:
+        value = "True" if mode == "on" else "False"
+        return ast.parse(
+            f"_tag = {tag!r}\n"
+            "config = luigi.configuration.get_config()\n"
+            "if not config.has_section('scheduler'):\n"
+            "    config.add_section('scheduler')\n"
+            f"config.set('scheduler', 'record_task_history', {value!r})\n"
+            "ls = _WorkerSchedulerFactory().create_local_scheduler()\n"
+            "self.assertEqual(False, ls._config.record_task_history)\n"
+        ).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("on", self.generate_word())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("off", self.generate_word())
+        return test, TestResult.PASSING
+
+
+grammar_17: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<mode> <word>"],
+            "<mode>": ["on", "off"],
+            "<word>": ["<letter><letters>"],
+            "<letters>": ["", "<letter><letters>"],
+            "<letter>": srange(string.ascii_lowercase),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_17)
+
+
+# ======================================================================
+# bug_25: ``S3CopyToTable.run`` referenced the load path as ``self.
+# s3_load_path()`` -- but ``s3_load_path`` is an (abstract) *property* that
+# subclasses override with a plain string attribute, so calling it raised
+# ``TypeError: 'str' object is not callable``.  The fix reads it as an
+# attribute: ``path = self.s3_load_path``.
+#
+# System-test format:  ``<mode> <bucket> <key>`` where ``<mode>`` is
+#   ``attr`` (the trigger: ``s3_load_path`` is a string attribute -- the
+#   documented usage -- so the buggy build crashes when calling it) or
+#   ``method`` (``s3_load_path`` is a callable, which the buggy build can
+#   still call and the fixed build simply doesn't call, so both succeed).
+#   The harness mocks the Redshift target + copy, runs the task and prints
+#   ``HARNESS_OK``; the oracle -- knowing the CORRECT behaviour is that the
+#   task runs to completion -- returns PASSING iff ``HARNESS_OK`` printed.
+# ======================================================================
+
+
+class Luigi25API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and "HARNESS_OK" in out:
+            return TestResult.PASSING, out
+        return TestResult.FAILING, out or process.stderr.decode("utf8").strip()
+
+
+class Luigi25TestGenerator:
+    @staticmethod
+    def generate_word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(4, 9)))
+
+    def generate_pair(self) -> Tuple[str, str]:
+        return self.generate_word(), self.generate_word()
+
+
+class Luigi25SystemtestGenerator(SystemtestGenerator, Luigi25TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        bucket, key = self.generate_pair()
+        return f"attr {bucket} {key}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        bucket, key = self.generate_pair()
+        return f"method {bucket} {key}", TestResult.PASSING
+
+
+class Luigi25UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi25TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.Import(names=[ast.alias(name="luigi.contrib.redshift")]),
+            ast.ImportFrom(
+                module="unittest", names=[ast.alias(name="mock")], level=0
+            ),
+        ]
+
+    def _body(self, mode: str, bucket: str, key: str) -> List[ast.stmt]:
+        cls_name = f"DummyS3CopyToTable_{mode}_{bucket}_{key}"
+        load_path = f"s3://{bucket}/{key}"
+        if mode == "attr":
+            load_line = f"    s3_load_path = {load_path!r}\n"
+        else:
+            load_line = (
+                "    def s3_load_path(self):\n"
+                f"        return {load_path!r}\n"
+            )
+        return ast.parse(
+            f"class {cls_name}(luigi.contrib.redshift.S3CopyToTable):\n"
+            f"    host = 'h'\n"
+            f"    database = 'd'\n"
+            f"    user = 'u'\n"
+            f"    password = 'p'\n"
+            f"    table = 't'\n"
+            f"    columns = (('c', 'text'),)\n"
+            f"    aws_access_key_id = 'k'\n"
+            f"    aws_secret_access_key = 's'\n"
+            f"{load_line}"
+            f"    copy_options = ''\n"
+            f"with mock.patch('luigi.contrib.redshift.RedshiftTarget'), "
+            f"mock.patch('luigi.contrib.redshift.S3CopyToTable.copy'):\n"
+            f"    task = {cls_name}()\n"
+            f"    task.run()\n"
+            f"self.assertTrue(True)\n"
+        ).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        bucket, key = self.generate_pair()
+        test = self.get_empty_test()
+        test.body = self._body("attr", bucket, key)
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        bucket, key = self.generate_pair()
+        test = self.get_empty_test()
+        test.body = self._body("method", bucket, key)
+        return test, TestResult.PASSING
+
+
+grammar_25: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<mode> <word> <word>"],
+            "<mode>": ["attr", "method"],
+            "<word>": ["<letter><letters>"],
+            "<letters>": ["", "<letter><letters>"],
+            "<letter>": srange(string.ascii_lowercase),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_25)
+
+
+# ======================================================================
+# bug_21: ``interface.run`` did not default ``cmdline_args`` to
+# ``sys.argv[1:]`` when it was ``None``.  So calling ``luigi.run(
+# main_task_cls=SomeTask)`` (the documented no-args entry point) hit
+# ``cmdline_args.insert(0, main_task_cls.task_family)`` with
+# ``cmdline_args is None`` and raised ``AttributeError: 'NoneType' object
+# has no attribute 'insert'``.  The fix adds ``if cmdline_args is None:
+# cmdline_args = sys.argv[1:]`` at the top of ``run``.
+#
+# System-test format:  ``<mode> <word>`` where ``<mode>`` is ``none`` (the
+#   trigger: ``cmdline_args`` left as ``None`` while a ``main_task_cls`` is
+#   given, which crashes on the buggy build) or ``explicit`` (an explicit
+#   ``cmdline_args`` list, which both builds accept).  The harness invokes
+#   ``luigi.run`` accordingly on a trivially-complete task and prints
+#   ``HARNESS_OK``; the oracle -- knowing the CORRECT behaviour is that the
+#   call returns without error -- returns PASSING iff ``HARNESS_OK`` printed.
+# ======================================================================
+
+
+class Luigi21API(LuigiAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and "HARNESS_OK" in out:
+            return TestResult.PASSING, out
+        return TestResult.FAILING, out or process.stderr.decode("utf8").strip()
+
+
+class Luigi21TestGenerator:
+    @staticmethod
+    def generate_word() -> str:
+        return "".join(random.choices(string.ascii_lowercase, k=random.randint(4, 9)))
+
+
+class Luigi21SystemtestGenerator(SystemtestGenerator, Luigi21TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return f"none {self.generate_word()}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return f"explicit {self.generate_word()}", TestResult.PASSING
+
+
+class Luigi21UnittestGenerator(
+    python.PythonGenerator, UnittestGenerator, Luigi21TestGenerator
+):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.Import(names=[ast.alias(name="sys")]),
+            ast.Import(names=[ast.alias(name="luigi")]),
+        ]
+
+    def _body(self, mode: str, tag: str) -> List[ast.stmt]:
+        cls_name = f"MyTask_{mode}_{tag}"
+        cls_def = (
+            f"class {cls_name}(luigi.Task):\n"
+            f"    def complete(self):\n"
+            f"        return True\n"
+        )
+        if mode == "none":
+            return ast.parse(
+                cls_def
+                + "_saved = sys.argv\n"
+                + "sys.argv = ['harness', '--no-lock', '--local-scheduler']\n"
+                + "try:\n"
+                + f"    luigi.run(main_task_cls={cls_name})\n"
+                + "finally:\n"
+                + "    sys.argv = _saved\n"
+                + "self.assertTrue(True)\n"
+            ).body
+        return ast.parse(
+            cls_def
+            + f"luigi.run(cmdline_args=['--no-lock', '--local-scheduler'], "
+            f"main_task_cls={cls_name})\n"
+            + "self.assertTrue(True)\n"
+        ).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("none", self.generate_word())
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = self._body("explicit", self.generate_word())
+        return test, TestResult.PASSING
+
+
+grammar_21: Grammar = clean_up(
+    dict(
+        {
+            "<start>": ["<mode> <word>"],
+            "<mode>": ["none", "explicit"],
+            "<word>": ["<letter><letters>"],
+            "<letters>": ["", "<letter><letters>"],
+            "<letter>": srange(string.ascii_lowercase),
+        }
+    )
+)
+
+assert is_valid_grammar(grammar_21)

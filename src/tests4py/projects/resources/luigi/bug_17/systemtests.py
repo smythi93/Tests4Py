@@ -3,62 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return "'VaDsWgRUKVzO' 'nocm'"
+        return 'on khjesohx'
 
     def test_diversity_2(self):
-        return "'BkaWlmwbAfnb' 'nocm'"
+        return 'on jtgni'
 
     def test_diversity_3(self):
-        return "'CsTtTCZztknKhxo' 'nocm'"
+        return 'on ykzbvwdso'
 
     def test_diversity_4(self):
-        return "'LPAjDEImtzwblr' 'nocm'"
+        return 'on fowqicymz'
 
     def test_diversity_5(self):
-        return "'IyNnAhdDSpEpbRz' 'nocm'"
+        return 'on rknil'
 
     def test_diversity_6(self):
-        return "'QziSjIQG' 'nocm'"
+        return 'on btjyjuwg'
 
     def test_diversity_7(self):
-        return "'WtgkLZWs' 'nocm'"
+        return 'on fgybbhtv'
 
     def test_diversity_8(self):
-        return "'hCTVSBsxd' 'nocm'"
+        return 'on odrxiixp'
 
     def test_diversity_9(self):
-        return "'sEBBawC' 'nocm'"
+        return 'on ibzatm'
 
     def test_diversity_10(self):
-        return "'xRKlmjHwcYbpHyE' 'nocm'"
+        return 'on sibz'
+
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return "'gNVnXiCyqwkk' 'cm'"
+        return 'off aorktyp'
 
     def test_diversity_2(self):
-        return "'VLUcVe' 'cm'"
+        return 'off ezyrxbz'
 
     def test_diversity_3(self):
-        return "'XiMilamKp' 'cm'"
+        return 'off uxvbyc'
 
     def test_diversity_4(self):
-        return "'pHSLBXSP' 'cm'"
+        return 'off vrkbcq'
 
     def test_diversity_5(self):
-        return "'FogMKSbkH' 'cm'"
+        return 'off fyoub'
 
     def test_diversity_6(self):
-        return "'GzCipP' 'cm'"
+        return 'off pvfkqcl'
 
     def test_diversity_7(self):
-        return "'fjbPOOPVEoy' 'cm'"
+        return 'off fieja'
 
     def test_diversity_8(self):
-        return "'eredwpmqF' 'cm'"
+        return 'off pnbvzezgi'
 
     def test_diversity_9(self):
-        return "'kfsqf' 'cm'"
+        return 'off zthjp'
 
     def test_diversity_10(self):
-        return "'yNCmw' 'cm'"
+        return 'off cayxoemw'

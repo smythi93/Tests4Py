@@ -3,63 +3,62 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return 'zxVLti'
+        return "'Fish Shell vxgQTERcfRSwdv' 'emmdfHJDoeMQsUpe' 'vxgQTERcfRSwdv'"
 
     def test_diversity_2(self):
-        return 'zxgjHnbI'
+        return "'Fish Shell vtVTqLXLDVn' 'ebkSXqIUusUPwKp' 'vtVTqLXLDVn'"
 
     def test_diversity_3(self):
-        return 'zxOeYHXjHJ'
+        return "'Fish Shell vimNcmRpEEGSRQ' 'eSFUTLkuymLkKkKc' 'vimNcmRpEEGSRQ'"
 
     def test_diversity_4(self):
-        return 'zxEbPTNz'
+        return "'Fish Shell vCmOmrpeUMT' 'eyEpgPrb' 'vCmOmrpeUMT'"
 
     def test_diversity_5(self):
-        return 'zxGKUzJ'
+        return "'Fish Shell vwFawwRdVv' 'egaRoVgVrfQ' 'vwFawwRdVv'"
 
     def test_diversity_6(self):
-        return 'zxOjPps'
+        return "'Fish Shell vKARyNZk' 'etDVzWkht' 'vKARyNZk'"
 
     def test_diversity_7(self):
-        return 'zxqtUrE'
+        return "'Fish Shell vvZTwgQOsimWPqFm' 'edvDyMUdAazQMeT' 'vvZTwgQOsimWPqFm'"
 
     def test_diversity_8(self):
-        return 'zxDbI'
+        return "'Fish Shell vuZVUBmrMcy' 'emekMyhqqjzGXEO' 'vuZVUBmrMcy'"
 
     def test_diversity_9(self):
-        return 'zxfaqTnvQC'
+        return "'Fish Shell vBEDRl' 'eXYXvGHBJgIsBzlw' 'vBEDRl'"
 
     def test_diversity_10(self):
-        return 'zxbIQgRIrY'
-
+        return "'Fish Shell vFTAMDOU' 'ewBHeDu' 'vFTAMDOU'"
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return 'She'
+        return "'Fish Shell zQHPDFkGx' 'zQHPDFkGx' 'zQHPDFkGx'"
 
     def test_diversity_2(self):
-        return 'Shel'
+        return "'Fish Shell ZYrUQZe' 'ZYrUQZe' 'ZYrUQZe'"
 
     def test_diversity_3(self):
-        return 'sh Sh'
+        return "'Fish Shell VvTuBpTl' 'VvTuBpTl' 'VvTuBpTl'"
 
     def test_diversity_4(self):
-        return 'Fish'
+        return "'Fish Shell UJfDvcsRYgXUM' 'UJfDvcsRYgXUM' 'UJfDvcsRYgXUM'"
 
     def test_diversity_5(self):
-        return 'ish'
+        return "'Fish Shell uPjzJP' 'uPjzJP' 'uPjzJP'"
 
     def test_diversity_6(self):
-        return 'Shell'
+        return "'Fish Shell LLwRUVytJXvuPq' 'LLwRUVytJXvuPq' 'LLwRUVytJXvuPq'"
 
     def test_diversity_7(self):
-        return 'hell'
+        return "'Fish Shell hbtUYBXYjaYEbi' 'hbtUYBXYjaYEbi' 'hbtUYBXYjaYEbi'"
 
     def test_diversity_8(self):
-        return 'h Shell'
+        return "'Fish Shell nfpJMtQEkcj' 'nfpJMtQEkcj' 'nfpJMtQEkcj'"
 
     def test_diversity_9(self):
-        return 'ish Shell'
+        return "'Fish Shell qISehgsecm' 'qISehgsecm' 'qISehgsecm'"
 
     def test_diversity_10(self):
-        return 'Fish She'
+        return "'Fish Shell avXocuxRkXZJi' 'avXocuxRkXZJi' 'avXocuxRkXZJi'"

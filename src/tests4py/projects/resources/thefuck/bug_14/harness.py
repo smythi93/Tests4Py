@@ -3,18 +3,14 @@ import sys
 
 from thefuck.shells.fish import Fish
 
-# A deterministic, host-independent set of overridden aliases injected through
-# the environment variable that Fish._get_overridden_aliases (the buggy
-# function) reads. This avoids depending on the host's fish configuration.
-OVERRIDDEN = (
-    "cd,grep,ls,man,open,git,vim,cat,echo,sed,"
-    "awk,find,make,node,curl,tar,wget,rm,cp,mv"
-)
-
+# The bug is in Fish._get_overridden_aliases: when TF_OVERRIDDEN_ALIASES is set,
+# the buggy build *replaces* the built-in default {cd, grep, ls, man, open} with
+# only the environment-provided aliases, whereas the fixed build always unions
+# the default set in. Probing for a default alias while the env holds only
+# non-default aliases therefore returns False on the buggy build and True on the
+# fixed build. No fish binary is involved -- the method only reads os.environ.
 if __name__ == "__main__":
-    name = sys.argv[1]
-    os.environ["TF_OVERRIDDEN_ALIASES"] = OVERRIDDEN
-    if name in Fish()._get_overridden_aliases():
-        print(name)
-    else:
-        print("Error Retrieving Fish Shell Overridden")
+    env_aliases = sys.argv[2]
+    needle = sys.argv[3]
+    os.environ["TF_OVERRIDDEN_ALIASES"] = env_aliases
+    print(needle in Fish()._get_overridden_aliases())

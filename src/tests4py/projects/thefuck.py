@@ -859,15 +859,18 @@ class TheFuckAPI3(API):
         super().__init__(default_timeout=default_timeout)
 
     def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        # The first serialized token is the expected Fish().info() string
+        # ("Fish Shell <ver>", the fixed-build result). The buggy build emits the
+        # raw echo output instead, so a mismatched raw_echo yields a FAILING.
         if args is None:
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
+        expected = process.args[2]
         result = process.stdout.decode("utf8").strip()
-        if result == "IN":
+        if result == expected:
             return TestResult.PASSING, ""
-        elif result == "OUT":
-            return TestResult.FAILING, "needle not found in Fish().info()"
-        return TestResult.UNDEFINED, f"unexpected harness output: {result!r}"
+        else:
+            return TestResult.FAILING, f"Expected {expected}, but was {result}"
 
 
 class TheFuckAPI4(API):
@@ -949,12 +952,14 @@ class TheFuckAPI8(API):
         super().__init__(default_timeout=default_timeout)
 
     def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        # The first serialized token is the expected (fixed-build) output; the
+        # harness prints the space-joined parsed operations (fixed) or crashes
+        # with a TypeError (buggy) for "parse" tests, and prints match()'s bool
+        # for the invariant "match" tests.
         if args is None:
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
         expected = process.args[2]
-        expected = expected.replace("(", "")
-        expected = expected.replace(",", "")
         result = process.stdout.decode("utf8").strip()
         if result == expected:
             return TestResult.PASSING, ""
@@ -985,22 +990,14 @@ class TheFuckAPI10(API):
         super().__init__(default_timeout=default_timeout)
 
     def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        # The first serialized token is the expected len(get_new_command(...)):
+        # "1" for the fixed "No manual entry" special case (buggy still returns
+        # 3), "3" for the invariant digit-less path.
         if args is None:
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
+        expected = process.args[2]
         result = process.stdout.decode("utf8").strip()
-        if len(process.args) == 6:
-            expected = process.args[2]
-            expected = expected.replace(expected[len(expected) - 1], "")
-            expected = expected.replace(expected[0], "")
-        else:
-            expected = str(process.args[2:5])
-            expected = expected.replace("([", "")
-            expected = expected.replace("],", "")
-            expected = expected.replace("help,", "help")
-            expected = expected.replace("read,", "read")
-            expected = expected.replace("missing,", "missing")
-
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -1241,14 +1238,14 @@ class TheFuckAPI23(API):
         super().__init__(default_timeout=default_timeout)
 
     def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        # The first serialized token is the cached value the harness prints. In
+        # "nocm" mode the buggy build crashes (no output) while the fixed build
+        # prints the value; in "cm" mode both builds print the value.
         if args is None:
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
         expected = process.args[2]
-        result = process.stdout.decode("utf8")
-        result = result.strip()
-        expected = expected[1:]
-        expected = expected[:-1]
+        result = process.stdout.decode("utf8").strip()
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -1296,14 +1293,14 @@ class TheFuckAPI26(API):
         super().__init__(default_timeout=default_timeout)
 
     def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        # The first serialized token is the expected isinstance(result, list)
+        # boolean the harness prints ("True" when the fixed build returns a list
+        # of suggestions for a machine-scoped command, "False" otherwise).
         if args is None:
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
         expected = process.args[2]
-        result = process.stdout.decode("utf8")
-        result = result.strip()
-        expected = expected[1:]
-        expected = expected[:-1]
+        result = process.stdout.decode("utf8").strip()
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -1334,14 +1331,14 @@ class TheFuckAPI28(API):
         super().__init__(default_timeout=default_timeout)
 
     def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        # The first serialized token is the expected "COLMARKER in output"
+        # boolean: "True" when the fixed build honours the fixcolcmd setting
+        # (buggy ignores it -> "False"), "False" when no fixcolcmd is supplied.
         if args is None:
             return TestResult.UNDEFINED, "No process finished"
         process: subprocess.CompletedProcess = args
         expected = process.args[2]
-        result = process.stdout.decode("utf8")
-        result = result.strip()
-        expected = expected[1:]
-        expected = expected[:-1]
+        result = process.stdout.decode("utf8").strip()
         if result == expected:
             return TestResult.PASSING, ""
         else:
@@ -1587,46 +1584,33 @@ class TheFuckTestGenerator:
 
     @staticmethod
     def thefuck3_generate_():
-        try:
-            result = subprocess.run(
-                ["fish", "-v"], capture_output=True, text=True, check=True
-            )
-            version_info = result.stdout[14:19]
-            return f"Fish Shell {version_info}"
-
-        except subprocess.CalledProcessError as err:
-            return f"Error Retrieving Shell {err}"
+        # fish.info() reads the version differently on each build: buggy runs
+        # `echo $FISH_VERSION` and strips, fixed runs `fish --version` and takes
+        # the last whitespace token. Via a Popen monkeypatch the harness feeds
+        # raw_echo to the buggy form and "fish, version <ver>" to the fixed form.
+        # FAILING: raw_echo ("e...") != ver ("v...") -> buggy differs from the
+        # expected "Fish Shell <ver>". PASSING: raw_echo == ver -> both agree.
+        raw_echo = "e" + TheFuckTestGenerator.generate_random_string()
+        ver = "v" + TheFuckTestGenerator.generate_random_string()
+        failing = f"'Fish Shell {ver}' '{raw_echo}' '{ver}'"
+        same = TheFuckTestGenerator.generate_random_string()
+        passing = f"'Fish Shell {same}' '{same}' '{same}'"
+        return passing, failing
 
     @staticmethod
     def thefuck4_generate_():
-        alias = {}
-        overriddens = []
-        try:
-            proc = subprocess.run(
-                ["fish", "-ic", "alias"],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                check=True,
-            )
-
-            alias_out = proc.stdout.strip().split("\n")
-            alias_out = [i.removeprefix("alias ") for i in alias_out]
-            alias_split = [j.split("'") for j in alias_out]
-            for k in alias_split:
-                if len(k) >= 2:
-                    first_ = k[0]
-                    second_ = k[1]
-                    first_ = first_.replace(" ", "")
-                    alias[first_] = second_
-                    overriddens = list(alias)
-        except SystemError:
-            "Cannot retrieve Fish Shell overridden"
-
-        for overridden in overriddens:
-            if overridden == "ls":
-                overriddens.remove(overridden)
-        return overriddens[random.randint(0, len(overriddens) - 1)]
+        # fish._get_aliases parses a canned `alias` line (injected via a Popen
+        # monkeypatch in the harness). FAILING: an ``alias name=value`` line
+        # (fish '=' form) makes the buggy single-separator parser raise ("ERR")
+        # while the fixed multi-separator parser succeeds ("OK"); expected "OK".
+        # PASSING: an ``alias name value`` line parses identically on both.
+        name = TheFuckTestGenerator.generate_random_string()
+        value = TheFuckTestGenerator.generate_random_string()
+        failing = f"'OK' 'alias {name}={value}'"
+        name2 = TheFuckTestGenerator.generate_random_string()
+        value2 = TheFuckTestGenerator.generate_random_string()
+        passing = f"'OK' 'alias {name2} {value2}'"
+        return passing, failing
 
     @staticmethod
     def thefuck5_generate_():
@@ -1797,119 +1781,62 @@ class TheFuckTestGenerator:
             failing_[random.randint(0, len(failing_) - 1)],
         )
 
+    # Real lower-case dnf operations (a-z and '-' only, so the fixed str regex
+    # ``^([a-z-]+) +`` matches each in the synthetic help text the harness
+    # builds).
+    DNF_OPERATIONS = (
+        "autoremove",
+        "check",
+        "check-update",
+        "clean",
+        "deplist",
+        "distro-sync",
+        "downgrade",
+        "group",
+        "help",
+        "history",
+        "info",
+        "install",
+        "list",
+        "makecache",
+        "mark",
+        "provides",
+        "reinstall",
+        "remove",
+        "repolist",
+        "repoquery",
+        "search",
+        "shell",
+        "swap",
+        "updateinfo",
+        "upgrade",
+        "builddep",
+        "config-manager",
+        "copr",
+        "download",
+        "playground",
+        "repoclosure",
+        "repograph",
+        "repomanage",
+        "reposync",
+    )
+
     @staticmethod
     def thefuck8_generate_():
-        dnf_operations_wrong = [
-            "autooremove",
-            "cheeck",
-            "cheeck-updaate",
-            "cleean",
-            "deeplist",
-            "distroo-sync",
-            "downgraade",
-            "grooup",
-            "hellp",
-            "histoory",
-            "infoo",
-            "instaall",
-            "lisst",
-            "makecaache",
-            "maark",
-            "proovides",
-            "reinstaall",
-            "remoove",
-            "repoolist",
-            "repooquery",
-            "repoository-packages",
-            "seaarch",
-            "sheell",
-            "swaap",
-            "updateinfoo",
-            "upgrrade",
-            "upgrade-minimale",
-            "buuilddeep",
-            "config-manageer",
-            "coopr",
-            "debug-dumpe",
-            "debug-restoree",
-            "debuginfoo-install",
-            "downlooad",
-            "needss-restarting",
-            "plaayground",
-            "repocloosure",
-            "repoograph",
-            "repoomanage",
-            "repoosync",
-        ]
-
-        dnf_operations_correct = [
-            "autoremove",
-            "check",
-            "check-update",
-            "clean",
-            "deplist",
-            "distro-sync",
-            "downgrade",
-            "group",
-            "help",
-            "history",
-            "info",
-            "install",
-            "list",
-            "makecache",
-            "mark",
-            "provides",
-            "reinstall",
-            "remove",
-            "repolist",
-            "repoquery",
-            "repository-packages",
-            "search",
-            "shell",
-            "swap",
-            "updateinfo",
-            "upgrade",
-            "upgrade-minimal",
-            "builddep",
-            "config-manager",
-            "copr",
-            "debug-dump",
-            "debug-restore",
-            "debuginfo-install",
-            "download",
-            "needs-restarting",
-            "playground",
-            "repoclosure",
-            "repograph",
-            "repomanage",
-            "reposync",
-        ]
-
-        app_random = TheFuckTestGenerator.generate_random_string()
-
-        chosen_dnf_ = random.randint(0, len(dnf_operations_correct) - 1)
-
-        script_passing_ = f"dnf {dnf_operations_wrong[chosen_dnf_]} {app_random}"
-
-        script_failing_ = f"dnf {dnf_operations_correct[chosen_dnf_]} {app_random}"
-
-        output_passing_ = """No such command: %s. Please use /usr/bin/dnf --help
-        It could be a DNF plugin command, try: dnf install "dnf-command %s" 
-        """ % (
-            dnf_operations_wrong[chosen_dnf_],
-            dnf_operations_correct[chosen_dnf_],
+        # FAILING ("parse" mode): feed a str help text to _parse_operations.
+        # Buggy build -> bytes regex on str -> TypeError -> crash -> FAILING;
+        # fixed build -> str regex -> returns the operation list -> PASSING.
+        ops = random.sample(
+            TheFuckTestGenerator.DNF_OPERATIONS, random.randint(2, 6)
         )
-
-        output_failing_ = "No such command"
-
-        return (
-            True,
-            script_passing_,
-            output_passing_,
-            False,
-            script_failing_,
-            output_failing_,
-        )
+        expected = " ".join(ops)
+        failing = f"'{expected}' parse {','.join(ops)}"
+        # PASSING ("match" mode): match() only checks 'no such command' in the
+        # output and is identical on both builds.
+        op = random.choice(TheFuckTestGenerator.DNF_OPERATIONS)
+        word = TheFuckTestGenerator.generate_random_string()
+        passing = f"'True' match 'dnf {op} {word}' 'No such command: {op}.'"
+        return passing, failing
 
     @staticmethod
     def thefuck9_generate_():
@@ -1969,54 +1896,20 @@ To push the current branch and set the remote as upstream, use
 
     @staticmethod
     def thefuck10_generate_():
-        stdout = "Output Message: " + TheFuckTestGenerator.generate_random_string()
-        passing = (
-            ("man 3 read", "man 2 read", stdout, ""),
-            ("man 2 read", "man 3 read", stdout, ""),
-            ("man -s3 read", "man -s2 read", stdout, ""),
-            ("man -s2 read", "man -s3 read", stdout, ""),
-            ("man -s 3 read", "man -s 2 read", stdout, ""),
-            ("man -s 2 read", "man -s 3 read", stdout, ""),
-            ("man 3 write", "man 2 write", stdout, ""),
-            ("man 2 write", "man 3 write", stdout, ""),
-            ("man -s3 write", "man -s2 write", stdout, ""),
-            ("man -s2 write", "man -s3 write", stdout, ""),
-            ("man -s 3 write", "man -s 2 write", stdout, ""),
-            ("man -s 2 write", "man -s 3 write", stdout, ""),
-            (["read --help", "man 3 read", "man 2 read"], "man read", stdout, ""),
-            (
-                ["missing --help", "man 3 missing", "man 2 missing"],
-                "man missing",
-                stdout,
-                "No manual entry for missing\n",
-            ),
-        )
-        failing = (
-            ("man 5 read", "man 4 read", stdout, ""),
-            ("man 4 read", "man 5 read", stdout, ""),
-            ("man -s5 read", "man -s4 read", stdout, ""),
-            ("man -s4 read", "man -s5 read", stdout, ""),
-            ("man -s 5 read", "man -s 4 read", stdout, ""),
-            ("man -s 4 read", "man -s 5 read", stdout, ""),
-            ("man 5 write", "man 4 write", stdout, ""),
-            ("man 4 write", "man 5 write", stdout, ""),
-            ("man -s5 write", "man -s4 write", stdout, ""),
-            ("man -s4 write", "man -s5 write", stdout, ""),
-            ("man -s 5 write", "man -s 4 write", stdout, ""),
-            ("man -s 4 write", "man -s 5 write", stdout, ""),
-            (["read --help", "man 5 read", "man 4 read"], "man read", stdout, ""),
-            (
-                ["missing --help", "man 5 missing", "man 4 missing"],
-                "man missing",
-                stdout,
-                "No manual entry for missing\n",
-            ),
-        )
-
-        return (
-            passing[random.randint(0, len(passing) - 1)],
-            failing[random.randint(0, len(failing) - 1)],
-        )
+        # man.get_new_command, for a digit-less command, gained a "No manual
+        # entry for X" special case on the fixed build: it then returns the
+        # single suggestion [X + ' --help'] (length 1) instead of the buggy
+        # three-suggestion list (length 3). The harness prints len(result).
+        word = TheFuckTestGenerator.generate_random_string()
+        # FAILING: stderr triggers the fixed special case -> len 1 (fixed) vs
+        # len 3 (buggy); expected "1".
+        failing = f"'1' 'man {word}' 'No manual entry for {word}'"
+        # PASSING: non-matching stderr -> both builds return a 3-element list;
+        # expected "3".
+        word2 = TheFuckTestGenerator.generate_random_string()
+        tail = TheFuckTestGenerator.generate_random_string()
+        passing = f"'3' 'man {word2}' 'some output {tail}'"
+        return passing, failing
 
     @staticmethod
     def thefuck11_generate_():
@@ -2195,20 +2088,35 @@ To push the current branch and set the remote as upstream, use
                 failing2_[random.randint(0, 1)],
             )
 
+    # The five aliases Fish._get_overridden_aliases returns as its built-in
+    # default. On the buggy build a non-empty TF_OVERRIDDEN_ALIASES *replaces*
+    # this default; on the fixed build the default is always unioned in.
+    FISH_DEFAULT_ALIASES = ("cd", "grep", "ls", "man", "open")
+
+    @staticmethod
+    def _fish_env_tokens(k: int) -> list:
+        # Non-default alias tokens (the "zz" prefix guarantees they are never one
+        # of the FISH_DEFAULT_ALIASES).
+        return [
+            "zz" + "".join(random.choices(string.ascii_letters, k=random.randint(3, 7)))
+            for _ in range(k)
+        ]
+
     @staticmethod
     def thefuck14_generate_():
-        overridden_ = []
-        overridden_alias = {"cd", "grep", "ls", "man", "open"}
-        try:
-            for alias in os.environ.get("TF_OVERRIDDEN_ALIASES", "").split(","):
-                overridden_alias.add(alias.strip())
-            for item in overridden_alias:
-                if item != "":
-                    overridden_.append(item)
-            return overridden_[random.randint(0, len(overridden_) - 1)]
-
-        except SystemError or OSError:
-            return "Error Retrieving Fish Shell Overridden"
+        # FAILING: TF_OVERRIDDEN_ALIASES holds only non-default aliases and we
+        # probe for a DEFAULT alias. Buggy build returns just the env aliases
+        # (default missing -> "False"); fixed build unions in the default
+        # (present -> "True"). Expected is "True", so buggy -> FAILING, fixed ->
+        # PASSING.
+        env_fail = TheFuckTestGenerator._fish_env_tokens(random.randint(2, 4))
+        needle_fail = random.choice(TheFuckTestGenerator.FISH_DEFAULT_ALIASES)
+        failing = f"'True' '{','.join(env_fail)}' '{needle_fail}'"
+        # PASSING: probe for one of the env aliases, present on both builds.
+        env_pass = TheFuckTestGenerator._fish_env_tokens(random.randint(2, 4))
+        needle_pass = random.choice(env_pass)
+        passing = f"'True' '{','.join(env_pass)}' '{needle_pass}'"
+        return passing, failing
 
     @staticmethod
     def thefuck15_generate_():
@@ -2580,10 +2488,14 @@ To push the current branch and set the remote as upstream, use
 
     @staticmethod
     def thefuck23_generate_():
-        randomise = TheFuckTestGenerator.generate_random_string()
-        passing_ = ({"key": {"etag": "0", "value": f"{randomise}"}}, f"{randomise}", {})
-        failing_ = ({}, f"{randomise}", {})
-        return passing_, failing_
+        # FAILING ("nocm"): fake shelf without the context-manager protocol ->
+        # buggy crash, fixed survives. PASSING ("cm"): fake shelf with the
+        # protocol -> both survive.
+        value = TheFuckTestGenerator.generate_random_string()
+        failing = f"'{value}' 'nocm'"
+        value2 = TheFuckTestGenerator.generate_random_string()
+        passing = f"'{value2}' 'cm'"
+        return passing, failing
 
     @staticmethod
     def thefuck24_generate_():
@@ -2630,29 +2542,21 @@ To push the current branch and set the remote as upstream, use
 
     @staticmethod
     def thefuck26_generate_():
-        randomise = TheFuckTestGenerator.generate_random_string()
-        passing = (
-            (
-                f"vagrant up  && vagrant {randomise}",
-                f"vagrant {randomise}",
-                "VM must be running to open SSH connection. Run `vagrant up`\nto start the virtual machine.",
-            ),
-            (
-                f"vagrant up devbox && vagrant {randomise} devbox",
-                f"vagrant {randomise} devbox",
-                "VM must be running to open SSH connection. Run `vagrant up`\nto start the virtual machine.",
-            ),
-        )
-        failing = (
-            [
-                f"vagrant up devbox  && vagrant {randomise} devbox",
-                f"vagrant up  && vagrant {randomise} devbox",
-            ],
-            f"vagrant {randomise} devbox",
-            "VM must be running to open SSH connection. Run `vagrant up`\nto start the virtual machine.",
-        )
-
-        return passing[random.randint(0, len(passing) - 1)], failing
+        # vagrant_up.get_new_command changed shape: for a command that names a
+        # machine (>= 3 whitespace-separated parts) the fixed build returns a
+        # LIST of two suggestions while the buggy build returns a single STRING;
+        # for a command without a machine both builds return a STRING. The
+        # harness prints isinstance(result, list), which is build-invariant to
+        # the exact ``shells.and_`` formatting.
+        sub = TheFuckTestGenerator.generate_random_string()
+        machine = TheFuckTestGenerator.generate_random_string()
+        # FAILING: machine present -> fixed returns list ("True"), buggy returns
+        # str ("False"); expected "True".
+        failing = f"'True' 'vagrant {sub} {machine}'"
+        # PASSING: no machine -> both builds return str ("False"); expected
+        # "False".
+        passing = f"'False' 'vagrant {TheFuckTestGenerator.generate_random_string()}'"
+        return passing, failing
 
     @staticmethod
     def thefuck27_generate_():
@@ -2678,266 +2582,17 @@ To push the current branch and set the remote as upstream, use
 
     @staticmethod
     def thefuck28_generate_():
-        randomise_int = random.randint(1, 101)
-        randomise_int_2 = random.randint(1, 101)
-        # (script, file, line, col (or None), stdout, stderr)
-        tests = (
-            (
-                "gcc a.c",
-                "a.c",
-                randomise_int,
-                randomise_int_2,
-                "",
-                """
-             a.c: In function 'main':
-             a.c:3:1: error: expected expression before '}' token
-              }
-               ^
-             """,
-            ),
-            (
-                "clang a.c",
-                "a.c",
-                randomise_int,
-                randomise_int_2,
-                "",
-                """
-             a.c:3:1: error: expected expression
-             }
-             ^
-             """,
-            ),
-            (
-                "perl a.pl",
-                "a.pl",
-                randomise_int,
-                randomise_int_2,
-                "",
-                """
-             syntax error at a.pl line 3, at EOF
-             Execution of a.pl aborted due to compilation errors.
-             """,
-            ),
-            (
-                "perl a.pl",
-                "a.pl",
-                randomise_int,
-                randomise_int_2,
-                "",
-                """
-             Search pattern not terminated at a.pl line 2.
-             """,
-            ),
-            (
-                "sh a.sh",
-                "a.sh",
-                randomise_int,
-                randomise_int_2,
-                "",
-                """
-             a.sh: line 2: foo: command not found
-             """,
-            ),
-            (
-                "zsh a.sh",
-                "a.sh",
-                randomise_int,
-                randomise_int_2,
-                "",
-                """
-             a.sh:2: command not found: foo
-             """,
-            ),
-            (
-                "bash a.sh",
-                "a.sh",
-                randomise_int,
-                randomise_int_2,
-                "",
-                """
-             a.sh: line 2: foo: command not found
-             """,
-            ),
-            (
-                "rustc a.rs",
-                "a.rs",
-                randomise_int,
-                randomise_int_2,
-                "",
-                """
-             a.rs:2:5: 2:6 error: unexpected token: `+`
-             a.rs:2     +
-                        ^
-             """,
-            ),
-            (
-                "cargo build",
-                "src/lib.rs",
-                randomise_int,
-                randomise_int_2,
-                "",
-                """
-                Compiling test v0.1.0 (file:///tmp/fix-error/test)
-                src/lib.rs:3:5: 3:6 error: unexpected token: `+`
-                src/lib.rs:3     +
-                                 ^
-             Could not compile `test`.
-     
-             To learn more, run the command again with --verbose.
-             """,
-            ),
-            (
-                "python a.py",
-                "a.py",
-                randomise_int,
-                randomise_int_2,
-                "",
-                """
-               File "a.py", line 2
-                   +
-                       ^
-             SyntaxError: invalid syntax
-             """,
-            ),
-            (
-                "python a.py",
-                "a.py",
-                randomise_int,
-                randomise_int_2,
-                "",
-                """
-             Traceback (most recent call last):
-               File "a.py", line 8, in <module>
-                 match("foo")
-               File "a.py", line 5, in match
-                 m = re.search(None, command)
-               File "/usr/lib/python3.4/re.py", line 170, in search
-                 return _compile(pattern, flags).search(string)
-               File "/usr/lib/python3.4/re.py", line 293, in _compile
-                 raise TypeError("first argument must be string or compiled pattern")
-             TypeError: first argument must be string or compiled pattern
-             """,
-            ),
-            (
-                "ruby a.rb",
-                "a.rb",
-                randomise_int,
-                randomise_int_2,
-                "",
-                """
-             a.rb:3: syntax error, unexpected keyword_end
-             """,
-            ),
-            (
-                "lua a.lua",
-                "a.lua",
-                randomise_int,
-                randomise_int_2,
-                "",
-                """
-             lua: a.lua:2: unexpected symbol near '+'
-             """,
-            ),
-            (
-                "fish a.sh",
-                "/tmp/fix-error/a.sh",
-                randomise_int,
-                randomise_int_2,
-                "",
-                """
-             fish: Unknown command 'foo'
-             /tmp/fix-error/a.sh (line 2): foo
-                                           ^
-             """,
-            ),
-            (
-                "./a",
-                "./a",
-                randomise_int_2,
-                randomise_int_2,
-                "",
-                """
-             awk: ./a:2: BEGIN { print "Hello, world!" + }
-             awk: ./a:2:                                 ^ syntax error
-             """,
-            ),
-            (
-                "llc a.ll",
-                "a.ll",
-                randomise_int,
-                randomise_int_2,
-                "",
-                """
-             llc: a.ll:1:2: error: expected top-level entity
-             +
-             ^
-             """,
-            ),
-            (
-                "go build a.go",
-                "a.go",
-                randomise_int,
-                randomise_int_2,
-                "",
-                """
-             can't load package:
-             a.go:1:2: expected 'package', found '+'
-             """,
-            ),
-            (
-                "make",
-                "Makefile",
-                randomise_int,
-                randomise_int_2,
-                "",
-                """
-             bidule
-             make: bidule: Command not found
-             Makefile:2: recipe for target 'target' failed
-             make: *** [target] Error 127
-             """,
-            ),
-            (
-                "git st",
-                "/home/martin/.config/git/config",
-                randomise_int,
-                randomise_int_2,
-                "",
-                """
-             fatal: bad config file line 1 in /home/martin/.config/git/config
-             """,
-            ),
-            (
-                "node fuck.js asdf qwer",
-                "/Users/pablo/Workspace/barebones/fuck.js",
-                f"{randomise_int}",
-                randomise_int_2,
-                "",
-                """
-             /Users/pablo/Workspace/barebones/fuck.js:2
-             conole.log(arg);  // this should read console.log(arg);
-             ^
-             ReferenceError: conole is not defined
-                 at /Users/pablo/Workspace/barebones/fuck.js:2:5
-                 at Array.forEach (native)
-                 at Object.<anonymous> (/Users/pablo/Workspace/barebones/fuck.js:1:85)
-                 at Module._compile (module.js:460:26)
-                 at Object.Module._extensions..js (module.js:478:10)
-                 at Module.load (module.js:355:32)
-                 at Function.Module._load (module.js:310:12)
-                 at Function.Module.runMain (module.js:501:10)
-                 at startup (node.js:129:16)
-                 at node.js:814:3
-             """,
-            ),
-        )
-
-        # print(os.environ)
-        script = tests[random.randint(0, len(tests) - 1)][0]
-        out = tests[random.randint(0, len(tests) - 1)][4]
-        error = tests[random.randint(0, len(tests) - 1)][5]
-        failing = True, script, out, error
-        passing = False, script, out, error
+        # fix_file.get_new_command honours a fixcolcmd setting only on the fixed
+        # build. FAILING ("col"): pass a fixcolcmd embedding COLMARKER -> the
+        # fixed build emits it ("True"), the buggy build ignores settings
+        # ("False"); expected "True". PASSING ("nocol"): no fixcolcmd -> both
+        # emit the line command without COLMARKER; expected "False".
+        line = random.randint(1, 400)
+        col = random.randint(1, 400)
+        failing = f"'True' 'col' '{line}' '{col}'"
+        line2 = random.randint(1, 400)
+        col2 = random.randint(1, 400)
+        passing = f"'False' 'nocol' '{line2}' '{col2}'"
         return passing, failing
 
     @staticmethod
@@ -3329,153 +2984,89 @@ class TheFuckUnittestGenerator2(
 class TheFuckUnittestGenerator3(
     python.PythonGenerator, UnittestGenerator, TheFuckTestGenerator
 ):
-    def _generate_one(
-        self,
-    ) -> str:
-        return self.generate_values(self.thefuck3_generate_)
+    def get_imports(self) -> list:
+        return []
 
     @staticmethod
-    def _get_assert(
-        needle: str,
-    ) -> list[Assign | Expr]:
-        return [
-            ast.Assign(
-                targets=[ast.Name(id="f")],
-                value=ast.Call(
-                    func=ast.Name(id="Fish"),
-                    args=[],
-                    keywords=[],
-                ),
-                lineno=1,
-            ),
-            ast.Expr(
-                value=ast.Call(
-                    func=ast.Attribute(value=ast.Name(id="self"), attr="assertIn"),
-                    args=[
-                        ast.Constant(value=needle),
-                        ast.Call(
-                            func=ast.Attribute(value=ast.Name(id="f"), attr="info"),
-                            args=[],
-                            keywords=[],
-                        ),
-                    ],
-                    keywords=[],
-                ),
-                lineno=2,
-            ),
-        ]
-
-    def get_imports(self) -> list[ImportFrom]:
-        return [
-            ast.ImportFrom(
-                module="thefuck.shells.fish",
-                names=[ast.alias(name="Fish")],
-                level=0,
-            ),
-        ]
-
-    @staticmethod
-    def _marker() -> ast.stmt:
-        # Unique no-op statement so distinct generated tests never collapse to
-        # the same source (which would drop them during test generation).
-        token = "".join(random.choices(string.ascii_letters + string.digits, k=12))
-        return ast.Assign(
-            targets=[ast.Name(id="_marker")],
-            value=ast.Constant(value=token),
-            lineno=0,
-        )
+    def _body(raw_echo: str, ver: str, expected: str) -> list:
+        # Monkeypatch fish's Popen so info() sees canned output for both the
+        # buggy command form (echo $FISH_VERSION -> raw_echo) and the fixed one
+        # (fish --version -> "fish, version <ver>"). The buggy build strips the
+        # echo output while the fixed build takes the last whitespace token of
+        # --version, so a raw_echo != ver distinguishes the builds.
+        return ast.parse(
+            "import io\n"
+            "import thefuck.shells.fish as _f\n"
+            "from thefuck.utils import cache as _cache, memoize as _memoize\n"
+            "_cache.disabled = True\n"
+            "_memoize.disabled = True\n"
+            "class _P:\n"
+            "    def __init__(self, d):\n"
+            "        self.stdout = io.BytesIO(d)\n"
+            "    def wait(self, *a, **k):\n"
+            "        return 0\n"
+            "def _fp(args, *a, **k):\n"
+            "    if '--version' in args:\n"
+            f"        return _P({('fish, version ' + ver).encode('utf-8')!r})\n"
+            f"    return _P({raw_echo.encode('utf-8')!r})\n"
+            "_f.Popen = _fp\n"
+            f"self.assertEqual({expected!r}, _f.Fish().info())\n"
+        ).body
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        needle = "zx" + "".join(
-            random.choices(string.ascii_letters, k=random.randint(3, 8))
-        )
+        raw_echo = "e" + self.generate_random_string()
+        ver = "v" + self.generate_random_string()
         test = self.get_empty_test()
-        test.body = [self._marker()] + self._get_assert(needle)
+        test.body = self._body(raw_echo, ver, "Fish Shell " + ver)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        needle = random.choice(TheFuckSystemtestGenerator3.PASSING_NEEDLES)
+        ver = self.generate_random_string()
         test = self.get_empty_test()
-        test.body = [self._marker()] + self._get_assert(needle)
+        test.body = self._body(ver, ver, "Fish Shell " + ver)
         return test, TestResult.PASSING
 
 
 class TheFuckUnittestGenerator4(
     python.PythonGenerator, UnittestGenerator, TheFuckTestGenerator
 ):
-    def _generate_one(
-        self,
-    ) -> str:
-        return self.generate_values(self.thefuck4_generate_)
-
-    # Default overridden aliases returned by Fish._get_overridden_aliases when
-    # the environment variable is not set (as in the unit test process).
-    DEFAULT_ALIASES = ("cd", "grep", "ls", "man", "open")
+    def get_imports(self) -> list:
+        return []
 
     @staticmethod
-    def _get_assert(
-        result: Any,
-    ) -> list[Assign | Expr]:
-        return [
-            ast.Assign(
-                targets=[ast.Name(id="f")],
-                value=ast.Call(
-                    func=ast.Name(id="Fish"),
-                    args=[],
-                    keywords=[],
-                ),
-                lineno=1,
-            ),
-            ast.Expr(
-                value=ast.Call(
-                    func=ast.Attribute(value=ast.Name(id="self"), attr="assertIn"),
-                    args=[
-                        ast.Constant(value=result),
-                        ast.Call(
-                            func=ast.Attribute(
-                                value=ast.Name(id="f"),
-                                attr="_get_overridden_aliases",
-                            ),
-                            args=[],
-                            keywords=[],
-                        ),
-                    ],
-                    keywords=[],
-                ),
-                lineno=2,
-            ),
-        ]
-
-    def get_imports(self) -> list[ImportFrom]:
-        return [
-            ast.ImportFrom(
-                module="thefuck.shells.fish",
-                names=[ast.alias(name="Fish")],
-                level=0,
-            ),
-        ]
-
-    @staticmethod
-    def _marker() -> ast.stmt:
-        token = "".join(random.choices(string.ascii_letters + string.digits, k=12))
-        return ast.Assign(
-            targets=[ast.Name(id="_marker")],
-            value=ast.Constant(value=token),
-            lineno=0,
-        )
+    def _body(name: str, value: str, separator: str) -> list:
+        # Feed fish._get_aliases a canned "alias name<sep>value" line via a Popen
+        # monkeypatch. With '=' the buggy single-separator parser raises (test
+        # errors -> FAILING) while the fixed build parses it; with ' ' both parse
+        # identically -> PASSING.
+        alias_line = "alias " + name + separator + value
+        return ast.parse(
+            "import io\n"
+            "import thefuck.shells.fish as _f\n"
+            "from thefuck.utils import cache as _cache, memoize as _memoize\n"
+            "_cache.disabled = True\n"
+            "_memoize.disabled = True\n"
+            "class _P:\n"
+            "    def __init__(self, d):\n"
+            "        self.stdout = io.BytesIO(d)\n"
+            "    def wait(self, *a, **k):\n"
+            "        return 0\n"
+            f"_f.Popen = lambda *a, **k: _P({alias_line.encode('utf-8')!r})\n"
+            f"self.assertEqual({{{name!r}: {value!r}}}, _f._get_aliases(set()))\n"
+        ).body
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
         test = self.get_empty_test()
-        fail_ = "zz" + "".join(
-            random.choices(string.ascii_letters, k=random.randint(3, 8))
+        test.body = self._body(
+            self.generate_random_string(), self.generate_random_string(), "="
         )
-        test.body = [self._marker()] + self._get_assert(fail_)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass_ = random.choice(self.DEFAULT_ALIASES)
         test = self.get_empty_test()
-        test.body = [self._marker()] + self._get_assert(pass_)
+        test.body = self._body(
+            self.generate_random_string(), self.generate_random_string(), " "
+        )
         return test, TestResult.PASSING
 
 
@@ -3722,18 +3313,35 @@ class TheFuckUnittestGenerator7(
 class TheFuckUnittestGenerator8(
     python.PythonGenerator, UnittestGenerator, TheFuckTestGenerator
 ):
-    def _generate_one(
-        self,
-    ) -> str:
-        return self.generate_values(self.thefuck8_generate_)
-
     @staticmethod
-    def _get_assert(expected: Any, script: str, output: str) -> list[Call]:
+    def _get_parse_assert(ops: list) -> list[Call]:
+        # assertEqual(ops, _parse_operations("<help text>")). The str help text
+        # makes _parse_operations raise TypeError on the buggy build (bytes
+        # regex on str) -> test errors -> FAILING; the fixed build returns the
+        # ops list -> PASSING.
+        help_text = "\n".join("{}    description".format(op) for op in ops)
         return [
             ast.Call(
                 func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
                 args=[
-                    ast.Constant(value=expected),
+                    ast.List(elts=[ast.Constant(value=o) for o in ops]),
+                    ast.Call(
+                        func=ast.Name(id="_parse_operations"),
+                        args=[ast.Constant(value=help_text)],
+                        keywords=[],
+                    ),
+                ],
+                keywords=[],
+            )
+        ]
+
+    @staticmethod
+    def _get_match_assert(script: str, output: str) -> list[Call]:
+        return [
+            ast.Call(
+                func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
+                args=[
+                    ast.Constant(value=True),
                     ast.Call(
                         func=ast.Name(id="match"),
                         args=[
@@ -3757,7 +3365,10 @@ class TheFuckUnittestGenerator8(
         return [
             ast.ImportFrom(
                 module="thefuck.rules.dnf_no_such_command",
-                names=[ast.alias(name="match")],
+                names=[
+                    ast.alias(name="match"),
+                    ast.alias(name="_parse_operations"),
+                ],
                 level=0,
             ),
             ast.ImportFrom(
@@ -3768,15 +3379,20 @@ class TheFuckUnittestGenerator8(
         ]
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        _, _, _, expected, script, output = self._generate_one()
+        ops = random.sample(
+            TheFuckTestGenerator.DNF_OPERATIONS, random.randint(2, 6)
+        )
         test = self.get_empty_test()
-        test.body = self._get_assert(expected, script, output)
+        test.body = self._get_parse_assert(ops)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        expected, script, output, _, _, _ = self._generate_one()
+        op = random.choice(TheFuckTestGenerator.DNF_OPERATIONS)
+        word = self.generate_random_string()
         test = self.get_empty_test()
-        test.body = self._get_assert(expected, script, output)
+        test.body = self._get_match_assert(
+            f"dnf {op} {word}", f"No such command: {op}."
+        )
         return test, TestResult.PASSING
 
 
@@ -3854,40 +3470,6 @@ class TheFuckUnittestGenerator9(
 class TheFuckUnittestGenerator10(
     python.PythonGenerator, UnittestGenerator, TheFuckTestGenerator
 ):
-    def _generate_one(
-        self,
-    ) -> str:
-        return self.generate_values(self.thefuck10_generate_)
-
-    @staticmethod
-    def _get_assert(
-        expected: str | list, script: str, std_out: str, std_err: str
-    ) -> list[Call]:
-        return [
-            ast.Call(
-                func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
-                args=[
-                    ast.Constant(value=expected),
-                    ast.Call(
-                        func=ast.Name(id="get_new_command"),
-                        args=[
-                            ast.Call(
-                                func=ast.Name(id="Command"),
-                                args=[
-                                    ast.Constant(value=script),
-                                    ast.Constant(value=std_out),
-                                    ast.Constant(value=std_err),
-                                ],
-                                keywords=[],
-                            ),
-                        ],
-                        keywords=[],
-                    ),
-                ],
-                keywords=[],
-            )
-        ]
-
     def get_imports(self) -> list[ImportFrom]:
         return [
             ast.ImportFrom(
@@ -3902,18 +3484,29 @@ class TheFuckUnittestGenerator10(
             ),
         ]
 
+    @staticmethod
+    def _body(script: str, stderr: str, expected_len: int) -> list:
+        # assertEqual(<len>, len(get_new_command(Command(script, '', stderr)))).
+        # The "No manual entry" stderr makes the fixed build return a 1-element
+        # list; the buggy build always returns 3.
+        return ast.parse(
+            f"self.assertEqual({expected_len!r}, "
+            f"len(get_new_command(Command({script!r}, '', {stderr!r}))))"
+        ).body
+
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        _, fail_ = self._generate_one()
-        expected, script, std_out, std_err = fail_
+        word = self.generate_random_string()
         test = self.get_empty_test()
-        test.body = self._get_assert(expected, script, std_out, std_err)
+        test.body = self._body(
+            f"man {word}", f"No manual entry for {word}", 1
+        )
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass_, _ = self._generate_one()
-        expected, script, std_out, std_err = pass_
+        word = self.generate_random_string()
+        tail = self.generate_random_string()
         test = self.get_empty_test()
-        test.body = self._get_assert(expected, script, std_out, std_err)
+        test.body = self._body(f"man {word}", f"some output {tail}", 3)
         return test, TestResult.PASSING
 
 
@@ -4172,47 +3765,9 @@ class TheFuckUnittestGenerator13(
 class TheFuckUnittestGenerator14(
     python.PythonGenerator, UnittestGenerator, TheFuckTestGenerator
 ):
-    def _generate_one(
-        self,
-    ) -> str:
-        return self.generate_values(self.thefuck14_generate_)
-
-    @staticmethod
-    def _get_assert(
-        result: Any,
-    ) -> list[Assign | Expr]:
+    def get_imports(self) -> list:
         return [
-            ast.Assign(
-                targets=[ast.Name(id="f")],
-                value=ast.Call(
-                    func=ast.Name(id="Fish"),
-                    args=[],
-                    keywords=[],
-                ),
-                lineno=1,
-            ),
-            ast.Expr(
-                value=ast.Call(
-                    func=ast.Attribute(value=ast.Name(id="self"), attr="assertIn"),
-                    args=[
-                        ast.Constant(value=result),
-                        ast.Call(
-                            func=ast.Attribute(
-                                value=ast.Name(id="f"),
-                                attr="_get_overridden_aliases",
-                            ),
-                            args=[],
-                            keywords=[],
-                        ),
-                    ],
-                    keywords=[],
-                ),
-                lineno=2,
-            ),
-        ]
-
-    def get_imports(self) -> list[ImportFrom]:
-        return [
+            ast.Import(names=[ast.alias(name="os")]),
             ast.ImportFrom(
                 module="thefuck.shells.fish",
                 names=[ast.alias(name="Fish")],
@@ -4220,32 +3775,32 @@ class TheFuckUnittestGenerator14(
             ),
         ]
 
-    # Fish._get_overridden_aliases returns this default set when the
-    # TF_OVERRIDDEN_ALIASES environment variable is not set (as in the unit
-    # test process), so membership of these names always holds.
-    DEFAULT_ALIASES = ("cd", "grep", "ls", "man", "open")
-
     @staticmethod
-    def _marker() -> ast.stmt:
-        token = "".join(random.choices(string.ascii_letters + string.digits, k=12))
-        return ast.Assign(
-            targets=[ast.Name(id="_marker")],
-            value=ast.Constant(value=token),
-            lineno=0,
-        )
+    def _body(needle: str, env: str) -> list:
+        # Inject the env aliases, then assert membership. On the buggy build a
+        # non-empty env replaces the default set, so a default needle is absent
+        # (assertIn fails -> FAILING); the fixed build always unions the default
+        # in (present -> PASSING).
+        return ast.parse(
+            f"os.environ['TF_OVERRIDDEN_ALIASES'] = {env!r}\n"
+            f"self.assertIn({needle!r}, Fish()._get_overridden_aliases())"
+        ).body
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        test = self.get_empty_test()
-        fail_ = "zz" + "".join(
-            random.choices(string.ascii_letters, k=random.randint(3, 8))
+        env = ",".join(
+            TheFuckTestGenerator._fish_env_tokens(random.randint(2, 4))
         )
-        test.body = [self._marker()] + self._get_assert(fail_)
+        needle = random.choice(TheFuckTestGenerator.FISH_DEFAULT_ALIASES)
+        test = self.get_empty_test()
+        test.body = self._body(needle, env)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass_ = random.choice(self.DEFAULT_ALIASES)
+        tokens = TheFuckTestGenerator._fish_env_tokens(random.randint(2, 4))
+        env = ",".join(tokens)
+        needle = random.choice(tokens)
         test = self.get_empty_test()
-        test.body = [self._marker()] + self._get_assert(pass_)
+        test.body = self._body(needle, env)
         return test, TestResult.PASSING
 
 
@@ -5063,80 +4618,45 @@ class TheFuckUnittestGenerator22(
 class TheFuckUnittestGenerator23(
     python.PythonGenerator, UnittestGenerator, TheFuckTestGenerator
 ):
-    def _generate_one(
-        self,
-    ) -> str:
-        return self.generate_values(self.thefuck23_generate_)
+    def get_imports(self) -> list:
+        return []
 
     @staticmethod
-    def _get_assert(
-        shelve: Any,
-        fn: Any,
-        key: dict,
-    ) -> list[Call]:
-        return [
-            ast.Call(
-                func=ast.Attribute(value=ast.Name(id="self"), attr="assertIsNotNone"),
-                args=[
-                    ast.Call(
-                        func=ast.Name(id="cache"),
-                        args=[
-                            ast.Constant(value=shelve),
-                            ast.Constant(value=fn),
-                            ast.Constant(value=key),
-                        ],
-                        keywords=[],
-                    ),
-                ],
-                keywords=[],
-            )
-        ]
-
-    @staticmethod
-    def _get_assert_2(
-        shelve: Any,
-        fn: Any,
-        key: dict,
-    ) -> list[Call]:
-        return [
-            ast.Call(
-                func=ast.Attribute(value=ast.Name(id="self"), attr="assertIsNone"),
-                args=[
-                    ast.Call(
-                        func=ast.Name(id="cache"),
-                        args=[
-                            ast.Constant(value=shelve),
-                            ast.Constant(value=fn),
-                            ast.Constant(value=key),
-                        ],
-                        keywords=[],
-                    ),
-                ],
-                keywords=[],
-            )
-        ]
-
-    def get_imports(self) -> list[ImportFrom]:
-        return [
-            ast.ImportFrom(
-                module="thefuck.utils",
-                names=[ast.alias(name="cache")],
-                level=0,
-            ),
-        ]
+    def _body(value: str, protocol: bool) -> list:
+        # Patch shelve.open to return a fake shelf, cache-decorate a function and
+        # call it. Without the context-manager protocol the buggy build raises
+        # AttributeError inside cache's ``with shelve.open(...)`` (test errors ->
+        # FAILING) while the fixed build's ``closing`` wrapper survives (PASSING).
+        extra = (
+            "    def __enter__(self):\n"
+            "        return self\n"
+            "    def __exit__(self, *a):\n"
+            "        self.close()\n"
+            if protocol
+            else ""
+        )
+        return ast.parse(
+            "import shelve\n"
+            "import thefuck.utils as _u\n"
+            "class _Shelf(dict):\n"
+            "    def close(self):\n"
+            "        pass\n"
+            f"{extra}"
+            "shelve.open = lambda *a, **k: _Shelf()\n"
+            "@_u.cache()\n"
+            "def _compute():\n"
+            f"    return {value!r}\n"
+            f"self.assertEqual({value!r}, _compute())\n"
+        ).body
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        _, fail_ = self._generate_one()
-        shelve, fn, key = fail_
         test = self.get_empty_test()
-        test.body = self._get_assert_2(shelve, fn, key)
+        test.body = self._body(self.generate_random_string(), protocol=False)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass_, _ = self._generate_one()
-        shelve, fn, key = pass_
         test = self.get_empty_test()
-        test.body = self._get_assert(shelve, fn, key)
+        test.body = self._body(self.generate_random_string(), protocol=True)
         return test, TestResult.PASSING
 
 
@@ -5302,58 +4822,11 @@ class TheFuckUnittestGenerator25(
 class TheFuckUnittestGenerator26(
     python.PythonGenerator, UnittestGenerator, TheFuckTestGenerator
 ):
-    def _generate_one(
-        self,
-    ) -> str:
-        return self.generate_values(self.thefuck26_generate_)
-
-    @staticmethod
-    def _get_assert(
-        expected: str,
-        script: str,
-        std_out: str,
-        std_err: str,
-    ) -> list[Call]:
-        return [
-            ast.Call(
-                func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
-                args=[
-                    ast.Constant(value=expected),
-                    ast.Call(
-                        func=ast.Name(id="get_new_command"),
-                        args=[
-                            ast.Call(
-                                func=ast.Name(id="Command"),
-                                args=[
-                                    ast.Constant(value=script),
-                                    ast.Constant(value=std_out),
-                                    ast.Constant(value=std_err),
-                                ],
-                                keywords=[],
-                            ),
-                            ast.Call(
-                                func=ast.Name(id="Settings"),
-                                args=[],
-                                keywords=[],
-                            ),
-                        ],
-                        keywords=[],
-                    ),
-                ],
-                keywords=[],
-            )
-        ]
-
     def get_imports(self) -> list[ImportFrom]:
         return [
             ast.ImportFrom(
                 module="thefuck.types",
-                names=[ast.alias(name="Command")],
-                level=0,
-            ),
-            ast.ImportFrom(
-                module="thefuck.types",
-                names=[ast.alias(name="Settings")],
+                names=[ast.alias(name="Command"), ast.alias(name="Settings")],
                 level=0,
             ),
             ast.ImportFrom(
@@ -5363,18 +4836,27 @@ class TheFuckUnittestGenerator26(
             ),
         ]
 
+    @staticmethod
+    def _body(script: str, expected: bool) -> list:
+        # assertEqual(<bool>, isinstance(get_new_command(...), list)). A
+        # machine-scoped command yields a list only on the fixed build; a plain
+        # command yields a str on both builds.
+        return ast.parse(
+            f"self.assertEqual({expected!r}, isinstance("
+            f"get_new_command(Command({script!r}, '', ''), Settings()), list))"
+        ).body
+
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        _, fail_ = self._generate_one()
-        expected, script, std_err = fail_
+        sub = self.generate_random_string()
+        machine = self.generate_random_string()
         test = self.get_empty_test()
-        test.body = self._get_assert(expected, script, "", std_err)
+        test.body = self._body(f"vagrant {sub} {machine}", True)
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass_, _ = self._generate_one()
-        expected, script, std_err = pass_
+        sub = self.generate_random_string()
         test = self.get_empty_test()
-        test.body = self._get_assert(expected, script, "", std_err)
+        test.body = self._body(f"vagrant {sub}", False)
         return test, TestResult.PASSING
 
 
@@ -5460,121 +4942,47 @@ class TheFuckUnittestGenerator27(
 class TheFuckUnittestGenerator28(
     python.PythonGenerator, UnittestGenerator, TheFuckTestGenerator
 ):
-    def _generate_one(
-        self,
-    ) -> str:
-        return self.generate_values(self.thefuck28_generate_)
+    def get_imports(self) -> list:
+        return []
 
     @staticmethod
-    def _get_assert(
-        expected: bool,
-        script: str,
-        std_out: str,
-        std_err: str,
-    ) -> list[Call]:
-        return [
-            ast.Call(
-                func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
-                args=[
-                    ast.Constant(value=expected),
-                    ast.Call(
-                        func=ast.Name(id="get_new_command"),
-                        args=[
-                            ast.Call(
-                                func=ast.Name(id="Command"),
-                                args=[
-                                    ast.Constant(value=script),
-                                    ast.Constant(value=std_out),
-                                    ast.Constant(value=std_err),
-                                ],
-                                keywords=[],
-                            ),
-                            ast.Call(
-                                func=ast.Name(id="Settings"),
-                                args=[],
-                                keywords=[],
-                            ),
-                        ],
-                        keywords=[],
-                    ),
-                ],
-                keywords=[],
-            )
-        ]
-
-    @staticmethod
-    def _get_assert_2(
-        expected: bool,
-        script: str,
-        std_out: str,
-        std_err: str,
-    ) -> list[Call]:
-        return [
-            ast.Call(
-                func=ast.Attribute(value=ast.Name(id="self"), attr="assertEqual"),
-                args=[
-                    ast.Constant(value=expected),
-                    ast.Call(
-                        func=ast.Name(id="match"),
-                        args=[
-                            ast.Call(
-                                func=ast.Name(id="Command"),
-                                args=[
-                                    ast.Constant(value=script),
-                                    ast.Constant(value=std_out),
-                                    ast.Constant(value=std_err),
-                                ],
-                                keywords=[],
-                            ),
-                            ast.Call(
-                                func=ast.Name(id="Settings"),
-                                args=[],
-                                keywords=[],
-                            ),
-                        ],
-                        keywords=[],
-                    ),
-                ],
-                keywords=[],
-            )
-        ]
-
-    def get_imports(self) -> list[ImportFrom]:
-        return [
-            ast.ImportFrom(
-                module="thefuck.types",
-                names=[ast.alias(name="Command")],
-                level=0,
-            ),
-            ast.ImportFrom(
-                module="thefuck.types",
-                names=[ast.alias(name="Settings")],
-                level=0,
-            ),
-            ast.ImportFrom(
-                module="thefuck.rules.fix_file",
-                names=[ast.alias(name="get_new_command")],
-                level=0,
-            ),
-            ast.ImportFrom(
-                module="thefuck.rules.fix_file",
-                names=[ast.alias(name="match")],
-                level=0,
-            ),
-        ]
+    def _body(line: int, col: int, mode: str) -> list:
+        # Build a real temp file, set EDITOR, feed fix_file.get_new_command a
+        # column-bearing error. With a fixcolcmd embedding COLMARKER the fixed
+        # build honours it (COLMARKER present) while the buggy build ignores
+        # settings (absent). Without a fixcolcmd both omit COLMARKER.
+        settings_expr = (
+            "Settings({'fixcolcmd': '{editor} {file} COLMARKER'})"
+            if mode == "col"
+            else "Settings()"
+        )
+        expected = "True" if mode == "col" else "False"
+        src = (
+            "import os, tempfile\n"
+            "from thefuck.types import Command, Settings\n"
+            "from thefuck.rules.fix_file import get_new_command\n"
+            "os.environ['EDITOR'] = 'nano'\n"
+            "fd, path = tempfile.mkstemp(suffix='.c')\n"
+            "os.close(fd)\n"
+            "stderr = path + ':" + str(line) + ":" + str(col) + ": error'\n"
+            "settings = " + settings_expr + "\n"
+            "result = get_new_command(Command('gcc a.c', '', stderr), settings)\n"
+            "self.assertEqual(" + expected + ", 'COLMARKER' in str(result))\n"
+        )
+        return ast.parse(src).body
 
     def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        _, fail_ = self._generate_one()
-        _, script, out, error = fail_
         test = self.get_empty_test()
-        test.body = self._get_assert(True, script, out, error)
+        test.body = self._body(
+            random.randint(1, 400), random.randint(1, 400), "col"
+        )
         return test, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
-        pass_, _ = self._generate_one()
-        _, script, out, error = pass_
         test = self.get_empty_test()
-        test.body = self._get_assert_2(False, script, out, error)
+        test.body = self._body(
+            random.randint(1, 400), random.randint(1, 400), "nocol"
+        )
         return test, TestResult.PASSING
 
 
@@ -5918,71 +5326,23 @@ class TheFuckSystemtestGenerator2(SystemtestGenerator, TheFuckTestGenerator):
 
 
 class TheFuckSystemtestGenerator3(SystemtestGenerator, TheFuckTestGenerator):
-    # Substrings of the invariant "Fish Shell" prefix always present in
-    # Fish().info(); each yields "IN" from the harness (a passing test).
-    PASSING_NEEDLES = (
-        "Fish",
-        "Shell",
-        "Fish Shell",
-        "ish",
-        "hell",
-        "Fis",
-        "Shel",
-        "ish Shell",
-        "h Shell",
-        "sh Sh",
-        "Fish She",
-        "She",
-    )
-
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        needle = "zx" + "".join(
-            random.choices(string.ascii_letters, k=random.randint(3, 8))
-        )
-        return needle, TestResult.FAILING
+        _, fail_ = self.generate_values(self.thefuck3_generate_)
+        return fail_, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        return random.choice(self.PASSING_NEEDLES), TestResult.PASSING
+        pass_, _ = self.generate_values(self.thefuck3_generate_)
+        return pass_, TestResult.PASSING
 
 
 class TheFuckSystemtestGenerator4(SystemtestGenerator, TheFuckTestGenerator):
-    # Default overridden aliases plus the set injected by the bug 4 harness.
-    ALIASES = (
-        "cd",
-        "grep",
-        "ls",
-        "man",
-        "open",
-        "git",
-        "vim",
-        "cat",
-        "echo",
-        "sed",
-        "awk",
-        "find",
-        "make",
-        "node",
-        "curl",
-        "tar",
-        "wget",
-        "rm",
-        "cp",
-        "mv",
-        "ssh",
-        "sort",
-        "uniq",
-        "head",
-        "tail",
-    )
-
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        needle = "zz" + "".join(
-            random.choices(string.ascii_letters, k=random.randint(3, 8))
-        )
-        return needle, TestResult.FAILING
+        _, fail_ = self.generate_values(self.thefuck4_generate_)
+        return fail_, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        return random.choice(self.ALIASES), TestResult.PASSING
+        pass_, _ = self.generate_values(self.thefuck4_generate_)
+        return pass_, TestResult.PASSING
 
 
 class TheFuckSystemtestGenerator5(SystemtestGenerator, TheFuckTestGenerator):
@@ -6025,18 +5385,12 @@ class TheFuckSystemtestGenerator7(SystemtestGenerator, TheFuckTestGenerator):
 
 class TheFuckSystemtestGenerator8(SystemtestGenerator, TheFuckTestGenerator):
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        _, _, _, expected, script, output = self.generate_values(
-            self.thefuck8_generate_
-        )
-        fail_ = expected, script, output
-        return f"{fail_}", TestResult.FAILING
+        _, fail_ = self.generate_values(self.thefuck8_generate_)
+        return fail_, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        expected, script, output, _, _, _ = self.generate_values(
-            self.thefuck8_generate_
-        )
-        pass_ = expected, script, output
-        return f"{pass_}", TestResult.PASSING
+        pass_, _ = self.generate_values(self.thefuck8_generate_)
+        return pass_, TestResult.PASSING
 
 
 class TheFuckSystemtestGenerator9(SystemtestGenerator, TheFuckTestGenerator):
@@ -6103,39 +5457,13 @@ class TheFuckSystemtestGenerator13(SystemtestGenerator, TheFuckTestGenerator):
 
 
 class TheFuckSystemtestGenerator14(SystemtestGenerator, TheFuckTestGenerator):
-    # Must match the OVERRIDDEN set injected by the bug 14 harness.
-    ALIASES = (
-        "cd",
-        "grep",
-        "ls",
-        "man",
-        "open",
-        "git",
-        "vim",
-        "cat",
-        "echo",
-        "sed",
-        "awk",
-        "find",
-        "make",
-        "node",
-        "curl",
-        "tar",
-        "wget",
-        "rm",
-        "cp",
-        "mv",
-    )
-
     def generate_failing_test(self) -> Tuple[str, TestResult]:
-        # A token that is not one of the overridden aliases.
-        needle = "zz" + "".join(
-            random.choices(string.ascii_letters, k=random.randint(3, 8))
-        )
-        return needle, TestResult.FAILING
+        _, fail_ = self.generate_values(self.thefuck14_generate_)
+        return fail_, TestResult.FAILING
 
     def generate_passing_test(self) -> Tuple[str, TestResult]:
-        return random.choice(self.ALIASES), TestResult.PASSING
+        pass_, _ = self.generate_values(self.thefuck14_generate_)
+        return pass_, TestResult.PASSING
 
 
 class TheFuckSystemtestGenerator15(SystemtestGenerator, TheFuckTestGenerator):

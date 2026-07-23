@@ -3,62 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return "'VaDsWgRUKVzO' 'nocm'"
+        return 'attr tvayhmw aocwos'
 
     def test_diversity_2(self):
-        return "'BkaWlmwbAfnb' 'nocm'"
+        return 'attr nuqve nnwvrp'
 
     def test_diversity_3(self):
-        return "'CsTtTCZztknKhxo' 'nocm'"
+        return 'attr keelbo qszocpuw'
 
     def test_diversity_4(self):
-        return "'LPAjDEImtzwblr' 'nocm'"
+        return 'attr lmnmbvh zvjz'
 
     def test_diversity_5(self):
-        return "'IyNnAhdDSpEpbRz' 'nocm'"
+        return 'attr mfqj vdge'
 
     def test_diversity_6(self):
-        return "'QziSjIQG' 'nocm'"
+        return 'attr tfdyjeoqo jjmmkjn'
 
     def test_diversity_7(self):
-        return "'WtgkLZWs' 'nocm'"
+        return 'attr wgia vxoeqntg'
 
     def test_diversity_8(self):
-        return "'hCTVSBsxd' 'nocm'"
+        return 'attr bvsa pckzs'
 
     def test_diversity_9(self):
-        return "'sEBBawC' 'nocm'"
+        return 'attr odzzc fowxebxi'
 
     def test_diversity_10(self):
-        return "'xRKlmjHwcYbpHyE' 'nocm'"
+        return 'attr nfbcd lhuh'
+
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return "'gNVnXiCyqwkk' 'cm'"
+        return 'method bewbhx tzim'
 
     def test_diversity_2(self):
-        return "'VLUcVe' 'cm'"
+        return 'method glvb ixujbbc'
 
     def test_diversity_3(self):
-        return "'XiMilamKp' 'cm'"
+        return 'method vkayd sxix'
 
     def test_diversity_4(self):
-        return "'pHSLBXSP' 'cm'"
+        return 'method bjzc vasttbzb'
 
     def test_diversity_5(self):
-        return "'FogMKSbkH' 'cm'"
+        return 'method fbyt xttesobc'
 
     def test_diversity_6(self):
-        return "'GzCipP' 'cm'"
+        return 'method yonenclpy juynh'
 
     def test_diversity_7(self):
-        return "'fjbPOOPVEoy' 'cm'"
+        return 'method sfzxkii etiug'
 
     def test_diversity_8(self):
-        return "'eredwpmqF' 'cm'"
+        return 'method ilvwl wfqs'
 
     def test_diversity_9(self):
-        return "'kfsqf' 'cm'"
+        return 'method acogudra kkzwbl'
 
     def test_diversity_10(self):
-        return "'yNCmw' 'cm'"
+        return 'method gogxlbf yaaa'

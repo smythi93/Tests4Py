@@ -3,62 +3,63 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return "'VaDsWgRUKVzO' 'nocm'"
+        return 'insig rtxgqxwoe'
 
     def test_diversity_2(self):
-        return "'BkaWlmwbAfnb' 'nocm'"
+        return 'insig kbdmpkf'
 
     def test_diversity_3(self):
-        return "'CsTtTCZztknKhxo' 'nocm'"
+        return 'insig xilqumcoa'
 
     def test_diversity_4(self):
-        return "'LPAjDEImtzwblr' 'nocm'"
+        return 'insig cgth'
 
     def test_diversity_5(self):
-        return "'IyNnAhdDSpEpbRz' 'nocm'"
+        return 'insig edaswf'
 
     def test_diversity_6(self):
-        return "'QziSjIQG' 'nocm'"
+        return 'insig buqhs'
 
     def test_diversity_7(self):
-        return "'WtgkLZWs' 'nocm'"
+        return 'insig pldqol'
 
     def test_diversity_8(self):
-        return "'hCTVSBsxd' 'nocm'"
+        return 'insig ksddu'
 
     def test_diversity_9(self):
-        return "'sEBBawC' 'nocm'"
+        return 'insig idpnlzv'
 
     def test_diversity_10(self):
-        return "'xRKlmjHwcYbpHyE' 'nocm'"
+        return 'insig uhvu'
+
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return "'gNVnXiCyqwkk' 'cm'"
+        return 'sig syntbrdli'
 
     def test_diversity_2(self):
-        return "'VLUcVe' 'cm'"
+        return 'sig ociq'
 
     def test_diversity_3(self):
-        return "'XiMilamKp' 'cm'"
+        return 'sig urufnseyt'
 
     def test_diversity_4(self):
-        return "'pHSLBXSP' 'cm'"
+        return 'sig xwkcc'
 
     def test_diversity_5(self):
-        return "'FogMKSbkH' 'cm'"
+        return 'sig ffhox'
 
     def test_diversity_6(self):
-        return "'GzCipP' 'cm'"
+        return 'sig cmeviycvf'
 
     def test_diversity_7(self):
-        return "'fjbPOOPVEoy' 'cm'"
+        return 'sig hrchwjzk'
 
     def test_diversity_8(self):
-        return "'eredwpmqF' 'cm'"
+        return 'sig vbmzatb'
 
     def test_diversity_9(self):
-        return "'kfsqf' 'cm'"
+        return 'sig qiahpzaz'
 
     def test_diversity_10(self):
-        return "'yNCmw' 'cm'"
+        return 'sig tqkpp'

@@ -3,63 +3,62 @@ from tests4py.tests.diversity import FailingSystemtests, PassingSystemtests
 
 class TestsFailing(FailingSystemtests):
     def test_diversity_1(self):
-        return "('man -s 5 write', 'man -s 4 write', 'Output Message: cdpjV', '')"
+        return "'1' 'man SAGJPYw' 'No manual entry for SAGJPYw'"
 
     def test_diversity_2(self):
-        return "(['read --help', 'man 5 read', 'man 4 read'], 'man read', 'Output Message: NlYcjfoQGrFFkZ', '')"
+        return "'1' 'man ElTimY' 'No manual entry for ElTimY'"
 
     def test_diversity_3(self):
-        return "('man 4 write', 'man 5 write', 'Output Message: OYTFMFOfk', '')"
+        return "'1' 'man sPtpERCGvApXSj' 'No manual entry for sPtpERCGvApXSj'"
 
     def test_diversity_4(self):
-        return "('man -s5 write', 'man -s4 write', 'Output Message: jugklUEH', '')"
+        return "'1' 'man KGqjdX' 'No manual entry for KGqjdX'"
 
     def test_diversity_5(self):
-        return "('man -s 4 write', 'man -s 5 write', 'Output Message: CnRaZqtblzm', '')"
+        return "'1' 'man XdbBv' 'No manual entry for XdbBv'"
 
     def test_diversity_6(self):
-        return "('man -s5 read', 'man -s4 read', 'Output Message: ISTIZWrHcEA', '')"
+        return "'1' 'man kRKalYD' 'No manual entry for kRKalYD'"
 
     def test_diversity_7(self):
-        return "('man 5 read', 'man 4 read', 'Output Message: saLPvTDy', '')"
+        return "'1' 'man AsNQpbbSMopujD' 'No manual entry for AsNQpbbSMopujD'"
 
     def test_diversity_8(self):
-        return "('man -s 4 read', 'man -s 5 read', 'Output Message: LhshoyHtmWJgB', '')"
+        return "'1' 'man KpsmcNZTEHZg' 'No manual entry for KpsmcNZTEHZg'"
 
     def test_diversity_9(self):
-        return "('man -s 4 read', 'man -s 5 read', 'Output Message: VhbhhisXvAPES', '')"
+        return "'1' 'man NicycFBpf' 'No manual entry for NicycFBpf'"
 
     def test_diversity_10(self):
-        return "('man 4 write', 'man 5 write', 'Output Message: rlkDLNqYBtai', '')"
-
+        return "'1' 'man lebzc' 'No manual entry for lebzc'"
 
 class TestsPassing(PassingSystemtests):
     def test_diversity_1(self):
-        return "('man 2 read', 'man 3 read', 'Output Message: CrEjN', '')"
+        return "'3' 'man lzAocfo' 'some output wcgfZMAREJYzX'"
 
     def test_diversity_2(self):
-        return "('man 2 write', 'man 3 write', 'Output Message: dQakFIngmK', '')"
+        return "'3' 'man BVvEUTfrJpjG' 'some output GAAXEdAHmhpOpm'"
 
     def test_diversity_3(self):
-        return "('man -s 3 write', 'man -s 2 write', 'Output Message: yEDvkBFCy', '')"
+        return "'3' 'man zgSjFmtbdZ' 'some output MkRjV'"
 
     def test_diversity_4(self):
-        return "('man 3 write', 'man 2 write', 'Output Message: FsPJnhriWFf', '')"
+        return "'3' 'man rcpGtxtN' 'some output mUWGZIKmpDjzC'"
 
     def test_diversity_5(self):
-        return "(['missing --help', 'man 3 missing', 'man 2 missing'], 'man missing', 'Output Message: WaybRDVIvS', 'No manual entry for missing\\n')"
+        return "'3' 'man ZPwlnyBIqme' 'some output euiElkuKw'"
 
     def test_diversity_6(self):
-        return "('man -s2 write', 'man -s3 write', 'Output Message: wnLcIF', '')"
+        return "'3' 'man wAILvXiFvHcg' 'some output wtwxutvKXXtYO'"
 
     def test_diversity_7(self):
-        return "('man 2 write', 'man 3 write', 'Output Message: IuQBGiUN', '')"
+        return "'3' 'man WTxKWlSbjZCaNc' 'some output sYAoPBQZEGhA'"
 
     def test_diversity_8(self):
-        return "('man -s 3 read', 'man -s 2 read', 'Output Message: MfEPg', '')"
+        return "'3' 'man PTuSMPcWOVz' 'some output nyZopKgFHtXk'"
 
     def test_diversity_9(self):
-        return "('man -s 2 read', 'man -s 3 read', 'Output Message: VwWmenfhRa', '')"
+        return "'3' 'man QrnRC' 'some output KbfWTm'"
 
     def test_diversity_10(self):
-        return "('man 3 read', 'man 2 read', 'Output Message: FTtbwjdZjee', '')"
+        return "'3' 'man UjCccyDaOdKvL' 'some output wjZVZaaiG'"

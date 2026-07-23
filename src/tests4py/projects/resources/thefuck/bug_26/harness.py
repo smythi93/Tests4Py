@@ -1,30 +1,16 @@
 import sys
+
 from thefuck.types import Command
 from thefuck.types import Settings
 from thefuck.rules.vagrant_up import get_new_command
 
-
+# vagrant_up.get_new_command returns a *list* of suggestions on the fixed build
+# when the command names a machine (>= 3 whitespace-separated parts) and a
+# *string* otherwise; the buggy build always returns a string. We report
+# isinstance(result, list), which distinguishes the two builds independently of
+# the exact ``shells.and_`` formatting. get_new_command only reads
+# command.script, so the output/settings are inert placeholders.
 if __name__ == "__main__":
-    assert len(sys.argv) == 4 or len(sys.argv) == 5
-    if len(sys.argv) == 4:
-        expected = sys.argv[1]
-        expected = expected.replace("(", "")
-        expected = expected[:-1]
-        script = sys.argv[2]
-        script = script.replace(",", "")
-        std_out = sys.argv[3]
-        std_out = std_out[:-1]
-        print(get_new_command(Command(script, "", std_out), Settings()))
-    elif len(sys.argv) == 5:
-        expected = " ".join(sys.argv[1:3])
-        expected = expected.replace("(", "")
-        expected = expected[:-1]
-        script = sys.argv[3]
-        script = script.replace(",", "")
-        script = script[:-1]
-        std_out = sys.argv[4]
-        std_out = std_out[:-1]
-        print(get_new_command(Command(script, "", std_out), Settings()))
-
-    else:
-        print("ASSERTION ERROR")
+    script = sys.argv[2]
+    result = get_new_command(Command(script, "", ""), Settings())
+    print(isinstance(result, list))
