@@ -38,6 +38,10 @@ jobs:
         path: report.html
     - name: Coveralls
       uses: coverallsapp/github-action@v2
+      # Coverage upload is a report, not a correctness gate: a Coveralls outage
+      # must not fail the build.
+      continue-on-error: true
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         path-to-lcov: coverage.lcov
+        fail-on-error: false
