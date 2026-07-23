@@ -18,6 +18,7 @@ from tests4py.constants import (
     RUN,
     CLEAR,
     GET_TESTS,
+    DOCKER,
 )
 from tests4py.projects import Project
 from tests4py.tests.utils import TestResult
@@ -166,6 +167,23 @@ class ClearReport(ProjectReport):
 class ConfigReport(Report):
     def __init__(self):
         super().__init__(CONFIG)
+
+
+class DockerReport(Report):
+    def __init__(self, subcommand: str = None):
+        super().__init__(DOCKER, subcommand=subcommand)
+        # Image tag produced (env/project/instance) or None.
+        self.image: Optional[str] = None
+        # Return code of the underlying `docker` invocation (0 == success).
+        self.returncode: Optional[int] = None
+
+    def to_dict(self):
+        dictionary = super().to_dict()
+        if self.image:
+            dictionary["image"] = self.image
+        if self.returncode is not None:
+            dictionary["returncode"] = self.returncode
+        return dictionary
 
 
 class GrammarReport(ProjectReport):

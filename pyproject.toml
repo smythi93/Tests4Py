@@ -40,6 +40,9 @@ dependencies = [
 [project.scripts]
 t4p = "tests4py.cli:main"
 
+[tool.setuptools.package-data]
+"tests4py.docker" = ["Dockerfile.*", "*.md"]
+
 [project.optional-dependencies]
 test = [
     "pytest>=7.2.2",

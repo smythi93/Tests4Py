@@ -140,8 +140,38 @@ def checkout(
                 os.makedirs(tmp_location, exist_ok=True)
 
                 LOGGER.info(f"Copying required files to {tmp_location}")
+                # Determine which files the fix touched. A normal fix commit is
+                # described by `git show --name-only`. A MERGE fix commit lists no
+                # files there (the diff is empty against its first parent), which
+                # silently left the fix un-applied; detect that case and fall back
+                # to the full buggy->fixed delta so merge-carried fixes apply.
+                parents = (
+                    subprocess.run(
+                        ["git", "rev-list", "--parents", "-n", "1", "HEAD"],
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.DEVNULL,
+                        cwd=work_location,
+                    )
+                    .stdout.decode("utf-8")
+                    .split()
+                )
+                is_merge_fix = len(parents) > 2  # <commit> <parent1> <parent2>...
+                if is_merge_fix:
+                    LOGGER.info(
+                        "Fixed commit is a merge; using buggy->fixed diff to "
+                        "locate changed files."
+                    )
+                    name_only_cmd = [
+                        "git",
+                        "diff",
+                        "--name-only",
+                        project.buggy_commit_id,
+                        project.fixed_commit_id,
+                    ]
+                else:
+                    name_only_cmd = ["git", "show", "--name-only"]
                 result = subprocess.run(
-                    ["git", "show", "--name-only"],
+                    name_only_cmd,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
                     cwd=work_location,

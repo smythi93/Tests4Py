@@ -302,7 +302,9 @@ def register():
         test_cases=[
             os.path.join("tests", "rules", "test_git_push.py::test_get_new_command")
         ],
-        test_status_fixed=TestStatus.FAILING,
+        # fixed_commit_id db7dffdb... is a MERGE commit whose first parent is the
+        # buggy commit 92f3c8fb...; the merge-aware checkout (git diff buggy..fixed)
+        # now overlays the source fix so the "fixed" build genuinely differs.
         api=TheFuckAPI11(),
         unittests=TheFuckUnittestGenerator11(),
         systemtests=TheFuckSystemtestGenerator11(),
@@ -2018,53 +2020,45 @@ To push the current branch and set the remote as upstream, use
 
     @staticmethod
     def thefuck11_generate_():
-        randomise_branch_name = TheFuckTestGenerator.generate_random_string()
-
-        std_err = f"""fatal: The current branch has no upstream {randomise_branch_name}.
-        To push the current branch and set the remote as upstream, use
-
-            git push --set-upstream origin master
-
-        """
+        # git stderr suggests `git push --set-upstream origin master`; the rule
+        # derives push_upstream='push --set-upstream origin master' from its
+        # third-from-last line. Each triple is (expected, command, std_err).
+        word = TheFuckTestGenerator.generate_random_string()
+        std_err = (
+            "fatal: The current branch master has no upstream branch.\n"
+            "To push the current branch and set the remote as upstream use\n"
+            "\n"
+            "    git push --set-upstream origin master\n"
+            "\n"
+        )
+        # PASSING: no --set-upstream/-u option to strip, so the buggy and fixed
+        # builds produce the same output (the plain push->push... substitution).
         passing = (
-            (f"git push --set-upstream origin master", "git push", std_err),
+            ("git push --set-upstream origin master", "git push", std_err),
             (
-                f"git push --set-upstream origin master -u origin",
-                "git push -u origin",
+                f"git push --set-upstream origin master origin {word}",
+                f"git push origin {word}",
                 std_err,
             ),
             (
-                f"git push --set-upstream origin master --set-upstream origin",
-                f"git push --set-upstream origin",
-                std_err,
-            ),
-            (
-                "git push --set-upstream origin master --quiet",
-                "git push --quiet",
+                f"git push --set-upstream origin master {word} extra",
+                f"git push {word} extra",
                 std_err,
             ),
         )
-
+        # FAILING: command carries --set-upstream/-u plus its argument; only the
+        # fixed build strips them before substituting, so the buggy output keeps
+        # the duplicated option and differs from the expected (fixed) command.
         failing = (
             (
-                f"git push --set-upstream origin master",
+                f"git push --set-upstream origin master {word}",
+                f"git push --set-upstream origin {word}",
                 std_err,
-                "git push",
             ),
             (
-                f"git push --set-upstream origin master -u origin",
+                f"git push --set-upstream origin master {word}",
+                f"git push -u origin {word}",
                 std_err,
-                "git push -u origin",
-            ),
-            (
-                f"git push --set-upstream origin master --set-upstream origin",
-                std_err,
-                f"git push --set-upstream origin",
-            ),
-            (
-                "git push --set-upstream origin master --quiet",
-                std_err,
-                "git push --quiet",
             ),
         )
         return (

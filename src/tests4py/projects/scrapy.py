@@ -2,11 +2,13 @@ import ast
 import base64
 import os.path
 import random
+import re
 import string
 import subprocess
 from collections import OrderedDict
 from pathlib import Path
 from typing import Any, List, Optional, Tuple
+from urllib.parse import urljoin
 
 from tests4py.grammars.default import clean_up
 from tests4py.grammars.fuzzer import Grammar, is_valid_grammar, srange
@@ -192,7 +194,10 @@ def register():
                 "test_pipeline_images.py::ImagesPipelineTestCase::test_convert_image",
             )
         ],
-        test_status_fixed=TestStatus.FAILING,
+        api=Scrapy6API(),
+        unittests=Scrapy6UnittestGenerator(),
+        systemtests=Scrapy6SystemtestGenerator(),
+        grammar=grammar_printable,
         loc=11094,
     )
     Scrapy(
@@ -246,7 +251,10 @@ def register():
                 "test_mail.py::MailSenderTest::test_send_single_values_to_and_cc",
             )
         ],
-        test_status_fixed=TestStatus.FAILING,
+        api=Scrapy9API(),
+        unittests=Scrapy9UnittestGenerator(),
+        systemtests=Scrapy9SystemtestGenerator(),
+        grammar=grammar_mail,
         loc=12317,
     )
     Scrapy(
@@ -303,7 +311,10 @@ def register():
                 "tests", "test_selector.py::SelectorTestCase::test_selector_bad_args"
             )
         ],
-        test_status_fixed=TestStatus.FAILING,
+        api=Scrapy12API(),
+        unittests=Scrapy12UnittestGenerator(),
+        systemtests=Scrapy12SystemtestGenerator(),
+        grammar=grammar_selector,
         loc=12321,
     )
     Scrapy(
@@ -343,7 +354,10 @@ def register():
                 "tests", "test_utils_gz.py::GunzipTest::test_is_gzipped_with_charset"
             ),
         ],
-        test_status_fixed=TestStatus.FAILING,
+        api=Scrapy14API(),
+        unittests=Scrapy14UnittestGenerator(),
+        systemtests=Scrapy14SystemtestGenerator(),
+        grammar=grammar_gzip,
         loc=12222,
     )
     Scrapy(
@@ -563,6 +577,10 @@ def register():
             os.path.join("tests", "test_downloader_handlers.py::HttpProxyTestCase")
         ],
         test_status_fixed=TestStatus.FAILING,
+        api=Scrapy24API(),
+        unittests=Scrapy24UnittestGenerator(),
+        systemtests=Scrapy24SystemtestGenerator(),
+        grammar=grammar_tunneling,
         loc=11841,
     )
     Scrapy(
@@ -582,7 +600,10 @@ def register():
                 "test_http_request.py::FormRequestTest",
             )
         ],
-        test_status_fixed=TestStatus.FAILING,
+        api=Scrapy25API(),
+        unittests=Scrapy25UnittestGenerator(),
+        systemtests=Scrapy25SystemtestGenerator(),
+        grammar=grammar_printable,
         loc=11814,
     )
     Scrapy(
@@ -640,7 +661,10 @@ def register():
                 "tests", "test_dupefilters.py::RFPDupeFilterTest::test_dupefilter_path"
             )
         ],
-        test_status_fixed=TestStatus.FAILING,
+        api=Scrapy28API(),
+        unittests=Scrapy28UnittestGenerator(),
+        systemtests=Scrapy28SystemtestGenerator(),
+        grammar=grammar_dupefilter,
         loc=11737,
     )
     Scrapy(
@@ -837,7 +861,10 @@ def register():
                 "test_http_request.py::FormRequestTest::test_from_response_clickdata_does_not_ignore_image",
             )
         ],
-        test_status_fixed=TestStatus.FAILING,
+        api=Scrapy38API(),
+        unittests=Scrapy38UnittestGenerator(),
+        systemtests=Scrapy38SystemtestGenerator(),
+        grammar=grammar_printable,
         loc=11286,
     )
     Scrapy(
@@ -4443,3 +4470,890 @@ grammar_images_expires: Grammar = clean_up(
 )
 
 assert is_valid_grammar(grammar_images_expires)
+
+
+# ======================================================================
+# bug_24: scrapy.core.downloader.handlers.http11.TunnelingTCP4ClientEndpoint
+# (used for HTTPS downloads through an HTTP proxy) was written for Python 2
+# and mishandled bytes on Python 3.  ``requestTunnel`` built the CONNECT
+# request as a ``str`` (``'CONNECT %s:%s HTTP/1.1\r\n'``) and wrote that str
+# to the transport, and ``_responseMatcher`` was a ``str`` regex matched
+# against the proxy's ``bytes`` response (raising ``TypeError``).  The fix
+# builds the request as ``bytes`` and compiles ``_responseMatcher`` as a
+# ``bytes`` pattern.  (The canonical pytest is marked FAILING because it
+# spins up a live Twisted HTTPS-proxy fixture that is environment specific;
+# the code fix itself IS present on the fixed checkout, so the diversity
+# tests below still distinguish buggy from fixed.)
+#
+# System-test format:  ``<mode> <host> <port>``.  ``mode == "request"`` (the
+# fault trigger) builds the CONNECT request and prints the *type* written to
+# the transport; the oracle expects ``bytes`` (buggy prints ``str``).
+# ``mode == "port"`` prints the stored tunneled port, an invariant that holds
+# on both builds.
+# ======================================================================
+
+
+class Scrapy24API(ScrapyAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            mode = process.args[2]
+            port = process.args[4]
+        except IndexError:
+            return TestResult.UNDEFINED, "Malformed test input"
+        if mode == "request":
+            expected = "bytes"
+        elif mode == "port":
+            expected = port
+        else:
+            return TestResult.UNDEFINED, "Malformed test input"
+        marker = None
+        for line in process.stdout.decode("utf8").splitlines():
+            if line.startswith("RESULT:"):
+                marker = line[len("RESULT:"):].strip()
+        if process.returncode == 0 and marker == expected:
+            return TestResult.PASSING, f"Expected {expected}"
+        return TestResult.FAILING, f"Expected {expected}, but was {marker!r}"
+
+
+class Scrapy24TestGenerator:
+    @staticmethod
+    def _host() -> str:
+        labels = [_rand_word(3, 7) for _ in range(random.randint(2, 3))]
+        return ".".join(labels)
+
+    @staticmethod
+    def _port() -> int:
+        return random.randint(1, 65535)
+
+
+class Scrapy24SystemtestGenerator(SystemtestGenerator, Scrapy24TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return f"request {self._host()} {self._port()}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return f"port {self._host()} {self._port()}", TestResult.PASSING
+
+
+_SCRAPY24_UTILS = '''
+def _t4p_tunnel_request_type(host, port):
+    from scrapy.core.downloader.handlers.http11 import TunnelingTCP4ClientEndpoint
+    from twisted.internet import reactor
+    class _FT(object):
+        def __init__(self):
+            self.written = None
+        def write(self, data):
+            self.written = data
+    class _FP(object):
+        def __init__(self):
+            self.transport = _FT()
+            self.dataReceived = None
+    endpoint = TunnelingTCP4ClientEndpoint(
+        reactor, host.encode('ascii'), port, ('proxy.example', 8080, None), None)
+    protocol = _FP()
+    endpoint.requestTunnel(protocol)
+    return type(protocol.transport.written).__name__
+
+
+def _t4p_tunnel_port(host, port):
+    from scrapy.core.downloader.handlers.http11 import TunnelingTCP4ClientEndpoint
+    from twisted.internet import reactor
+    endpoint = TunnelingTCP4ClientEndpoint(
+        reactor, host.encode('ascii'), port, ('proxy.example', 8080, None), None)
+    return endpoint._tunneledPort
+'''
+
+
+class Scrapy24UnittestGenerator(UnittestGenerator, Scrapy24TestGenerator):
+    def get_imports(self) -> List[ast.stmt]:
+        return ast.parse(_SCRAPY24_UTILS).body
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        host, port = self._host(), self._port()
+        src = f"self.assertEqual('bytes', _t4p_tunnel_request_type({host!r}, {port}))\n"
+        test = self.get_empty_test()
+        test.body = ast.parse(src).body
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        host, port = self._host(), self._port()
+        src = f"self.assertEqual({port}, _t4p_tunnel_port({host!r}, {port}))\n"
+        test = self.get_empty_test()
+        test.body = ast.parse(src).body
+        return test, TestResult.PASSING
+
+
+grammar_tunneling: Grammar = clean_up(
+    {
+        "<start>": ["<mode> <host> <port>"],
+        "<mode>": ["request", "port"],
+        "<host>": ["<label>", "<label>.<host>"],
+        "<label>": ["<char><chars>"],
+        "<chars>": ["", "<char><chars>"],
+        "<char>": srange(string.ascii_lowercase + string.digits),
+        "<port>": ["<nonzero><digits>"],
+        "<digits>": ["", "<digit><digits>"],
+        "<nonzero>": srange("123456789"),
+        "<digit>": srange(string.digits),
+    }
+)
+
+assert is_valid_grammar(grammar_tunneling)
+
+
+# ======================================================================
+# bug_28: ``RFPDupeFilter.__init__`` opened ``requests.seen`` in ``'a+'`` mode
+# and immediately iterated over it to load previously-seen fingerprints.  In
+# append mode the file offset starts at EOF, so the iteration read nothing and
+# a freshly-constructed filter pointed at an existing job dir "forgot" every
+# persisted request.  The fix inserts ``self.file.seek(0)`` before loading.
+#
+# System-test format: ``<mode> <url>`` where ``<mode>`` is ``persist`` or
+# ``same``.  ``persist`` writes the url with one filter, then reloads a second
+# filter from the same dir and reports whether the reloaded filter recognises
+# the url (buggy: False; fixed: True).  ``same`` reports the second lookup
+# within a single filter instance (True on both builds).  Every scenario is
+# expected to end up seen (True), so ``persist`` distinguishes the fault.
+# ======================================================================
+
+
+grammar_dupefilter: Grammar = clean_up(
+    {
+        "<start>": ["<mode> <url>"],
+        "<mode>": ["persist", "same"],
+        "<url>": ["http://scrapytest.org/<path>"],
+        "<path>": ["<c>", "<c><path>"],
+        "<c>": srange(string.ascii_letters + string.digits + "/-_."),
+    }
+)
+
+assert is_valid_grammar(grammar_dupefilter)
+
+
+class Scrapy28API(ScrapyAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        out = process.stdout.decode("utf8").strip()
+        # In both modes a duplicate of the recorded request must be recognised.
+        expected = "True"
+        if process.returncode == 0 and out == expected:
+            return TestResult.PASSING, ""
+        return TestResult.FAILING, f"Expected {expected}, but was {out!r}"
+
+
+class Scrapy28TestGenerator:
+    @staticmethod
+    def _url() -> str:
+        return (
+            "http://scrapytest.org/"
+            + _rand_word(4, 10)
+            + "/"
+            + str(random.randint(1, 1000000))
+        )
+
+
+class Scrapy28SystemtestGenerator(SystemtestGenerator, Scrapy28TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return f"persist {self._url()}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return f"same {self._url()}", TestResult.PASSING
+
+
+class Scrapy28UnittestGenerator(UnittestGenerator, Scrapy28TestGenerator):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.Import(names=[ast.alias(name="tempfile")]),
+            ast.Import(names=[ast.alias(name="shutil")]),
+            ast.ImportFrom(
+                module="scrapy.dupefilters",
+                names=[ast.alias(name="RFPDupeFilter")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="scrapy.http",
+                names=[ast.alias(name="Request")],
+                level=0,
+            ),
+        ]
+
+    def _failing_src(self, url: str) -> str:
+        return (
+            "path = tempfile.mkdtemp()\n"
+            "try:\n"
+            "    df = RFPDupeFilter(path)\n"
+            "    df.open()\n"
+            f"    df.request_seen(Request({url!r}))\n"
+            "    df.close('finished')\n"
+            "    df2 = RFPDupeFilter(path)\n"
+            "    df2.open()\n"
+            f"    seen = df2.request_seen(Request({url!r}))\n"
+            "    df2.close('finished')\n"
+            "    self.assertTrue(seen)\n"
+            "finally:\n"
+            "    shutil.rmtree(path)\n"
+        )
+
+    def _passing_src(self, url: str) -> str:
+        return (
+            "path = tempfile.mkdtemp()\n"
+            "try:\n"
+            "    df = RFPDupeFilter(path)\n"
+            "    df.open()\n"
+            f"    df.request_seen(Request({url!r}))\n"
+            f"    seen = df.request_seen(Request({url!r}))\n"
+            "    df.close('finished')\n"
+            "    self.assertTrue(seen)\n"
+            "finally:\n"
+            "    shutil.rmtree(path)\n"
+        )
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = ast.parse(self._failing_src(self._url())).body
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = ast.parse(self._passing_src(self._url())).body
+        return test, TestResult.PASSING
+
+
+# ======================================================================
+# bug_14: ``is_gzipped`` compared the raw ``Content-Type`` header against the
+# exact byte strings ``b'application/x-gzip'``/``b'application/gzip'``.  A
+# header carrying a charset parameter (``application/x-gzip;charset=utf-8``) or
+# different casing (``application/X-Gzip``) therefore was NOT recognised as
+# gzip.  The fix matches with the case-insensitive regex
+# ``^application/(x-)?gzip\b`` instead.
+#
+# System-test format: the ``Content-Type`` value (a single token, no spaces).
+# The harness prints ``is_gzipped(Response(...))``; the oracle recomputes the
+# correct (fixed) answer with the same regex.  Failing tests use charset/case
+# variants (buggy False, fixed True); passing tests use exact gzip types or
+# clearly non-gzip types (identical on both builds).
+# ======================================================================
+
+
+_GZIP_RE = re.compile(br"^application/(x-)?gzip\b", re.I)
+
+
+def _gzip_expected(ctype: str) -> bool:
+    return _GZIP_RE.search(ctype.encode("utf-8")) is not None
+
+
+grammar_gzip: Grammar = clean_up(
+    {
+        "<start>": ["<chars>"],
+        "<chars>": ["<char>", "<char><chars>"],
+        "<char>": srange(string.ascii_letters + string.digits + "/-;=+._"),
+    }
+)
+
+assert is_valid_grammar(grammar_gzip)
+
+
+class Scrapy14API(ScrapyAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            ctype = process.args[2]
+        except IndexError:
+            return TestResult.UNDEFINED, "Malformed test input"
+        expected = str(_gzip_expected(ctype))
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == expected:
+            return TestResult.PASSING, ""
+        return TestResult.FAILING, f"Expected {expected}, but was {out!r}"
+
+
+class Scrapy14TestGenerator:
+    @staticmethod
+    def _failing() -> str:
+        return random.choice(
+            [
+                f"application/x-gzip;charset={_rand_word()}",
+                f"application/gzip;charset={_rand_word()}",
+                f"application/X-GZIP;charset={_rand_word()}",
+                "application/X-Gzip",
+                "APPLICATION/GZIP",
+                "Application/GZip",
+            ]
+        )
+
+    @staticmethod
+    def _passing() -> str:
+        return random.choice(
+            [
+                "application/x-gzip",
+                "application/gzip",
+                f"text/{_rand_word()}",
+                f"image/{_rand_word()}",
+                f"application/gzip{_rand_word()}",
+            ]
+        )
+
+
+class Scrapy14SystemtestGenerator(SystemtestGenerator, Scrapy14TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return self._failing(), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return self._passing(), TestResult.PASSING
+
+
+class Scrapy14UnittestGenerator(UnittestGenerator, Scrapy14TestGenerator):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.ImportFrom(
+                module="scrapy.http",
+                names=[ast.alias(name="Response")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="scrapy.utils.gz",
+                names=[ast.alias(name="is_gzipped")],
+                level=0,
+            ),
+        ]
+
+    @staticmethod
+    def _src(ctype: str) -> str:
+        expected = _gzip_expected(ctype)
+        return (
+            f"response = Response('http://www.example.com', "
+            f"headers={{'Content-Type': {ctype!r}}})\n"
+            f"self.assertEqual({expected!r}, is_gzipped(response))\n"
+        )
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = ast.parse(self._src(self._failing())).body
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = ast.parse(self._src(self._passing())).body
+        return test, TestResult.PASSING
+
+
+# ======================================================================
+# bug_12: ``Selector.__init__`` silently accepted BOTH a ``response`` and a
+# ``text`` argument (``text`` won, ``response`` was ignored), masking a caller
+# mistake.  The fix raises ``ValueError('... received both response and text')``
+# when both are provided.
+#
+# System-test format: ``<mode> <html>`` with ``<mode>`` in ``both``/``text``/
+# ``response`` (``type='html'`` is always supplied so the base Selector builds
+# on this version).  The harness reports ``VALUEERROR``/``NOERROR``; the oracle
+# expects ``VALUEERROR`` only for ``both``.  Failing tests use ``both`` (buggy:
+# no error; fixed: ValueError); passing tests use a single argument.
+# ======================================================================
+
+
+grammar_selector: Grammar = clean_up(
+    {
+        "<start>": ["<mode> <html>"],
+        "<mode>": ["both", "text", "response"],
+        "<html>": ["<chars>"],
+        "<chars>": ["<char>", "<char><chars>"],
+        "<char>": srange(string.ascii_letters + string.digits + "<>/"),
+    }
+)
+
+assert is_valid_grammar(grammar_selector)
+
+
+class Scrapy12API(ScrapyAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            mode = process.args[2]
+        except IndexError:
+            return TestResult.UNDEFINED, "Malformed test input"
+        expected = "VALUEERROR" if mode == "both" else "NOERROR"
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == expected:
+            return TestResult.PASSING, ""
+        return TestResult.FAILING, f"Expected {expected}, but was {out!r}"
+
+
+class Scrapy12TestGenerator:
+    @staticmethod
+    def _html() -> str:
+        return f"<html><body><p>{_rand_word(3, 9)}</p></body></html>"
+
+
+class Scrapy12SystemtestGenerator(SystemtestGenerator, Scrapy12TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return f"both {self._html()}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        mode = random.choice(["text", "response"])
+        return f"{mode} {self._html()}", TestResult.PASSING
+
+
+class Scrapy12UnittestGenerator(UnittestGenerator, Scrapy12TestGenerator):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.ImportFrom(
+                module="scrapy.selector",
+                names=[ast.alias(name="Selector")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="scrapy.http",
+                names=[ast.alias(name="TextResponse")],
+                level=0,
+            ),
+        ]
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        html = self._html()
+        src = (
+            "resp = TextResponse(url='http://example.com', "
+            f"body={html.encode('utf-8')!r}, encoding='utf-8')\n"
+            "with self.assertRaises(ValueError):\n"
+            f"    Selector(response=resp, text={html!r}, type='html')\n"
+        )
+        test = self.get_empty_test()
+        test.body = ast.parse(src).body
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        html = self._html()
+        if random.random() < 0.5:
+            src = (
+                f"sel = Selector(text={html!r}, type='html')\n"
+                "self.assertIsNotNone(sel)\n"
+            )
+        else:
+            src = (
+                "resp = TextResponse(url='http://example.com', "
+                f"body={html.encode('utf-8')!r}, encoding='utf-8')\n"
+                "sel = Selector(response=resp, type='html')\n"
+                "self.assertIsNotNone(sel)\n"
+            )
+        test = self.get_empty_test()
+        test.body = ast.parse(src).body
+        return test, TestResult.PASSING
+
+
+# ======================================================================
+# bug_9: ``MailSender.send`` joined the recipient list with
+# ``COMMASPACE.join(to)`` without first normalising a bare string into a list.
+# Passing a single address string therefore produced a ``To`` header made of
+# the address' individual characters (``t, e, s, t, ...``).  The fix runs
+# ``to``/``cc`` through ``arg_to_iter`` before joining.
+#
+# System-test format: ``<mode> <email>`` with ``<mode>`` in ``single``/``list``.
+# The harness sends with ``debug=True`` and a ``_callback`` capturing the built
+# message, then prints ``msg['To']``; the oracle expects it to equal the
+# address.  ``single`` distinguishes (buggy garbles it); ``list`` agrees on
+# both builds.
+# ======================================================================
+
+
+grammar_mail: Grammar = clean_up(
+    {
+        "<start>": ["<mode> <email>"],
+        "<mode>": ["single", "list"],
+        "<email>": ["<chars>@<chars>.<tld>"],
+        "<chars>": ["<char>", "<char><chars>"],
+        "<char>": srange(string.ascii_lowercase + string.digits),
+        "<tld>": ["org", "com", "net", "io"],
+    }
+)
+
+assert is_valid_grammar(grammar_mail)
+
+
+class Scrapy9API(ScrapyAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            email = process.args[3]
+        except IndexError:
+            return TestResult.UNDEFINED, "Malformed test input"
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == email:
+            return TestResult.PASSING, ""
+        return TestResult.FAILING, f"Expected {email}, but was {out!r}"
+
+
+class Scrapy9TestGenerator:
+    @staticmethod
+    def _email() -> str:
+        return (
+            f"{_rand_word(3, 8)}@{_rand_word(3, 8)}."
+            + random.choice(["org", "com", "net", "io"])
+        )
+
+
+class Scrapy9SystemtestGenerator(SystemtestGenerator, Scrapy9TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return f"single {self._email()}", TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return f"list {self._email()}", TestResult.PASSING
+
+
+class Scrapy9UnittestGenerator(UnittestGenerator, Scrapy9TestGenerator):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.ImportFrom(
+                module="scrapy.mail",
+                names=[ast.alias(name="MailSender")],
+                level=0,
+            )
+        ]
+
+    @staticmethod
+    def _src(to_expr: str, email: str) -> str:
+        return (
+            "captured = {}\n"
+            "def cb(**kw):\n"
+            "    captured['msg'] = kw['msg']\n"
+            "ms = MailSender(debug=True)\n"
+            f"ms.send(to={to_expr}, subject='subject', body='body', _callback=cb)\n"
+            f"self.assertEqual({email!r}, captured['msg']['To'])\n"
+        )
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        email = self._email()
+        test = self.get_empty_test()
+        test.body = ast.parse(self._src(repr(email), email)).body
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        email = self._email()
+        test = self.get_empty_test()
+        test.body = ast.parse(self._src(repr([email]), email)).body
+        return test, TestResult.PASSING
+
+
+# Permissive line grammar (parses any printable input, spaces included) used by
+# multi-token subjects whose precise structure is impractical to encode.
+grammar_printable: Grammar = clean_up(
+    {
+        "<start>": ["<chars>"],
+        "<chars>": ["", "<char><chars>"],
+        "<char>": srange(string.printable),
+    }
+)
+
+assert is_valid_grammar(grammar_printable)
+
+
+# ======================================================================
+# bug_25: ``_get_form_url`` returned ``form.action or form.base_url`` and
+# ``_get_form`` rooted the parsed tree at ``response.url``, so a ``<base href>``
+# in the document was ignored and relative form actions were resolved against
+# the wrong base.  The fix roots at ``get_base_url(response)`` and returns
+# ``urljoin(form.base_url, form.action)``.
+#
+# System-test format: ``<expected> <response_url> <base_href> <action>`` where
+# ``<base_href>`` may be ``none``.  The harness builds an HTML page with the
+# given base tag + form action and prints ``FormRequest.from_response(...).url``;
+# the oracle compares it to ``<expected>`` (the fixed result).  Failing tests
+# use a ``<base>`` + relative action (buggy resolves against response.url);
+# passing tests use an absolute action with no base (identical on both builds).
+# ======================================================================
+
+
+class Scrapy25API(ScrapyAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            expected = process.args[2]
+        except IndexError:
+            return TestResult.UNDEFINED, "Malformed test input"
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == expected:
+            return TestResult.PASSING, ""
+        return TestResult.FAILING, f"Expected {expected}, but was {out!r}"
+
+
+class Scrapy25TestGenerator:
+    @staticmethod
+    def _failing() -> Tuple[str, str, str, str]:
+        response_url = f"http://{_rand_word()}.com/"
+        base_href = f"http://{_rand_word()}.org/"
+        action = _rand_word() + random.choice(["", ".html", "/sub"])
+        expected = urljoin(base_href, action)
+        return expected, response_url, base_href, action
+
+    @staticmethod
+    def _passing() -> Tuple[str, str, str, str]:
+        response_url = f"http://{_rand_word()}.com/"
+        action = f"http://{_rand_word()}.net/{_rand_word()}"
+        expected = action  # absolute action, no base -> same on both builds
+        return expected, response_url, "none", action
+
+
+class Scrapy25SystemtestGenerator(SystemtestGenerator, Scrapy25TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return " ".join(self._failing()), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return " ".join(self._passing()), TestResult.PASSING
+
+
+class Scrapy25UnittestGenerator(UnittestGenerator, Scrapy25TestGenerator):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.ImportFrom(
+                module="scrapy.http",
+                names=[ast.alias(name="HtmlResponse"), ast.alias(name="FormRequest")],
+                level=0,
+            )
+        ]
+
+    @staticmethod
+    def _src(expected: str, response_url: str, base_href: str, action: str) -> str:
+        base_tag = "" if base_href == "none" else f'<base href="{base_href}">'
+        body = (
+            f"<html><head>{base_tag}</head><body>"
+            f'<form action="{action}"></form></body></html>'
+        )
+        return (
+            f"response = HtmlResponse(url={response_url!r}, "
+            f"body={body.encode('utf-8')!r}, encoding='utf-8')\n"
+            "req = FormRequest.from_response(response)\n"
+            f"self.assertEqual({expected!r}, req.url)\n"
+        )
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = ast.parse(self._src(*self._failing())).body
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = ast.parse(self._src(*self._passing())).body
+        return test, TestResult.PASSING
+
+
+# ======================================================================
+# bug_38: ``_get_clickable`` used an XPath that only matched
+# ``input``/``button`` elements with ``type="submit"`` (or type-less buttons),
+# so an image submit control (``<input type="image">``) was never treated as a
+# clickable and its ``name=value`` pair was dropped from the submitted form.
+# The fix extends the XPath to ``input[type in (submit, image)]``.
+#
+# System-test format:
+# ``<expected> <clicktype> <t_name> <t_val> <c_name> <c_val>`` with
+# ``<clicktype>`` in ``image``/``submit``.  The harness builds a form with a
+# text field plus one clickable of the given type, submits it, and prints the
+# canonical (sorted) query string; the oracle compares to ``<expected>``.
+# Failing tests use ``image`` (buggy drops the control); passing tests use
+# ``submit`` (matched on both builds).
+# ======================================================================
+
+
+class Scrapy38API(ScrapyAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            expected = process.args[2]
+        except IndexError:
+            return TestResult.UNDEFINED, "Malformed test input"
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == expected:
+            return TestResult.PASSING, ""
+        return TestResult.FAILING, f"Expected {expected}, but was {out!r}"
+
+
+class Scrapy38TestGenerator:
+    @staticmethod
+    def _spec(clicktype: str) -> Tuple[str, str, str, str, str, str]:
+        names = set()
+
+        def uw():
+            while True:
+                w = _rand_word(3, 7)
+                if w not in names:
+                    names.add(w)
+                    return w
+
+        t_name, t_val, c_name, c_val = uw(), _rand_word(3, 7), uw(), _rand_word(3, 7)
+        params = {t_name: t_val, c_name: c_val}
+        expected = "&".join(f"{k}={params[k]}" for k in sorted(params))
+        return expected, clicktype, t_name, t_val, c_name, c_val
+
+
+class Scrapy38SystemtestGenerator(SystemtestGenerator, Scrapy38TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return " ".join(self._spec("image")), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return " ".join(self._spec("submit")), TestResult.PASSING
+
+
+class Scrapy38UnittestGenerator(UnittestGenerator, Scrapy38TestGenerator):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.ImportFrom(
+                module="scrapy.http",
+                names=[ast.alias(name="HtmlResponse"), ast.alias(name="FormRequest")],
+                level=0,
+            ),
+            ast.ImportFrom(
+                module="urllib.parse",
+                names=[ast.alias(name="urlparse"), ast.alias(name="parse_qs")],
+                level=0,
+            ),
+        ]
+
+    @staticmethod
+    def _src(
+        expected: str,
+        clicktype: str,
+        t_name: str,
+        t_val: str,
+        c_name: str,
+        c_val: str,
+    ) -> str:
+        body = (
+            f'<form><input type="text" name="{t_name}" value="{t_val}">'
+            f'<input type="{clicktype}" name="{c_name}" value="{c_val}"></form>'
+        )
+        return (
+            "response = HtmlResponse(url='http://example.com', "
+            f"body={body.encode('utf-8')!r}, encoding='utf-8')\n"
+            "req = FormRequest.from_response(response)\n"
+            "params = parse_qs(urlparse(req.url).query)\n"
+            "canon = '&'.join('%s=%s' % (k, v) for k in sorted(params) "
+            "for v in params[k])\n"
+            f"self.assertEqual({expected!r}, canon)\n"
+        )
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = ast.parse(self._src(*self._spec("image"))).body
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = ast.parse(self._src(*self._spec("submit"))).body
+        return test, TestResult.PASSING
+
+
+# ======================================================================
+# bug_6: ``ImagesPipeline.convert_image`` handled ``PNG``/``RGBA`` images by
+# compositing them onto a white background, but a palette-mode (``P``) image
+# with transparency fell through to a plain ``convert('RGB')`` that discarded
+# the alpha channel, so transparent regions kept their raw palette colour
+# instead of being blended onto white.  The fix adds a dedicated ``P`` branch
+# that composites like the ``RGBA`` case.
+#
+# System-test format: ``<mode> <r> <g> <b> <a>`` with ``<mode>`` in
+# ``palette``/``rgba``.  The harness builds a solid ``RGBA`` image (optionally
+# converted to ``P``), runs ``convert_image`` and prints the resulting ``R,G,B``
+# colour; the oracle recomputes the correct alpha-over-white blend.  ``palette``
+# distinguishes the fault (buggy keeps the raw colour); ``rgba`` agrees on both
+# builds.
+# ======================================================================
+
+
+def _blend_over_white(r: int, g: int, b: int, a: int) -> Tuple[int, int, int]:
+    # Matches PIL's integer alpha compositing onto a white background.
+    return tuple(round((c * a + 255 * (255 - a)) / 255) for c in (r, g, b))
+
+
+class Scrapy6API(ScrapyAPI):
+    def oracle(self, args: Any) -> Tuple[TestResult, str]:
+        if args is None:
+            return TestResult.UNDEFINED, "No process finished"
+        process: subprocess.CompletedProcess = args
+        try:
+            r, g, b, a = (int(process.args[i]) for i in range(3, 7))
+        except (IndexError, ValueError):
+            return TestResult.UNDEFINED, "Malformed test input"
+        expected = ",".join(map(str, _blend_over_white(r, g, b, a)))
+        out = process.stdout.decode("utf8").strip()
+        if process.returncode == 0 and out == expected:
+            return TestResult.PASSING, ""
+        return TestResult.FAILING, f"Expected {expected}, but was {out!r}"
+
+
+class Scrapy6TestGenerator:
+    @staticmethod
+    def _failing() -> Tuple[str, int, int, int, int]:
+        r, g, b = (random.randint(0, 200) for _ in range(3))
+        a = random.randint(30, 200)
+        return "palette", r, g, b, a
+
+    @staticmethod
+    def _passing() -> Tuple[str, int, int, int, int]:
+        r, g, b = (random.randint(0, 255) for _ in range(3))
+        a = random.randint(30, 255)
+        return "rgba", r, g, b, a
+
+
+class Scrapy6SystemtestGenerator(SystemtestGenerator, Scrapy6TestGenerator):
+    def generate_failing_test(self) -> Tuple[str, TestResult]:
+        return " ".join(map(str, self._failing())), TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[str, TestResult]:
+        return " ".join(map(str, self._passing())), TestResult.PASSING
+
+
+class Scrapy6UnittestGenerator(UnittestGenerator, Scrapy6TestGenerator):
+    def get_imports(self) -> List[ast.stmt]:
+        return [
+            ast.ImportFrom(
+                module="io", names=[ast.alias(name="BytesIO")], level=0
+            ),
+            ast.ImportFrom(
+                module="tempfile", names=[ast.alias(name="mkdtemp")], level=0
+            ),
+            ast.ImportFrom(
+                module="PIL", names=[ast.alias(name="Image")], level=0
+            ),
+            ast.ImportFrom(
+                module="scrapy.pipelines.images",
+                names=[ast.alias(name="ImagesPipeline")],
+                level=0,
+            ),
+        ]
+
+    @staticmethod
+    def _src(mode: str, r: int, g: int, b: int, a: int) -> str:
+        expected = _blend_over_white(r, g, b, a)
+        convert = "im = im.convert('P')\n" if mode == "palette" else ""
+        return (
+            "buf = BytesIO()\n"
+            f"Image.new('RGBA', (50, 50), ({r}, {g}, {b}, {a})).save(buf, 'PNG')\n"
+            "buf.seek(0)\n"
+            "im = Image.open(buf)\n"
+            f"{convert}"
+            "pipeline = ImagesPipeline(mkdtemp(), download_func=lambda *a, **k: None)\n"
+            "conv, _ = pipeline.convert_image(im)\n"
+            "self.assertEqual('RGB', conv.mode)\n"
+            f"self.assertEqual([(2500, {expected!r})], conv.getcolors())\n"
+        )
+
+    def generate_failing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = ast.parse(self._src(*self._failing())).body
+        return test, TestResult.FAILING
+
+    def generate_passing_test(self) -> Tuple[ast.FunctionDef, TestResult]:
+        test = self.get_empty_test()
+        test.body = ast.parse(self._src(*self._passing())).body
+        return test, TestResult.PASSING

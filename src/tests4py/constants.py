@@ -28,6 +28,13 @@ CONFIG = "config"
 GRAMMAR = "grammar"
 GET_TESTS = "get"
 RUN = "run"
+DOCKER = "docker"
+# ~~ docker subcommands ~~ #
+DOCKER_ENV = "env"
+DOCKER_PROJECT = "project"
+DOCKER_INSTANCE = "instance"
+DOCKER_RUN = "run"
+DOCKER_MODE = "mode"
 
 # ~~~~~~ FILES ~~~~~~ #
 
