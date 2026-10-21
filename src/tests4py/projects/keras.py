@@ -321,7 +321,7 @@ def register():
     )
     Keras(
         bug_id=12,
-        buggy_commit_id="6dff721a3a8755356b2e89d02ef63ad8ab38ec95",
+        buggy_commit_id="3fcb5e38a1470bf0aa5fa1b9b0dd712b7992e493",
         fixed_commit_id="6dff721a3a8755356b2e89d02ef63ad8ab38ec95",
         test_files=[Path("tests", "keras", "metrics_test.py")],
         test_cases=[
@@ -336,7 +336,6 @@ def register():
                 "metrics_test.py::test_sparse_categorical_accuracy_correctness[shape2]",
             ),
         ],
-        test_status_buggy=TestStatus.PASSING,
         loc=21126,
     )
     Keras(
