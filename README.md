@@ -297,6 +297,32 @@ You can currently cite Tests4Py as follows:
 }
 ```
 
+### Citing the subject projects
+
+Tests4Py's subjects are real bugs from open-source projects, which are written and maintained by volunteers.
+If you use Tests4Py in your research, please also cite the projects whose subjects you use.
+[`subjects.bib`](subjects.bib) has a BibTeX entry for each of them. Where a project asks to be cited in a particular way, the entry follows that.
+
+| Project      | Repository                                                                     | BibTeX key                                 |
+|--------------|--------------------------------------------------------------------------------|--------------------------------------------|
+| ansible      | [ansible/ansible](https://github.com/ansible/ansible)                          | `ansible`                                  |
+| black        | [psf/black](https://github.com/psf/black)                                      | `langa2018black`                           |
+| cookiecutter | [cookiecutter/cookiecutter](https://github.com/cookiecutter/cookiecutter)      | `greenfeld2013cookiecutter`                |
+| fastapi      | [fastapi/fastapi](https://github.com/fastapi/fastapi)                          | `ramirez2018fastapi`                       |
+| httpie       | [httpie/cli](https://github.com/httpie/cli)                                    | `roztocil2012httpie`                       |
+| keras        | [keras-team/keras](https://github.com/keras-team/keras)                        | `chollet2015keras`                         |
+| luigi        | [spotify/luigi](https://github.com/spotify/luigi)                              | `luigi`                                    |
+| matplotlib   | [matplotlib/matplotlib](https://github.com/matplotlib/matplotlib)              | `hunter2007matplotlib`                     |
+| pandas       | [pandas-dev/pandas](https://github.com/pandas-dev/pandas)                      | `pandas`, `mckinney2010pandas`             |
+| PySnooper    | [cool-RR/PySnooper](https://github.com/cool-RR/PySnooper)                      | `rachum2019pysnooper`                      |
+| sanic        | [sanic-org/sanic](https://github.com/sanic-org/sanic)                          | `sanic`                                    |
+| scrapy       | [scrapy/scrapy](https://github.com/scrapy/scrapy)                              | `scrapy`                                   |
+| spaCy        | [explosion/spaCy](https://github.com/explosion/spaCy)                          | `honnibal2020spacy`                        |
+| thefuck      | [nvbn/thefuck](https://github.com/nvbn/thefuck)                                | `iakovlev2015thefuck`                      |
+| tornado      | [tornadoweb/tornado](https://github.com/tornadoweb/tornado)                    | `tornado`                                  |
+| tqdm         | [tqdm/tqdm](https://github.com/tqdm/tqdm)                                      | `dacostaluis_tqdm`                         |
+| youtube-dl   | [ytdl-org/youtube-dl](https://github.com/ytdl-org/youtube-dl)                  | `youtubedl`                                |
+
 ## License
 
 Tests4Py is licensed under the MIT License. See [LICENSE](LICENSE) for the full license text.
